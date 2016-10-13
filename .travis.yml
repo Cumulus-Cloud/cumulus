@@ -1,0 +1,27 @@
+language: scala
+scala:
+  - 2.11.8
+jdk:
+  - oraclejdk8
+services:
+  - docker
+
+cache:
+  directories:
+    - $HOME/.ivy2
+    - $HOME/.sbt
+
+before_install:
+  - npm install
+
+script:
+  - npm run build
+  - sbt test
+  - sbt stage
+  - docker build -t wadjetz/cumulus .
+
+after_success:
+  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+    docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+    docker push wadjetz/cumulus;
+    fi

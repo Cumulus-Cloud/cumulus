@@ -17,3 +17,8 @@ test-result
 /.project
 /.settings
 /RUNNING_PID
+
+node_modules
+public/main.js
+public/main.css
+public/**/*.map
