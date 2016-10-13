@@ -20,4 +20,5 @@ test-result
 
 node_modules
 public/main.js
+public/main.css
 public/**/*.map

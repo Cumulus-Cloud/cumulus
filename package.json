@@ -8,7 +8,7 @@
   },
   "private": true,
   "scripts": {
-    "build": "webpack --config build/webpack.config.js",
+    "build": "NODE_ENV=production webpack -p --config build/webpack.config.js",
     "watch": "webpack -w --config build/webpack.config.js"
   },
   "repository": {
@@ -25,11 +25,22 @@
   },
   "homepage": "https://github.com/Cumulus-Cloud/cumulus#readme",
   "devDependencies": {
+    "autoprefixer": "^6.5.1",
+    "css-loader": "^0.25.0",
+    "css-mqpacker": "^5.0.1",
+    "extract-text-webpack-plugin": "^1.0.1",
+    "postcss-cssnext": "^2.8.0",
+    "postcss-import": "^8.1.2",
+    "postcss-loader": "^0.13.0",
+    "postcss-nested": "^1.0.0",
+    "postcss-reporter": "^1.4.1",
     "source-map-loader": "^0.1.5",
+    "style-loader": "^0.13.1",
     "ts-loader": "^0.9.1",
     "tslint": "^3.15.1",
     "typescript": "^2.0.3",
-    "webpack": "^1.13.2"
+    "webpack": "^1.13.2",
+    "whatwg-fetch": "^1.0.0"
   },
   "dependencies": {
     "@types/react": "0.14.41",
