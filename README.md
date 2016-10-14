@@ -1,6 +1,8 @@
 Cumulus
 =======
 
+[![Build Status](https://travis-ci.org/Cumulus-Cloud/cumulus.svg?branch=master)](https://travis-ci.org/Cumulus-Cloud/cumulus)
+
 ## Run Server
 ```sh
 sbt run
