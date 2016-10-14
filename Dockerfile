@@ -1,4 +1,4 @@
-FROM openjdk:8-jre-alpine
+FROM java:8u102-jre
 
 COPY target/universal/stage /opt/cumulus
 

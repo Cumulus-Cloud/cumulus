@@ -15,6 +15,7 @@ before_install:
   - npm install
 
 script:
+  - npm test
   - npm run build
   - sbt test
   - sbt stage
