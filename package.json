@@ -9,7 +9,8 @@
   "private": true,
   "scripts": {
     "build": "NODE_ENV=production webpack -p --config build/webpack.config.js",
-    "watch": "webpack -w --config build/webpack.config.js"
+    "watch": "webpack -w --config build/webpack.config.js",
+    "test": "echo 'soon'"
   },
   "repository": {
     "type": "git",
