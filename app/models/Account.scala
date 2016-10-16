@@ -2,7 +2,9 @@ package models
 
 import org.joda.time.DateTime
 import org.mindrot.jbcrypt.BCrypt
+
 import play.api.libs.json._
+import play.api.libs.functional.syntax._
 
 case class Account(
   id: java.util.UUID,
@@ -16,6 +18,24 @@ case class Account(
 
 object Account {
 
+  def apply(
+    id: String,
+    mail: String,
+    login: String,
+    password: String,
+    creation: DateTime,
+    roles: Seq[String],
+    home: Option[String]
+  ): Account = Account(
+    java.util.UUID.fromString(id),
+    mail,
+    login,
+    password,
+    creation,
+    roles,
+    home
+  )
+
   def initFrom(mail: String, login: String, password: String): Account = Account(
     java.util.UUID.randomUUID(),
     mail,
@@ -26,35 +46,12 @@ object Account {
     None
   )
 
-  implicit object UserWrites extends OWrites[Account] {
-    def writes(account: Account): JsObject = Json.obj(
-      "id" -> account.id,
-      "mail" -> account.mail,
-      "login" -> account.login,
-      "password" -> account.password,
-      "creation" -> account.creation,
-      "roles" -> account.roles
-    )
-  }
-
-  implicit object UserReads extends Reads[Account] {
-    def reads(json: JsValue): JsResult[Account] = json match {
-      case obj: JsObject => try {
-        val id = (obj \ "id").as[String]
-        val mail = (obj \ "mail").as[String]
-        val login = (obj \ "login").as[String]
-        val password = (obj \ "password").as[String]
-        val creation = (obj \ "creation").as[DateTime]
-        val roles = (obj \ "roles").as[Seq[String]]
-        val home = (obj \ "home").asOpt[String]
-
-        JsSuccess(Account(java.util.UUID.fromString(id), mail, login, password, creation, roles, home))
-      } catch {
-        case cause: Throwable => JsError(cause.getMessage)
-      }
-
-      case _ => JsError("expected.jsobject")
-    }
-  }
+  implicit val accountWrites: Writes[Account] = (
+    (JsPath \ "mail").write[String] and
+    (JsPath \ "login").write[String] and
+    (JsPath \ "creation").write[DateTime] and
+    (JsPath \ "roles").write[Seq[String]] and
+    (JsPath \ "home").writeNullable[String]
+  )(account => (account.mail, account.login, account.creation, account.roles, account.home))
 
 }
