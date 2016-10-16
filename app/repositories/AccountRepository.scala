@@ -1,4 +1,4 @@
-package dao
+package repositories
 
 import javax.inject.{Singleton, Inject}
 
@@ -89,7 +89,7 @@ object AccountRepository {
        creation,
        roles)
      VALUES (
-       ${account.id},
+       ${account.id}::uuid,
        ${account.mail},
        ${account.login},
        ${account.password},
@@ -99,15 +99,15 @@ object AccountRepository {
   """
 
   val parser = {
-    get[String]("id") ~
-      get[String]("mail") ~
-      get[String]("login") ~
-      get[String]("password") ~
-      get[DateTime]("creation") ~
-      get[Array[String]]("roles") ~
-      get[Option[String]]("home") map {
+    get[java.util.UUID]("id") ~
+    get[String]("mail") ~
+    get[String]("login") ~
+    get[String]("password") ~
+    get[DateTime]("creation") ~
+    get[Array[String]]("roles") ~
+    get[Option[String]]("home") map {
       case id ~ mail ~ login ~ password ~ creation ~ roles ~ home
-      => Account(id, mail, login, password, creation, roles, home)
+        => Account(id, mail, login, password, creation, roles, home)
     }
   }
 

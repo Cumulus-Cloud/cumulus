@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject._
 
-import dao.AccountRepository
+import repositories.AccountRepository
 import models.Account
 import play.api.mvc._
 import play.api.libs.json._

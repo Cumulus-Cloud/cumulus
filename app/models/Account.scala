@@ -4,7 +4,7 @@ import org.joda.time.DateTime
 import play.api.libs.json._
 
 case class Account(
-  id: String,
+  id: java.util.UUID,
   mail: String,
   login: String,
   password: String,
@@ -16,7 +16,7 @@ case class Account(
 object Account {
 
   def apply(mail: String, login: String, password: String): Account = Account(
-    java.util.UUID.randomUUID().toString,
+    java.util.UUID.randomUUID(),
     mail,
     login,
     password,
@@ -47,7 +47,7 @@ object Account {
         val roles = (obj \ "roles").as[Seq[String]]
         val home = (obj \ "home").asOpt[String]
 
-        JsSuccess(Account(id, mail, login, password, creation, roles, home))
+        JsSuccess(Account(java.util.UUID.fromString(id), mail, login, password, creation, roles, home))
       } catch {
         case cause: Throwable => JsError(cause.getMessage)
       }
