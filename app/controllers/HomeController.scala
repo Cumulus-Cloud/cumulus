@@ -6,6 +6,8 @@ import repositories.AccountRepository
 import models.Account
 import play.api.mvc._
 import play.api.libs.json._
+import play.api.data._
+import play.api.data.Forms._
 
 @Singleton
 class HomeController @Inject() (
@@ -19,23 +21,28 @@ class HomeController @Inject() (
     }
   }
 
-  def createAccount() = Action { request =>
-    request.body.asJson.map { json =>
+  val accountForm = Form(
+    tuple(
+      "login" -> text(minLength = 4, maxLength = 64),
+      "password" -> text(minLength = 6),
+      "mail" -> email
+    )
+  )
 
-      // TODO Validate JSON
-      val login = (json \ "login").as[String]
-      val password = (json \ "password").as[String]
-      val mail = (json \ "mail").as[String]
+  def createAccount() = Action { implicit request =>
+    accountForm.bindFromRequest.fold(
+      formWithErrors => {
+        BadRequest(formWithErrors.toString) // TODO return human readable errors
+      },
+      { case (login, password, mail) =>
+        val account = Account.initFrom(mail, login, password)
 
-      val account = Account(mail, login, password)
-
-      accountDao.insert(account) match {
-        case Left(exception) => Ok(s"Error: ${exception.toString}")
-        case _ => Ok(s"Got: ${account.login}")
+        accountDao.insert(account) match {
+          case Left(exception) => BadRequest(s"Error: ${exception.toString}") // TODO return uniform errors
+          case _ => Ok(s"Got: $login") // TODO return created account ?
+        }
       }
-    }.getOrElse {
-      BadRequest("Expecting application/json request body :(")
-    }
+    )
   }
 
   def index = Action {

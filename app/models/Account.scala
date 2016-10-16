@@ -1,6 +1,7 @@
 package models
 
 import org.joda.time.DateTime
+import org.mindrot.jbcrypt.BCrypt
 import play.api.libs.json._
 
 case class Account(
@@ -15,11 +16,11 @@ case class Account(
 
 object Account {
 
-  def apply(mail: String, login: String, password: String): Account = Account(
+  def initFrom(mail: String, login: String, password: String): Account = Account(
     java.util.UUID.randomUUID(),
     mail,
     login,
-    password,
+    BCrypt.hashpw(password, BCrypt.gensalt()),
     DateTime.now,
     Seq[String]("user"),
     None
