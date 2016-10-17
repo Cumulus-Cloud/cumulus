@@ -19,16 +19,13 @@ class AccountRepository @Inject()(
   dbApi: DBApi
 )(
   implicit ec: ExecutionContext
-) {
+) extends BaseRepository[Account](
+  dbApi.database("default"),
+  AccountRepository.table,
+  AccountRepository.parser)
+{
 
   import AccountRepository._
-
-  private val db = dbApi.database("default") // TODO get the default from the configuration ?
-
-  def getById(id: String): Option[Account] =
-    db.withConnection { implicit c =>
-      selectAccountById(id).as(parser.singleOpt)
-  }
 
   def getByLogin(login: String): Option[Account] =
     db.withConnection { implicit c =>
@@ -62,11 +59,18 @@ object AccountRepository {
 
   val table = "account"
 
-  private def selectAccountById(id: String) = SQL"""
-     SELECT *
-     FROM #$table
-     WHERE id = $id
-  """
+  val parser = {
+    get[java.util.UUID]("id") ~
+      get[String]("mail") ~
+      get[String]("login") ~
+      get[String]("password") ~
+      get[DateTime]("creation") ~
+      get[Array[String]]("roles") ~
+      get[Option[String]]("home") map {
+      case id ~ mail ~ login ~ password ~ creation ~ roles ~ home
+      => Account(id, mail, login, password, creation, roles, home)
+    }
+  }
 
   private def selectAccountByLogin(login: String) = SQL"""
      SELECT *
@@ -97,18 +101,5 @@ object AccountRepository {
        ${account.roles.toArray[String]}
      )
   """
-
-  val parser = {
-    get[java.util.UUID]("id") ~
-    get[String]("mail") ~
-    get[String]("login") ~
-    get[String]("password") ~
-    get[DateTime]("creation") ~
-    get[Array[String]]("roles") ~
-    get[Option[String]]("home") map {
-      case id ~ mail ~ login ~ password ~ creation ~ roles ~ home
-        => Account(id, mail, login, password, creation, roles, home)
-    }
-  }
 
 }
