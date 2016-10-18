@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject._
 
-import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.i18n.MessagesApi
 import repositories.AccountRepository
 import models.Account
 import play.api.mvc._
@@ -14,12 +14,12 @@ import play.api.data.Forms._
 class HomeController @Inject() (
   val accountDao: AccountRepository,
   val messagesApi: MessagesApi
-) extends Controller with I18nSupport {
+) extends BaseController {
 
   def getAccount(login: String) = Action {
     accountDao.getByLogin(login) match {
       case Some(account) => Ok(Json.toJson(account))
-      case None => NotFound(Json.toJson("Not found :(" ))
+      case None => NotFound(Json.toJson("Not found :(" )) // TODO handle all errors in JSON
     }
   }
 
@@ -32,19 +32,15 @@ class HomeController @Inject() (
   )
 
   def createAccount() = Action { implicit request =>
-    accountForm.bindFromRequest.fold(
-      formWithErrors => {
-        BadRequest(formWithErrors.errorsAsJson)
-      },
-      { case (login, password, mail) =>
+    getPayload(accountForm) {
+      case (login, password, mail) =>
         val account = Account.initFrom(mail, login, password)
 
         accountDao.insert(account) match {
-          case Left(exception) => BadRequest(s"Error: ${exception.toString}") // TODO return JSON error
+          case Left(e) => BadRequest(Json.toJson(e))
           case _ => Ok(Json.toJson(account))
         }
-      }
-    )
+    }
   }
 
   def index = Action {

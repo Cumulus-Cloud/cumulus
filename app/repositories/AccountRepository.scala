@@ -33,19 +33,19 @@ class AccountRepository @Inject()(
   }
 
   def getByMail(mail: String): Option[Account] =
-    db.withConnection { implicit connection =>
+    db.withConnection { implicit c =>
       selectAccountByMail(mail).as(parser.singleOpt)
   }
 
-  def insert(account: Account): Either[Exception, Account] =
+  def insert(account: Account): Either[ValidationError, Account] =
     db.withTransaction { implicit c =>
       for {
         byLogin <- selectAccountByLogin(account.login).as(parser.singleOpt) match {
-          case Some(_) => Left(new Exception("Login already used"))
+          case Some(_) => Left(ValidationError("login", "Login already used"))
           case None => Right(account)
         }
         byEmail <- selectAccountByMail(account.mail).as(parser.singleOpt) match {
-          case Some(_) => Left(new Exception("Mail already used"))
+          case Some(_) => Left(ValidationError("mail", "Mail already used"))
           case None => Right(account)
         }
       } yield {
