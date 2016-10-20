@@ -1,11 +1,20 @@
 #!/bin/bash
 
-npm run build
+docker build -f dev.Dockerfile -t wadjetz/cumulus-dev .
 
-sbt test
+docker run --name postgres-test -e POSTGRES_PASSWORD=cumulus_test -e POSTGRES_USER=cumulus -d postgres
 
-sbt stage
+docker run \
+-v `pwd`:/home/cumulus/project \
+-v $HOME/.ivy2:/home/cumulus/.ivy2 \
+-v $HOME/.npm:/home/cumulus/.npm \
+-v $HOME/.sbt:/home/cumulus/.sbt \
+-v $HOME/.npm:/home/cumulus/.npm \
+--name cumulus \
+--link postgres-test:postgres \
+-e DB_URL="jdbc:postgresql://postgres-test/cumulus" \
+-e DB_USER="cumulus" \
+-e DB_PASSWORD="cumulus_test" \
+-it wadjetz/cumulus-dev
 
-docker build -t wadjetz/cumulus .
-
-docker push wadjetz/cumulus
+docker stop postgres-test

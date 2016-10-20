@@ -10,15 +10,12 @@ cache:
   directories:
     - $HOME/.ivy2
     - $HOME/.sbt
+    - $HOME/.npm
 
 before_install:
-  - npm install
+  - ./docker-build.sh
 
 script:
-  - npm test
-  - npm run build
-  - sbt test
-  - sbt stage
   - docker build -t wadjetz/cumulus .
 
 after_success:
