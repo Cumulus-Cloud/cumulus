@@ -9,7 +9,7 @@
   "private": true,
   "scripts": {
     "build": "NODE_ENV=production webpack -p --config build/webpack.config.js",
-    "watch": "webpack -w --config build/webpack.config.js",
+    "watch": "NODE_ENV=development webpack -w --config build/webpack.config.js",
     "test": "echo 'soon'"
   },
   "repository": {
@@ -46,7 +46,10 @@
   "dependencies": {
     "@types/react": "0.14.41",
     "@types/react-dom": "0.14.17",
+    "es6-promise": "^4.0.5",
+    "es6-shim": "^0.35.1",
     "react": "15.3.2",
-    "react-dom": "15.3.2"
+    "react-dom": "15.3.2",
+    "redux": "^3.6.0"
   }
 }

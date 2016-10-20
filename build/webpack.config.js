@@ -2,7 +2,7 @@ var webpack = require("webpack");
 var path = require("path");
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
 
-var prod = process.env.NODE_ENV === "production";
+var development = process.env.NODE_ENV === "development";
 
 var config = {
   entry: [
@@ -12,8 +12,6 @@ var config = {
   output: {
     filename: "./public/main.js"
   },
-
-  devtool: "source-map",
   resolve: {
     extensions: [
       "", ".webpack.js", ".web.js", ".ts", ".tsx", ".js"
@@ -59,7 +57,7 @@ var config = {
   ]
 }
 
-if (!prod) {
+if (!development) {
   config.devtool = "source-map";
   config.plugins.push(new webpack.optimize.UglifyJsPlugin({
     compressor: {screw_ie8: true, keep_fnames: false, warnings: false},
