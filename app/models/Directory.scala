@@ -1,15 +1,42 @@
 package models
 
+import java.util.UUID
+
 import org.joda.time.DateTime
 import play.api.libs.json.{JsPath, Writes}
 
+case class DirectoryPath(value: Seq[String]) {
+
+  import DirectoryPath._
+
+  def parent: DirectoryPath =
+    DirectoryPath(value.dropRight(1))
+
+  override def toString =
+    convertPathToStr(this)
+}
+
+object DirectoryPath {
+  implicit def convertPathToStr(directoryPath: DirectoryPath): String =
+    "/" + directoryPath.value.mkString("/")
+
+  implicit def convertPathToSeq(directoryPath: DirectoryPath): Seq[String] =
+    directoryPath.value
+
+  implicit def convertStringToPath(path: String): DirectoryPath =
+    DirectoryPath(path.split("/"))
+
+  implicit def convertSeqToPath(path: Seq[String]): DirectoryPath =
+    DirectoryPath(path)
+}
+
 case class Directory(
-  id: java.util.UUID,
-  location: String,
+  id: UUID,
+  location: DirectoryPath,
   name: String,
   creation: DateTime,
   modification: DateTime,
-  creator: java.util.UUID,
+  creator: Option[Account], // TODO do not use options
   permissions: Seq[DirectoryPermission]
 )
 
@@ -19,6 +46,7 @@ case class DirectoryPermission(
 )
 
 object Directory {
+
 
   // TODO
   /*

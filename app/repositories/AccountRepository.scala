@@ -1,5 +1,6 @@
 package repositories
 
+import java.util.UUID
 import javax.inject.{Singleton, Inject}
 
 import models.Account
@@ -60,15 +61,15 @@ object AccountRepository {
   val table = "account"
 
   val parser = {
-    get[java.util.UUID]("id") ~
-      get[String]("mail") ~
-      get[String]("login") ~
-      get[String]("password") ~
-      get[DateTime]("creation") ~
-      get[Array[String]]("roles") ~
-      get[Option[String]]("home") map {
+    get[UUID]("id") ~
+    get[String]("mail") ~
+    get[String]("login") ~
+    get[String]("password") ~
+    get[DateTime]("creation") ~
+    get[Array[String]]("roles") ~
+    get[Option[String]]("home") map {
       case id ~ mail ~ login ~ password ~ creation ~ roles ~ home
-      => Account(id, mail, login, password, creation, roles, home)
+        => Account(id, mail, login, password, creation, roles, home)
     }
   }
 
@@ -100,6 +101,6 @@ object AccountRepository {
        ${account.creation},
        ${account.roles.toArray[String]}
      )
-  """
+    """
 
 }
