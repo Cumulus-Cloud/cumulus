@@ -76,13 +76,13 @@ object AccountRepository {
   private def selectAccountByLogin(login: String) = SQL"""
      SELECT *
      FROM #$table
-     WHERE LOWER(login) = LOWER($login)
+     WHERE LOWER(login) = LOWER($login);
   """
 
   private def selectAccountByMail(mail: String) = SQL"""
      SELECT *
      FROM #$table
-     WHERE mail = $mail
+     WHERE mail = $mail;
   """
 
   private def insertAccount(account: Account) = SQL"""
@@ -100,7 +100,7 @@ object AccountRepository {
        ${account.password},
        ${account.creation},
        ${account.roles.toArray[String]}
-     )
+     );
     """
 
 }

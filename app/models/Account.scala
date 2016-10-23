@@ -1,5 +1,7 @@
 package models
 
+import java.util.UUID
+
 import org.joda.time.DateTime
 import org.mindrot.jbcrypt.BCrypt
 
@@ -7,14 +9,25 @@ import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
 case class Account(
-  id: java.util.UUID,
+  id: UUID,
   mail: String,
   login: String,
   password: String,
   creation: DateTime,
   roles: Seq[String],
   home: Option[String]
-)
+) {
+
+  /**
+    * Check if the acount is an admin account
+ *
+    * @return True if the user is an admin, false otherwise
+    */
+  def isAdmin: Boolean = {
+    roles.contains("admin")
+  }
+
+}
 
 object Account {
 
@@ -27,7 +40,7 @@ object Account {
     roles: Seq[String],
     home: Option[String]
   ): Account = Account(
-    java.util.UUID.fromString(id),
+    UUID.fromString(id),
     mail,
     login,
     password,
@@ -37,7 +50,7 @@ object Account {
   )
 
   def initFrom(mail: String, login: String, password: String): Account = Account(
-    java.util.UUID.randomUUID(),
+    UUID.randomUUID(),
     mail,
     login,
     BCrypt.hashpw(password, BCrypt.gensalt()),

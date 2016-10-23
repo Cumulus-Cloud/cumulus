@@ -4,6 +4,10 @@
 
 GET     /                           controllers.HomeController.index
 
+# Test
+GET     /bootstrap                  controllers.HomeController.bootstrap
+GET     /dir*location               controllers.HomeController.getDirectory(location: String)
+
 GET     /accounts/:login            controllers.HomeController.getAccount(login: String)
 POST    /accounts                   controllers.HomeController.createAccount
 
