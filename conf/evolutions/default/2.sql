@@ -12,8 +12,8 @@ CREATE TABLE directory (
 );
 
 CREATE TABLE directory_permission (
-  account_id   UUID          REFERENCES account(id),
-  directory_id UUID          REFERENCES directory(id),
+  account_id   UUID          REFERENCES account(id)   ON DELETE CASCADE,
+  directory_id UUID          REFERENCES directory(id) ON DELETE CASCADE,
   permissions  VARCHAR(64)[] NOT NULL
 );
 

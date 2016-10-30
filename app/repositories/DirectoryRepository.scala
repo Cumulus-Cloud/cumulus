@@ -7,7 +7,7 @@ import javax.inject.Inject
 import anorm._
 import anorm.SqlParser._
 import anorm.JodaParameterMetaData._
-import models.{Account, DirectoryPermission, Directory}
+import models.{DirectoryPath, Account, DirectoryPermission, Directory}
 import models.DirectoryPath._
 import org.joda.time.DateTime
 import play.api.db.DBApi
@@ -34,8 +34,9 @@ class DirectoryRepository @Inject()(
     *  - The location doesn't already exists
     *  - The parent already exist
     *  - The user have write rights in the parent
+    *
     * @param directory The directory to insert. The UUID should already be generated and unique
-    * @return Either a validation error if the insertion could not be performed, or the inserted directory
+    * @return Either a validation error if the insertion could not be performed, either the inserted directory
     */
   def insert(directory: Directory)(implicit account: Account): Either[ValidationError, Directory] = {
     db.withTransaction { implicit c =>
@@ -81,13 +82,13 @@ class DirectoryRepository @Inject()(
     *  - The directory exist
     *  - The account has sufficient permission to read the directory
     * Contained directories will also be returned, but only readable directories will be present
+    *
     * @param path The path to return
     * @param account The account to use
-    * @return Either a validation error if the directory could not be retreive, or the directory
+    * @return Either a validation error if the directory could not be retrieve, either the directory
     */
   def getByPath(path: String)(implicit account: Account): Either[ValidationError, Option[Directory]] =
     db.withConnection { implicit c =>
-      println("path => " + path)
       for {
         // Check the the directory exist and can be read
         directory <- getByPathWithSession(path) match {
@@ -102,18 +103,97 @@ class DirectoryRepository @Inject()(
         directory.map { d =>
           d.copy(content = getContent(d).filter(_.havePermission(account, "read")))
         }
+        // TODO Add contained files
       }
     }
 
-  // TODO move/rename
+  /**
+    * Move a directory to a new location, along with all the contained directories and sub-directories. The directory
+    * will only be moved only if:
+    *  - The account has sufficient permission to write in the directory
+    *  - The account has sufficient permission to write in the target parent directory
+    *  - The moved account is not the root account
+    *  - The target destination does not already exist
+    *
+    * @param directory The directory to move
+    * @param destinationPath The destination to move to
+    * @param account The account to use
+    * @return Either a validation error if the directory could not be moved, either the moved directory
+    */
+  def move(directory: Directory, destinationPath: DirectoryPath)(implicit account: Account): Either[ValidationError, Directory] = {
+    db.withTransaction { implicit c =>
+      for {
+        // The root directory cannot be moved
+        _ <- directory match {
+          case _ if directory.isRoot
+          => Left(ValidationError("location", "The root directory cannot be moved"))
+          case _ => Right(directory)
+        }
+        // Check if the user have sufficient rights
+        _ <- directory match {
+          case _ if !directory.havePermission(account, "write")
+          => Left(ValidationError("location", "The account does not have sufficient permissions to move the directory"))
+          case _ => Right(directory)
+        }
+        // Check if target directory doesn't exist
+        target <- getByPathWithSession(destinationPath) match {
+          case Some(_) => Left(ValidationError("location", "The destination directory already exist"))
+          case None => Right(directory)
+        }
+        // Check if the parent destination exist and if the account have sufficient rights
+        parent <- getByPathWithSession(destinationPath.parent) match {
+          case Some(dir) if dir.havePermission(account, "write") => dir
+          case Some(_) => Left(ValidationError("location", "The account does not have sufficient permissions to edit the parent of the destination directory"))
+        }
+      } yield {
+        // Move the directory and all of its contained directories
+        moveDirectory(directory, destinationPath).executeUpdate()
+        // TODO Move files
 
-  // TODO delete
+        // Update and return
+        directory.copy(location = destinationPath)
+      }
+    }
+  }
+
+  /**
+    * Delete the provided directory and all the contained directories. The directory will only be deleted if:
+    *  - The account has sufficient permission to write in the directory
+    *  - The deleted account is not the root account
+    *
+    * @param directory The directory to delete
+    * @param account The account to use
+    * @return Either a validation error if the directory could not be deleted, either nothing
+    */
+  def delete(directory: Directory)(implicit account: Account): Either[ValidationError, Unit] = {
+    db.withConnection { implicit c =>
+      for {
+        // The root directory cannot be deleted
+        _ <- directory match {
+          case _ if directory.isRoot
+            => Left(ValidationError("location", "The root directory cannot be deleted"))
+          case _ => Right(directory)
+        }
+        // Check if the user have sufficient rights
+        _ <- directory match {
+          case _ if !directory.havePermission(account, "write")
+            => Left(ValidationError("location", "The account does not have sufficient permissions"))
+          case _ => Right(directory)
+        }
+      } yield {
+        // Delete the directory
+        deleteDirectory(directory).execute()
+        // TODO Delete contained files
+      }
+    }
+  }
 
   // TODO Search directory by name/path
 
   /**
     * Return the content of a directory. This is an internal method that should be used carefully,
     * because there is no permission verification
+    *
     * @param directory The directory to use
     * @return All the contained directories
     */
@@ -173,6 +253,7 @@ object DirectoryRepository {
     """
 
   private def selectDirectoryContent(directory: Directory) = {
+    // Match directory starting by the location, but only on the direct level
     val regex = if (directory.isRoot) "^/[^/]+$" else s"^${directory.location.toString}/[^/]+$$"
 
     SQL"""
@@ -210,6 +291,30 @@ object DirectoryRepository {
        ${directoryPermission.permissions.toArray[String]}
      );
     """
+
+  private def moveDirectory(directory: Directory, destinationPath: DirectoryPath) = {
+    // Match any directory contained (directly or indirectly) and the directory itself
+    val regex = s"^${directory.location.toString}"
+
+    // Note : directory permissions related to the dropped directories will be automatically dropped
+    SQL"""
+      UPDATE #$table
+      SET #$table.location = regexp_replace(#$table.location, $regex, ${destinationPath.toString});
+    """
+  }
+
+  private def deleteDirectory(directory: Directory) = {
+    // Match any directory contained (directly or indirectly) and the directory itself
+    val regex = s"^${directory.location.toString}"
+
+    // Note : directory permissions related to the dropped directories will be automatically dropped
+    SQL"""
+      DELETE FROM #$table
+      WHERE #$table.location ~ $regex;
+    """
+  }
+
+
 
   // TODO Delete directory
   // TODO Move/Rename directory
