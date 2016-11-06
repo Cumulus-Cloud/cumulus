@@ -20,33 +20,27 @@ CREATE TABLE directory_permission (
 -- Insert the root and the admin
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-DO $$
-DECLARE adminId UUID;
-BEGIN
-  adminId := uuid_generate_v4();
+-- Create the admin
+INSERT INTO account (id, mail, login, password, creation, roles)
+VALUES (
+  uuid_generate_v4(),
+  'admin@admin.tld',
+  'admin',
+  'unusable', -- Since password are bcrypted, nobody will be able to use this account
+  NOW(),
+  '{"admin", "user"}'
+);
 
-  -- Create the admin
-  INSERT INTO account (id, mail, login, password, creation, roles)
-  VALUES (
-    adminId,
-    'admin@admin.tld',
-    'admin',
-    'unusable', -- Since password are bcrypted, nobody will be able to use this account
-    NOW(),
-    '{"admin", "user"}'
-  );
-
-  -- Create the root directory
-  INSERT INTO directory (id, location, name, creation, modification, account_id)
-  VALUES (
-    uuid_generate_v4(),
-    '/',
-    '',
-    NOW(),
-    NOW(),
-    adminId
-  );
-END $$;
+-- Create the root directory
+INSERT INTO directory (id, location, name, creation, modification, account_id)
+VALUES (
+  uuid_generate_v4(),
+  '/',
+  '',
+  NOW(),
+  NOW(),
+  (SELECT id FROM account WHERE login = 'admin')
+);
 
 # --- !Downs
 

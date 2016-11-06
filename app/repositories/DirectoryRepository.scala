@@ -126,15 +126,16 @@ class DirectoryRepository @Inject()(
         // The root directory cannot be moved
         _ <- directory match {
           case _ if directory.isRoot
-          => Left(ValidationError("location", "The root directory cannot be moved"))
+            => Left(ValidationError("location", "The root directory cannot be moved"))
           case _ => Right(directory)
         }
         // Check if the user have sufficient rights
         _ <- directory match {
           case _ if !directory.havePermission(account, "write")
-          => Left(ValidationError("location", "The account does not have sufficient permissions to move the directory"))
+            => Left(ValidationError("location", "The account does not have sufficient permissions to move the directory"))
           case _ => Right(directory)
         }
+        // TODO check contained directory permissions
         // Check if target directory doesn't exist
         target <- getByPathWithSession(destinationPath) match {
           case Some(_) => Left(ValidationError("location", "The destination directory already exist"))
@@ -142,12 +143,12 @@ class DirectoryRepository @Inject()(
         }
         // Check if the parent destination exist and if the account have sufficient rights
         parent <- getByPathWithSession(destinationPath.parent) match {
-          case Some(dir) if dir.havePermission(account, "write") => dir
+          case Some(dir) if dir.havePermission(account, "write") => Right(dir)
           case Some(_) => Left(ValidationError("location", "The account does not have sufficient permissions to edit the parent of the destination directory"))
         }
       } yield {
         // Move the directory and all of its contained directories
-        moveDirectory(directory, destinationPath).executeUpdate()
+        moveDirectory(directory, destinationPath).execute
         // TODO Move files
 
         // Update and return
@@ -296,10 +297,9 @@ object DirectoryRepository {
     // Match any directory contained (directly or indirectly) and the directory itself
     val regex = s"^${directory.location.toString}"
 
-    // Note : directory permissions related to the dropped directories will be automatically dropped
     SQL"""
       UPDATE #$table
-      SET #$table.location = regexp_replace(#$table.location, $regex, ${destinationPath.toString});
+      SET location = regexp_replace(#$table.location, $regex, ${destinationPath.toString});
     """
   }
 
