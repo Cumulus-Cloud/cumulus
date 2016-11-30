@@ -3,20 +3,20 @@ package controllers
 import javax.inject._
 
 import play.api.i18n.MessagesApi
-import repositories.{DirectoryRepository, AccountRepository}
+import repositories.AccountRepository
 import models.{Account, Directory}
 import play.api.mvc._
 import play.api.libs.json._
 import play.api.data._
 import play.api.data.Forms._
-
+import repositories.filesystem.DirectoryRepository
 import utils.EitherUtils._
 
 @Singleton
 class HomeController @Inject() (
-                                 val accountRepo: AccountRepository,
-                                 val directoryRepo: DirectoryRepository,
-                                 val messagesApi: MessagesApi
+ val accountRepo: AccountRepository,
+ val directoryRepo: DirectoryRepository,
+ val messagesApi: MessagesApi
 ) extends BaseController {
 
   def testDelete = Action {

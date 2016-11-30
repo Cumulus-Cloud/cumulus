@@ -1,30 +1,30 @@
-package repositories
+package repositories.filesystem
 
 import java.sql.Connection
 import java.util.UUID
 import javax.inject.Inject
 
-import anorm._
 import anorm.SqlParser._
-import anorm.JodaParameterMetaData._
-import models.{DirectoryPath, Account, DirectoryPermission, Directory}
-import models.DirectoryPath._
+import anorm._
+import models.Path._
+import models.{Account, Directory, Path}
 import org.joda.time.DateTime
 import play.api.db.DBApi
-
+import repositories.{BaseRepository, ValidationError}
 import utils.EitherUtils._
 
 import scala.concurrent.ExecutionContext
 
 class DirectoryRepository @Inject()(
-  dbApi: DBApi
+  dbApi: DBApi,
+  permissionRepository: PermissionRepository
 )(
   implicit ec: ExecutionContext
 ) extends BaseRepository[Directory](
   dbApi.database("default"),
   DirectoryRepository.table,
-  DirectoryRepository.parser)
-{
+  DirectoryRepository.parser
+) {
 
   import DirectoryRepository._
 
@@ -48,12 +48,12 @@ class DirectoryRepository @Inject()(
           case _ => Right(directory)
         }
         // The location should be unique
-        sameDir <- getByPathWithSession(directory.location) match {
+        sameDir <- selectByPath(directory.location) match {
           case Some(_) => Left(ValidationError("location", s"The location '${directory.location}' is already used"))
           case None => Right(directory)
         }
         // The parent should exist and the account have sufficient credentials
-        parentDir <- getByPathWithSession(directory.location.parent) match {
+        parentDir <- selectByPath(directory.location.parent) match {
           case None => Left(ValidationError("location", s"The parent location '${directory.location.parent}' does not exist"))
           case Some(parent)
             if !parent.havePermission(account, "write")
@@ -66,11 +66,11 @@ class DirectoryRepository @Inject()(
 
         // Then, insert all the permissions related to the directory
         directory.permissions.foreach({ permission =>
-          insertDirectoryPermission(directory, permission).execute()
+          permissionRepository.insert(directory, permission)
         })
 
         // Update the parent directory
-        updateDirectoryModification(parentDir.location).execute()
+        updateModificationDate(parentDir)
 
         directory
       }
@@ -79,7 +79,7 @@ class DirectoryRepository @Inject()(
 
   /**
     * Return a directory by its path, using the provided account. The directory will be return only if:
-    *  - The directory exist
+    *  - The directory exists
     *  - The account has sufficient permission to read the directory
     * Contained directories will also be returned, but only readable directories will be present
     *
@@ -87,25 +87,26 @@ class DirectoryRepository @Inject()(
     * @param account The account to use
     * @return Either a validation error if the directory could not be retrieve, either the directory
     */
-  def getByPath(path: String)(implicit account: Account): Either[ValidationError, Option[Directory]] =
+  def getByPath(path: String)(implicit account: Account): Either[ValidationError, Option[Directory]] = {
     db.withConnection { implicit c =>
       for {
-        // Check the the directory exist and can be read
-        directory <- getByPathWithSession(path) match {
+      // Check the the directory exist and can be read
+        directory <- selectByPath(path) match {
           case Some(directory)
             if !directory.havePermission(account, "read")
-              => Left(ValidationError("location", "The account does not have sufficient permissions"))
+          => Left(ValidationError("location", "The account does not have sufficient permissions"))
           case None => Right(None)
           case Some(directory) => Right(Some(directory))
         }
       } yield {
         // Add the contained directories, but filtered with the read right
         directory.map { d =>
-          d.copy(content = getContent(d).filter(_.havePermission(account, "read")))
+          d.copy(content = selectContent(d).filter(_.havePermission(account, "read")))
         }
         // TODO Add contained files
       }
     }
+  }
 
   /**
     * Move a directory to a new location, along with all the contained directories and sub-directories. The directory
@@ -120,7 +121,7 @@ class DirectoryRepository @Inject()(
     * @param account The account to use
     * @return Either a validation error if the directory could not be moved, either the moved directory
     */
-  def move(directory: Directory, destinationPath: DirectoryPath)(implicit account: Account): Either[ValidationError, Directory] = {
+  def move(directory: Directory, destinationPath: Path)(implicit account: Account): Either[ValidationError, Directory] = {
     db.withTransaction { implicit c =>
       for {
         // The root directory cannot be moved
@@ -137,12 +138,12 @@ class DirectoryRepository @Inject()(
         }
         // TODO check contained directory permissions
         // Check if target directory doesn't exist
-        target <- getByPathWithSession(destinationPath) match {
+        target <- selectByPath(destinationPath) match {
           case Some(_) => Left(ValidationError("location", "The destination directory already exist"))
           case None => Right(directory)
         }
         // Check if the parent destination exist and if the account have sufficient rights
-        parent <- getByPathWithSession(destinationPath.parent) match {
+        parent <- selectByPath(destinationPath.parent) match {
           case Some(dir) if dir.havePermission(account, "write") => Right(dir)
           case Some(_) => Left(ValidationError("location", "The account does not have sufficient permissions to edit the parent of the destination directory"))
         }
@@ -175,6 +176,7 @@ class DirectoryRepository @Inject()(
             => Left(ValidationError("location", "The root directory cannot be deleted"))
           case _ => Right(directory)
         }
+        // TODO check contained directory permissions
         // Check if the user have sufficient rights
         _ <- directory match {
           case _ if !directory.havePermission(account, "write")
@@ -196,22 +198,34 @@ class DirectoryRepository @Inject()(
     * because there is no permission verification
     *
     * @param directory The directory to use
+    * @param c The connection to use
     * @return All the contained directories
     */
-  private def getContent(directory: Directory): Seq[Directory] = {
-    db.withTransaction { implicit c =>
-      // TODO also get permissions
-      selectDirectoryContent(directory).as(parser *)
-    }
+  private[filesystem] def selectContent(directory: Directory)(implicit c: Connection): Seq[Directory] = {
+    // TODO also get permissions ?
+    selectDirectoryContent(directory).as(parser *)
+    // TODO also get files ??
   }
 
-  private def getByPathWithSession(path: String)(implicit c: Connection): Option[Directory] = {
-    selectDirectoryByPath(path).as((parser ~ (parserPermission ?)) *).groupBy(_._1).headOption.map {
+  /**
+    * Return a directory by its path. This is an internal method that should be used carefully,
+    * because there is no permission verification
+    *
+    * @param path The path to use
+    * @param c The connection to use
+    * @return The directory, if found
+    */
+  private[filesystem] def selectByPath(path: String)(implicit c: Connection): Option[Directory] = {
+    selectDirectoryByPath(path).as((parser ~ (PermissionRepository.parser ?)) *).groupBy(_._1).headOption.map {
       case (directory, permissions) =>
         directory.copy(
           permissions = permissions.flatMap(_._2)
         )
     }
+  }
+
+  private[filesystem] def updateModificationDate(directory: Directory)(implicit c: Connection) = {
+    updateDirectoryModification(directory.location).execute()
   }
 }
 
@@ -232,14 +246,6 @@ object DirectoryRepository {
     }
   }
 
-  val parserPermission = {
-    get[UUID]("account_id") ~
-    get[Array[String]]("permissions")  map {
-      case account_id ~ permissions
-      => DirectoryPermission(account_id, permissions)
-    }
-  }
-
   private def updateDirectoryModification(path: String) = SQL"""
        UPDATE #$table
        SET modification = NOW()
@@ -248,8 +254,8 @@ object DirectoryRepository {
 
   private def selectDirectoryByPath(path: String) = SQL"""
        SELECT * FROM #$table
-       LEFT JOIN #$tablePermissions
-         ON #$table.id = #$tablePermissions.directory_id
+       LEFT JOIN #${PermissionRepository.table}
+         ON #$table.id = #${PermissionRepository.table}.directory_id
        WHERE #$table.location = $path;
     """
 
@@ -275,25 +281,13 @@ object DirectoryRepository {
        ${directory.id}::uuid,
        ${directory.location.toString},
        ${directory.name},
-       ${directory.creation},
-       ${directory.modification},
+       NOW(),
+       NOW(),
        ${directory.creator.id}::uuid
      );
     """
 
-  private def insertDirectoryPermission(directory: Directory, directoryPermission: DirectoryPermission) = SQL"""
-     INSERT INTO #$tablePermissions (
-       account_id,
-       directory_id,
-       permissions)
-     VALUES (
-       ${directoryPermission.accountId}::uuid,
-       ${directory.id}::uuid,
-       ${directoryPermission.permissions.toArray[String]}
-     );
-    """
-
-  private def moveDirectory(directory: Directory, destinationPath: DirectoryPath) = {
+  private def moveDirectory(directory: Directory, destinationPath: Path) = {
     // Match any directory contained (directly or indirectly) and the directory itself
     val regex = s"^${directory.location.toString}"
 
@@ -314,9 +308,6 @@ object DirectoryRepository {
     """
   }
 
-
-
-  // TODO Delete directory
-  // TODO Move/Rename directory
   // TODO Search directory by name/path
+
 }

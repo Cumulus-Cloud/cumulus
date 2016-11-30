@@ -7,35 +7,6 @@ import play.api.libs.json.{JsPath, Writes}
 
 import play.api.libs.functional.syntax._
 
-case class DirectoryPath(value: Seq[String]) {
-
-  import DirectoryPath._
-
-  def parent: DirectoryPath =
-    DirectoryPath(value.dropRight(1))
-
-  override def toString =
-    convertPathToStr(this)
-}
-
-object DirectoryPath {
-  implicit def convertPathToStr(directoryPath: DirectoryPath): String =
-    "/" + directoryPath.value.mkString("/")
-
-  implicit def convertPathToSeq(directoryPath: DirectoryPath): Seq[String] =
-    directoryPath.value
-
-  implicit def convertStringToPath(path: String): DirectoryPath =
-    DirectoryPath(path.split("/").filterNot(_.isEmpty))
-
-  implicit def convertSeqToPath(path: Seq[String]): DirectoryPath =
-    DirectoryPath(path.filterNot(_.isEmpty))
-}
-
-case class DirectoryPermission(
-  accountId: java.util.UUID,
-  permissions: Seq[String]
-)
 
 /**
   * A directory.
@@ -50,14 +21,14 @@ case class DirectoryPermission(
   */
 case class Directory(
   id: UUID,
-  location: DirectoryPath,
+  location: Path,
   name: String,
   creation: DateTime,
   modification: DateTime,
-  creator: Account, // TODO do not use options
-  permissions: Seq[DirectoryPermission],
+  creator: Account,
+  permissions: Seq[Permission],
   content: Seq[Directory] // TODO for now only other directories, but will contain files in the future
-) {
+) extends FileSystemElement {
 
   /**
     * Check if the directory is the root directory, base on the location being an empty sequence
@@ -65,17 +36,6 @@ case class Directory(
     */
   def isRoot: Boolean = {
     location.value.isEmpty
-  }
-
-
-  /**
-    * Check if the account have sufficient rights, i.e. is admin or have read permission
-    * @param account The account to test
-    * @param permission The permission to test
-    * @return True if the account have the permission, false otherwise
-    */
-  def havePermission(account: Account, permission: String): Boolean = {
-    account.isAdmin || permissions.count(p => p.accountId == account.id && p.permissions.contains(permission)) > 0
   }
 
 }
@@ -89,7 +49,7 @@ object Directory {
     DateTime.now(),
     DateTime.now(),
     creator,
-    permissions = Seq(DirectoryPermission(creator.id, Seq("read", "write"))),
+    permissions = Seq(Permission(creator.id, Seq("read", "write"))),
     content = Seq()
   )
 
