@@ -9,19 +9,19 @@ import anorm.SqlParser._
 import anorm.JodaParameterMetaData._
 import org.joda.time.DateTime
 import play.api.db.DBApi
-import models.{Account, Directory, FsNode, Path}
+import models.{Account, FsNode, Path}
 import repositories.ValidationError
 
 import scala.concurrent.ExecutionContext
 
-class FsNodeRespository @Inject()(
+class FsNodeRepository @Inject()(
   dbApi: DBApi,
   permissionRepository: PermissionRepository
 )(
   implicit ec: ExecutionContext
 ){
 
-  import FsNodeRespository._
+  import FsNodeRepository._
 
   /**
     * Default database
@@ -29,7 +29,6 @@ class FsNodeRespository @Inject()(
     */
   private def db = dbApi.database("default") // TODO get from conf
 
-  // TODO Delete
   // TODO Search node by name/path ?
 
   /**
@@ -43,19 +42,19 @@ class FsNodeRespository @Inject()(
     * @return Either a validation error if the insertion could not be performed, either the inserted node
     */
   def insert(node: FsNode)(implicit account: Account): Either[ValidationError, FsNode] =
-    db.withConnection { implicit c =>
-      insertNonAtomic(node)(account, c)
-    }
+  db.withTransaction { implicit c =>
+    insertNonAtomic(node)(account, c)
+  }
 
   /**
-    * @see [[FsNodeRespository.insert()]]
+    * @see [[FsNodeRepository.insert()]]
     */
   def insertNonAtomic(node: FsNode)(implicit account: Account, connection: Connection): Either[ValidationError, FsNode] = {
     for {
-      // The directory creator should be the same performing the operation
+    // The directory creator should be the same performing the operation
       _ <- account match {
         case _ if node.creator != account && !account.isAdmin
-          => Left(ValidationError("location", "The node creator should be the same performing the insert (or be an administrator)"))
+        => Left(ValidationError("location", "The node creator should be the same performing the insert (or be an administrator)"))
         case _ => Right(node)
       }
       // The location should be unique
@@ -68,10 +67,10 @@ class FsNodeRespository @Inject()(
         case None => Left(ValidationError("location", s"The parent '${node.location.parent}' of the destination does not exist"))
         case Some(parent)
           if !parent.isDirectory
-            => Left(ValidationError("location", "The destination parent should be a directory"))
+        => Left(ValidationError("location", "The destination parent should be a directory"))
         case Some(parent)
           if !parent.havePermission(account, "write")
-            => Left(ValidationError("location", s"The account does not have sufficient permissions in the parent location '${node.location.parent}'"))
+        => Left(ValidationError("location", s"The account does not have sufficient permissions in the parent location '${node.location.parent}'"))
         case Some(parent) => Right(parent)
       }
     } yield {
@@ -92,6 +91,33 @@ class FsNodeRespository @Inject()(
     }
   }
 
+  /**
+    * Return a node by its path, using the provided account. The node will be return only if:
+    *  - The node exists
+    *  - The account has sufficient permission to read the node
+    *
+    * @param path The path to return
+    * @param account The account to use
+    * @return Either a validation error if the directory could not be retrieve, either the node
+    */
+  def getByPath(path: String)(implicit account: Account): Either[ValidationError, Option[FsNode]] =
+  db.withConnection { implicit c =>
+    getByPathNonAtomic(path)(account, c)
+  }
+
+  /**
+    * @see [[FsNodeRepository.getByPath()]]
+    */
+  def getByPathNonAtomic(path: String)(implicit account: Account, connection: Connection): Either[ValidationError, Option[FsNode]] = {
+    // Check the the directory exist and can be read
+    selectByPath(path) match {
+      case Some(node)
+        if !node.havePermission(account, "read")
+      => Left(ValidationError("location", "The account does not have sufficient permissions"))
+      case None => Right(None)
+      case Some(node) => Right(Some(node))
+    }
+  }
 
   /**
     * Move a node to a new location, along with all the contained nodes and sub-nodes. The directory
@@ -109,25 +135,25 @@ class FsNodeRespository @Inject()(
     * @return Either a validation error if the node could not be moved, either the moved node
     */
   def move(node: FsNode, destinationPath: Path)(implicit account: Account): Either[ValidationError, FsNode] =
-    db.withConnection { implicit c =>
-      moveNonAtomic(node, destinationPath)(account, c)
-    }
+  db.withTransaction { implicit c =>
+    moveNonAtomic(node, destinationPath)(account, c)
+  }
 
   /**
-    * @see [[FsNodeRespository.move()]]
+    * @see [[FsNodeRepository.move()]]
     */
   def moveNonAtomic(node: FsNode, destinationPath: Path)(implicit account: Account, connection: Connection): Either[ValidationError, FsNode] = {
     for {
-      // The root directory cannot be moved
+    // The root directory cannot be moved
       _ <- node match {
         case _ if node.isRoot
-          => Left(ValidationError("location", "The root directory cannot be moved"))
+        => Left(ValidationError("location", "The root node cannot be moved"))
         case _ => Right(node)
       }
       // Check if the user have sufficient rights
       _ <- node match {
         case _ if !node.havePermission(account, "write")
-          => Left(ValidationError("location", "The account does not have sufficient permissions to move the element"))
+        => Left(ValidationError("location", "The account does not have sufficient permissions to move the element"))
         case _ => Right(node)
       }
       // TODO check contained directory permissions if directory ?
@@ -141,10 +167,10 @@ class FsNodeRespository @Inject()(
         case None => Left(ValidationError("location", s"The parent '${node.location.parent}' of the destination does not exist"))
         case Some(parent)
           if !parent.isDirectory
-            => Left(ValidationError("location", "The destination parent should be a directory"))
+        => Left(ValidationError("location", "The destination parent should be a directory"))
         case Some(parent)
           if !parent.havePermission(account, "write")
-            => Left(ValidationError("location", s"The account does not have sufficient permissions in the parent location '${node.location.parent}'"))
+        => Left(ValidationError("location", s"The account does not have sufficient permissions in the parent location '${node.location.parent}'"))
         case Some(parent) => Right(parent)
       }
     } yield {
@@ -161,30 +187,40 @@ class FsNodeRespository @Inject()(
   }
 
   /**
-    * Return a node by its path, using the provided account. The node will be return only if:
-    *  - The node exists
-    *  - The account has sufficient permission to read the node
+    * Delete the provided node and all the contained nodes. The node will only be deleted if:
+    *  - The account has sufficient permission to write in the directory
+    *  - The deleted node is not the root node
     *
-    * @param path The path to return
+    * @param node The node to delete
     * @param account The account to use
-    * @return Either a validation error if the directory could not be retrieve, either the node
+    * @return Either a validation error if the node could not be deleted, either nothing
     */
-  def getByPath(path: String)(implicit account: Account): Either[ValidationError, Option[FsNode]] =
-    db.withConnection { implicit c =>
-      getByPathNonAtomic(path)(account, c)
+  def delete(node: FsNode)(implicit account: Account): Either[ValidationError, Unit] =
+    db.withTransaction { implicit c =>
+      deleteNonAtomic(node)(account, c)
     }
 
-  /**
-    * @see [[FsNodeRespository.getByPath()]]
-    */
-  def getByPathNonAtomic(path: String)(implicit account: Account, connection: Connection): Either[ValidationError, Option[FsNode]] = {
-    // Check the the directory exist and can be read
-    selectByPath(path) match {
-      case Some(node)
-        if !node.havePermission(account, "read")
+
+  def deleteNonAtomic(node: FsNode)(implicit account: Account, connection: Connection): Either[ValidationError, Unit] = {
+    for {
+      // The root directory cannot be deleted
+      _ <- node match {
+        case _ if node.isRoot => Left(ValidationError("location", "The root node cannot be deleted"))
+        case _ => Right(node)
+      }
+      // TODO check contained nodes permissions
+      // Check if the user have sufficient rights
+      _ <- node match {
+        case _ if !node.havePermission(account, "write")
           => Left(ValidationError("location", "The account does not have sufficient permissions"))
-      case None => Right(None)
-      case Some(node) => Right(Some(node))
+        case _ => Right(node)
+      }
+    } yield {
+      // Delete the directory
+      deleteNode(node).execute()
+
+      // Update the parent directory
+      updateNodeModification(node.location).execute()
     }
   }
 
@@ -207,7 +243,7 @@ class FsNodeRespository @Inject()(
 
 }
 
-object FsNodeRespository {
+object FsNodeRepository {
 
   val table = "fsnode"
 
