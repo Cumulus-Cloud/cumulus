@@ -6,7 +6,7 @@ import javax.inject.Inject
 
 import anorm.SqlParser._
 import anorm._
-import models.{FileSystemElement, Permission}
+import models.{FsNode, Permission}
 import play.api.db.DBApi
 import repositories.BaseRepository
 
@@ -27,7 +27,7 @@ class PermissionRepository@Inject()(
 
   import PermissionRepository._
 
-  private[filesystem] def insert(fileSystemElement: FileSystemElement, permission: Permission)(implicit c: Connection) = {
+  private[filesystem] def insert(fileSystemElement: FsNode, permission: Permission)(implicit c: Connection) = {
     insertPermission(fileSystemElement, permission).execute()
   }
 
@@ -45,7 +45,7 @@ object PermissionRepository {
     }
   }
 
-  private def insertPermission(fileSystemElement: FileSystemElement, permission: Permission) = SQL"""
+  private def insertPermission(fileSystemElement: FsNode, permission: Permission) = SQL"""
      INSERT INTO #$table (
        account_id,
        directory_id,

@@ -2,18 +2,19 @@
 
 # --- !Ups
 
-CREATE TABLE directory (
+CREATE TABLE fsnode (
   id           UUID      PRIMARY KEY,
   location     TEXT      NOT NULL,
   name         TEXT      NOT NULL,
+  node_type    TEXT      NOT NULL,
   creation     TIMESTAMP NOT NULL,
   modification TIMESTAMP NOT NULL,
   account_id   UUID      REFERENCES account(id)
 );
 
-CREATE TABLE directory_permission (
+CREATE TABLE permission (
   account_id   UUID          REFERENCES account(id)   ON DELETE CASCADE,
-  directory_id UUID          REFERENCES directory(id) ON DELETE CASCADE,
+  directory_id UUID          REFERENCES fsnode(id) ON DELETE CASCADE,
   permissions  VARCHAR(64)[] NOT NULL
 );
 
@@ -32,7 +33,7 @@ VALUES (
 );
 
 -- Create the root directory
-INSERT INTO directory (id, location, name, creation, modification, account_id)
+INSERT INTO fsnode (id, location, name, creation, modification, account_id)
 VALUES (
   uuid_generate_v4(),
   '/',
@@ -44,5 +45,5 @@ VALUES (
 
 # --- !Downs
 
-DROP TABLE IF EXISTS directory_permission;
-DROP TABLE IF EXISTS directory;
+DROP TABLE IF EXISTS permission;
+DROP TABLE IF EXISTS fsnode;
