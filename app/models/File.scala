@@ -13,7 +13,7 @@ import play.api.libs.functional.syntax._
 case class File(
   node: FsNode,
   chunks: Seq[String] // TODO chunk object
-)
+) extends FsElement
 
 object File {
 

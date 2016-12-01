@@ -13,7 +13,7 @@ import play.api.libs.functional.syntax._
 case class Directory(
   node: FsNode,
   content: Seq[Directory] // TODO for now only other directories, but will contain files in the future
-)
+) extends FsElement
 
 object Directory {
 
@@ -21,6 +21,8 @@ object Directory {
     FsNode.initFrom(location, "directory", creator),
     Seq.empty
   )
+
+  def apply(node: FsNode): Directory = new Directory(node, Seq.empty)
 
   // TODO add permissions ?
   // TODO serialize directly fsNode ?

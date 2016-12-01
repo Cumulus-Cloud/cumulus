@@ -42,9 +42,9 @@ class FsNodeRepository @Inject()(
     * @return Either a validation error if the insertion could not be performed, either the inserted node
     */
   def insert(node: FsNode)(implicit account: Account): Either[ValidationError, FsNode] =
-  db.withTransaction { implicit c =>
-    insertNonAtomic(node)(account, c)
-  }
+    db.withTransaction { implicit c =>
+      insertNonAtomic(node)(account, c)
+    }
 
   /**
     * @see [[FsNodeRepository.insert()]]
@@ -241,6 +241,19 @@ class FsNodeRepository @Inject()(
     }
   }
 
+  /**
+    * Return the content of a node. This is an internal method that should be used carefully,
+    * because there is no permission verification
+    *
+    * @param node The node to use
+    * @param c The connection to use
+    * @return All the contained directories
+    */
+  private[filesystem] def selectContent(node: FsNode)(implicit c: Connection): Seq[FsNode] = {
+    // TODO also get permissions ?
+    selectNodeContent(node).as(parser *)
+    // TODO also get files ??
+  }
 }
 
 object FsNodeRepository {
@@ -284,6 +297,16 @@ object FsNodeRepository {
          ON #$table.id = #${PermissionRepository.table}.directory_id
        WHERE #$table.location = $path;
     """
+
+  private def selectNodeContent(node: FsNode) = {
+    // Match directory starting by the location, but only on the direct level
+    val regex = if (node.isRoot) "^/[^/]+$" else s"^${node.location.toString}/[^/]+$$"
+
+    SQL"""
+       SELECT * FROM #$table
+       WHERE #$table.location ~ $regex;
+    """
+  }
 
   private def updateNodeLocation(node: FsNode, destinationPath: Path) = {
     // Match any directory contained (directly or indirectly) and the directory itself

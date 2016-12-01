@@ -38,6 +38,7 @@ VALUES (
   uuid_generate_v4(),
   '/',
   '',
+  'folder',
   NOW(),
   NOW(),
   (SELECT id FROM account WHERE login = 'admin')
