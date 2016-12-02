@@ -30,17 +30,17 @@ object Directory {
     (JsPath \ "id").write[String] and
     (JsPath \ "location").write[String] and
     (JsPath \ "name").write[String] and
-    (JsPath \ "creation").write[DateTime] and
-    (JsPath \ "modification").write[DateTime] and
-    (JsPath \ "creator").write[Account] and
+    (JsPath \ "creation").write[String] and
+    (JsPath \ "modification").write[String] and
+    //(JsPath \ "creator").write[Account] and
     (JsPath \ "content").lazyWriteNullable(Writes.seq[Directory](directoryWrites))
   )(directory => (
     directory.node.id.toString,
     directory.node.location.toString,
     directory.node.name,
-    directory.node.creation,
-    directory.node.modification,
-    directory.node.creator,
+    directory.node.creation.toString,
+    directory.node.modification.toString,
+    //directory.node.creator,
     if (directory.content.isEmpty) None else Some(directory.content))
   )
 

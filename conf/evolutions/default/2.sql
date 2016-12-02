@@ -33,12 +33,12 @@ VALUES (
 );
 
 -- Create the root directory
-INSERT INTO fsnode (id, location, name, creation, modification, account_id)
+INSERT INTO fsnode (id, location, name, node_type, creation, modification, account_id)
 VALUES (
   uuid_generate_v4(),
   '/',
   '',
-  'folder',
+  'directory',
   NOW(),
   NOW(),
   (SELECT id FROM account WHERE login = 'admin')

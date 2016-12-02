@@ -9,6 +9,8 @@ import anorm.SqlParser._
 import anorm.JodaParameterMetaData._
 import org.joda.time.DateTime
 import play.api.db.DBApi
+
+import utils.EitherUtils._
 import models.{Account, FsNode, Path}
 import repositories.ValidationError
 
@@ -25,6 +27,7 @@ class FsNodeRepository @Inject()(
 
   /**
     * Default database
+    *
     * @return The default database
     */
   private def db = dbApi.database("default") // TODO get from conf
@@ -278,6 +281,7 @@ object FsNodeRepository {
        id,
        location,
        name,
+       node_type,
        creation,
        modification,
        account_id)
@@ -285,6 +289,7 @@ object FsNodeRepository {
        ${node.id}::uuid,
        ${node.location.toString},
        ${node.name},
+       ${node.nodeType},
        ${node.creation},
        ${node.modification},
        ${node.creator.id}::uuid

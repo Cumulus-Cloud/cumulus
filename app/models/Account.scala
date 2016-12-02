@@ -63,9 +63,16 @@ object Account {
     (JsPath \ "id").write[String] and
     (JsPath \ "mail").write[String] and
     (JsPath \ "login").write[String] and
-    (JsPath \ "creation").write[DateTime] and
+    (JsPath \ "creation").write[String] and
     (JsPath \ "roles").write[Seq[String]] and
     (JsPath \ "home").writeNullable[String]
-  )(account => (account.id.toString, account.mail, account.login, account.creation, account.roles, account.home))
+  )(account => (
+    account.id.toString,
+    account.mail,
+    account.login,
+    account.creation.toString,
+    account.roles,
+    account.home)
+  )
 
 }
