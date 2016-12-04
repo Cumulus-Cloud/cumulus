@@ -12,11 +12,8 @@ cache:
     - $HOME/.sbt
     - $HOME/.npm
 
-before_install:
-  - ./docker-build.sh
-
 script:
-  - docker build -t wadjetz/cumulus .
+  - ./docker-build.sh
 
 after_success:
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
