@@ -9,8 +9,8 @@ import repositories.ValidationError
 import scala.concurrent.ExecutionContext
 
 class FileRepository @Inject()(
- dbApi: DBApi,
- nodeRepository: FsNodeRepository
+  dbApi: DBApi,
+  nodeRepository: FsNodeRepository
 )(
  implicit ec: ExecutionContext
 ){

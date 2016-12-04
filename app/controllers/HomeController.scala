@@ -15,9 +15,9 @@ import utils.EitherUtils._
 
 @Singleton
 class HomeController @Inject() (
- val accountRepo: AccountRepository,
- val directoryRepo: DirectoryRepository,
- val messagesApi: MessagesApi
+  val accountRepo: AccountRepository,
+  val directoryRepo: DirectoryRepository,
+  val messagesApi: MessagesApi
 ) extends BaseController {
 
   // Test :)

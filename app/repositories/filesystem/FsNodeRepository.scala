@@ -57,7 +57,7 @@ class FsNodeRepository @Inject()(
     // The directory creator should be the same performing the operation
       _ <- account match {
         case _ if node.creator != account && !account.isAdmin
-        => Left(ValidationError("location", "The node creator should be the same performing the insert (or be an administrator)"))
+          => Left(ValidationError("location", "The node creator should be the same performing the insert (or be an administrator)"))
         case _ => Right(node)
       }
       // The location should be unique
@@ -70,10 +70,10 @@ class FsNodeRepository @Inject()(
         case None => Left(ValidationError("location", s"The parent '${node.location.parent}' of the destination does not exist"))
         case Some(parent)
           if !parent.isDirectory
-        => Left(ValidationError("location", "The destination parent should be a directory"))
+            => Left(ValidationError("location", "The destination parent should be a directory"))
         case Some(parent)
           if !parent.havePermission(account, "write")
-        => Left(ValidationError("location", s"The account does not have sufficient permissions in the parent location '${node.location.parent}'"))
+            => Left(ValidationError("location", s"The account does not have sufficient permissions in the parent location '${node.location.parent}'"))
         case Some(parent) => Right(parent)
       }
     } yield {
@@ -84,7 +84,7 @@ class FsNodeRepository @Inject()(
 
       // Then, insert all the permissions related to the directory
       nodeInserted.permissions.foreach({ permission =>
-        permissionRepository.insert(nodeInserted, permission)
+        permissionRepository.insertNonAtomic(nodeInserted, permission)
       })
 
       // Update the parent directory
@@ -116,7 +116,7 @@ class FsNodeRepository @Inject()(
     selectByPath(path) match {
       case Some(node)
         if !node.havePermission(account, "read")
-      => Left(ValidationError("location", "The account does not have sufficient permissions"))
+          => Left(ValidationError("location", "The account does not have sufficient permissions"))
       case None => Right(None)
       case Some(node) => Right(Some(node))
     }
@@ -138,9 +138,9 @@ class FsNodeRepository @Inject()(
     * @return Either a validation error if the node could not be moved, either the moved node
     */
   def move(node: FsNode, destinationPath: Path)(implicit account: Account): Either[ValidationError, FsNode] =
-  db.withTransaction { implicit c =>
-    moveNonAtomic(node, destinationPath)(account, c)
-  }
+    db.withTransaction { implicit c =>
+      moveNonAtomic(node, destinationPath)(account, c)
+    }
 
   /**
     * @see [[FsNodeRepository.move()]]
@@ -150,13 +150,13 @@ class FsNodeRepository @Inject()(
     // The root directory cannot be moved
       _ <- node match {
         case _ if node.isRoot
-        => Left(ValidationError("location", "The root node cannot be moved"))
+          => Left(ValidationError("location", "The root node cannot be moved"))
         case _ => Right(node)
       }
       // Check if the user have sufficient rights
       _ <- node match {
         case _ if !node.havePermission(account, "write")
-        => Left(ValidationError("location", "The account does not have sufficient permissions to move the element"))
+          => Left(ValidationError("location", "The account does not have sufficient permissions to move the element"))
         case _ => Right(node)
       }
       // TODO check contained directory permissions if directory ?
@@ -170,10 +170,10 @@ class FsNodeRepository @Inject()(
         case None => Left(ValidationError("location", s"The parent '${node.location.parent}' of the destination does not exist"))
         case Some(parent)
           if !parent.isDirectory
-        => Left(ValidationError("location", "The destination parent should be a directory"))
+            => Left(ValidationError("location", "The destination parent should be a directory"))
         case Some(parent)
           if !parent.havePermission(account, "write")
-        => Left(ValidationError("location", s"The account does not have sufficient permissions in the parent location '${node.location.parent}'"))
+            => Left(ValidationError("location", s"The account does not have sufficient permissions in the parent location '${node.location.parent}'"))
         case Some(parent) => Right(parent)
       }
     } yield {

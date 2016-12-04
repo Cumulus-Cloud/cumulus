@@ -20,13 +20,15 @@ class AccountRepository @Inject()(
   dbApi: DBApi
 )(
   implicit ec: ExecutionContext
-) extends BaseRepository[Account](
-  dbApi.database("default"),
-  AccountRepository.table,
-  AccountRepository.parser)
-{
+){
 
   import AccountRepository._
+
+  /**
+    * Default database
+    * @return The default database
+    */
+  private def db = dbApi.database("default") // TODO get from conf
 
   def getByLogin(login: String): Option[Account] =
     db.withConnection { implicit c =>
