@@ -17,4 +17,6 @@ docker run \
 -e DB_PASSWORD="cumulus_test" \
 -it wadjetz/cumulus-dev
 
+docker build -t wadjetz/cumulus .
+
 docker stop postgres-test
