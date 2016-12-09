@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 docker build -f dev.Dockerfile -t wadjetz/cumulus-dev .
 
