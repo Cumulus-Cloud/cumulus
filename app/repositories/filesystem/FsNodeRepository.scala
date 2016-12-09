@@ -100,10 +100,11 @@ class FsNodeRepository @Inject()(
     *  - The account has sufficient permission to read the node
     *
     * @param path The path to return
+    * @param nodeType The type of node to return (default to 'all' to return everything)
     * @param account The account to use
     * @return Either a validation error if the directory could not be retrieve, either the node
     */
-  def getByPath(path: String)(implicit account: Account): Either[ValidationError, Option[FsNode]] =
+  def getByPath(path: String, nodeType: String = "all")(implicit account: Account): Either[ValidationError, Option[FsNode]] =
   db.withConnection { implicit c =>
     getByPathNonAtomic(path)(account, c)
   }
@@ -111,14 +112,18 @@ class FsNodeRepository @Inject()(
   /**
     * @see [[FsNodeRepository.getByPath()]]
     */
-  def getByPathNonAtomic(path: String)(implicit account: Account, connection: Connection): Either[ValidationError, Option[FsNode]] = {
+  def getByPathNonAtomic(path: String, nodeType: String = "all")(implicit account: Account, connection: Connection): Either[ValidationError, Option[FsNode]] = {
     // Check the the directory exist and can be read
     selectByPath(path) match {
       case Some(node)
         if !node.havePermission(account, "read")
           => Left(ValidationError("location", "The account does not have sufficient permissions"))
       case None => Right(None)
-      case Some(node) => Right(Some(node))
+      case Some(node) =>
+        if (nodeType == "all" || nodeType == node.nodeType)
+          Right(Some(node))
+        else
+          Left(ValidationError("type", s"'$path' is a ${node.nodeType} while a $nodeType is expected"))
     }
   }
 

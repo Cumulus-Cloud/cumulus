@@ -1,10 +1,5 @@
 package models
 
-import org.joda.time.DateTime
-import play.api.libs.json.{JsPath, Writes}
-
-import play.api.libs.functional.syntax._
-
 /**
   * A File.
   * @param node The file system node of the file
@@ -17,6 +12,8 @@ case class File(
 
 object File {
 
+  val NodeType = "file"
+
   // TODO init chunks ?
   def initFrom(location: String, creator: Account): File = File(
     FsNode.initFrom(location, "file", creator),
@@ -25,6 +22,7 @@ object File {
 
   // TODO add permissions ?
   // TODO serialize directly fsNode ?
+  /*
   implicit val fileWrites: Writes[File] = (
     (JsPath \ "id").write[String] and
     (JsPath \ "location").write[String] and
@@ -42,6 +40,6 @@ object File {
     file.node.creator
     //if (file.chunks.isEmpty) None else Some(directory.content)) // TODO export chunks
     )
-  )
+  )*/
 
 }
