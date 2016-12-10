@@ -17,6 +17,7 @@ class HomeController @Inject() (
   val accountRepo: AccountRepository,
   val directoryRepo: DirectoryRepository,
   val fileRepo: FileRepository,
+  val auth: AuthActionService,
   val messagesApi: MessagesApi
 ) extends BaseController {
 
@@ -67,9 +68,8 @@ class HomeController @Inject() (
 
   }
 
-  def getDirectory(location: String) = Action {
-    // TODO use authentication
-    val admin = accountRepo.getByLogin("admin").get
+  def getDirectory(location: String) = auth.AuthAction { implicit request =>
+    val admin = request.accound
 
     // Clean the location to remove duplicated '/' or trailing '/'
     val cleanedLocation = "/" + location.split("/").filterNot(_.isEmpty).mkString("/")
