@@ -80,7 +80,7 @@ object AccountRepository {
   }
 
   protected def selectByUUID(uuid: UUID) = SQL"""
-     SELECT * FROM #$table WHERE #$table.id = $uuid:uuid;
+     SELECT * FROM #$table WHERE #$table.id = $uuid::uuid;
   """
 
   private def selectAccountByLogin(login: String) = SQL"""
