@@ -9,6 +9,8 @@ import App from "./App"
 import Login from "./Login"
 import SignUp from "./SignUp"
 
+import { appReducer } from "./AppReducer"
+
 const store = createStore(
   combineReducers({
     routing: routerReducer
