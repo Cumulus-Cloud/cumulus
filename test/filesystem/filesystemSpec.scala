@@ -13,7 +13,7 @@ import utils.EitherUtils._
 class filesystemSpec extends PlaySpec with OneAppPerSuite with BeforeAndAfterAll {
   implicit override lazy val app = new GuiceApplicationBuilder()
     .configure(Map(
-      "db.default.url" -> "jdbc:postgresql://localhost/cumulus"
+      "db.default.url" -> "jdbc:postgresql://postgres-test/cumulus"
     ))
     .build()
 

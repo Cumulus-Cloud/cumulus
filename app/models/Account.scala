@@ -20,7 +20,7 @@ case class Account(
 
   /**
     * Check if the acount is an admin account
- *
+    *
     * @return True if the user is an admin, false otherwise
     */
   def isAdmin: Boolean = {
@@ -59,20 +59,11 @@ object Account {
     None
   )
 
-  implicit val accountWrites: Writes[Account] = (
-    (JsPath \ "id").write[String] and
-    (JsPath \ "mail").write[String] and
-    (JsPath \ "login").write[String] and
-    (JsPath \ "creation").write[String] and
-    (JsPath \ "roles").write[Seq[String]] and
-    (JsPath \ "home").writeNullable[String]
-  )(account => (
-    account.id.toString,
-    account.mail,
-    account.login,
-    account.creation.toString,
-    account.roles,
-    account.home)
-  )
-
+  implicit val userWrites: Writes[Account] = (
+    (__ \ "id").write[UUID] and
+    (__ \ "login").write[String] and
+    (__ \ "creation").write[String] and
+    (__ \ "roles").write[Seq[String]] and
+    (__ \ "home").writeNullable[String]
+  )(user => (user.id, user.login, user.creation.toString, user.roles, user.home))
 }

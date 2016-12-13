@@ -30,6 +30,10 @@ class AccountRepository @Inject()(
     */
   private def db = dbApi.database("default") // TODO get from conf
 
+  def getByUUID(uuid: UUID): Option[Account] = db.withConnection { implicit c =>
+    selectByUUID(uuid).as(parser.singleOpt)
+  }
+
   def getByLogin(login: String): Option[Account] =
     db.withConnection { implicit c =>
       selectAccountByLogin(login).as(parser.singleOpt)
@@ -74,6 +78,10 @@ object AccountRepository {
         => Account(id, mail, login, password, creation, roles, home)
     }
   }
+
+  protected def selectByUUID(uuid: UUID) = SQL"""
+     SELECT * FROM #$table WHERE #$table.id = $uuid::uuid;
+  """
 
   private def selectAccountByLogin(login: String) = SQL"""
      SELECT *

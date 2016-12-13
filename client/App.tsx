@@ -1,9 +1,17 @@
 import * as React from "react"
+import { connect } from "react-redux"
 
-export default class App extends React.Component<void, void> {
-  render() {
-    return (
+import { hashHistory } from "react-router"
+
+const App = () => {
+  return (
+    <div>
       <h1>Hello World !</h1>
-    )
-  }
+      <button onClick={() => {
+        hashHistory.push("/login")
+      }}>login</button>
+    </div>
+  )
 }
+
+export default connect()(App)

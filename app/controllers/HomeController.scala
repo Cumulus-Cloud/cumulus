@@ -2,14 +2,14 @@ package controllers
 
 import javax.inject._
 
-import play.api.mvc._
-import play.api.data._
-import play.api.libs.json._
-import play.api.data.Forms._
+import models.Directory
 import play.api.i18n.MessagesApi
 import repositories.filesystem.{DirectoryRepository, FileRepository}
+import play.api.libs.json._
+import play.api.mvc._
 import repositories.AccountRepository
 import models.{Account, Directory, File}
+import repositories.filesystem.DirectoryRepository
 import utils.EitherUtils._
 
 @Singleton
@@ -17,6 +17,7 @@ class HomeController @Inject() (
   val accountRepo: AccountRepository,
   val directoryRepo: DirectoryRepository,
   val fileRepo: FileRepository,
+  val auth: AuthActionService,
   val messagesApi: MessagesApi
 ) extends BaseController {
 
@@ -67,9 +68,8 @@ class HomeController @Inject() (
 
   }
 
-  def getDirectory(location: String) = Action {
-    // TODO use authentication
-    val admin = accountRepo.getByLogin("admin").get
+  def getDirectory(location: String) = auth.AuthAction { implicit request =>
+    val admin = request.accound
 
     // Clean the location to remove duplicated '/' or trailing '/'
     val cleanedLocation = "/" + location.split("/").filterNot(_.isEmpty).mkString("/")
@@ -80,33 +80,6 @@ class HomeController @Inject() (
         case None => NotFound("Not found :(")  // TODO handle all errors in JSON
       }
       case Left(e) => BadRequest(Json.toJson(e))
-    }
-  }
-
-  def getAccount(login: String) = Action {
-    accountRepo.getByLogin(login) match {
-      case Some(account) => Ok(Json.toJson(account))
-      case None => NotFound(Json.toJson("Not found :(" )) // TODO handle all errors in JSON
-    }
-  }
-
-  val accountForm = Form(
-    tuple(
-      "login" -> text(minLength = 4, maxLength = 64),
-      "password" -> text(minLength = 6),
-      "mail" -> email
-    )
-  )
-
-  def createAccount() = Action { implicit request =>
-    getPayload(accountForm) {
-      case (login, password, mail) =>
-        val account = Account.initFrom(mail, login, password)
-
-        accountRepo.insert(account) match {
-          case Left(e) => BadRequest(Json.toJson(e))
-          case _ => Ok(Json.toJson(account))
-        }
     }
   }
 
