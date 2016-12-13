@@ -26,7 +26,17 @@ case class FsNode(
 ) {
 
   /**
+    * Check if the node is a file
+    *
+    * @return True if the node is a file, false otherwise
+    */
+  def isFile: Boolean = {
+    nodeType == "file"
+  }
+
+  /**
     * Check if the node is a directory
+    *
     * @return True if the node is a directory, false otherwise
     */
   def isDirectory: Boolean = {

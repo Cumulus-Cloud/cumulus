@@ -38,7 +38,7 @@ class DirectoryRepository @Inject()(
     */
   def getByPath(path: String)(implicit account: Account): Either[ValidationError, Option[Directory]] = {
     db.withTransaction { implicit c =>
-      nodeRepository.getByPathNonAtomic(path) match {
+      nodeRepository.getByPathNonAtomic(path, Directory.NodeType) match {
         case Left(error) => Left(error)
         case Right(node) =>
           Right(

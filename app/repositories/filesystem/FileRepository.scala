@@ -38,11 +38,11 @@ class FileRepository @Inject()(
     */
   def getByPath(path: String)(implicit account: Account): Either[ValidationError, Option[File]] = {
     db.withTransaction { implicit c =>
-      nodeRepository.getByPathNonAtomic(path) match {
+      nodeRepository.getByPathNonAtomic(path, File.NodeType) match {
         case Left(error) => Left(error)
         case Right(node) =>
           Right(
-            node.map { n => File(node = n, Seq.empty) } // TODO also add files
+            node.map { n => File(node = n, Seq.empty) } // TODO also add chunks
           )
       }
     }
