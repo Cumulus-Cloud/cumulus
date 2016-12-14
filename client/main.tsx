@@ -6,8 +6,8 @@ import { Router, Route, hashHistory } from "react-router"
 import { syncHistoryWithStore, routerReducer } from "react-router-redux"
 
 import App from "./App"
-import Login from "./Login"
-import SignUp from "./SignUp"
+import Login from "./auth/Login"
+import SignUp from "./auth/SignUp"
 
 import { appReducer } from "./AppReducer"
 
