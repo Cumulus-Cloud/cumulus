@@ -41,7 +41,7 @@ export default class Login extends React.Component<Props, State> {
             onChange={this.handleChange("password")}
           />
         </div>
-        <div style={styles.formGroup}>
+        <div style={styles.action}>
           <div className="btn" onClick={this.handleSubmit}>Login</div>
         </div>
         {/*<button onClick={() => hashHistory.push("/signup")}>Signup</button>*/}
@@ -72,6 +72,7 @@ interface Style {
   formGroup: React.CSSProperties
   label: React.CSSProperties
   input: React.CSSProperties
+  action: React.CSSProperties
 }
 
 const styles: Style = {
@@ -105,5 +106,8 @@ const styles: Style = {
     borderRadius: 15,
     padding: 10,
     color: "#FFFFFF",
+  },
+  action: {
+    marginTop: 30,
   }
 }
