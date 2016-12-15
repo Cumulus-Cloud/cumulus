@@ -1,8 +1,10 @@
 import * as React from "react"
 import { hashHistory } from "react-router"
 
+import * as Api from "../services/Api"
+
 interface Props {
-  style?: any 
+  style?: any
 }
 
 interface State {
@@ -22,19 +24,28 @@ export default class Login extends React.Component<Props, State> {
   render() {
     return (
       <div style={styles.container}>
-        <h1>Login</h1>
-        <div>
-          <label>Email</label>
-          <input type="email" value={this.state.mail} onChange={this.handleChange("mail")} />
+        <div style={styles.form}>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Email</label>
+          <input style={styles.input}
+            type="email"
+            value={this.state.mail}
+            onChange={this.handleChange("mail")}
+          />
         </div>
-        <div>
-          <label>Password</label>
-          <input type="password" value={this.state.password} onChange={this.handleChange("password")} />
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Password</label>
+          <input style={styles.input}
+            type="password"
+            value={this.state.password}
+            onChange={this.handleChange("password")}
+          />
         </div>
-        <div>
-          <button onClick={this.handleSubmit}>Login</button>
+        <div style={styles.formGroup}>
+          <div className="btn" onClick={this.handleSubmit}>Login</div>
         </div>
-        <button onClick={() => hashHistory.push("/signup")}>Signup</button>
+        {/*<button onClick={() => hashHistory.push("/signup")}>Signup</button>*/}
+        </div>
       </div>
     )
   }
@@ -45,16 +56,10 @@ export default class Login extends React.Component<Props, State> {
 
   handleSubmit = () => {
     console.debug("handleSubmit", this.state)
-    // TODO add to separate file
     // TODO add client validation
-    fetch(`http://localhost:9000/accounts/login`, {
-      method: "POST",
-      body: JSON.stringify(this.state),
-      headers: {
-        "Content-Type": "application/json"
-      },
-    }).then(response => response.json()).then(result => {
-      console.debug("fetch", result)
+    Api.login(this.state.mail, this.state.password).then(result => {
+      console.debug("login", result)
+      Api.saveAuthToken(result.token, true)
     }).catch(error => {
       console.debug("fetch error", error)
     })
@@ -63,9 +68,42 @@ export default class Login extends React.Component<Props, State> {
 
 interface Style {
   container: React.CSSProperties
+  form: React.CSSProperties
+  formGroup: React.CSSProperties
+  label: React.CSSProperties
+  input: React.CSSProperties
 }
 
 const styles: Style = {
   container: {
+    width: "100%",
+    height: "100%",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  form: {
+    width: "300px"
+  },
+  formGroup: {
+    display: "flex",
+    flexDirection: "column",
+    marginBottom: 15,
+  },
+  label: {
+    flex: 1,
+    color: "#B2B2B2",
+    paddingBottom: 4,
+    paddingLeft: 10,
+  },
+  input: {
+    outline: "none",
+    flex: 1,
+    backgroundColor: "rgba(255, 255, 255, .1)",
+    fontSize: "1rem",
+    border: "none",
+    borderRadius: 15,
+    padding: 10,
+    color: "#FFFFFF",
   }
 }
