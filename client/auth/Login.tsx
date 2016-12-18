@@ -76,6 +76,7 @@ export default class Login extends React.Component<void, State> {
         this.setState({
           loading: false
         } as PartialState as State)
+        hashHistory.replace("/")
       }).catch(error => {
         console.debug("fetch error", error)
         this.setState({
