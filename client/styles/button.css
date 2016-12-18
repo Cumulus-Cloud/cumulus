@@ -1,0 +1,20 @@
+
+.btn {
+  background-color: #1762EE;
+  border-radius: 15px;
+  padding: 10px;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn:hover {
+  opacity: .8;
+}
+
+.btn:active {
+  opacity: .6;
+} 
+

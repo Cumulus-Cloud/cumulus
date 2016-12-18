@@ -1,113 +1,93 @@
 import * as React from "react"
 import { hashHistory } from "react-router"
+import { Account, AccountLogin, validateLogin } from "../models/Account"
+import { ValidationErrors, getError } from "../models/validation"
 
 import * as Api from "../services/Api"
 
-interface Props {
-  style?: any
-}
-
 interface State {
-  mail: string
-  password: string
+  loading: boolean
+  accountLogin: AccountLogin
+  errors: ValidationErrors<AccountLogin>
 }
 
 type PartialState = Partial<State>
 
-export default class Login extends React.Component<Props, State> {
+export default class Login extends React.Component<void, State> {
 
   state = {
-    mail: "",
-    password: "",
+    loading: false,
+    accountLogin: {
+      mail: "",
+      password: "",
+    },
+    errors: {}
   }
 
   render() {
+
+    console.debug("Login render", this.state)
+
     return (
-      <div style={styles.container}>
-        <div style={styles.form}>
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Email</label>
-          <input style={styles.input}
+      <div className="login">
+        <div className="form-login">
+        <div className="form-group">
+          <label className="form-label">Email {getError<AccountLogin>("mail", this.state.errors)} </label>
+          <input className="form-input"
             type="email"
-            value={this.state.mail}
+            value={this.state.accountLogin.mail}
             onChange={this.handleChange("mail")}
           />
         </div>
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Password</label>
-          <input style={styles.input}
+        <div className="form-group">
+          <label className="form-label">Password {getError<AccountLogin>("password", this.state.errors)}</label>
+          <input className="form-input"
             type="password"
-            value={this.state.password}
+            value={this.state.accountLogin.password}
             onChange={this.handleChange("password")}
           />
         </div>
-        <div style={styles.action}>
+        <div className="form-action">
           <div className="btn" onClick={this.handleSubmit}>Login</div>
         </div>
-        {/*<button onClick={() => hashHistory.push("/signup")}>Signup</button>*/}
         </div>
       </div>
     )
   }
 
-  handleChange = (field: keyof State) => (e: React.FormEvent<HTMLInputElement>) => {
-    this.setState({ [field]: e.target.value } as PartialState as State)
+  handleChange = (field: keyof AccountLogin) => (e: React.FormEvent<HTMLInputElement>) => {
+    this.setState({
+      accountLogin: {...this.state.accountLogin, [field]: e.target.value }
+    } as PartialState as State)
   }
 
   handleSubmit = () => {
-    console.debug("handleSubmit", this.state)
-    // TODO add client validation
-    Api.login(this.state.mail, this.state.password).then(result => {
-      console.debug("login", result)
-      Api.saveAuthToken(result.token, true)
-    }).catch(error => {
-      console.debug("fetch error", error)
-    })
-  }
-}
+    const { accountLogin } = this.state
 
-interface Style {
-  container: React.CSSProperties
-  form: React.CSSProperties
-  formGroup: React.CSSProperties
-  label: React.CSSProperties
-  input: React.CSSProperties
-  action: React.CSSProperties
-}
+    const errors = validateLogin(accountLogin)
 
-const styles: Style = {
-  container: {
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  form: {
-    width: "300px"
-  },
-  formGroup: {
-    display: "flex",
-    flexDirection: "column",
-    marginBottom: 15,
-  },
-  label: {
-    flex: 1,
-    color: "#B2B2B2",
-    paddingBottom: 4,
-    paddingLeft: 10,
-  },
-  input: {
-    outline: "none",
-    flex: 1,
-    backgroundColor: "rgba(255, 255, 255, .1)",
-    fontSize: "1rem",
-    border: "none",
-    borderRadius: 15,
-    padding: 10,
-    color: "#FFFFFF",
-  },
-  action: {
-    marginTop: 30,
+    console.debug("handleSubmit", errors, this.state)
+    if (!errors) {
+      this.setState({
+        errors: {},
+        loading: true
+      } as PartialState as State)
+      Api.login(this.state.accountLogin).then(result => {
+        console.debug("login", result)
+        Api.saveAuthToken(result.token, true)
+        this.setState({
+          loading: false
+        } as PartialState as State)
+      }).catch(error => {
+        console.debug("fetch error", error)
+        this.setState({
+          loading: false
+        } as PartialState as State)
+      })
+    } else {
+      this.setState({
+        errors
+      } as PartialState as State)
+    }
   }
 }

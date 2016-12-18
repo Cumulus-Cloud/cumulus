@@ -1,0 +1,28 @@
+
+.form-login {
+  width: 300px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+.form-label {
+  flex: 1;
+  color: #B2B2B2;
+  padding-bottom: 4px;
+  padding-left: 10px;
+}
+
+.form-input {
+  flex: 1;
+  color: #B2B2B2;
+  padding-bottom: 4px;
+  padding-left: 10px;
+}
+
+.form-action {
+  margin-top: 30px;
+}

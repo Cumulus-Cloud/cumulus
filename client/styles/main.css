@@ -1,4 +1,6 @@
 @import 'reset-css/reset.css';
+@import './login.css';
+@import './button.css';
 
 * {
   box-sizing: border-box;
@@ -18,22 +20,3 @@ html, body {
   height: 100%;
   background-color: rgba(17, 22, 48, .9);
 }
-
-.btn {
-  background-color: #1762EE;
-  border-radius: 15px;
-  padding: 10px;
-  color: #FFFFFF;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.btn:hover {
-  opacity: .8;
-}
-
-.btn:active {
-  opacity: .6;
-} 

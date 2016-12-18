@@ -51,7 +51,7 @@
     "@types/react-redux": "4.4.35",
     "@types/react-router": "2.0.41",
     "@types/react-router-redux": "4.0.35",
-    "@types/validate.js": "^0.0.2",
+    "@types/validate.js": "0.0.2",
     "es6-promise": "4.0.5",
     "es6-shim": "0.35.2",
     "react": "15.4.1",
