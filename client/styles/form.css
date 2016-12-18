@@ -17,10 +17,15 @@
 }
 
 .form-input {
+  outline: none;
   flex: 1;
-  color: #B2B2B2;
-  padding-bottom: 4px;
-  padding-left: 10px;
+  background-color: rgba(255, 255, 255, .1);
+  font-size: 1rem;
+  border: none;
+  border-radius: 15px;
+  padding: 10px;
+  color: #FFFFFF;
+
 }
 
 .form-action {

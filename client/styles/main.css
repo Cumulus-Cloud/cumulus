@@ -1,6 +1,7 @@
 @import 'reset-css/reset.css';
 @import './login.css';
 @import './button.css';
+@import './form.css';
 
 * {
   box-sizing: border-box;
