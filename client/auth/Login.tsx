@@ -46,7 +46,7 @@ export default class Login extends React.Component<void, State> {
             onChange={this.handleChange("password")}
           />
           <div className="form-action">
-            <Button onClick={this.handleSubmit}>Login</Button>
+            <Button loading={this.state.loading} onClick={this.handleSubmit}>Login</Button>
           </div>
         </div>
       </div>

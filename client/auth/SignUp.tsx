@@ -1,27 +1,95 @@
 import * as React from "react"
 import { hashHistory } from "react-router"
+import { Account, AccountSignup, validateSignup } from "../models/Account"
+import { ValidationErrors, getError } from "../models/validation"
 
+import * as Api from "../services/Api"
+import Input from "../components/Input"
+import Button from "../components/Button"
 
-interface Props {
-  style?: any 
+interface State {
+  loading: boolean
+  account: AccountSignup
+  errors: ValidationErrors<AccountSignup>
 }
 
-export default class SignUp extends React.Component<Props, void> {
+type PartialState = Partial<State>
+
+export default class SignUp extends React.Component<void, State> {
+
+  state = {
+    loading: false,
+    account: {
+      login: "",
+      mail: "",
+      password: "",
+    },
+    errors: {}
+  }
+
   render() {
     return (
-      <div style={styles.container}>
-        <h1>SignUp</h1>
-        <button onClick={() => hashHistory.push("/login")}>Signup</button>
+      <div className="login">
+        <div className="form-login">
+          <Input
+            label="Login"
+            value={this.state.account.login}
+            error={getError<AccountSignup>("login", this.state.errors)}
+            onChange={this.handleChange("login")}
+          />
+          <Input type="email"
+            label="Email"
+            value={this.state.account.mail}
+            error={getError<AccountSignup>("mail", this.state.errors)}
+            onChange={this.handleChange("mail")}
+          />
+          <Input type="password"
+            label="Password"
+            value={this.state.account.password}
+            error={getError<AccountSignup>("password", this.state.errors)}
+            onChange={this.handleChange("password")}
+          />
+          <div className="form-action">
+            <Button loading={this.state.loading} onClick={this.handleSubmit}>Sign Up</Button>
+          </div>
+        </div>
       </div>
     )
   }
-}
 
-interface Style {
-  container: React.CSSProperties
-}
+  handleSubmit = () => {
+    const { account } = this.state
 
-const styles: Style = {
-  container: {
+    const errors = validateSignup(account)
+
+    console.debug("handleSubmit", errors, this.state)
+    if (!errors) {
+      this.setState({
+        errors: {},
+        loading: true
+      } as PartialState as State)
+      Api.signup(account).then(result => {
+        console.debug("signup", result)
+        Api.saveAuthToken(result.token, true)
+        this.setState({
+          loading: false
+        } as PartialState as State)
+      }).catch(error => {
+        console.debug("fetch error", error)
+        this.setState({
+          loading: false
+        } as PartialState as State)
+      })
+    } else {
+      this.setState({
+        errors
+      } as PartialState as State)
+    }
+  }
+
+  handleChange = (field: keyof AccountSignup) => (e: React.FormEvent<HTMLInputElement>) => {
+    this.setState({
+      account: {...this.state.account, [field]: e.target.value }
+    } as PartialState as State)
   }
 }

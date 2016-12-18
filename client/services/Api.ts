@@ -1,4 +1,4 @@
-import { Account, AccountLogin } from "../models/Account"
+import { Account, AccountLogin, AccountSignup } from "../models/Account"
 import { hashHistory } from "react-router"
 
 const BASE_API_URL = "http://localhost:9000"
@@ -69,6 +69,14 @@ export function login(accountLogin: AccountLogin): Promise<AccountApiResponse> {
   return fetch(`${BASE_API_URL}/accounts/login`, {
     method: "POST",
     body: JSON.stringify(accountLogin),
+    headers: HEADERS,
+  }).then(success)
+}
+
+export function signup(accountSignup: AccountSignup): Promise<AccountApiResponse> {
+  return fetch(`${BASE_API_URL}/accounts/signup`, {
+    method: "POST",
+    body: JSON.stringify(accountSignup),
     headers: HEADERS,
   }).then(success)
 }

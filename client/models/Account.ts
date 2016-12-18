@@ -9,19 +9,40 @@ export interface Account {
   roles: Role[]
 }
 
+export interface AccountSignup {
+  login: string
+  mail: string,
+  password: string
+}
+
 export interface AccountLogin {
   mail: string,
   password: string
 }
 
-export function validateLogin(login: AccountLogin): ValidationErrors<AccountLogin> | undefined {
-  const constraints = {
-    mail: {
-      email: true,
-    },
-    password: {
-      presence: true,
-    }
+const loginConstraints = {
+  mail: {
+    email: true,
+  },
+  password: {
+    presence: true,
   }
-  return validate(login, constraints)
+}
+export function validateLogin(login: AccountLogin): ValidationErrors<AccountLogin> | undefined {
+  return validate(login, loginConstraints)
+}
+
+const signupConstraints = {
+  login: {
+    presence: true,
+  },
+  mail: {
+    email: true,
+  },
+  password: {
+    presence: true,
+  }
+}
+export function validateSignup(signup: AccountSignup): ValidationErrors<AccountSignup> | undefined {
+  return validate(signup, signupConstraints)
 }
