@@ -5,6 +5,7 @@ import { ValidationErrors, getError } from "../models/validation"
 
 import * as Api from "../services/Api"
 import Input from "../components/Input"
+import Button from "../components/Button"
 
 interface State {
   loading: boolean
@@ -32,23 +33,21 @@ export default class Login extends React.Component<void, State> {
     return (
       <div className="login">
         <div className="form-login">
-        <Input type="email"
-          label="Email"
-          value={this.state.accountLogin.mail}
-          error={getError<AccountLogin>("mail", this.state.errors)}
-          onChange={this.handleChange("mail")}
-        />
-
-        <Input type="password"
-          label="Password"
-          value={this.state.accountLogin.password}
-          error={getError<AccountLogin>("password", this.state.errors)}
-          onChange={this.handleChange("password")}
-        />
-
-        <div className="form-action">
-          <div className="btn" onClick={this.handleSubmit}>Login</div>
-        </div>
+          <Input type="email"
+            label="Email"
+            value={this.state.accountLogin.mail}
+            error={getError<AccountLogin>("mail", this.state.errors)}
+            onChange={this.handleChange("mail")}
+          />
+          <Input type="password"
+            label="Password"
+            value={this.state.accountLogin.password}
+            error={getError<AccountLogin>("password", this.state.errors)}
+            onChange={this.handleChange("password")}
+          />
+          <div className="form-action">
+            <Button onClick={this.handleSubmit}>Login</Button>
+          </div>
         </div>
       </div>
     )
