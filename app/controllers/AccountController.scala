@@ -14,11 +14,12 @@ import pdi.jwt.JwtJson
 import repositories.AccountRepository
 
 @Singleton
-class AccountController @Inject() (accountRepository: AccountRepository,
-                                   auth: AuthActionService,
-                                   conf: Conf,
-                                   val messagesApi: MessagesApi
-                                  ) extends Controller with I18nSupport with Log {
+class AccountController @Inject() (
+ accountRepository: AccountRepository,
+ auth: AuthActionService,
+ conf: Conf,
+ val messagesApi: MessagesApi
+) extends Controller with I18nSupport with Log {
 
   val key = conf.cryptoKey
   val header = Json.obj("typ" -> "JWT", "alg" -> "HS256")
@@ -54,6 +55,7 @@ class AccountController @Inject() (accountRepository: AccountRepository,
     "mail" -> emailForm,
     "password" -> nonEmptyText
   ))
+
   def login = Action { implicit request =>
     loginForm.bindFromRequest.fold(
       formWithErrors => BadRequest(formWithErrors.errorsAsJson),

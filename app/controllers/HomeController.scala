@@ -2,6 +2,10 @@ package controllers
 
 import javax.inject._
 
+import akka.NotUsed
+import akka.actor.ActorSystem
+import akka.stream.scaladsl.{Sink, Source}
+import akka.util.ByteString
 import models.Directory
 import play.api.i18n.MessagesApi
 import repositories.filesystem.{DirectoryRepository, FileRepository}
@@ -9,8 +13,14 @@ import play.api.libs.json._
 import play.api.mvc._
 import repositories.AccountRepository
 import models.{Account, Directory, File}
+import play.api.libs.iteratee.{Enumeratee, Iteratee, Traversable}
+import play.api.libs.streams.{Accumulator, Streams}
 import repositories.filesystem.DirectoryRepository
 import utils.EitherUtils._
+import akka.stream._
+import akka.stream.scaladsl._
+
+import scala.concurrent.Future
 
 @Singleton
 class HomeController @Inject() (
@@ -66,6 +76,30 @@ class HomeController @Inject() (
         BadRequest(Json.toJson(e))
     }
 
+  }
+
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  implicit val system = ActorSystem()
+  implicit val materializer = ActorMaterializer()
+
+  // Custom parser to set the body as a source
+  val customParser: BodyParser[Source[ByteString, _]] = BodyParser { req =>
+    Accumulator.source[ByteString].map(Right.apply)
+  }
+
+  def testUpload(filename: String) = Action.async(customParser) { request =>
+    // Create the file
+    val file = new java.io.File(s"tmp/$filename")
+    file.getParentFile.mkdirs()
+
+    // Sink where to write the file
+    val fileSink = FileIO.toPath(file.toPath)
+
+    // Pass the body to the file sink
+    request.body.runWith(fileSink).map(ioresult =>
+      Ok("uploaded")
+    )
   }
 
   def getDirectory(location: String) = auth.AuthAction { implicit request =>
