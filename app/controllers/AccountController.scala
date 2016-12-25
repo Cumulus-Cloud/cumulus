@@ -69,7 +69,7 @@ class AccountController @Inject() (accountRepository: AccountRepository,
             ))
           case _ =>
             logger.debug("login incorrect mail or password")
-            NotFound(Json.obj(
+            BadRequest(Json.obj(
               "login" -> Seq("Incorrect mail or password")
             ))
         }
