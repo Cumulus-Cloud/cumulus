@@ -22,10 +22,14 @@ export interface AccountLogin {
 
 const loginConstraints = {
   mail: {
-    email: true,
+    email: {
+      message: "invalid"
+    },
   },
   password: {
-    presence: true,
+    presence: {
+      message: "invalid"
+    },
   }
 }
 export function validateLogin(login: AccountLogin): ValidationErrors<AccountLogin> | undefined {
@@ -34,13 +38,19 @@ export function validateLogin(login: AccountLogin): ValidationErrors<AccountLogi
 
 const signupConstraints = {
   login: {
-    presence: true,
+    presence: {
+      message: "required"
+    },
   },
   mail: {
-    email: true,
+    email: {
+      message: "invalid"
+    },
   },
   password: {
-    presence: true,
+    presence: {
+      message: "required"
+    },
   }
 }
 export function validateSignup(signup: AccountSignup): ValidationErrors<AccountSignup> | undefined {

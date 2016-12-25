@@ -15,9 +15,9 @@ interface Props {
 export default function Input(props: Props) {
   const { label, error, value, type, require, onChange } = props
   return (
-    <div className="group">
-      <label className="label">{label}</label>
-      <input className="input"
+    <div className="input-group">
+      <label className="input-label">{label} {error ? <span className="input-label-error">{error}</span> : null}</label>
+      <input className={error ? "input input-error" : "input"}
         required={require || false}
         type={type || "text"}
         value={value}
