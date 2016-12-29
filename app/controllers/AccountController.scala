@@ -78,6 +78,6 @@ class AccountController @Inject() (accountRepository: AccountRepository,
   }
 
   def me = auth.AuthAction { implicit request =>
-    Ok(Json.toJson(request.accound))
+    Ok(Json.toJson(request.account))
   }
 }
