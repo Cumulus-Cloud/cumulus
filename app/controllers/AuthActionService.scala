@@ -13,7 +13,7 @@ import utils.{Conf, Log}
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-case class AuthenticatedRequest[A](accound: Account, request: Request[A]) extends WrappedRequest[A](request)
+case class AuthenticatedRequest[A](account: Account, request: Request[A]) extends WrappedRequest[A](request)
 
 class AuthActionService @Inject() (conf: Conf, accountRepository: AccountRepository) extends Log {
   val key = conf.cryptoKey

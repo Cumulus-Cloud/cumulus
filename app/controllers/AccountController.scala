@@ -15,10 +15,10 @@ import repositories.AccountRepository
 
 @Singleton
 class AccountController @Inject() (
- accountRepository: AccountRepository,
- auth: AuthActionService,
- conf: Conf,
- val messagesApi: MessagesApi
+  accountRepository: AccountRepository,
+  auth: AuthActionService,
+  conf: Conf,
+  val messagesApi: MessagesApi
 ) extends Controller with I18nSupport with Log {
 
   val key = conf.cryptoKey
@@ -71,7 +71,7 @@ class AccountController @Inject() (
             ))
           case _ =>
             logger.debug("login incorrect mail or password")
-            NotFound(Json.obj(
+            BadRequest(Json.obj(
               "login" -> Seq("Incorrect mail or password")
             ))
         }
@@ -80,6 +80,6 @@ class AccountController @Inject() (
   }
 
   def me = auth.AuthAction { implicit request =>
-    Ok(Json.toJson(request.accound))
+    Ok(Json.toJson(request.account))
   }
 }

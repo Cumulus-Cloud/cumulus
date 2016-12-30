@@ -103,7 +103,7 @@ class HomeController @Inject() (
   }
 
   def getDirectory(location: String) = auth.AuthAction { implicit request =>
-    val admin = request.accound
+    val admin = request.account
 
     // Clean the location to remove duplicated '/' or trailing '/'
     val cleanedLocation = "/" + location.split("/").filterNot(_.isEmpty).mkString("/")

@@ -27,4 +27,11 @@ object Path {
 
   implicit def convertSeqToPath(path: Seq[String]): Path =
     Path(path.filterNot(_.isEmpty))
+
+  /**
+    * Clean the location to remove duplicated '/' or trailing '/'
+    * @param path Path to clean
+    * @return The sanitized path
+    */
+  def sanitize(path: String): String = convertStringToPath(path).toString
 }
