@@ -1,0 +1,21 @@
+@import 'reset-css/reset.css';
+@import './login.css';
+@import './form.css';
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  position: relative;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+.cumulus-auth {
+  background: url("/assets/images/cumulus-clouds-over-jamaica.jpg") no-repeat center fixed;
+  background-size: cover;
+}
+
+.cumulus-auth-bg {
+  background-color: rgba(17, 22, 48, .9);
+}

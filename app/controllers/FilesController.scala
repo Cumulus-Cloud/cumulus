@@ -1,14 +1,13 @@
 package controllers
 
-import java.lang.Exception
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source, Compression}
 import akka.util.ByteString
-import models.{FileChunk, File, Path}
-import play.api.{Configuration, Logger}
+import models.{File, FileChunk, Path}
+import play.api.Configuration
 import play.api.i18n.MessagesApi
 import play.api.libs.json.Json
 import play.api.libs.streams.Accumulator
@@ -44,7 +43,7 @@ class FilesController @Inject() (
 
   def download(path: String) = auth.AuthAction { implicit request =>
 
-    val cleanedPath = Path.sanitize(path)
+    val cleanedPath = Path.clean(path)
     val account = request.account
 
     fileRepo.getByPath(cleanedPath)(account) match {
@@ -54,7 +53,6 @@ class FilesController @Inject() (
           .via(Compression.gunzip())
 
         Ok.chunked(fileStream).withHeaders(
-          ("Content-Type", "application/octet-stream"),
           ("Content-Transfer-Encoding", "Binary"),
           ("Content-disposition", s"attachment; filename=${file.node.name}") // TODO with metadata
         )
@@ -67,7 +65,7 @@ class FilesController @Inject() (
 
   def upload(path: String) = auth.AuthAction.async(customParser) { implicit request =>
 
-    val cleanedPath = Path.sanitize(path)
+    val cleanedPath = Path.clean(path)
     val account = request.account
     val file = File.initFrom(cleanedPath, account)
 
@@ -90,7 +88,7 @@ class FilesController @Inject() (
 
   def show(path: String) = auth.AuthAction { implicit request =>
 
-    val cleanedPath = Path.sanitize(path)
+    val cleanedPath = Path.clean(path)
     val account = request.account
 
     fileRepo.getByPath(cleanedPath)(account) match {
@@ -105,7 +103,7 @@ class FilesController @Inject() (
 
   def create(path: String) = auth.AuthAction { implicit request =>
 
-    val cleanedPath = Path.sanitize(path)
+    val cleanedPath = Path.clean(path)
     val account = request.account
 
     fileRepo.insert(File.initFrom(cleanedPath, account))(account) match {

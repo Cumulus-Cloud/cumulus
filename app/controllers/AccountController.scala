@@ -6,7 +6,7 @@ import play.api.data.Form
 import play.api.data.Forms.{nonEmptyText, tuple, email => emailForm}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{Action, Controller, Cookie}
 import utils.{Conf, Log}
 import models.Account
 import org.mindrot.jbcrypt.BCrypt
@@ -43,7 +43,7 @@ class AccountController @Inject() (
             Ok(Json.obj(
               "account" -> Json.toJson(account),
               "token" -> token
-            ))
+            )).withCookies(Cookie("token", token)).withSession("token" -> token)
           case Left(e) =>
             logger.debug(s"signUp err $e")
             BadRequest(Json.toJson(e))
@@ -69,7 +69,7 @@ class AccountController @Inject() (
             Ok(Json.obj(
               "account" -> Json.toJson(account),
               "token" -> token
-            ))
+            )).withCookies(Cookie("token", token)).withSession("token" -> token)
           case _ =>
             logger.debug("login incorrect mail or password")
             BadRequest(Json.obj(

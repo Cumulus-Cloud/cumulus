@@ -1,0 +1,14 @@
+
+.fs-file {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #EEE;
+  cursor: pointer;
+}
+
+.fs-file-infos {
+  flex: 1;
+  padding-left: 10px;
+  padding-right: 10px;
+}

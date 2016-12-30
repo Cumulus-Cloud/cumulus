@@ -34,4 +34,6 @@ object Path {
     * @return The sanitized path
     */
   def sanitize(path: String): String = convertStringToPath(path).toString
+
+  def clean(path: String): String = sanitize(java.net.URLDecoder.decode(path, "UTF-8"))
 }

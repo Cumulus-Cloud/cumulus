@@ -1,4 +1,0 @@
-
-interface EventTarget {
-  value: any
-}

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-docker build -f dev.Dockerfile -t wadjetz/cumulus-dev .
+docker build -f build.Dockerfile -t wadjetz/cumulus-dev .
 
 docker run --name postgres-test -e POSTGRES_PASSWORD=cumulus_test -e POSTGRES_USER=cumulus -d postgres
 
@@ -18,6 +18,6 @@ docker run \
 -e DB_PASSWORD="cumulus_test" \
 -it wadjetz/cumulus-dev
 
-docker build -t wadjetz/cumulus .
+docker build -f prod.Dockerfile -t wadjetz/cumulus .
 
 docker stop postgres-test
