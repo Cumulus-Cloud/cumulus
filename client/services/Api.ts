@@ -1,4 +1,5 @@
 import { Account, AccountLogin, AccountSignup } from "../models/Account"
+import { Directory } from "../models/FsNode"
 import { hashHistory } from "react-router"
 
 const BASE_API_URL = "http://localhost:9000"
@@ -83,6 +84,12 @@ export function signup(accountSignup: AccountSignup): Promise<AccountApiResponse
 
 export function me(): Promise<Account> {
   return withAuth(`${BASE_API_URL}/accounts/me`, {
+    method: "GET"
+  })
+}
+
+export function directory(path: string): Promise<Directory> {
+  return withAuth(`${BASE_API_URL}/api/directory/${path}`, {
     method: "GET"
   })
 }

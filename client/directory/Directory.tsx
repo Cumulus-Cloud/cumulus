@@ -1,8 +1,8 @@
 import * as React from "react"
-import { connect } from "react-redux"
+import { Provider, connect } from "react-redux"
 import { hashHistory } from "react-router"
 
-const App = () => {
+const Directory = () => {
   return (
     <div>
       <h1>Cumulus</h1>
@@ -16,4 +16,4 @@ const App = () => {
   )
 }
 
-export default connect()(App)
+export default connect()(Directory)
