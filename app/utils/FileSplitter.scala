@@ -1,27 +1,44 @@
 package utils
 
-import java.io.FileOutputStream
+import java.io.OutputStream
 
 import akka.stream.{Attributes, Outlet, Inlet, FlowShape}
 import akka.stream.stage.{InHandler, OutHandler, GraphStageLogic, GraphStage}
 import akka.util.ByteString
+import models.FileChunk
+import storage.FileStorageEngine
 
 import utils.FileSplitter.FileSplitterState
 
-class FileSplitter(val chunkSize: Int) extends GraphStage[FlowShape[ByteString, java.io.File]] {
+/**
+  * Custom file splitter, transforming a stream of ByteStrings into a stream of FileChunks, aiming to be used as a
+  * Akka stream Flow[ByteString, FileChunk]. The chunks are then streamed back as soon as they are created.
+  *
+  * The provided file storage engine is used to defined where and how will be stored the chunks. The maximum size of
+  * the chunks is defined with the parameter chunkSize, while the last chunk may still be shorter (the real size of the
+  * chunk is also defined in the chunk information itself)
+  *
+  * @param storageEngine The storage engine to use
+  * @param chunkSize The chunk size to use
+  */
+class FileSplitter(storageEngine: FileStorageEngine, val chunkSize: Int) extends GraphStage[FlowShape[ByteString, FileChunk]] {
   val in = Inlet[ByteString]("FileSplitter.in")
-  val out = Outlet[java.io.File]("FileSplitter.out")
+  val out = Outlet[FileChunk]("FileSplitter.out")
   override val shape = FlowShape.of(in, out)
 
   override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = new GraphStageLogic(shape) {
-    // The sequence of files created
-    private var files: Seq[java.io.File] = Seq()
+    // The storage engine used
+    private implicit val engine: FileStorageEngine = storageEngine
+    // The sequence of chunks created
+    private var chunks: Seq[FileChunk] = Seq()
     // The current state
     private var state = FileSplitterState.empty
 
     setHandler(out, new OutHandler {
       override def onPull(): Unit = {
-        if (isClosed(in)) emitFile()
+        // Nothing to read from, emit the last chunk
+        if (isClosed(in)) emitChunk()
+        // Else, pull data to add to the chunk
         else pull(in)
       }
     })
@@ -29,18 +46,18 @@ class FileSplitter(val chunkSize: Int) extends GraphStage[FlowShape[ByteString, 
     setHandler(in, new InHandler {
       override def onPush(): Unit = {
         write(grab(in))
-        emitFile()
+        emitChunk()
       }
 
       override def onUpstreamFinish(): Unit = {
         // Close the writer and add to the ready list
         state.fileOut.close()
-        files = files :+ state.file
+        chunks = chunks :+ state.chunk.copy(size = state.written)
 
-        if (files.isEmpty)
+        if (chunks.isEmpty)
           completeStage()
         else if (isAvailable(out))
-          emitFile()
+          emitChunk()
       }
     })
 
@@ -54,7 +71,7 @@ class FileSplitter(val chunkSize: Int) extends GraphStage[FlowShape[ByteString, 
         // Write to the current file
         state.fileOut.write(bufferCurrent.toArray)
         state.fileOut.close()
-        files = files :+ state.file // Add to the ready list
+        chunks = chunks :+ state.chunk.copy(size = state.written) // Add to the ready list
 
         // Create a new state
         state = state.next
@@ -67,15 +84,15 @@ class FileSplitter(val chunkSize: Int) extends GraphStage[FlowShape[ByteString, 
       }
     }
 
-    private def emitFile(): Unit = {
-      files match {
+    private def emitChunk(): Unit = {
+      chunks match {
         case Seq() =>
           if (isClosed(in))
             completeStage()
           else
             pull(in)
         case head :: tail =>
-          files = tail
+          chunks = tail
           push(out, head)
       }
     }
@@ -85,21 +102,26 @@ class FileSplitter(val chunkSize: Int) extends GraphStage[FlowShape[ByteString, 
 }
 
 object FileSplitter {
-  def randomFilename: String = "tmp/" + java.util.UUID.randomUUID.toString
 
-  case class FileSplitterState(written: Int, fileOut: FileOutputStream, file: java.io.File) {
-    def next: FileSplitterState = {
-      val randomFile: java.io.File = new java.io.File(randomFilename)
-      this.copy(0, new FileOutputStream(randomFile), randomFile)
+  /**
+    * File splitter state, keeping the current state of the splitter
+    * @param written The byte written to the chunk
+    * @param fileOut The output chunk stream
+    * @param chunk The chunk metadata
+    */
+  case class FileSplitterState(written: Int, fileOut: OutputStream, chunk: FileChunk) {
+    def next(implicit storageEngine: FileStorageEngine): FileSplitterState = {
+      val chunk = FileChunk.initFrom(storageEngine)
+      this.copy(0, storageEngine.createChunk(chunk.id), chunk)
     }
   }
 
   object FileSplitterState {
-    def empty: FileSplitterState = {
-      val randomFile: java.io.File = new java.io.File(randomFilename)
-      FileSplitterState(0, new FileOutputStream(randomFile), randomFile)
+    def empty(implicit storageEngine: FileStorageEngine): FileSplitterState = {
+      val chunk = FileChunk.initFrom(storageEngine)
+      FileSplitterState(0, storageEngine.createChunk(chunk.id), chunk)
     }
   }
 
-  def apply(chunkSize: Int): FileSplitter = new FileSplitter(chunkSize)
+  def apply(storageEngine: FileStorageEngine, chunkSize: Int): FileSplitter = new FileSplitter(storageEngine, chunkSize)
 }

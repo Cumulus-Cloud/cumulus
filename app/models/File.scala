@@ -1,13 +1,21 @@
 package models
 
+import java.util.UUID
+
+import org.joda.time.DateTime
+import play.api.libs.json.{JsPath, Writes}
+import play.api.libs.functional.syntax._
+import storage.FileStorageEngine
+
 /**
   * A File.
+  *
   * @param node The file system node of the file
   * @param chunks The contained directories
   */
 case class File(
   node: FsNode,
-  chunks: Seq[String] // TODO chunk object
+  chunks: Seq[FileChunk] // TODO chunk object
 ) extends FsElement
 
 object File {
@@ -42,4 +50,37 @@ object File {
     )
   )*/
 
+}
+
+case class FileChunk(
+  id: UUID,
+  size: BigInt,
+  storageEngine: String,
+  storageEngineVersion: String,
+  creation: DateTime
+)
+
+object FileChunk {
+
+  def initFrom(engine: FileStorageEngine): FileChunk = FileChunk(
+    UUID.randomUUID(),
+    0,
+    engine.name,
+    engine.version,
+    DateTime.now()
+  )
+
+  implicit val fileChunkWrites: Writes[FileChunk] = (
+    (JsPath \ "id").write[String] and
+    (JsPath \ "size").write[Int] and
+    (JsPath \ "storageEngine").write[String] and
+    (JsPath \ "storageEngineVersion").write[String] and
+    (JsPath \ "creation").write[DateTime]
+  )(chunk => (
+    chunk.id.toString,
+    chunk.size.toInt,
+    chunk.storageEngine,
+    chunk.storageEngineVersion,
+    chunk.creation)
+  )
 }

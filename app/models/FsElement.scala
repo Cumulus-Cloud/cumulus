@@ -18,19 +18,23 @@ object FsElement {
     (JsPath \ "creation").write[String] and
     (JsPath \ "modification").write[String] and
     //(JsPath \ "creator").write[Account] and
-    (JsPath \ "content").lazyWriteNullable(Writes.seq[FsElement](fsElementWrites))
-    )(element => (
-      element.node.id.toString,
-      element.node.location.toString,
-      element.node.name,
-      element.node.nodeType,
-      element.node.creation.toString,
-      element.node.modification.toString,
-      //element.node.creator
-      element match {
-        case dir: Directory if dir.content.nonEmpty => Some(dir.content)
-        // TODO chunks of file: File
-        case _ => None
-      })
-    )
+    (JsPath \ "content").lazyWriteNullable(Writes.seq[FsElement](fsElementWrites)) and
+    (JsPath \ "chunks").lazyWriteNullable(Writes.seq[FileChunk](FileChunk.fileChunkWrites))
+  )(element => (
+    element.node.id.toString,
+    element.node.location.toString,
+    element.node.name,
+    element.node.nodeType,
+    element.node.creation.toString,
+    element.node.modification.toString,
+    //element.node.creator
+    element match {
+      case dir: Directory if dir.content.nonEmpty => Some(dir.content)
+      case _ => None
+    },
+    element match {
+      case file: File => Some(file.chunks)
+      case _ => None
+    })
+  )
 }

@@ -21,6 +21,7 @@ GET     /api/file/*path             controllers.FilesController.show(path)
 POST    /api/file/*path             controllers.FilesController.create(path)
 
 POST    /testUpload/:filename       controllers.HomeController.testUpload(filename: String)
+GET     /testDownload               controllers.HomeController.testDownload
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
