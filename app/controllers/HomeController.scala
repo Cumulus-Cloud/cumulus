@@ -1,26 +1,23 @@
 package controllers
 
+import java.io._
 import javax.inject._
 
-import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream._
+import akka.stream.scaladsl.Source
+import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.util.ByteString
-import models.Directory
+import models.{Directory, File}
 import play.api.i18n.MessagesApi
-import repositories.filesystem.{DirectoryRepository, FileRepository}
 import play.api.libs.json._
+import play.api.libs.streams.Accumulator
 import play.api.mvc._
 import repositories.AccountRepository
-import models.{Account, Directory, File}
-import play.api.libs.iteratee.{Enumeratee, Iteratee, Traversable}
-import play.api.libs.streams.{Accumulator, Streams}
-import repositories.filesystem.DirectoryRepository
-import utils.EitherUtils._
-import akka.stream._
-import akka.stream.scaladsl._
+import repositories.filesystem.{DirectoryRepository, FileRepository}
 
-import scala.concurrent.Future
+import utils.EitherUtils._
+import utils.FileSplitter
 
 @Singleton
 class HomeController @Inject() (
@@ -75,7 +72,6 @@ class HomeController @Inject() (
       case Left(e) =>
         BadRequest(Json.toJson(e))
     }
-
   }
 
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -83,23 +79,114 @@ class HomeController @Inject() (
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
 
+  // TEST 2
+  class FileSplitter(val chunkSize: Int) extends GraphStage[FlowShape[ByteString, java.io.File]] {
+    val in = Inlet[ByteString]("Chunker.in")
+    val out = Outlet[java.io.File]("Chunker.out")
+    override val shape = FlowShape.of(in, out)
+
+    override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = new GraphStageLogic(shape) {
+      // The sequence of files created
+      private var files: Seq[java.io.File] = Seq()
+      // The current file
+      private var file = new java.io.File(randomFilename())
+      // The current file output stream
+      private var fileWriter = new BufferedOutputStream(new FileOutputStream(file))
+      // Number of bytes written
+      private var written: Int = 0
+
+      setHandler(out, new OutHandler {
+        override def onPull(): Unit = {
+          if (isClosed(in)) emitFile()
+          else pull(in)
+        }
+      })
+
+      setHandler(in, new InHandler {
+        override def onPush(): Unit = {
+          val elem = grab(in)
+
+          write(elem)
+
+          emitFile()
+        }
+
+        override def onUpstreamFinish(): Unit = {
+          // Close the writer and add to the ready list
+          fileWriter.close()
+          files = files :+ file
+
+          if (files.isEmpty)
+            completeStage()
+          else if (isAvailable(out))
+            emitFile()
+        }
+      })
+
+      private def write(bytes: ByteString): Unit = {
+        // If the new chunk + the written chunks exceeds the maximum file size
+        if(written + bytes.length > chunkSize) {
+          // Slice into 2 ByteString
+          val bytesCurrent = bytes.slice(0, chunkSize - written)
+          val bytesNext = bytes.slice(bytesCurrent.length, bytes.size)
+
+          // Write to the current file
+          fileWriter.write(bytesCurrent.toArray)
+          fileWriter.close()
+          files = files :+ file // Add to the ready list
+
+          // Create a new file and update the state
+          file = new java.io.File(randomFilename()) // Random name
+          fileWriter = new BufferedOutputStream(new FileOutputStream(file))
+          written = 0
+
+          write(bytesNext)
+        } else {
+          // File not full, write
+          fileWriter.write(bytes.toArray)
+          written += bytes.length
+        }
+      }
+
+      private def emitFile(): Unit = {
+        if (files.isEmpty) {
+          if (isClosed(in))
+            completeStage()
+          else
+            pull(in)
+        } else {
+          val file = files.head
+          files = files.tail
+          push(out, file)
+        }
+      }
+
+      private def randomFilename(): String = {
+        "tmp/" + java.util.UUID.randomUUID.toString
+      }
+
+    }
+  }
+
   // Custom parser to set the body as a source
   val customParser: BodyParser[Source[ByteString, _]] = BodyParser { req =>
     Accumulator.source[ByteString].map(Right.apply)
   }
 
   def testUpload(filename: String) = Action.async(customParser) { request =>
-    // Create the file
-    val file = new java.io.File(s"tmp/$filename")
-    file.getParentFile.mkdirs()
+    println("Upload start!")
+    val t0 = System.nanoTime()
 
-    // Sink where to write the file
-    val fileSink = FileIO.toPath(file.toPath)
+    // 100 Mo
+    request.body.via(FileSplitter(104857600)).runForeach(files => {
+      //println(files)
+    }).map(_ => {
+      val t1 = System.nanoTime()
+      println("Elapsed time: " + (t1 - t0)/1000000 + "ms")
 
-    // Pass the body to the file sink
-    request.body.runWith(fileSink).map(ioresult =>
+      println("Upload done!")
       Ok("uploaded")
-    )
+    })
   }
 
   def getDirectory(location: String) = auth.AuthAction { implicit request =>
