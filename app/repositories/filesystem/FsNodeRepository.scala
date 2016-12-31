@@ -260,7 +260,6 @@ class FsNodeRepository @Inject()(
   private[filesystem] def selectContent(node: FsNode)(implicit c: Connection): Seq[FsNode] = {
     // TODO also get permissions ?
     selectNodeContent(node).as(parser *)
-    // TODO also get files ??
   }
 }
 
@@ -303,8 +302,8 @@ object FsNodeRepository {
 
   private def selectNodeByPath(path: String) = SQL"""
        SELECT * FROM #$table
-       LEFT JOIN #${PermissionRepository.table}
-         ON #$table.id = #${PermissionRepository.table}.directory_id
+       LEFT JOIN #${FileChunkRepository.table}
+         ON #$table.id = #${FileChunkRepository.table}.directory_id
        WHERE #$table.location = $path;
     """
 

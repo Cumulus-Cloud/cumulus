@@ -15,7 +15,8 @@ import storage.FileStorageEngine
   */
 case class File(
   node: FsNode,
-  chunks: Seq[FileChunk] // TODO chunk object
+  chunks: Seq[FileChunk]
+               // TODO add file metada ? file type ? Number of chunks ?
 ) extends FsElement
 
 object File {
@@ -28,27 +29,7 @@ object File {
     chunks = Seq()
   )
 
-  // TODO add permissions ?
-  // TODO serialize directly fsNode ?
-  /*
-  implicit val fileWrites: Writes[File] = (
-    (JsPath \ "id").write[String] and
-    (JsPath \ "location").write[String] and
-    (JsPath \ "name").write[String] and
-    (JsPath \ "creation").write[DateTime] and
-    (JsPath \ "modification").write[DateTime] and
-    (JsPath \ "creator").write[Account] /*and
-    (JsPath \ "chunks").lazyWriteNullable(Writes.seq[String](fileWrites))*/ // TODO export chunks
-  )(file => (
-    file.node.id.toString,
-    file.node.location.toString,
-    file.node.name,
-    file.node.creation,
-    file.node.modification,
-    file.node.creator
-    //if (file.chunks.isEmpty) None else Some(directory.content)) // TODO export chunks
-    )
-  )*/
+  def apply(node: FsNode): File = new File(node, Seq.empty)
 
 }
 
@@ -58,6 +39,7 @@ case class FileChunk(
   storageEngine: String,
   storageEngineVersion: String,
   creation: DateTime
+                    // TODO add chunk number !
 )
 
 object FileChunk {

@@ -10,7 +10,7 @@ import akka.stream.scaladsl.{FileIO, Source}
 import akka.util.ByteString
 import models.{FileChunk, Directory, File}
 import org.joda.time.DateTime
-import play.api.Logger
+import play.api.{Configuration, Logger}
 import play.api.i18n.MessagesApi
 import play.api.libs.json._
 import play.api.libs.streams.Accumulator
@@ -28,7 +28,8 @@ class HomeController @Inject() (
   val directoryRepo: DirectoryRepository,
   val fileRepo: FileRepository,
   val auth: AuthActionService,
-  val messagesApi: MessagesApi
+  val messagesApi: MessagesApi,
+  val configuration: Configuration
 ) extends BaseController {
 
   // Test :)
@@ -82,7 +83,7 @@ class HomeController @Inject() (
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
 
-  val storageEngine = LocalStorageEngine.apply
+  val storageEngine = LocalStorageEngine(configuration)
 
   // Custom parser to set the body as a source
   val customParser: BodyParser[Source[ByteString, _]] = BodyParser { req =>

@@ -11,8 +11,7 @@ class LocalStorageEngine extends FileStorageEngine {
 
   override def initialize(conf: Configuration): Unit = {
     Logger.debug("Local Storage Engine started")
-
-    path = conf.getString("path").getOrElse("tmp/")
+    path = conf.getString("fileStorageEngine.LocalStorageEngine.path").getOrElse("tmp/")
   }
 
   override def shutdown(): Unit = {
@@ -40,5 +39,9 @@ class LocalStorageEngine extends FileStorageEngine {
 }
 
 object LocalStorageEngine {
-  def apply: LocalStorageEngine = new LocalStorageEngine()
+  def apply(configuration: Configuration): LocalStorageEngine = {
+    val engine = new LocalStorageEngine()
+    engine.initialize(configuration)
+    engine
+  }
 }

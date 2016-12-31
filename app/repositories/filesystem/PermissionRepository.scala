@@ -31,9 +31,9 @@ object PermissionRepository {
 
   val parser = {
     get[UUID]("account_id") ~
-      get[Array[String]]("permissions")  map {
-        case account_id ~ permissions
-          => Permission(account_id, permissions)
+    get[Array[String]]("permissions")  map {
+      case account_id ~ permissions
+        => Permission(account_id, permissions)
     }
   }
 

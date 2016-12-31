@@ -2,7 +2,7 @@ package repositories.filesystem
 
 import javax.inject.Inject
 
-import models.{Account, Directory, Path}
+import models.{File, Account, Directory, Path}
 import play.api.db.DBApi
 import repositories.ValidationError
 
@@ -17,12 +17,14 @@ class DirectoryRepository @Inject()(
 
   /**
     * Default database
+    *
     * @return The default database
     */
   private def db = dbApi.database("default") // TODO get from conf
 
   /**
     * Insert the provided directory
+    *
     * @see [[FsNodeRepository.insert()]]
     */
   def insert(directory: Directory)(implicit account: Account): Either[ValidationError, Directory] = {
@@ -34,6 +36,7 @@ class DirectoryRepository @Inject()(
 
   /**
     * Return a directory by its path, with its content
+    *
     * @see [[FsNodeRepository.getByPath()]]
     */
   def getByPath(path: String)(implicit account: Account): Either[ValidationError, Option[Directory]] = {
@@ -48,7 +51,12 @@ class DirectoryRepository @Inject()(
                 // Add the contained directories, but filtered with the read right
                 content = nodeRepository.selectContent(n)
                   .filter(_.havePermission(account, "read"))
-                  .map(Directory(_)) // TODO also add files
+                  .map({
+                    case content if content.isDirectory =>
+                      Directory(content)
+                    case content if content.isFile =>
+                      File(content) // Chunks are only returned when the detailed file is requested
+                  })
               )
             }
           )
@@ -58,6 +66,7 @@ class DirectoryRepository @Inject()(
 
   /**
     * Move a directory to a new location, along with all the contained directories and sub-directories
+    *
     * @see [[FsNodeRepository.getByPath()]]
     */
   def move(directory: Directory, destinationPath: Path)(implicit account: Account): Either[ValidationError, Directory] = {
@@ -69,6 +78,7 @@ class DirectoryRepository @Inject()(
 
   /**
     * Delete the provided directory and all the contained directories
+    *
     * @see [[FsNodeRepository.getByPath()]]
     */
   def delete(directory: Directory)(implicit account: Account): Either[ValidationError, Unit] = {
