@@ -67,7 +67,7 @@ object FsNode {
   def initFrom(location: String, nodeType: String, creator: Account): FsNode = FsNode(
     UUID.randomUUID(),
     location,
-    location.split("/").last,
+    location.split("/").lastOption.getOrElse("/"),
     nodeType,
     DateTime.now(),
     DateTime.now(),

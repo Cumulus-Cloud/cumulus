@@ -2,23 +2,33 @@ package controllers
 
 import javax.inject._
 
-import models.Directory
+import akka.actor.ActorSystem
+import akka.stream._
+import akka.stream.scaladsl.Source
+import akka.util.ByteString
+import models.{Directory, File, FileChunk}
 import play.api.i18n.MessagesApi
-import repositories.filesystem.{DirectoryRepository, FileRepository}
 import play.api.libs.json._
+import play.api.libs.streams.Accumulator
 import play.api.mvc._
+import play.api.{Configuration, Logger}
 import repositories.AccountRepository
-import models.{Account, Directory, File}
-import repositories.filesystem.DirectoryRepository
+import repositories.filesystem.{DirectoryRepository, FileRepository}
+import storage.LocalStorageEngine
 import utils.EitherUtils._
+import utils.{FileJoiner, FileSplitter}
 
+/**
+  * Test zone do not touch/use :)
+  */
 @Singleton
 class HomeController @Inject() (
   val accountRepo: AccountRepository,
   val directoryRepo: DirectoryRepository,
   val fileRepo: FileRepository,
   val auth: AuthActionService,
-  val messagesApi: MessagesApi
+  val messagesApi: MessagesApi,
+  val configuration: Configuration
 ) extends BaseController {
 
   // Test :)
@@ -65,7 +75,53 @@ class HomeController @Inject() (
       case Left(e) =>
         BadRequest(Json.toJson(e))
     }
+  }
 
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  implicit val system = ActorSystem()
+  implicit val materializer = ActorMaterializer()
+
+  val storageEngine = LocalStorageEngine(configuration)
+
+  // Custom parser to set the body as a source
+  val customParser: BodyParser[Source[ByteString, _]] = BodyParser { req =>
+    Accumulator.source[ByteString].map(Right.apply)
+  }
+
+  def testUpload(filename: String) = Action.async(customParser) { request =>
+    Logger.debug("Upload started!")
+    val t0 = System.nanoTime()
+
+    // 100 Mo = 104857600 o
+    request.body.via(FileSplitter(storageEngine, 104857600)).fold(Seq.empty[FileChunk])((chunks, chunk) => {
+      Logger.debug(s"Chunk created => $chunk")
+      chunks :+ chunk
+    }).runForeach(chunks => {
+      println(chunks)
+      // TODO upload chunks here
+    }).map(_ => {
+      val t1 = System.nanoTime()
+      Logger.debug("Elapsed time: " + (t1 - t0)/1000000 + "ms")
+
+      Logger.debug("Upload done!")
+      Ok("uploaded")
+    })
+  }
+
+  def testDownload = Action { request =>
+    val chunks = Seq(
+      /*
+      FileChunk(UUID.fromString("132751bf-c1fb-406e-9930-6dbe7cd6de2e"), 18, "", "", DateTime.now()),
+      FileChunk(UUID.fromString("9da6e51f-d8c4-41d9-817c-70949f21997d"), 18, "", "", DateTime.now()),
+      FileChunk(UUID.fromString("d05c8f6c-14a4-4713-bf8d-b93ac4635809"), 18, "", "", DateTime.now()),
+      FileChunk(UUID.fromString("f510c900-f892-4377-ba20-f32aac20fc30"), 18, "", "", DateTime.now()),
+      FileChunk(UUID.fromString("5df4ce07-a248-49e6-b341-397af3b5d3ec"), 18, "", "", DateTime.now())*/
+    )
+
+    val fileStream = Source[FileChunk](chunks.to[collection.immutable.Seq]).via(FileJoiner(storageEngine, 9))
+
+    Ok.chunked(fileStream)//.withHeaders(("Content-Type", "image/jpg"))
   }
 
   def getDirectory(location: String) = auth.AuthAction { implicit request =>

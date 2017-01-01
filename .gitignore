@@ -1,5 +1,6 @@
 # Ignore Play! working directory #
 bin/
+tmp/
 /db
 /lib/
 /logs/

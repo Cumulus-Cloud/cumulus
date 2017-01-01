@@ -36,6 +36,7 @@ class AccountController @Inject() (
       { case (mail, login, password) =>
         accountRepository.insert(Account.initFrom(mail, login, password)) match {
           case Right(account) =>
+            // TODO create a home directory and updating the FS and the user !
             val claim = Json.obj("user_id" -> account.id)
             val token = JwtJson.encode(header, claim, key)
             logger.debug(s"signUp account=$account token=$token ")

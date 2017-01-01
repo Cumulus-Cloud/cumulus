@@ -12,13 +12,17 @@ POST    /accounts/login             controllers.AccountController.login
 POST    /accounts/signup            controllers.AccountController.signUp
 GET     /accounts/me                controllers.AccountController.me
 
-GET     /api/directory              controllers.DirectoriesController.list(path = "")
-GET     /api/directory/             controllers.DirectoriesController.list(path = "")
-GET     /api/directory/*path        controllers.DirectoriesController.list(path)
-POST    /api/directory/*path        controllers.DirectoriesController.create(path)
+GET     /api/directory*path        controllers.DirectoriesController.list(path)
+POST    /api/directory*path        controllers.DirectoriesController.create(path)
 
 GET     /api/file/*path             controllers.FilesController.show(path)
-POST    /api/file/*path             controllers.FilesController.create(path)
+PUT     /api/file/*path             controllers.FilesController.create(path)
+POST    /api/file/*path             controllers.FilesController.upload(path)
+
+GET     /api/download/*path         controllers.FilesController.download(path)
+
+POST    /testUpload/:filename       controllers.HomeController.testUpload(filename: String)
+GET     /testDownload               controllers.HomeController.testDownload
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

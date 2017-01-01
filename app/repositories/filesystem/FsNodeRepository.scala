@@ -260,7 +260,6 @@ class FsNodeRepository @Inject()(
   private[filesystem] def selectContent(node: FsNode)(implicit c: Connection): Seq[FsNode] = {
     // TODO also get permissions ?
     selectNodeContent(node).as(parser *)
-    // TODO also get files ??
   }
 }
 

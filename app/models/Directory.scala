@@ -21,25 +21,4 @@ object Directory {
 
   def apply(node: FsNode): Directory = new Directory(node, Seq.empty)
 
-  /*
-  // TODO add permissions ?
-  // TODO serialize directly fsNode ?
-  implicit val directoryWrites: Writes[Directory] = (
-    (JsPath \ "id").write[String] and
-    (JsPath \ "location").write[String] and
-    (JsPath \ "name").write[String] and
-    (JsPath \ "creation").write[String] and
-    (JsPath \ "modification").write[String] and
-    //(JsPath \ "creator").write[Account] and
-    (JsPath \ "content").writeNullable[Seq[FsElement]] //lazyWriteNullable(Writes.seq[FsElement](directoryWrites))
-  )(directory => (
-    directory.node.id.toString,
-    directory.node.location.toString,
-    directory.node.name,
-    directory.node.creation.toString,
-    directory.node.modification.toString,
-    //directory.node.creator,
-    if (directory.content.isEmpty) None else Some(directory.content))
-  )*/
-
 }
