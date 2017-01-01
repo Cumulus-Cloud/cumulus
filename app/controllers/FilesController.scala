@@ -52,7 +52,7 @@ class FilesController @Inject() (
         val fileStream = Source[FileChunk](file.chunks.to[collection.immutable.Seq]).via(FileJoiner(storageEngine, 4096))
         Ok.chunked(fileStream)
       case Right(None) =>
-        NotFound()
+        NotFound
       case Left(e) =>
         BadRequest(Json.toJson(e))
     }
@@ -84,9 +84,9 @@ class FilesController @Inject() (
 
     fileRepo.getByPath(cleanedPath)(account) match {
       case Right(Some(file)) =>
-        Ok(file)
+        Ok(Json.toJson(file))
       case Right(None) =>
-        NotFound()
+        NotFound
       case Left(e) =>
         BadRequest(Json.toJson(e))
     }
