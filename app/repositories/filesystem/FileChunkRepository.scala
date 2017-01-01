@@ -48,7 +48,7 @@ object FileChunkRepository {
 
   private def selectFileChunks(fileSystemElement: FsNode) = SQL"""
        SELECT * FROM #$table
-       WHERE #$table.file_id = ${fileSystemElement.id}:uuid;
+       WHERE #$table.file_id = ${fileSystemElement.id}::uuid;
     """
 
   private def insertFileChunk(fileSystemElement: FsNode, fileChunk: FileChunk) = SQL"""
@@ -65,7 +65,7 @@ object FileChunkRepository {
        ${fileChunk.storageEngine},
        ${fileChunk.storageEngineVersion},
        ${fileChunk.creation},
-       ${fileSystemElement.id}::uuid,
+       ${fileSystemElement.id}::uuid
      );
     """
 }

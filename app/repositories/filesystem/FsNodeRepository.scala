@@ -302,8 +302,8 @@ object FsNodeRepository {
 
   private def selectNodeByPath(path: String) = SQL"""
        SELECT * FROM #$table
-       LEFT JOIN #${FileChunkRepository.table}
-         ON #$table.id = #${FileChunkRepository.table}.directory_id
+       LEFT JOIN #${PermissionRepository.table}
+         ON #$table.id = #${PermissionRepository.table}.directory_id
        WHERE #$table.location = $path;
     """
 
