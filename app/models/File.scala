@@ -38,8 +38,8 @@ case class FileChunk(
   size: BigInt,
   storageEngine: String,
   storageEngineVersion: String,
-  creation: DateTime
-                    // TODO add chunk number !
+  creation: DateTime,
+  position: Int
 )
 
 object FileChunk {
@@ -49,7 +49,8 @@ object FileChunk {
     0,
     engine.name,
     engine.version,
-    DateTime.now()
+    DateTime.now(),
+    0
   )
 
   implicit val fileChunkWrites: Writes[FileChunk] = (
@@ -57,12 +58,14 @@ object FileChunk {
     (JsPath \ "size").write[Int] and
     (JsPath \ "storageEngine").write[String] and
     (JsPath \ "storageEngineVersion").write[String] and
-    (JsPath \ "creation").write[DateTime]
+    (JsPath \ "creation").write[DateTime] and
+    (JsPath \ "position").write[Int]
   )(chunk => (
     chunk.id.toString,
     chunk.size.toInt,
     chunk.storageEngine,
     chunk.storageEngineVersion,
-    chunk.creation)
+    chunk.creation,
+    chunk.position)
   )
 }

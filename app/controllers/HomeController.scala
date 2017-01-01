@@ -1,27 +1,26 @@
 package controllers
 
-import java.nio.file.Path
-import java.util.UUID
 import javax.inject._
 
 import akka.actor.ActorSystem
 import akka.stream._
-import akka.stream.scaladsl.{FileIO, Source}
+import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import models.{FileChunk, Directory, File}
-import org.joda.time.DateTime
-import play.api.{Configuration, Logger}
+import models.{Directory, File, FileChunk}
 import play.api.i18n.MessagesApi
 import play.api.libs.json._
 import play.api.libs.streams.Accumulator
 import play.api.mvc._
+import play.api.{Configuration, Logger}
 import repositories.AccountRepository
 import repositories.filesystem.{DirectoryRepository, FileRepository}
 import storage.LocalStorageEngine
-
 import utils.EitherUtils._
 import utils.{FileJoiner, FileSplitter}
 
+/**
+  * Test zone do not touch/use :)
+  */
 @Singleton
 class HomeController @Inject() (
   val accountRepo: AccountRepository,
@@ -112,11 +111,12 @@ class HomeController @Inject() (
 
   def testDownload = Action { request =>
     val chunks = Seq(
+      /*
       FileChunk(UUID.fromString("132751bf-c1fb-406e-9930-6dbe7cd6de2e"), 18, "", "", DateTime.now()),
       FileChunk(UUID.fromString("9da6e51f-d8c4-41d9-817c-70949f21997d"), 18, "", "", DateTime.now()),
       FileChunk(UUID.fromString("d05c8f6c-14a4-4713-bf8d-b93ac4635809"), 18, "", "", DateTime.now()),
       FileChunk(UUID.fromString("f510c900-f892-4377-ba20-f32aac20fc30"), 18, "", "", DateTime.now()),
-      FileChunk(UUID.fromString("5df4ce07-a248-49e6-b341-397af3b5d3ec"), 18, "", "", DateTime.now())
+      FileChunk(UUID.fromString("5df4ce07-a248-49e6-b341-397af3b5d3ec"), 18, "", "", DateTime.now())*/
     )
 
     val fileStream = Source[FileChunk](chunks.to[collection.immutable.Seq]).via(FileJoiner(storageEngine, 9))

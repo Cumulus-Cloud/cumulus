@@ -49,8 +49,12 @@ class FilesController @Inject() (
 
     fileRepo.getByPath(cleanedPath)(account) match {
       case Right(Some(file)) =>
-        val fileStream = Source[FileChunk](file.chunks.to[collection.immutable.Seq]).via(FileJoiner(storageEngine, 4096))
-        Ok.chunked(fileStream)
+        val fileStream = Source[FileChunk](file.chunks.sortBy(_.position).to[collection.immutable.Seq]).via(FileJoiner(storageEngine, 4096))
+        Ok.chunked(fileStream).withHeaders(
+          ("Content-Type", "application/octet-stream"),
+          ("Content-Transfer-Encoding", "Binary"),
+          ("Content-disposition", s"attachment; filename=${file.node.name}") // TODO with metadata
+        )
       case Right(None) =>
         NotFound
       case Left(e) =>
