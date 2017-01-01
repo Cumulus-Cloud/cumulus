@@ -13,7 +13,9 @@ libraryDependencies ++= Seq(
   jdbc,
   "org.postgresql" % "postgresql" % "9.4.1212",
   "com.typesafe.play" %% "anorm" % "2.5.0",
+  "com.typesafe.akka" %% "akka-stream" % "2.4.16",
   "org.mindrot" % "jbcrypt" % "0.3m",
   "com.pauldijou" %% "jwt-play-json" % "0.9.2",
   "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
+
 )

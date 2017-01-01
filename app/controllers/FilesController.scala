@@ -4,7 +4,7 @@ import javax.inject.{Inject, Singleton}
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.{Sink, Source, Compression}
 import akka.util.ByteString
 import models.{FileChunk, File, Path}
 import play.api.{Configuration, Logger}
@@ -17,7 +17,6 @@ import repositories.filesystem.{DirectoryRepository, FileRepository}
 import storage.LocalStorageEngine
 import utils.{FileJoiner, FileSplitter}
 
-import scala.concurrent.Future
 
 @Singleton
 class FilesController @Inject() (
@@ -49,7 +48,10 @@ class FilesController @Inject() (
 
     fileRepo.getByPath(cleanedPath)(account) match {
       case Right(Some(file)) =>
-        val fileStream = Source[FileChunk](file.chunks.sortBy(_.position).to[collection.immutable.Seq]).via(FileJoiner(storageEngine, 4096))
+        val fileStream = Source[FileChunk](file.chunks.sortBy(_.position).to[collection.immutable.Seq])
+          .via(FileJoiner(storageEngine, 4096))
+          .via(Compression.gunzip())
+
         Ok.chunked(fileStream).withHeaders(
           ("Content-Type", "application/octet-stream"),
           ("Content-Transfer-Encoding", "Binary"),
@@ -69,13 +71,17 @@ class FilesController @Inject() (
     val file = File.initFrom(cleanedPath, account)
 
     // 100 Mo = 104857600 o
-    request.body.via(FileSplitter(storageEngine, conf.getInt("fileStorageEngine.chunk.size").getOrElse(104857600)))
+    request.body
+      .via(Compression.gzip)
+      .via(FileSplitter(storageEngine, conf.getInt("fileStorageEngine.chunk.size").getOrElse(104857600)))
       .runWith(Sink.fold[Seq[FileChunk], FileChunk](Seq.empty[FileChunk])(_ :+ _))
       .map(chunks => {
         fileRepo.insert(file.copy(chunks = chunks))(account) match {
           case Right(f) =>
             Ok(Json.toJson(f))
           case Left(e) =>
+            // TODO only create the chunks if the file is successfully created
+            chunks.foreach(c => storageEngine.deleteChunk(c.id))
             BadRequest(Json.toJson(e))
         }
       })
