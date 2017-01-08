@@ -1,6 +1,8 @@
 package utils
 
 import java.io.OutputStream
+import java.security.MessageDigest
+import java.util.Base64
 
 import akka.stream.{Attributes, Outlet, Inlet, FlowShape}
 import akka.stream.stage.{InHandler, OutHandler, GraphStageLogic, GraphStage}
@@ -21,7 +23,7 @@ import utils.FileSplitter.FileSplitterState
   * @param storageEngine The storage engine to use
   * @param chunkSize The chunk size to use
   */
-class FileSplitter(storageEngine: FileStorageEngine, val chunkSize: Int) extends GraphStage[FlowShape[ByteString, FileChunk]] {
+class FileSplitter(storageEngine: FileStorageEngine, val chunkSize: Int) extends GraphStage[FlowShape[ByteString, FileChunk]] with Log {
   val in = Inlet[ByteString]("FileSplitter.in")
   val out = Outlet[FileChunk]("FileSplitter.out")
   override val shape = FlowShape.of(in, out)
@@ -52,7 +54,11 @@ class FileSplitter(storageEngine: FileStorageEngine, val chunkSize: Int) extends
       override def onUpstreamFinish(): Unit = {
         // Close the writer and add to the ready list
         state.fileOut.close()
-        chunks = chunks :+ state.chunk.copy(size = state.written, position = state.chunkCreated)
+        chunks = chunks :+ state.chunk.copy(
+          size = state.written,
+          position = state.chunkCreated,
+          hash = Base64.getEncoder.encodeToString(state.hashDigest.digest)
+        )
 
         if (chunks.isEmpty)
           completeStage()
@@ -63,6 +69,7 @@ class FileSplitter(storageEngine: FileStorageEngine, val chunkSize: Int) extends
 
     /**
       * Write a buffer to a chunk, creating a new chunk is the current is full
+      *
       * @param buffer The buffer to write
       */
     private def write(buffer: ByteString): Unit = {
@@ -74,16 +81,27 @@ class FileSplitter(storageEngine: FileStorageEngine, val chunkSize: Int) extends
 
         // Write to the current file
         state.fileOut.write(bufferCurrent.toArray)
+
+        // Close & Add to the ready list
+        state.hashDigest.update(bufferCurrent.toArray)
         state.fileOut.close()
-        chunks = chunks :+ state.chunk.copy(size = state.written + bufferCurrent.length, position = state.chunkCreated) // Add to the ready list
+        chunks = chunks :+ state.chunk.copy(
+          size = state.written + bufferCurrent.length,
+          position = state.chunkCreated,
+          hash = Base64.getEncoder.encodeToString(state.hashDigest.digest)
+        )
 
         // Create a new state
         state = state.next
+        logger.debug(s"Chunk ${state.chunk.id} created into ${storageEngine.name} v${storageEngine.version}")
 
         write(bufferNext)
       } else {
         // File not full, write
         state.fileOut.write(buffer.toArray)
+
+        // Update state
+        state.hashDigest.update(buffer.toArray)
         state = state.copy(written = state.written + buffer.length)
       }
     }
@@ -92,7 +110,6 @@ class FileSplitter(storageEngine: FileStorageEngine, val chunkSize: Int) extends
       * Emit a chunk. The chunks are emitted once they are full and closed
       */
     private def emitChunk(): Unit = {
-      // TODO compute a hash for every chunk
       // TODO zip ?
       chunks match {
         case Seq() =>
@@ -114,21 +131,24 @@ object FileSplitter {
 
   /**
     * File splitter state, keeping the current state of the splitter
+    *
     * @param written The byte written to the chunk
     * @param fileOut The output chunk stream
     * @param chunk The chunk metadata
+    * @param chunkCreated The number of chunks created
+    * @param hashDigest The hash digest of the chunk
     */
-  case class FileSplitterState(written: Int, fileOut: OutputStream, chunk: FileChunk, chunkCreated: Int) {
+  case class FileSplitterState(written: Int, fileOut: OutputStream, chunk: FileChunk, chunkCreated: Int, hashDigest: MessageDigest) {
     def next(implicit storageEngine: FileStorageEngine): FileSplitterState = {
       val chunk = FileChunk.initFrom(storageEngine)
-      this.copy(0, storageEngine.createChunk(chunk.id), chunk, chunkCreated + 1)
+      this.copy(0, storageEngine.createChunk(chunk.id), chunk, chunkCreated + 1, MessageDigest.getInstance("MD5"))
     }
   }
 
   object FileSplitterState {
     def empty(implicit storageEngine: FileStorageEngine): FileSplitterState = {
       val chunk = FileChunk.initFrom(storageEngine)
-      FileSplitterState(0, storageEngine.createChunk(chunk.id), chunk, 0)
+      FileSplitterState(0, storageEngine.createChunk(chunk.id), chunk, 0, MessageDigest.getInstance("MD5"))
     }
   }
 

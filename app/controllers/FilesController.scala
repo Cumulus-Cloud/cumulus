@@ -1,5 +1,6 @@
 package controllers
 
+import java.lang.Exception
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.ActorSystem
@@ -15,7 +16,7 @@ import play.api.mvc.BodyParser
 import repositories.AccountRepository
 import repositories.filesystem.{DirectoryRepository, FileRepository}
 import storage.LocalStorageEngine
-import utils.{FileJoiner, FileSplitter}
+import utils.{Log, FileJoiner, FileSplitter}
 
 
 @Singleton
@@ -26,7 +27,7 @@ class FilesController @Inject() (
   val auth: AuthActionService,
   val messagesApi: MessagesApi,
   val conf: Configuration
-) extends BaseController {
+) extends BaseController with Log {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

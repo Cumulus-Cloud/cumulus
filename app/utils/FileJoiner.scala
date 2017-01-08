@@ -1,6 +1,8 @@
 package utils
 
 import java.io.InputStream
+import java.security.MessageDigest
+import java.util.Base64
 
 import akka.stream.{Attributes, Outlet, Inlet, FlowShape}
 import akka.stream.stage.{InHandler, OutHandler, GraphStageLogic, GraphStage}
@@ -19,7 +21,7 @@ import utils.FileJoiner.FileJoinerState
   * @param storageEngine The storage engine used
   * @param bufferSize The buffer size to read. Default is 4096
   */
-class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int) extends GraphStage[FlowShape[FileChunk, ByteString]] {
+class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int) extends GraphStage[FlowShape[FileChunk, ByteString]] with Log {
   val in = Inlet[FileChunk]("FileJoiner.in")
   val out = Outlet[ByteString]("FileJoiner.out")
   override val shape = FlowShape.of(in, out)
@@ -58,13 +60,31 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int) extends 
 
     /**
       * Read a new chunk
+      *
       * @param chunk The chunk to read
       */
     private def read(chunk: FileChunk): Unit = {
-      // TODO compute a hash for every chunk and check ?
-      // TODO de-zip ?
       // Start reading a new chunk, update the state
-      state = FileJoinerState(read = 0, fileIn = storageEngine.readChunk(chunk.id), chunk = chunk)
+      state = FileJoinerState.init(chunk)
+      logger.debug(s"Chunk ${state.chunk.id} reading from ${storageEngine.name} v${storageEngine.version}")
+    }
+
+    /**
+      * Check the integrity of the last chunk, by comparing the number of bytes sent to the size of the chunk, and
+      * then the chunk hash to the hash of the send data
+      *
+      * @param totalRead The total number of byte read
+      * @param readHash The hash of all the bytes read
+      */
+    private def checkIntegrity(totalRead: BigInt, readHash: String) : Unit = {
+      if(state.chunk.size != totalRead) {
+        failStage(new Exception(s"Integrity error (file chunk size and read size differs, $totalRead != ${state.chunk.size})"))
+        logger.warn(s"Chunk ${state.chunk.id} integrity test KO on length")
+      } else if(readHash != state.chunk.hash) {
+        failStage(new Exception(s"Integrity error (chunk hash and read hash differs)"))
+        logger.warn(s"Chunk ${state.chunk.id} integrity test KO on hash")
+      } else
+        logger.debug(s"Chunk ${state.chunk.id} integrity test OK")
     }
 
     /**
@@ -79,7 +99,12 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int) extends 
       // EOF, and nothing to send
       if(read < 0) {
         state.fileIn.close()
-        // TODO check the size of the chunk and the read size ?
+
+        // Check integrity..
+        checkIntegrity(
+          state.read,
+          Base64.getEncoder.encodeToString(state.hashDigest.digest)
+        )
 
         // Update the state
         state = state.copy(closed = true)
@@ -89,7 +114,12 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int) extends 
         if (read < bufferSize || state.read + read >= state.chunk.size) {
           state.fileIn.close()
           push(out, ByteString(buffer.slice(0, read))) // Push last chunk
-          // TODO check the size of the chunk and the read size ?
+
+          // Check integrity..
+          checkIntegrity(
+            state.read + read,
+            Base64.getEncoder.encodeToString(state.hashDigest.digest(buffer.slice(0, read)))
+          )
 
           // Update the state
           state = state.copy(read = state.read + read, closed = true)
@@ -99,6 +129,7 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int) extends 
           push(out, ByteString(buffer))
 
           // Update the state
+          state.hashDigest.update(buffer)
           state = state.copy(read = state.read + read)
         }
       }
@@ -112,19 +143,23 @@ object FileJoiner {
 
   /**
     * File joiner state
+    *
     * @param read Number of bytes read
     * @param fileIn The chunk input stream
     * @param chunk The current chunk read
     * @param closed True if the stream has been closed, false otherwise
     */
-  case class FileJoinerState(read: Int, fileIn: InputStream, chunk: FileChunk, closed: Boolean = false) {
+  case class FileJoinerState(read: Int, fileIn: InputStream, chunk: FileChunk, closed: Boolean = false, hashDigest: MessageDigest) {
     def hasMore = read < chunk.size && !closed
   }
 
   object FileJoinerState {
     def empty(implicit storageEngine: FileStorageEngine): FileJoinerState = {
-      FileJoinerState(0, null, FileChunk.initFrom(storageEngine), closed = true) // TODO clean empty state
+      FileJoinerState(0, null, FileChunk.initFrom(storageEngine), closed = true, null) // TODO clean empty state
     }
+
+    def init(chunk: FileChunk)(implicit storageEngine: FileStorageEngine) =
+      FileJoinerState(0, storageEngine.readChunk(chunk.id), chunk, closed = false, MessageDigest.getInstance("MD5"))
   }
 
   def apply(storageEngine: FileStorageEngine, bufferSize: Int = 1024): FileJoiner = new FileJoiner(storageEngine, bufferSize)

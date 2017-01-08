@@ -26,7 +26,7 @@ class FileRepository @Inject()(
   /**
     * Insert the provided file
     *
-    * @see [[FsNodeRepository.insert()]]
+    * @see [[FsNodeRepository.insert]]
     */
   def insert(file: File)(implicit account: Account): Either[ValidationError, File] = {
     db.withTransaction { implicit c =>
@@ -43,7 +43,7 @@ class FileRepository @Inject()(
   /**
     * Return a file by its path, with its content
     *
-    * @see [[FsNodeRepository.getByPath()]]
+    * @see [[FsNodeRepository.getByPath]]
     */
   def getByPath(path: String)(implicit account: Account): Either[ValidationError, Option[File]] = {
     db.withTransaction { implicit c =>
@@ -65,7 +65,7 @@ class FileRepository @Inject()(
   /**
     * Move a file to a new location, along with all the contained file
     *
-    * @see [[FsNodeRepository.getByPath()]]
+    * @see [[FsNodeRepository.getByPath]]
     */
   def move(file: File, destinationPath: Path)(implicit account: Account): Either[ValidationError, File] = {
     nodeRepository.move(file.node, destinationPath) match {
@@ -77,7 +77,7 @@ class FileRepository @Inject()(
   /**
     * Delete the provided file and all the contained directories
     *
-    * @see [[FsNodeRepository.getByPath()]]
+    * @see [[FsNodeRepository.getByPath]]
     */
   def delete(file: File)(implicit account: Account): Either[ValidationError, Unit] = {
     nodeRepository.delete(file.node) match {

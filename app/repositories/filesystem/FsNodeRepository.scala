@@ -50,7 +50,7 @@ class FsNodeRepository @Inject()(
     }
 
   /**
-    * @see [[FsNodeRepository.insert()]]
+    * @see [[FsNodeRepository.insert]]
     */
   def insertNonAtomic(node: FsNode)(implicit account: Account, connection: Connection): Either[ValidationError, FsNode] = {
     for {
@@ -110,7 +110,7 @@ class FsNodeRepository @Inject()(
   }
 
   /**
-    * @see [[FsNodeRepository.getByPath()]]
+    * @see [[FsNodeRepository.getByPath]]
     */
   def getByPathNonAtomic(path: String, nodeType: String = "all")(implicit account: Account, connection: Connection): Either[ValidationError, Option[FsNode]] = {
     // Check the the directory exist and can be read
@@ -148,7 +148,7 @@ class FsNodeRepository @Inject()(
     }
 
   /**
-    * @see [[FsNodeRepository.move()]]
+    * @see [[FsNodeRepository.move]]
     */
   def moveNonAtomic(node: FsNode, destinationPath: Path)(implicit account: Account, connection: Connection): Either[ValidationError, FsNode] = {
     for {

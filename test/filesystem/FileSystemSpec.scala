@@ -10,7 +10,7 @@ import repositories.filesystem.{DirectoryRepository, FileRepository}
 import models.{Account, Directory, File}
 import utils.EitherUtils._
 
-class filesystemSpec extends PlaySpec with OneAppPerSuite with BeforeAndAfterAll {
+class FileSystemSpec extends PlaySpec with OneAppPerSuite with BeforeAndAfterAll {
   implicit override lazy val app = new GuiceApplicationBuilder()
     .configure(Map(
       "db.default.url" -> "jdbc:postgresql://postgres-test/cumulus"
