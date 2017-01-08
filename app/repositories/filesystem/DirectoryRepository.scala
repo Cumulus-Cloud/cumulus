@@ -25,7 +25,7 @@ class DirectoryRepository @Inject()(
   /**
     * Insert the provided directory
     *
-    * @see [[FsNodeRepository.insert()]]
+    * @see [[FsNodeRepository.insert]]
     */
   def insert(directory: Directory)(implicit account: Account): Either[ValidationError, Directory] = {
     nodeRepository.insert(directory.node) match {
@@ -37,7 +37,7 @@ class DirectoryRepository @Inject()(
   /**
     * Return a directory by its path, with its content
     *
-    * @see [[FsNodeRepository.getByPath()]]
+    * @see [[FsNodeRepository.getByPath]]
     */
   def getByPath(path: String)(implicit account: Account): Either[ValidationError, Option[Directory]] = {
     db.withTransaction { implicit c =>
@@ -67,7 +67,7 @@ class DirectoryRepository @Inject()(
   /**
     * Move a directory to a new location, along with all the contained directories and sub-directories
     *
-    * @see [[FsNodeRepository.getByPath()]]
+    * @see [[FsNodeRepository.getByPath]]
     */
   def move(directory: Directory, destinationPath: Path)(implicit account: Account): Either[ValidationError, Directory] = {
     nodeRepository.move(directory.node, destinationPath) match {
@@ -79,7 +79,7 @@ class DirectoryRepository @Inject()(
   /**
     * Delete the provided directory and all the contained directories
     *
-    * @see [[FsNodeRepository.getByPath()]]
+    * @see [[FsNodeRepository.getByPath]]
     */
   def delete(directory: Directory)(implicit account: Account): Either[ValidationError, Unit] = {
     nodeRepository.delete(directory.node) match {
