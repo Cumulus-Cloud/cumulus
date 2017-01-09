@@ -15,6 +15,7 @@ import storage.FileStorageEngine
   */
 case class File(
   node: FsNode,
+  metadata: FileMetadata,
   chunks: Seq[FileChunk]
                // TODO add file metada ? file type ? Number of chunks ?
 ) extends FsElement
@@ -23,16 +24,49 @@ object File {
 
   val NodeType = "file"
 
-  // TODO init chunks ?
+  /**
+    * Init a new empty file
+    *
+    * @param location The file location
+    * @param creator The file creator/owner
+    * @return The created file
+    */
   def initFrom(location: String, creator: Account): File = File(
     FsNode.initFrom(location, "file", creator),
+    FileMetadata.default,
     chunks = Seq()
   )
 
-  def apply(node: FsNode): File = new File(node, Seq.empty)
+  def apply(node: FsNode): File = new File(node, FileMetadata.default, Seq.empty)
 
 }
 
+case class FileMetadata(
+  id: UUID,
+  size: BigInt,
+  mimeType: String
+  // TODO other info ?
+)
+
+object FileMetadata {
+  def default = new FileMetadata(UUID.randomUUID(), 0, "application/octet-stream")
+
+  // Careful, will break if chunks are present multiple times
+  // TODO get uniques chunks
+  def initFrom(chunks: Seq[FileChunk]) = new FileMetadata(UUID.randomUUID(), chunks.map(_.size).sum, "application/octet-stream")
+}
+
+/**
+  * A file chunk
+ *
+  * @param id The file chunk unique ID
+  * @param size The file chunk real size
+  * @param storageEngine The storage engine used
+  * @param storageEngineVersion The storage engine version used
+  * @param creation The creation date
+  * @param position The chunk position
+  * @param hash The MD5 hash of the chunk's content
+  */
 case class FileChunk(
   id: UUID,
   size: BigInt,
@@ -40,6 +74,8 @@ case class FileChunk(
   storageEngineVersion: String,
   creation: DateTime,
   position: Int,
+  compression: Option[String],
+  cipher: Option[String],
   hash: String
 )
 
@@ -52,6 +88,8 @@ object FileChunk {
     engine.version,
     DateTime.now(),
     0,
+    None,
+    None,
     ""
   )
 

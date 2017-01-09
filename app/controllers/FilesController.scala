@@ -1,15 +1,15 @@
 package controllers
 
-import java.lang.Exception
-import java.net.URLDecoder
+import java.net.{URLConnection, URLDecoder}
+import java.nio.file.{Files, Paths}
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Sink, Source, Compression}
+import akka.stream.scaladsl.{Compression, Sink, Source}
 import akka.util.ByteString
-import models.{FileChunk, File, Path}
-import play.api.{Configuration, Logger}
+import models.{File, FileChunk, Path}
+import play.api.Configuration
 import play.api.i18n.MessagesApi
 import play.api.libs.json.Json
 import play.api.libs.streams.Accumulator
@@ -17,7 +17,7 @@ import play.api.mvc.BodyParser
 import repositories.AccountRepository
 import repositories.filesystem.{DirectoryRepository, FileRepository}
 import storage.LocalStorageEngine
-import utils.{Log, FileJoiner, FileSplitter}
+import utils.{FileJoiner, FileSplitter, Log}
 
 
 @Singleton
@@ -43,37 +43,71 @@ class FilesController @Inject() (
     Accumulator.source[ByteString].map(Right.apply)
   }
 
-  def download(path: String) = auth.AuthAction { implicit request =>
+  def stream(path: String) = auth.AuthAction { implicit request =>
 
     val cleanedPath = Path.sanitize(URLDecoder.decode(path, "UTF-8"))
     val account = request.account
 
     val range = request.headers.get("Range").getOrElse("bytes=0-").split('=').toList match {
-      case "bytes" :: r :: Nil => r.split('-').head.toInt // TODO clean
-      case _ => 0
+      case "bytes" :: r :: Nil => r.split('-').map(_.toInt).toList match {
+        case from :: to :: Nil => (from, to)
+        case from :: Nil => (from, -1)
+        case _ => (0, -1)
+      }
+      case _ => (0, -1)
     }
 
     fileRepo.getByPath(cleanedPath)(account) match {
       case Right(Some(file)) =>
         val fileSize = file.chunks.map(_.size).sum
+        val realRange = (range._1, if(range._2 > 0) range._2 else fileSize.toInt - 1 ) // TODO check validity & return 406 if not
+
         println("range => " + range)
         println("size  => " + fileSize)
         println(s"$range - ${fileSize-1}")
-        println((fileSize - range).toString)
+        println((fileSize - realRange._1).toString)
 
         val fileStream = Source[FileChunk](file.chunks.sortBy(_.position).to[collection.immutable.Seq])
-          .via(FileJoiner(storageEngine, bufferSize = 4096, offset = range))
-          //.via(Compression.gunzip())
+          .via(FileJoiner(storageEngine, bufferSize = 4096, offset = realRange._1 /*, max = realRange._2*/)) // TODO handle max
+        // TODO fallback to dowload if chunks are compressed or cyphered
+        // TODO filter chunks
 
-       PartialContent.chunked(fileStream).withHeaders(
-          ("Content-Type", "video/webm"),
-       //   ("Content-Transfer-Encoding", "Binary"),
-          ("Content-Length", (fileSize - range).toString), // TODO with metadata
-          ("Content-Range", s"bytes $range-${fileSize-1}/$fileSize"),
-         ("Accept-Ranges", "bytes"),
-         ("X-Content-Duration", "1.00"),
-           ("Content-Duration", "1.00")
-        //  ("Content-disposition", s"attachment; filename=${file.node.name}") // TODO with metadata
+        PartialContent.chunked(fileStream).withHeaders(
+          ("Content-Type", file.metadata.mimeType),
+          ("Content-Transfer-Encoding", "Binary"),
+          ("Content-Length", (realRange._2 - realRange._1).toString),
+          ("Content-Range", s"bytes ${realRange._1}-${realRange._2}/$fileSize"),
+          ("Accept-Ranges", "bytes")
+        )
+      case Right(None) =>
+        NotFound
+      case Left(e) =>
+        BadRequest(Json.toJson(e))
+    }
+  }
+
+  /**
+    * Plain an simple download for file
+ *
+    * @param path The path of the file
+    * @return The authenticated request to be performed
+    */
+  def download(path: String) = auth.AuthAction { implicit request =>
+
+    val cleanedPath = Path.sanitize(URLDecoder.decode(path, "UTF-8"))
+    val account = request.account
+
+    fileRepo.getByPath(cleanedPath)(account) match {
+      case Right(Some(file)) =>
+        val fileStream = Source[FileChunk](file.chunks.sortBy(_.position).to[collection.immutable.Seq])
+          .via(FileJoiner(storageEngine, 4096))
+          //.via(Compression.gunzip()) TODO handle decompression if requested by chunks
+          // TODO filter chunks
+
+        Ok.chunked(fileStream).withHeaders(
+          ("Content-Type", file.metadata.mimeType),
+          ("Content-Transfer-Encoding", "Binary"),
+          ("Content-disposition", s"attachment; filename=${file.node.name}")
         )
       case Right(None) =>
         NotFound
@@ -89,11 +123,21 @@ class FilesController @Inject() (
     val file = File.initFrom(cleanedPath, account)
 
     request.body
-      //.via(Compression.gzip)
+      //.via(Compression.gzip) TODO handle compression if requested
       .via(FileSplitter(storageEngine, conf.getInt("fileStorageEngine.chunk.size").getOrElse(104857600))) // 100Mo
       .runWith(Sink.fold[Seq[FileChunk], FileChunk](Seq.empty[FileChunk])(_ :+ _))
       .map(chunks => {
-        fileRepo.insert(file.copy(chunks = chunks))(account) match {
+        fileRepo.insert(
+          file.copy(
+            // Add the chunks
+            chunks = chunks,
+            // Update the metadata to match
+            metadata = file.metadata.copy(
+              size = chunks.map(_.size).sum,
+              mimeType = Option(URLConnection.guessContentTypeFromName(file.node.name)).getOrElse("application/octet-stream")
+            )
+          )
+        )(account) match {
           case Right(f) =>
             Ok(Json.toJson(f))
           case Left(e) =>

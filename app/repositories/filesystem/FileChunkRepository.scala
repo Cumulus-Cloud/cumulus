@@ -42,9 +42,11 @@ object FileChunkRepository {
     get[String]("storage_engine_version") ~
     get[DateTime]("creation") ~
     get[Int]("position") ~
-    get[String]("hash") map {
-      case id ~ size ~ storage_engine ~ storage_engine_version ~ creation ~ position ~ hash
-        => FileChunk(id, size, storage_engine, storage_engine_version, creation, position, hash)
+    get[String]("hash") ~
+    get[Option[String]]("compression") ~
+    get[Option[String]]("cipher") map {
+      case id ~ size ~ storage_engine ~ storage_engine_version ~ creation ~ position ~ hash ~ compression ~ cipher
+        => FileChunk(id, size, storage_engine, storage_engine_version, creation, position, compression, cipher, hash)
     }
   }
 
@@ -62,6 +64,8 @@ object FileChunkRepository {
        creation,
        position,
        hash,
+       compression,
+       cipher,
        file_id)
      VALUES (
        ${fileChunk.id}::uuid,
@@ -71,6 +75,8 @@ object FileChunkRepository {
        ${fileChunk.creation},
        ${fileChunk.position},
        ${fileChunk.hash},
+       ${fileChunk.compression},
+       ${fileChunk.cipher},
        ${fileSystemElement.id}::uuid
      );
     """

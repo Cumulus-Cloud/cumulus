@@ -2,7 +2,7 @@ package repositories.filesystem
 
 import javax.inject.Inject
 
-import models.{Account, File, Path}
+import models.{FileMetadata, Account, File, Path}
 import play.api.db.DBApi
 import repositories.ValidationError
 
@@ -11,7 +11,8 @@ import scala.concurrent.ExecutionContext
 class FileRepository @Inject()(
   dbApi: DBApi,
   nodeRepository: FsNodeRepository,
-  fileChunkRepository: FileChunkRepository
+  fileChunkRepository: FileChunkRepository,
+  fileMetadataRepository: FileMetadataRepository
 )(
  implicit ec: ExecutionContext
 ){
@@ -35,13 +36,16 @@ class FileRepository @Inject()(
         case Right(node) =>
           // Insert the chunks
           file.chunks.map(fileChunkRepository.insertNonAtomic(file.node, _))
+          // Insert the metadatas
+          fileMetadataRepository.insertNonAtomic(file.node, file.metadata)
+          // Return the inserted file
           Right(file.copy(node))
       }
     }
   }
 
   /**
-    * Return a file by its path, with its content
+    * Return a file by its path, with its content, chunks and metadata
     *
     * @see [[FsNodeRepository.getByPath]]
     */
@@ -52,9 +56,13 @@ class FileRepository @Inject()(
         case Right(node) =>
           Right(
             node.map { n =>
+              val chunks = fileChunkRepository.selectChunks(n)
+
               File(
                 node = n,
-                chunks = fileChunkRepository.selectChunks(n)
+                chunks = chunks,
+                metadata = fileMetadataRepository.selectMetadata(n)
+                  .getOrElse(FileMetadata.initFrom(chunks)) // Should not happen, fallback
               )
             }
           )

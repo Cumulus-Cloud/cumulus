@@ -2,7 +2,7 @@
 
 # --- !Ups
 
-ALTER TABLE filechunk ADD COLUMN hash varchar(32);
+ALTER TABLE filechunk ADD COLUMN hash varchar(32) NOT NULL;
 
 # --- !Downs
 

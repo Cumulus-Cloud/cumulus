@@ -20,9 +20,11 @@ import utils.FileJoiner.FileJoinerState
   *
   * @param storageEngine The storage engine used
   * @param bufferSize The buffer size to read. Default is 4096
-  * @param offset The offset
+  * @param rangeStart The offset start
+  * @param max The max of bytes to read
   */
-class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int, var range: Int) extends GraphStage[FlowShape[FileChunk, ByteString]] with Log {
+class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int, var rangeStart: Int /*, var rangeStop: Int = -1*/) extends GraphStage[FlowShape[FileChunk, ByteString]] with Log {
+  // TODO handle max
   val in = Inlet[FileChunk]("FileJoiner.in")
   val out = Outlet[ByteString]("FileJoiner.out")
   override val shape = FlowShape.of(in, out)
@@ -32,7 +34,7 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int, var rang
     private implicit val engine: FileStorageEngine = storageEngine
     // The current state
     private var state = FileJoinerState.empty
-    private var offset = range
+    private var offset = rangeStart
 
     setHandler(out, new OutHandler {
       override def onPull(): Unit = {
@@ -138,6 +140,7 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int, var rang
         state.fileIn.close()
 
         // Check integrity..
+        // TODO only check with no offset/max
         /*checkIntegrity(
           state.read,
           Base64.getEncoder.encodeToString(state.hashDigest.digest)
@@ -154,6 +157,7 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int, var rang
           push(out, ByteString(buffer.slice(0, read))) // Push last chunk
 
           // Check integrity..
+          // TODO only check with no offset/max
           /*checkIntegrity(
             state.read + read,
             Base64.getEncoder.encodeToString(state.hashDigest.digest(buffer.slice(0, read)))
