@@ -1,6 +1,7 @@
 package controllers
 
 import java.lang.Exception
+import java.net.URLDecoder
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.ActorSystem
@@ -44,19 +45,35 @@ class FilesController @Inject() (
 
   def download(path: String) = auth.AuthAction { implicit request =>
 
-    val cleanedPath = Path.sanitize(path)
+    val cleanedPath = Path.sanitize(URLDecoder.decode(path, "UTF-8"))
     val account = request.account
+
+    val range = request.headers.get("Range").getOrElse("bytes=0-").split('=').toList match {
+      case "bytes" :: r :: Nil => r.split('-').head.toInt // TODO clean
+      case _ => 0
+    }
 
     fileRepo.getByPath(cleanedPath)(account) match {
       case Right(Some(file)) =>
-        val fileStream = Source[FileChunk](file.chunks.sortBy(_.position).to[collection.immutable.Seq])
-          .via(FileJoiner(storageEngine, 4096))
-          .via(Compression.gunzip())
+        val fileSize = file.chunks.map(_.size).sum
+        println("range => " + range)
+        println("size  => " + fileSize)
+        println(s"$range - ${fileSize-1}")
+        println((fileSize - range).toString)
 
-        Ok.chunked(fileStream).withHeaders(
-          ("Content-Type", "application/octet-stream"),
-          ("Content-Transfer-Encoding", "Binary"),
-          ("Content-disposition", s"attachment; filename=${file.node.name}") // TODO with metadata
+        val fileStream = Source[FileChunk](file.chunks.sortBy(_.position).to[collection.immutable.Seq])
+          .via(FileJoiner(storageEngine, bufferSize = 4096, offset = range))
+          //.via(Compression.gunzip())
+
+       PartialContent.chunked(fileStream).withHeaders(
+          ("Content-Type", "video/webm"),
+       //   ("Content-Transfer-Encoding", "Binary"),
+          ("Content-Length", (fileSize - range).toString), // TODO with metadata
+          ("Content-Range", s"bytes $range-${fileSize-1}/$fileSize"),
+         ("Accept-Ranges", "bytes"),
+         ("X-Content-Duration", "1.00"),
+           ("Content-Duration", "1.00")
+        //  ("Content-disposition", s"attachment; filename=${file.node.name}") // TODO with metadata
         )
       case Right(None) =>
         NotFound
@@ -67,14 +84,13 @@ class FilesController @Inject() (
 
   def upload(path: String) = auth.AuthAction.async(customParser) { implicit request =>
 
-    val cleanedPath = Path.sanitize(path)
+    val cleanedPath = Path.sanitize(java.net.URLDecoder.decode(path, "UTF-8"))
     val account = request.account
     val file = File.initFrom(cleanedPath, account)
 
-    // 100 Mo = 104857600 o
     request.body
-      .via(Compression.gzip)
-      .via(FileSplitter(storageEngine, conf.getInt("fileStorageEngine.chunk.size").getOrElse(104857600)))
+      //.via(Compression.gzip)
+      .via(FileSplitter(storageEngine, conf.getInt("fileStorageEngine.chunk.size").getOrElse(104857600))) // 100Mo
       .runWith(Sink.fold[Seq[FileChunk], FileChunk](Seq.empty[FileChunk])(_ :+ _))
       .map(chunks => {
         fileRepo.insert(file.copy(chunks = chunks))(account) match {

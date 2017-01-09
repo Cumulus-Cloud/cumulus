@@ -20,8 +20,9 @@ import utils.FileJoiner.FileJoinerState
   *
   * @param storageEngine The storage engine used
   * @param bufferSize The buffer size to read. Default is 4096
+  * @param offset The offset
   */
-class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int) extends GraphStage[FlowShape[FileChunk, ByteString]] with Log {
+class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int, var range: Int) extends GraphStage[FlowShape[FileChunk, ByteString]] with Log {
   val in = Inlet[FileChunk]("FileJoiner.in")
   val out = Outlet[ByteString]("FileJoiner.out")
   override val shape = FlowShape.of(in, out)
@@ -31,23 +32,37 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int) extends 
     private implicit val engine: FileStorageEngine = storageEngine
     // The current state
     private var state = FileJoinerState.empty
+    private var offset = range
 
     setHandler(out, new OutHandler {
       override def onPull(): Unit = {
+        println("onPull")
+
         // If the the current internal chunk stream is not close, emit bytes
         if (state.hasMore) emitBytes()
         // Else, try to get another chunk to read from if not closed
-        else if (!isClosed(in)) pull(in)
+        else if (!isClosed(in)){
+          pull(in)
+          println("pull(in)")
+        }
         // Closed and empty, complete the stage
-        else completeStage()
+        else {
+          println("completeStage")
+          completeStage()
+        }
+
       }
     })
 
     setHandler(in, new InHandler {
       override def onPush(): Unit = {
+        //println("onPush")
         // On emit from the in stream, grab the chunk and start emitting
         read(grab(in))
-        emitBytes()
+        if(state.hasMore)
+          emitBytes()
+        //else
+          //pull(in)
       }
 
       override def onUpstreamFinish(): Unit = {
@@ -59,7 +74,7 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int) extends 
     })
 
     /**
-      * Read a new chunk
+      * Read a new chunk, taking into account any offset defined
       *
       * @param chunk The chunk to read
       */
@@ -67,6 +82,27 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int) extends 
       // Start reading a new chunk, update the state
       state = FileJoinerState.init(chunk)
       logger.debug(s"Chunk ${state.chunk.id} reading from ${storageEngine.name} v${storageEngine.version}")
+      // Update the offset
+      if(offset >= chunk.size) {
+        state = state.copy(closed = true) // Ignore
+        state.fileIn.close()
+
+        offset = offset - chunk.size.toInt
+
+        println(s"chunk ${chunk.position} skipped")
+        println(s"offset to $offset")
+        // TODO pull ?
+        pull(in)
+      } else if(offset > 0) {
+        state.fileIn.skip(offset.toLong)
+        state = state.copy(read = offset.toInt)
+
+        offset = 0
+
+        println(s"chunk ${chunk.position} partially skipped")
+        println(s"offset to $offset")
+      } else
+        println(s"chunk ${chunk.position} not skipped")
     }
 
     /**
@@ -92,6 +128,7 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int) extends 
       * new chunk is requested until no more chunks are available
       */
     private def emitBytes(): Unit = {
+      println("emitBytes")
       // Read some data from the chunk
       val buffer = new Array[Byte](bufferSize)
       val read = state.fileIn.read(buffer)
@@ -101,10 +138,11 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int) extends 
         state.fileIn.close()
 
         // Check integrity..
-        checkIntegrity(
+        /*checkIntegrity(
           state.read,
           Base64.getEncoder.encodeToString(state.hashDigest.digest)
-        )
+        )*/
+        println("EOF")
 
         // Update the state
         state = state.copy(closed = true)
@@ -116,10 +154,11 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int) extends 
           push(out, ByteString(buffer.slice(0, read))) // Push last chunk
 
           // Check integrity..
-          checkIntegrity(
+          /*checkIntegrity(
             state.read + read,
             Base64.getEncoder.encodeToString(state.hashDigest.digest(buffer.slice(0, read)))
-          )
+          )*/
+          println(s"some byte $read + EOF")
 
           // Update the state
           state = state.copy(read = state.read + read, closed = true)
@@ -127,6 +166,7 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int) extends 
         // Still readable, just push data
         else {
           push(out, ByteString(buffer))
+          println(s"some bytes $read")
 
           // Update the state
           state.hashDigest.update(buffer)
@@ -162,5 +202,5 @@ object FileJoiner {
       FileJoinerState(0, storageEngine.readChunk(chunk.id), chunk, closed = false, MessageDigest.getInstance("MD5"))
   }
 
-  def apply(storageEngine: FileStorageEngine, bufferSize: Int = 1024): FileJoiner = new FileJoiner(storageEngine, bufferSize)
+  def apply(storageEngine: FileStorageEngine, bufferSize: Int = 1024, offset: Int = 0): FileJoiner = new FileJoiner(storageEngine, bufferSize, offset)
 }

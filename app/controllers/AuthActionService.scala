@@ -21,7 +21,7 @@ class AuthActionService @Inject() (conf: Conf, accountRepository: AccountReposit
   object AuthAction extends ActionBuilder[AuthenticatedRequest] {
     override def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]): Future[Result] = {
       val errorResponse = Json.obj("error" -> "Unauthorized")
-      request.headers.get("Authorization") match {
+      request.headers.get("Authorization").orElse(request.getQueryString("Authorization")) match {
         case Some(header) =>
           logger.debug(s"${request.toString()} Authorization=$header")
           JwtJson.decodeJson(header, key, Seq(JwtAlgorithm.HS256)) match {
