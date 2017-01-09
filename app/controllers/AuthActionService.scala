@@ -21,10 +21,13 @@ class AuthActionService @Inject() (conf: Conf, accountRepository: AccountReposit
   object AuthAction extends ActionBuilder[AuthenticatedRequest] {
     override def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]): Future[Result] = {
       val errorResponse = Json.obj("error" -> "Unauthorized")
-      request.headers.get("Authorization") match {
-        case Some(header) =>
-          logger.debug(s"${request.toString()} Authorization=$header")
-          JwtJson.decodeJson(header, key, Seq(JwtAlgorithm.HS256)) match {
+      request.headers.get("Authorization")
+      .orElse(request.getQueryString("token"))
+      .orElse(request.cookies.get("token").map(_.value))
+      .orElse(request.session.get("token")) match {
+        case Some(token) =>
+          logger.debug(s"${request.toString()} Authorization=$token")
+          JwtJson.decodeJson(token, key, Seq(JwtAlgorithm.HS256)) match {
             case Success(json) =>
               (json \ "user_id").validate[UUID] match {
                 case s: JsSuccess[UUID] =>
@@ -45,7 +48,7 @@ class AuthActionService @Inject() (conf: Conf, accountRepository: AccountReposit
               Future.successful(Results.Unauthorized(errorResponse))
           }
         case None =>
-          logger.error(s"Unauthorized: Missing Authorization header")
+          logger.error(s"Unauthorized: Missing token in Authorization header | cookies | session | query string")
           Future.successful(Results.Unauthorized(errorResponse))
       }
     }

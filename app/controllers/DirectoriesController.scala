@@ -19,12 +19,14 @@ class DirectoriesController @Inject() (
 
   def list(path: String) = auth.AuthAction { implicit request =>
 
-    val cleanedPath = Path.sanitize(path)
+    val cleanedPath = Path.clean(path)
     val account = request.account
 
     directoryRepo.getByPath(cleanedPath)(account) match {
-      case Right(directory) =>
+      case Right(Some(directory)) =>
         Ok(Json.toJson(directory))
+      case Right(None) =>
+        NotFound
       case Left(e) =>
         BadRequest(Json.toJson(e))
     }
@@ -32,7 +34,7 @@ class DirectoriesController @Inject() (
 
   def create(path: String) = auth.AuthAction { implicit request =>
 
-    val cleanedPath = Path.sanitize(path)
+    val cleanedPath = Path.clean(path)
     val account = request.account
 
     directoryRepo.insert(Directory.initFrom(cleanedPath, account))(account) match {
