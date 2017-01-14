@@ -14,6 +14,8 @@ export interface ApiError<T> {
   onmessage?: string
 }
 
+export type Errors = Record<string, string[]>
+
 export function success(response: Response): Promise<any> {
   if (response.status >= 200 && response.status < 300) {
     return response.json()
