@@ -14,7 +14,8 @@ interface Props {
   errors?: Errors
 }
 
-export default function CreateDirectoryDialog({ newDirectoryName, open, errors, onNewDirectoryNameChange, onSubmit, onCancel }: Props) {
+export default function CreateDirectoryDialog(props: Props) {
+  const { newDirectoryName, open, errors, onNewDirectoryNameChange, onSubmit, onCancel } = props
   const actions = [
     <FlatButton
       label="Cancel"
@@ -37,7 +38,7 @@ export default function CreateDirectoryDialog({ newDirectoryName, open, errors, 
         onRequestClose={onCancel}
       >
         <TextField
-          hintText="Name"
+          floatingLabelText="Name"
           errorText={errors && errors["location"].join(" ")}
           value={newDirectoryName}
           onChange={onNewDirectoryNameChange}

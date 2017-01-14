@@ -8,7 +8,7 @@ import { addCreatedFsNode } from "../directory/directoryActions"
 import { store } from "../directory/DirectoryContainer"
 
 interface Props {
-  currentDirectory: Directory
+  currentDirectory?: Directory
 }
 
 export default class UploadFile extends React.Component<Props, void> {
@@ -16,14 +16,16 @@ export default class UploadFile extends React.Component<Props, void> {
   componentDidMount() {
     const file = ReactDOM.findDOMNode(this.refs["file"])
     const currentDirectory = this.props.currentDirectory
-    file.addEventListener("change", function() {
-      console.debug("UploadFile.componentDidMount", this.files, currentDirectory.location + this.files[0].name)
-      Api.upload((currentDirectory.location + "/" + this.files[0].name).replace("//", "/"), this.files[0], e => {
-        console.debug("UploadFile.componentDidMount.upload progression", e)
-      }).then(file => {
-        store.dispatch(addCreatedFsNode(file))
+    if (currentDirectory) {
+      file.addEventListener("change", function() {
+        console.debug("UploadFile.componentDidMount", this.files, currentDirectory.location + this.files[0].name)
+        Api.upload((currentDirectory.location + "/" + this.files[0].name).replace("//", "/"), this.files[0], e => {
+          console.debug("UploadFile.componentDidMount.upload progression", e)
+        }).then(file => {
+          store.dispatch(addCreatedFsNode(file))
+        })
       })
-    })
+    }
   }
 
   componentWillUnmount() {

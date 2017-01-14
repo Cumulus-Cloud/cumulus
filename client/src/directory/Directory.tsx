@@ -8,7 +8,7 @@ import { toggleCreateNewDirectory, changeNewDirectoryName, createDirectory } fro
 
 import FsList from "../components/directory/FsList"
 import Breadcrumb from "../components/directory/Breadcrumb"
-import ActionsBar from "../components/directory/ActionsBar"
+import UploadFile from "../components/UploadFile"
 
 import AppBar from "material-ui/AppBar"
 import { Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle } from "material-ui/Toolbar"
@@ -28,14 +28,16 @@ const Directory = ({ loading, directory, newDirectoryName, errors, whantCreateNe
   return (
     <div>
       <AppBar
-        title="Title"
+        title="Cumulus"
         iconClassNameRight="muidocs-icon-navigation-expand-more"
       />
       <Toolbar>
         <ToolbarGroup firstChild={true}>
-          <RaisedButton label="New Directory" onClick={onCreateNewDirectory} />
+          <RaisedButton label="New Directory" primary={true} onClick={onCreateNewDirectory} />
+          <UploadFile currentDirectory={directory} />
         </ToolbarGroup>
       </Toolbar>
+      <Breadcrumb directory={directory} />
       <CreateDirectoryDialog
         open={whantCreateNewDirectory}
         newDirectoryName={newDirectoryName}
@@ -53,8 +55,6 @@ const Directory = ({ loading, directory, newDirectoryName, errors, whantCreateNe
         : <div>
             {directory
               ? <div>
-                  <ActionsBar currentDirectory={directory} />
-                  <Breadcrumb directory={directory} />
                   { (directory.content || []).length === 0 ?
                     <div>Empty Directory</div> :
                     <FsList fsNodes={(directory.content || [])} />
