@@ -24,7 +24,8 @@ interface Props extends DirectoryState {
   onNewDirectoryNameChange: (event: React.FormEvent<HTMLInputElement>) => void
 }
 
-const Directory = ({ loading, directory, newDirectoryName, errors, whantCreateNewDirectory, onCreateNewDirectory, onNewDirectoryNameChange }: Props) => {
+const Directory = (props: Props) => {
+  const { loading, directory, newDirectoryName, errors, whantCreateNewDirectory, onCreateNewDirectory, onNewDirectoryNameChange } = props
   return (
     <div>
       <AppBar
