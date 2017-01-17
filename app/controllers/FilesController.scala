@@ -17,7 +17,7 @@ import play.api.mvc.BodyParser
 import repositories.AccountRepository
 import repositories.filesystem.{DirectoryRepository, FileRepository}
 import storage.LocalStorageEngine
-import utils.{FileJoiner, FileSplitter, Log}
+import utils.{ChunkRedundancer, FileJoiner, FileSplitter, Log}
 
 
 @Singleton
@@ -67,18 +67,20 @@ class FilesController @Inject() (
         println(s"$range - ${fileSize-1}")
         println((fileSize - realRange._1).toString)
 
-        val fileStream = Source[FileChunk](file.chunks.sortBy(_.position).to[collection.immutable.Seq])
+        val test = (file.chunks ++ file.chunks).sortBy(_.position)
+
+        val fileStream = Source[FileChunk](test.to[collection.immutable.Seq])
+          .via(ChunkRedundancer(storageEngine))
           .via(FileJoiner(storageEngine, bufferSize = 4096, offset = realRange._1 /*, max = realRange._2*/)) // TODO handle max
         // TODO fallback to dowload if chunks are compressed or cyphered
         // TODO filter chunks
 
         PartialContent.chunked(fileStream).withHeaders(
-          ("Content-Type", file.metadata.mimeType),
           ("Content-Transfer-Encoding", "Binary"),
           ("Content-Length", (realRange._2 - realRange._1).toString),
           ("Content-Range", s"bytes ${realRange._1}-${realRange._2}/$fileSize"),
           ("Accept-Ranges", "bytes")
-        )
+        ).as(file.metadata.mimeType)
       case Right(None) =>
         NotFound
       case Left(e) =>
@@ -105,10 +107,9 @@ class FilesController @Inject() (
           // TODO filter chunks
 
         Ok.chunked(fileStream).withHeaders(
-          ("Content-Type", file.metadata.mimeType),
           ("Content-Transfer-Encoding", "Binary"),
           ("Content-disposition", s"attachment; filename=${file.node.name}")
-        )
+        ).as(file.metadata.mimeType)
       case Right(None) =>
         NotFound
       case Left(e) =>

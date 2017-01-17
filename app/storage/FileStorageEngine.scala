@@ -25,6 +25,10 @@ trait FileStorageEngine {
 
   def deleteChunk(name: UUID): Unit = deleteChunk(name.toString)
 
+  def isChunkAvailable(name: String): Boolean
+
+  def isChunkAvailable(name: UUID): Boolean = isChunkAvailable(name.toString)
+
   def shutdown(): Unit
 
   override def finalize = {

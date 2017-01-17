@@ -38,18 +38,18 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int, var rang
 
     setHandler(out, new OutHandler {
       override def onPull(): Unit = {
-        println("onPull")
+        //println("onPull")
 
         // If the the current internal chunk stream is not close, emit bytes
         if (state.hasMore) emitBytes()
         // Else, try to get another chunk to read from if not closed
         else if (!isClosed(in)){
           pull(in)
-          println("pull(in)")
+          //println("pull(in)")
         }
         // Closed and empty, complete the stage
         else {
-          println("completeStage")
+          //println("completeStage")
           completeStage()
         }
 
@@ -91,8 +91,8 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int, var rang
 
         offset = offset - chunk.size.toInt
 
-        println(s"chunk ${chunk.position} skipped")
-        println(s"offset to $offset")
+        //println(s"chunk ${chunk.position} skipped")
+        //println(s"offset to $offset")
         // TODO pull ?
         pull(in)
       } else if(offset > 0) {
@@ -101,10 +101,10 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int, var rang
 
         offset = 0
 
-        println(s"chunk ${chunk.position} partially skipped")
-        println(s"offset to $offset")
-      } else
-        println(s"chunk ${chunk.position} not skipped")
+        //println(s"chunk ${chunk.position} partially skipped")
+        //println(s"offset to $offset")
+      } //else
+        //println(s"chunk ${chunk.position} not skipped")
     }
 
     /**
@@ -130,7 +130,7 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int, var rang
       * new chunk is requested until no more chunks are available
       */
     private def emitBytes(): Unit = {
-      println("emitBytes")
+      //println("emitBytes")
       // Read some data from the chunk
       val buffer = new Array[Byte](bufferSize)
       val read = state.fileIn.read(buffer)
@@ -145,7 +145,7 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int, var rang
           state.read,
           Base64.getEncoder.encodeToString(state.hashDigest.digest)
         )*/
-        println("EOF")
+        //println("EOF")
 
         // Update the state
         state = state.copy(closed = true)
@@ -162,7 +162,7 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int, var rang
             state.read + read,
             Base64.getEncoder.encodeToString(state.hashDigest.digest(buffer.slice(0, read)))
           )*/
-          println(s"some byte $read + EOF")
+          //println(s"some byte $read + EOF")
 
           // Update the state
           state = state.copy(read = state.read + read, closed = true)
@@ -170,7 +170,7 @@ class FileJoiner(storageEngine: FileStorageEngine, val bufferSize: Int, var rang
         // Still readable, just push data
         else {
           push(out, ByteString(buffer))
-          println(s"some bytes $read")
+          //println(s"some bytes $read")
 
           // Update the state
           state.hashDigest.update(buffer)
