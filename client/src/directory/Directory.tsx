@@ -35,7 +35,7 @@ const Directory = (props: Props) => {
       <Toolbar>
         <ToolbarGroup firstChild={true}>
           <RaisedButton label="New Directory" primary={true} onClick={onCreateNewDirectory} />
-          <UploadFile currentDirectory={directory} />
+          {directory ? <UploadFile currentDirectory={directory} /> : null}
         </ToolbarGroup>
       </Toolbar>
       <Breadcrumb directory={directory} />
