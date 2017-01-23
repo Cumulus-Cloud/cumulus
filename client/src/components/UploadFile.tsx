@@ -7,6 +7,8 @@ import { Directory } from "../models/FsNode"
 import { addCreatedFsNode } from "../directory/directoryActions"
 import { store } from "../directory/DirectoryContainer"
 
+import RaisedButton from "material-ui/RaisedButton"
+
 interface Props {
   currentDirectory?: Directory
 }
@@ -36,12 +38,14 @@ export default class UploadFile extends React.Component<Props, void> {
 
   render() {
     return (
-      <div>
-        <div className="upload-file">
-          <input ref="file" id="file" type="file" className="upload-file-input" />
-          <label htmlFor="file" className="upload-file-label">Upload</label>
-        </div>
-      </div>
+      <RaisedButton
+        label="Upload"
+        labelPosition="before"
+        containerElement="label"
+        primary={true}
+      >
+        <input ref="file" id="file" type="file" className="upload-file-input" />
+      </RaisedButton>
     )
   }
 }
