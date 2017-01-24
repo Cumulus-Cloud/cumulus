@@ -6,14 +6,13 @@ import java.util.Base64
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{FileIO, Sink}
-import models.FileSources$
+import akka.stream.scaladsl.{FileIO, Source}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import play.api.Configuration
 import play.api.inject.guice.GuiceApplicationBuilder
 import storage.LocalStorageEngine
-import utils.{FileDownloader$, FileUploader$}
+import utils.{FileDownloader, FileUploaderSink}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -90,94 +89,86 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
   }
 
   "File upload" should {
-    "upload a file into a single chunk, with no integrity modification" in {
+    "upload a small file, with no modification" in {
       val res = FileIO.fromPath(fileOf100ko.toPath)
-        .via(FileUploader(storageEngine, chunkOf100ko))
-        .runWith(Sink.fold[Seq[FileSources], FileSources](Seq.empty[FileSources])(_ :+ _)) // Return all the chunks at once
+        .runWith(FileUploaderSink(storageEngine))
         .recover({
-          case _ => Seq.empty // Will fail the test
+          case _ => null // Will fail the test
         })
 
-      val chunks = Await.result(res, 1000.millis)
+      val source = Await.result(res, 1000.millis)
 
-      assert(chunks.size == 1)
-      assert(chunks.head.hash == computeFileHash(fileOf100ko))
+      assert(source.hash == computeFileHash(fileOf100ko))
     }
+  }
 
-    "upload a file into multiples chunks, with no integrity modification" in {
-       val res = FileIO.fromPath(fileOf500ko.toPath)
-        .via(FileUploader(storageEngine, chunkOf100ko))
-        .runWith(Sink.fold[Seq[FileSources], FileSources](Seq.empty[FileSources])(_ :+ _)) // Return all the chunks at once
-        .recover({
-          case _ => Seq.empty // Will fail the test
-        })
-
-      val chunks = Await.result(res, 1000.millis)
-
-      assert(chunks.size == 5)
-    }
-
-    "upload a file into multiples chunks, with correct MD5 hash for each chunks" in {
+  "File upload" should {
+    "upload a medium file, with no modification" in {
       val res = FileIO.fromPath(fileOf1Mo.toPath)
-        .via(FileUploader(storageEngine, chunkOf100ko))
-        .runWith(Sink.fold[Seq[FileSources], FileSources](Seq.empty[FileSources])(_ :+ _)) // Return all the chunks at once
+        .runWith(FileUploaderSink(storageEngine))
         .recover({
-        case _ => Seq.empty // Will fail the test
-      })
+          case _ => null // Will fail the test
+        })
 
-      val chunks = Await.result(res, 1000.millis)
+      val source = Await.result(res, 1000.millis)
 
-      chunks.foreach(chunk => {
-        assert(chunk.hash == computeFileHash(new File(chunkLocation, chunk.id.toString)))
-      })
+      assert(source.hash == computeFileHash(fileOf1Mo))
     }
   }
 
   "File download" should {
-    "work with a single-chunk file" in {
+    "work with a small file, with no modification" in {
       val downloadFile = new File(chunkLocation, "unitTestFile1")
+
       val res = FileIO.fromPath(fileOf100ko.toPath)
-        .via(FileUploader(storageEngine, chunkOf100ko))
-        .via(FileDownloader(storageEngine))
+        .runWith(FileUploaderSink(storageEngine))
+      val source = Await.result(res, 1000.millis)
+
+      val res2 = Source.fromGraph(FileDownloader(storageEngine, source))
         .runWith(FileIO.toPath(downloadFile.toPath))
 
-      Await.result(res, 100.millis)
+      Await.result(res2, 100.millis)
 
       assert(computeFileHash(fileOf100ko) == computeFileHash(downloadFile))
     }
 
-    "works with a multiple-chunks file" in {
+    "work with a medium file, with no modification" in {
       val downloadFile = new File(chunkLocation, "unitTestFile2")
-      val res = FileIO.fromPath(fileOf500ko.toPath)
-        .via(FileUploader(storageEngine, chunkOf100ko))
-        .via(FileDownloader(storageEngine))
+      val res = FileIO.fromPath(fileOf1Mo.toPath)
+        .runWith(FileUploaderSink(storageEngine))
+      val source = Await.result(res, 1000.millis)
+
+      val res2 = Source.fromGraph(FileDownloader(storageEngine, source))
         .runWith(FileIO.toPath(downloadFile.toPath))
 
       Await.result(res, 1000.millis)
 
-      assert(computeFileHash(fileOf500ko) == computeFileHash(downloadFile))
+      assert(computeFileHash(fileOf1Mo) == computeFileHash(downloadFile))
     }
 
-    "fails if the chunk length is not the same as the predicted one" in {
+    "fails if the source length is not the same as the predicted one" in {
       val downloadFile = new File(chunkLocation, "notUsed")
       val res = FileIO.fromPath(fileOf100ko.toPath)
-        .via(FileUploader(storageEngine, chunkOf100ko))
-        .map(chunk => chunk.copy(size = chunk.size - 1))
-        .via(FileDownloader(storageEngine))
+        .runWith(FileUploaderSink(storageEngine))
+      val source = Await.result(res, 1000.millis)
+
+      val res2 = Source.fromGraph(FileDownloader(storageEngine, source.copy(size = source.size - 1)))
         .runWith(FileIO.toPath(downloadFile.toPath))
 
-      assert(!Await.result(res, 1000.millis).wasSuccessful)
+      assert(!Await.result(res2, 1000.millis).wasSuccessful)
     }
 
-    "fails if the chunk hash is not the same as the predicted one" in {
+    "fails if the source hash is not the same as the predicted one" in {
       val downloadFile = new File(chunkLocation, "notUsed")
       val res = FileIO.fromPath(fileOf100ko.toPath)
-        .via(FileUploader(storageEngine, chunkOf100ko))
-        .map(chunk => chunk.copy(hash = chunk.hash + 'e'))
-        .via(FileDownloader(storageEngine))
+        .runWith(FileUploaderSink(storageEngine))
+      val source = Await.result(res, 1000.millis)
+
+
+      val res2 = Source.fromGraph(FileDownloader(storageEngine, source.copy(hash = source.hash + "error")))
         .runWith(FileIO.toPath(downloadFile.toPath))
 
-      assert(!Await.result(res, 1000.millis).wasSuccessful)
+      assert(!Await.result(res2, 1000.millis).wasSuccessful)
     }
   }
 
