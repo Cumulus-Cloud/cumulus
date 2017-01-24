@@ -143,6 +143,7 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
 
       Await.result(res, 1000.millis)
 
+      println(downloadFile.getAbsolutePath)
       println(source.hash)
       println(computeFileHash(fileOf1Mo))
 
