@@ -11,7 +11,7 @@ import scala.concurrent.ExecutionContext
 class FileRepository @Inject()(
   dbApi: DBApi,
   nodeRepository: FsNodeRepository,
-  fileChunkRepository: FileChunkRepository,
+  fileSourceRepository: FileSourceRepository,
   fileMetadataRepository: FileMetadataRepository
 )(
  implicit ec: ExecutionContext
@@ -34,8 +34,8 @@ class FileRepository @Inject()(
       nodeRepository.insertNonAtomic(file.node) match {
         case Left(error) => Left(error)
         case Right(node) =>
-          // Insert the chunks
-          file.chunks.map(fileChunkRepository.insertNonAtomic(file.node, _))
+          // Insert the sources
+          file.sources.map(fileSourceRepository.insertNonAtomic(file.node, _))
           // Insert the metadatas
           fileMetadataRepository.insertNonAtomic(file.node, file.metadata)
           // Return the inserted file
@@ -45,7 +45,7 @@ class FileRepository @Inject()(
   }
 
   /**
-    * Return a file by its path, with its content, chunks and metadata
+    * Return a file by its path, with its content, sources and metadata
     *
     * @see [[FsNodeRepository.getByPath]]
     */
@@ -56,13 +56,13 @@ class FileRepository @Inject()(
         case Right(node) =>
           Right(
             node.map { n =>
-              val chunks = fileChunkRepository.selectChunks(n)
+              val sources = fileSourceRepository.selectSourcesNonAtomic(n)
 
               File(
                 node = n,
-                chunks = chunks,
+                sources = sources,
                 metadata = fileMetadataRepository.selectMetadata(n)
-                  .getOrElse(FileMetadata.initFrom(chunks)) // Should not happen, fallback
+                  .getOrElse(FileMetadata.default) // Should not happen, fallback
               )
             }
           )
@@ -94,5 +94,5 @@ class FileRepository @Inject()(
     }
   }
 
-  // TODO Search file by name/path
+  // TODO Search file by name/path, content ?
 }

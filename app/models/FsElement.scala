@@ -19,7 +19,7 @@ object FsElement {
     (JsPath \ "modification").write[String] and
     //(JsPath \ "creator").write[Account] and
     (JsPath \ "content").lazyWriteNullable(Writes.seq[FsElement](fsElementWrites)) and
-    (JsPath \ "chunks").lazyWriteNullable(Writes.seq[FileChunk](FileChunk.fileChunkWrites))
+    (JsPath \ "sources").lazyWriteNullable(Writes.seq[FileSource](FileSource.fileSourceWrites))
   )(element => (
     element.node.id.toString,
     element.node.location.toString,
@@ -33,7 +33,7 @@ object FsElement {
       case _ => None
     },
     element match {
-      case file: File => Some(file.chunks)
+      case file: File => Some(file.sources)
       case _ => None
     })
   )

@@ -7,13 +7,13 @@ import java.util.Base64
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{FileIO, Sink}
-import models.FileChunk
+import models.FileSources$
 import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import play.api.Configuration
 import play.api.inject.guice.GuiceApplicationBuilder
 import storage.LocalStorageEngine
-import utils.{FileJoiner, FileSplitter}
+import utils.{FileDownloader$, FileUploader$}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -92,8 +92,8 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
   "File upload" should {
     "upload a file into a single chunk, with no integrity modification" in {
       val res = FileIO.fromPath(fileOf100ko.toPath)
-        .via(FileSplitter(storageEngine, chunkOf100ko))
-        .runWith(Sink.fold[Seq[FileChunk], FileChunk](Seq.empty[FileChunk])(_ :+ _)) // Return all the chunks at once
+        .via(FileUploader(storageEngine, chunkOf100ko))
+        .runWith(Sink.fold[Seq[FileSources], FileSources](Seq.empty[FileSources])(_ :+ _)) // Return all the chunks at once
         .recover({
           case _ => Seq.empty // Will fail the test
         })
@@ -106,8 +106,8 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
 
     "upload a file into multiples chunks, with no integrity modification" in {
        val res = FileIO.fromPath(fileOf500ko.toPath)
-        .via(FileSplitter(storageEngine, chunkOf100ko))
-        .runWith(Sink.fold[Seq[FileChunk], FileChunk](Seq.empty[FileChunk])(_ :+ _)) // Return all the chunks at once
+        .via(FileUploader(storageEngine, chunkOf100ko))
+        .runWith(Sink.fold[Seq[FileSources], FileSources](Seq.empty[FileSources])(_ :+ _)) // Return all the chunks at once
         .recover({
           case _ => Seq.empty // Will fail the test
         })
@@ -119,8 +119,8 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
 
     "upload a file into multiples chunks, with correct MD5 hash for each chunks" in {
       val res = FileIO.fromPath(fileOf1Mo.toPath)
-        .via(FileSplitter(storageEngine, chunkOf100ko))
-        .runWith(Sink.fold[Seq[FileChunk], FileChunk](Seq.empty[FileChunk])(_ :+ _)) // Return all the chunks at once
+        .via(FileUploader(storageEngine, chunkOf100ko))
+        .runWith(Sink.fold[Seq[FileSources], FileSources](Seq.empty[FileSources])(_ :+ _)) // Return all the chunks at once
         .recover({
         case _ => Seq.empty // Will fail the test
       })
@@ -137,8 +137,8 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
     "work with a single-chunk file" in {
       val downloadFile = new File(chunkLocation, "unitTestFile1")
       val res = FileIO.fromPath(fileOf100ko.toPath)
-        .via(FileSplitter(storageEngine, chunkOf100ko))
-        .via(FileJoiner(storageEngine))
+        .via(FileUploader(storageEngine, chunkOf100ko))
+        .via(FileDownloader(storageEngine))
         .runWith(FileIO.toPath(downloadFile.toPath))
 
       Await.result(res, 100.millis)
@@ -149,8 +149,8 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
     "works with a multiple-chunks file" in {
       val downloadFile = new File(chunkLocation, "unitTestFile2")
       val res = FileIO.fromPath(fileOf500ko.toPath)
-        .via(FileSplitter(storageEngine, chunkOf100ko))
-        .via(FileJoiner(storageEngine))
+        .via(FileUploader(storageEngine, chunkOf100ko))
+        .via(FileDownloader(storageEngine))
         .runWith(FileIO.toPath(downloadFile.toPath))
 
       Await.result(res, 1000.millis)
@@ -161,9 +161,9 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
     "fails if the chunk length is not the same as the predicted one" in {
       val downloadFile = new File(chunkLocation, "notUsed")
       val res = FileIO.fromPath(fileOf100ko.toPath)
-        .via(FileSplitter(storageEngine, chunkOf100ko))
+        .via(FileUploader(storageEngine, chunkOf100ko))
         .map(chunk => chunk.copy(size = chunk.size - 1))
-        .via(FileJoiner(storageEngine))
+        .via(FileDownloader(storageEngine))
         .runWith(FileIO.toPath(downloadFile.toPath))
 
       assert(!Await.result(res, 1000.millis).wasSuccessful)
@@ -172,9 +172,9 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
     "fails if the chunk hash is not the same as the predicted one" in {
       val downloadFile = new File(chunkLocation, "notUsed")
       val res = FileIO.fromPath(fileOf100ko.toPath)
-        .via(FileSplitter(storageEngine, chunkOf100ko))
+        .via(FileUploader(storageEngine, chunkOf100ko))
         .map(chunk => chunk.copy(hash = chunk.hash + 'e'))
-        .via(FileJoiner(storageEngine))
+        .via(FileDownloader(storageEngine))
         .runWith(FileIO.toPath(downloadFile.toPath))
 
       assert(!Await.result(res, 1000.millis).wasSuccessful)

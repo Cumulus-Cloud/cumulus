@@ -36,9 +36,10 @@ object FileMetadataRepository {
   val parser = {
     get[UUID]("id") ~
     get[BigInt]("size") ~
+    get[String]("hash") ~
     get[String]("mime_type") map {
-      case id ~ size ~ mime_type
-        => FileMetadata(id, size, mime_type)
+      case id ~ size ~ hash ~ mime_type
+        => FileMetadata(id, size, hash, mime_type)
     }
   }
 
@@ -51,11 +52,13 @@ object FileMetadataRepository {
      INSERT INTO #$table (
        id,
        size,
+       hash,
        mime_type,
        file_id)
      VALUES (
        ${fileMetadata.id}::uuid,
        ${fileMetadata.size},
+       ${fileMetadata.hash},
        ${fileMetadata.mimeType},
        ${fileSystemElement.id}::uuid
      );

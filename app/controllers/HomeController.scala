@@ -6,17 +6,16 @@ import akka.actor.ActorSystem
 import akka.stream._
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import models.{Directory, File, FileChunk}
+import models.{Directory, File}
+import play.api.Configuration
 import play.api.i18n.MessagesApi
 import play.api.libs.json._
 import play.api.libs.streams.Accumulator
 import play.api.mvc._
-import play.api.{Configuration, Logger}
 import repositories.AccountRepository
 import repositories.filesystem.{DirectoryRepository, FileRepository}
 import storage.LocalStorageEngine
 import utils.EitherUtils._
-import utils.{FileJoiner, FileSplitter}
 
 /**
   * Test zone do not touch/use :)
@@ -88,13 +87,13 @@ class HomeController @Inject() (
   val customParser: BodyParser[Source[ByteString, _]] = BodyParser { req =>
     Accumulator.source[ByteString].map(Right.apply)
   }
-
+/*
   def testUpload(filename: String) = Action.async(customParser) { request =>
     Logger.debug("Upload started!")
     val t0 = System.nanoTime()
 
     // 100 Mo = 104857600 o
-    request.body.via(FileSplitter(storageEngine, 104857600)).fold(Seq.empty[FileChunk])((chunks, chunk) => {
+    request.body.via(FileUploader(storageEngine, 104857600)).fold(Seq.empty[FileSources])((chunks, chunk) => {
       Logger.debug(s"Chunk created => $chunk")
       chunks :+ chunk
     }).runForeach(chunks => {
@@ -107,8 +106,9 @@ class HomeController @Inject() (
       Logger.debug("Upload done!")
       Ok("uploaded")
     })
-  }
+  }*/
 
+  /*
   def testDownload = Action { request =>
     val chunks = Seq(
       /*
@@ -119,10 +119,10 @@ class HomeController @Inject() (
       FileChunk(UUID.fromString("5df4ce07-a248-49e6-b341-397af3b5d3ec"), 18, "", "", DateTime.now())*/
     )
 
-    val fileStream = Source[FileChunk](chunks.to[collection.immutable.Seq]).via(FileJoiner(storageEngine, 9))
+    //val fileStream = Source[FileSources](chunks.to[collection.immutable.Seq]).via(FileDownloader(storageEngine, 9))
 
     Ok.chunked(fileStream)//.withHeaders(("Content-Type", "image/jpg"))
-  }
+  }*/
 
   def getDirectory(location: String) = auth.AuthAction { implicit request =>
     val admin = request.account

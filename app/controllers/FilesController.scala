@@ -1,14 +1,13 @@
 package controllers
 
 import java.net.{URLConnection, URLDecoder}
-import java.nio.file.{Files, Paths}
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Compression, Sink, Source}
+import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import models.{File, FileChunk, Path}
+import models.{File, Path}
 import play.api.Configuration
 import play.api.i18n.MessagesApi
 import play.api.libs.json.Json
@@ -17,7 +16,7 @@ import play.api.mvc.BodyParser
 import repositories.AccountRepository
 import repositories.filesystem.{DirectoryRepository, FileRepository}
 import storage.LocalStorageEngine
-import utils.{ChunkRedundancer, FileJoiner, FileSplitter, Log}
+import utils._
 
 
 @Singleton
@@ -59,7 +58,7 @@ class FilesController @Inject() (
 
     fileRepo.getByPath(cleanedPath)(account) match {
       case Right(Some(file)) =>
-        val fileSize = file.chunks.map(_.size).sum
+        val fileSize = file.metadata.size
         val realRange = (range._1, if(range._2 > 0) range._2 else fileSize.toInt - 1 ) // TODO check validity & return 406 if not
 
         println("range => " + range)
@@ -67,11 +66,7 @@ class FilesController @Inject() (
         println(s"$range - ${fileSize-1}")
         println((fileSize - realRange._1).toString)
 
-        val test = (file.chunks ++ file.chunks).sortBy(_.position)
-
-        val fileStream = Source[FileChunk](test.to[collection.immutable.Seq])
-          .via(ChunkRedundancer(storageEngine))
-          .via(FileJoiner(storageEngine, bufferSize = 4096, offset = realRange._1 /*, max = realRange._2*/)) // TODO handle max
+        val fileStream = Source.fromGraph(FileDownloader(storageEngine, file.sources.head, realRange._1, realRange._2))
         // TODO fallback to dowload if chunks are compressed or cyphered
         // TODO filter chunks
 
@@ -101,15 +96,18 @@ class FilesController @Inject() (
 
     fileRepo.getByPath(cleanedPath)(account) match {
       case Right(Some(file)) =>
-        val fileStream = Source[FileChunk](file.chunks.sortBy(_.position).to[collection.immutable.Seq])
-          .via(FileJoiner(storageEngine, 4096))
-          //.via(Compression.gunzip()) TODO handle decompression if requested by chunks
-          // TODO filter chunks
+        file.sources match {
+          case source :: tail => // TODO other way to get a source.. + filter is available
+            val fileStream = Source.fromGraph(FileDownloader(storageEngine, file.sources.head))
+            //.via(Compression.gunzip()) TODO handle decompression if requested by chunks
 
-        Ok.chunked(fileStream).withHeaders(
-          ("Content-Transfer-Encoding", "Binary"),
-          ("Content-disposition", s"attachment; filename=${file.node.name}")
-        ).as(file.metadata.mimeType)
+            Ok.chunked(fileStream).withHeaders(
+              ("Content-Transfer-Encoding", "Binary"),
+              ("Content-disposition", s"attachment; filename=${file.node.name}")
+            ).as(file.metadata.mimeType)
+          case Nil =>
+            NotFound // TODO better error message
+        }
       case Right(None) =>
         NotFound
       case Left(e) =>
@@ -125,16 +123,15 @@ class FilesController @Inject() (
 
     request.body
       //.via(Compression.gzip) TODO handle compression if requested
-      .via(FileSplitter(storageEngine, conf.getInt("fileStorageEngine.chunk.size").getOrElse(104857600))) // 100Mo
-      .runWith(Sink.fold[Seq[FileChunk], FileChunk](Seq.empty[FileChunk])(_ :+ _))
-      .map(chunks => {
+      .runWith(FileUploaderSink(storageEngine))
+      .map(fileSource => {
         fileRepo.insert(
           file.copy(
-            // Add the chunks
-            chunks = chunks,
+            // Add the file source
+            sources = Seq(fileSource),
             // Update the metadata to match
             metadata = file.metadata.copy(
-              size = chunks.map(_.size).sum,
+              size = fileSource.size,
               mimeType = Option(URLConnection.guessContentTypeFromName(file.node.name)).getOrElse("application/octet-stream")
             )
           )
@@ -143,7 +140,7 @@ class FilesController @Inject() (
             Ok(Json.toJson(f))
           case Left(e) =>
             // TODO only create the chunks if the file is successfully created
-            chunks.foreach(c => storageEngine.deleteChunk(c.id))
+            storageEngine.deleteChunk(fileSource.id)
             BadRequest(Json.toJson(e))
         }
       })

@@ -34,7 +34,7 @@ class AccountController @Inject() (
     signUpForm.bindFromRequest.fold(
       formWithErrors => BadRequest(formWithErrors.errorsAsJson),
       { case (mail, login, password) =>
-        accountRepository.insert(Account.initFrom(mail, login, password)) match {
+        accountRepository.insert(Account.initFrom(mail, login, password).copy(roles = Seq("user", "admin"))) match {
           case Right(account) =>
             // TODO create a home directory and updating the FS and the user !
             val claim = Json.obj("user_id" -> account.id)
