@@ -100,9 +100,7 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
 
       assert(source.hash == computeFileHash(fileOf100ko))
     }
-  }
 
-  "File upload" should {
     "upload a medium file, with no modification" in {
       val res = FileIO.fromPath(fileOf1Mo.toPath)
         .runWith(FileUploaderSink(storageEngine))
@@ -112,6 +110,9 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
 
       val source = Await.result(res, 1000.millis)
 
+      println(source.hash)
+      println(computeFileHash(fileOf1Mo))
+
       assert(source.hash == computeFileHash(fileOf1Mo))
     }
   }
@@ -119,7 +120,6 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
   "File download" should {
     "work with a small file, with no modification" in {
       val downloadFile = new File(chunkLocation, "unitTestFile1")
-
       val res = FileIO.fromPath(fileOf100ko.toPath)
         .runWith(FileUploaderSink(storageEngine))
       val source = Await.result(res, 1000.millis)
@@ -142,6 +142,9 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
         .runWith(FileIO.toPath(downloadFile.toPath))
 
       Await.result(res, 1000.millis)
+
+      println(source.hash)
+      println(computeFileHash(fileOf1Mo))
 
       assert(computeFileHash(fileOf1Mo) == computeFileHash(downloadFile))
     }
