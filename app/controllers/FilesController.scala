@@ -47,7 +47,7 @@ class FilesController @Inject() (
 
   def stream(path: String) = auth.AuthAction { implicit request =>
 
-    val cleanedPath = Path.sanitize(URLDecoder.decode(path, "UTF-8"))
+    val cleanedPath = Path.sanitize(path)
     val account = request.account
 
     val range = request.headers.get("Range").getOrElse("bytes=0-").split('=').toList match {
@@ -104,13 +104,12 @@ class FilesController @Inject() (
 
   /**
     * Plain an simple download for file
- *
+    *
     * @param path The path of the file
     * @return The authenticated request to be performed
     */
-  def download(path: String) = auth.AuthAction { implicit request =>
-
-    val cleanedPath = Path.sanitize(URLDecoder.decode(path, "UTF-8"))
+   def download(path: String) = auth.AuthAction { implicit request =>
+    val cleanedPath = Path.sanitize(path)
     val account = request.account
 
     fileRepo.getByPath(cleanedPath)(account) match {
@@ -122,7 +121,10 @@ class FilesController @Inject() (
 
             Ok.chunked(fileStream).withHeaders(
               ("Content-Transfer-Encoding", "Binary"),
-              ("Content-disposition", s"attachment; filename=${file.node.name}")
+              if(request.request.queryString.contains("download"))
+                ("Content-disposition", s"attachment; filename=${file.node.name}")
+              else
+                ("", "")
             ).as(file.metadata.mimeType)
           case Nil =>
             NotFound // TODO better error message
@@ -136,7 +138,7 @@ class FilesController @Inject() (
 
   def upload(path: String) = auth.AuthAction.async(customParser) { implicit request =>
 
-    val cleanedPath = Path.sanitize(java.net.URLDecoder.decode(path, "UTF-8"))
+    val cleanedPath = Path.sanitize(path)
     val account = request.account
     val file = File.initFrom(cleanedPath, account)
 

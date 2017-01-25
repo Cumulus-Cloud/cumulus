@@ -22,9 +22,13 @@ class DirectoriesController @Inject() (
     val cleanedPath = Path.sanitize(path)
     val account = request.account
 
+    println("aaaaa>>>>" + cleanedPath)
+
     directoryRepo.getByPath(cleanedPath)(account) match {
-      case Right(directory) =>
+      case Right(Some(directory)) =>
         Ok(Json.toJson(directory))
+      case Right(None) =>
+        NotFound
       case Left(e) =>
         BadRequest(Json.toJson(e))
     }
