@@ -22,8 +22,6 @@ class DirectoriesController @Inject() (
     val cleanedPath = Path.sanitize(path)
     val account = request.account
 
-    println("aaaaa>>>>" + cleanedPath)
-
     directoryRepo.getByPath(cleanedPath)(account) match {
       case Right(Some(directory)) =>
         Ok(Json.toJson(directory))
