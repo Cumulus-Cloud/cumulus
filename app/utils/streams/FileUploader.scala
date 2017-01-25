@@ -1,31 +1,33 @@
-package utils
+package utils.streams
 
 import java.io.OutputStream
 import java.security.MessageDigest
 import java.util.Base64
 
-import akka.stream.scaladsl.{Keep, Flow, Sink}
+import akka.stream.scaladsl.{Flow, Keep, Sink}
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
 import akka.util.ByteString
 import models.FileSource
 import storage.FileStorageEngine
-import utils.FileUploader.FileUploaderState
+import utils.Log
+import utils.streams.FileUploader.FileUploaderState
 
 import scala.concurrent.Future
 
+/**
+  * Helper to create a sink for the uploader, waiting for exactly only one FileSource
+  */
 object FileUploaderSink {
   def apply(storageEngine: FileStorageEngine): Sink[ByteString, Future[FileSource]] =
     Flow[ByteString].via(FileUploader(storageEngine)).toMat(Sink.head)(Keep.right)
 }
 
 /**
-  * Custom file splitter, transforming a stream of ByteStrings into a stream of FileChunks, aiming to be used as a
-  * Akka stream Flow[ByteString, FileChunk]. The chunks are then streamed back as soon as they are created.
+  * Custom file saver, transforming a stream of ByteStrings into a FileSource, aiming to be used as a
+  * Akka stream Flow[ByteString, FileSource], using the provided FileStorageEngine to handle the saving of the file.
   *
-  * The provided file storage engine is used to defined where and how will be stored the chunks. The maximum size of
-  * the chunks is defined with the parameter chunkSize, while the last chunk may still be shorter (the real size of the
-  * chunk is also defined in the chunk information itself)
+  * The provided file storage engine is used to defined where and how will be stored the file.
   *
   * @param storageEngine The storage engine to use
   */
@@ -113,7 +115,7 @@ object FileUploader {
   object FileUploaderState {
     def empty(implicit storageEngine: FileStorageEngine): FileUploaderState = {
       val source = FileSource.initFrom(storageEngine)
-      FileUploaderState(0, storageEngine.createChunk(source.id), source, MessageDigest.getInstance("MD5"))
+      FileUploaderState(0, storageEngine.createFile(source.id), source, MessageDigest.getInstance("MD5"))
     }
   }
 

@@ -12,7 +12,7 @@ import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import play.api.Configuration
 import play.api.inject.guice.GuiceApplicationBuilder
 import storage.LocalStorageEngine
-import utils.{FileDownloader, FileUploaderSink}
+import utils.streams.{FileDownloader, FileUploaderSink}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -110,9 +110,6 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
 
       val source = Await.result(res, 1000.millis)
 
-      println(source.hash)
-      println(computeFileHash(fileOf1Mo))
-
       assert(source.hash == computeFileHash(fileOf1Mo))
     }
   }
@@ -142,10 +139,6 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
         .runWith(FileIO.toPath(downloadFile.toPath))
 
       Await.result(res, 1000.millis)
-
-      println(downloadFile.getAbsolutePath)
-      println(source.hash)
-      println(computeFileHash(fileOf1Mo))
 
       assert(computeFileHash(fileOf1Mo) == computeFileHash(downloadFile))
     }

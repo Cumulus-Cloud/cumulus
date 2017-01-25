@@ -1,4 +1,4 @@
-package utils
+package utils.streams
 
 import java.io.InputStream
 import java.security.MessageDigest
@@ -9,19 +9,19 @@ import akka.stream.stage.{GraphStage, GraphStageLogic, OutHandler}
 import akka.util.ByteString
 import models.FileSource
 import storage.FileStorageEngine
-import utils.FileDownloader.FileDownloaderState
+import utils.Log
+import utils.streams.FileDownloader.FileDownloaderState
 
 /**
-  * Custom file joiner, transforming a stream of FileChunks into a stream of ByteStrings, aiming to be used as a
-  * Akka stream Flow[FileChunk, ByteString]. The bytes are then streamed back as soon as they are available.
+  * Custom stream source, transforming a FileSource with a FileStorageEngine to an akka stream of ByteString.
   *
-  * The provided file storage engine should handle the stream creation allowing the chunks to be read. The chunks should be
-  * passed sequentially as no verification will be done on the file integrity at the moment
+  * The provided file storage engine should handle the stream creation allowing the file to be read. If provided, an
+  * offset and a limit can be provided to only stream a part of the file rather than all the content.
   *
   * @param storageEngine The storage engine used
-  * @param bufferSize The buffer size to read. Default is 4096
   * @param rangeStart The offset start
   * @param rangeStop The max of bytes to read
+  * @param bufferSize The buffer size to read. Default is 4096
   */
 class FileDownloader(storageEngine: FileStorageEngine, source: FileSource, val bufferSize: Int, val rangeStart: Int, val rangeStop: Int = -1) extends GraphStage[SourceShape[ByteString]] with Log {
 
@@ -127,7 +127,7 @@ object FileDownloader {
 
   object FileDownloaderState {
     def init(source: FileSource)(implicit storageEngine: FileStorageEngine) = {
-      val sourceStream = storageEngine.readChunk(source.id)
+      val sourceStream = storageEngine.readFile(source.id)
       FileDownloaderState(0, sourceStream, source, closed = false, MessageDigest.getInstance("MD5"))
     }
   }

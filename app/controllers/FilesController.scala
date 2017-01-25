@@ -1,11 +1,13 @@
 package controllers
 
 import java.net.{URLConnection, URLDecoder}
+import java.security.{SecureRandom, MessageDigest}
+import javax.crypto.spec.SecretKeySpec
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.{Flow, Compression, Source}
 import akka.util.ByteString
 import models.{File, Path}
 import play.api.Configuration
@@ -17,6 +19,7 @@ import repositories.AccountRepository
 import repositories.filesystem.{DirectoryRepository, FileRepository}
 import storage.LocalStorageEngine
 import utils._
+import utils.streams.{AESCipher, FileDownloader, FileUploaderSink}
 
 
 @Singleton
@@ -83,6 +86,22 @@ class FilesController @Inject() (
     }
   }
 
+  // Random IV
+  val rand = new SecureRandom()
+  val randomIv = { // TODO save the random IV per file, in the database
+    ByteString(-72, -125, -75, 37, 84, 32, -54, 77, 61, 19, -126, -81, -104, -48, 46, 127).toArray
+  }
+
+  // AES key
+  private val passphrase = "hello i'm your secret key" // TODO get the key from somewhere, maybe config, database ?
+  private val AESKey = {
+    val key = MessageDigest.getInstance("SHA-1")
+      .digest(passphrase.getBytes("UTF-8"))
+      .slice(0, 16) // First 128 bit // TODO use 256 ? more ?
+
+    new SecretKeySpec(key, "AES")
+  }
+
   /**
     * Plain an simple download for file
  *
@@ -97,9 +116,9 @@ class FilesController @Inject() (
     fileRepo.getByPath(cleanedPath)(account) match {
       case Right(Some(file)) =>
         file.sources match {
-          case source :: tail => // TODO other way to get a source.. + filter is available
+          case source :: tail => // TODO other way to get a source.. + filter if available
             val fileStream = Source.fromGraph(FileDownloader(storageEngine, file.sources.head))
-            //.via(Compression.gunzip()) TODO handle decompression if requested by chunks
+            .via(AESCipher.decryptor(AESKey, randomIv)) //TODO handle decompression if requested by chunks
 
             Ok.chunked(fileStream).withHeaders(
               ("Content-Transfer-Encoding", "Binary"),
@@ -121,8 +140,25 @@ class FilesController @Inject() (
     val account = request.account
     val file = File.initFrom(cleanedPath, account)
 
+    // Get requested compression and/or cipher
+    // TODO
+    val compression = Flow.fromFunction[ByteString, ByteString](identity)
+    /*request.getQueryString("compression") match {
+      case Some("GZIP") => Compression.gzip
+      case Some("DEFLATE") => Compression.deflate
+      case _ => Flow.fromFunction[ByteString, ByteString](identity)
+    }*/
+
+    // TODO
+    val cipher = AESCipher.encryptor(AESKey, randomIv)
+    /*request.getQueryString("cipher") match {
+      case Some("AES") => AESCipher.encryptor(null, null)
+      case _ => Flow.fromFunction[ByteString, ByteString](identity)
+    }*/
+
     request.body
-      //.via(Compression.gzip) TODO handle compression if requested
+      .via(cipher)
+      .via(compression)
       .runWith(FileUploaderSink(storageEngine))
       .map(fileSource => {
         fileRepo.insert(
@@ -140,7 +176,7 @@ class FilesController @Inject() (
             Ok(Json.toJson(f))
           case Left(e) =>
             // TODO only create the chunks if the file is successfully created
-            storageEngine.deleteChunk(fileSource.id)
+            storageEngine.deleteFile(fileSource.id)
             BadRequest(Json.toJson(e))
         }
       })
