@@ -64,21 +64,25 @@ class FilesController @Inject() (
         val fileSize = file.metadata.size
         val realRange = (range._1, if(range._2 > 0) range._2 else fileSize.toInt - 1 ) // TODO check validity & return 406 if not
 
-        println("range => " + range)
-        println("size  => " + fileSize)
-        println(s"$range - ${fileSize-1}")
-        println((fileSize - realRange._1).toString)
+        file.sources match {
+          case source :: _ =>
+            if(source.cipher.isDefined || source.compression.isDefined)
+              Redirect(routes.FilesController.download(path)) // Can't stream if compressed or ciphered, redirect to download
+            else {
+              val fileStream = Source.fromGraph(FileDownloader(storageEngine, source, realRange._1, realRange._2))
+              // TODO fallback to dowload if chunks are compressed or cyphered
+              // TODO filter chunks
 
-        val fileStream = Source.fromGraph(FileDownloader(storageEngine, file.sources.head, realRange._1, realRange._2))
-        // TODO fallback to dowload if chunks are compressed or cyphered
-        // TODO filter chunks
-
-        PartialContent.chunked(fileStream).withHeaders(
-          ("Content-Transfer-Encoding", "Binary"),
-          ("Content-Length", (realRange._2 - realRange._1).toString),
-          ("Content-Range", s"bytes ${realRange._1}-${realRange._2}/$fileSize"),
-          ("Accept-Ranges", "bytes")
-        ).as(file.metadata.mimeType)
+              PartialContent.chunked(fileStream).withHeaders(
+                ("Content-Transfer-Encoding", "Binary"),
+                ("Content-Length", (realRange._2 - realRange._1).toString),
+                ("Content-Range", s"bytes ${realRange._1}-${realRange._2}/$fileSize"),
+                ("Accept-Ranges", "bytes")
+              ).as(file.metadata.mimeType)
+            }
+          case Nil =>
+            NotFound // TODO better error message
+        }
       case Right(None) =>
         NotFound
       case Left(e) =>
@@ -112,17 +116,31 @@ class FilesController @Inject() (
     val cleanedPath = Path.sanitize(path)
     val account = request.account
 
+     val forceDownload = request.request.queryString.contains("download")
+
     fileRepo.getByPath(cleanedPath)(account) match {
       case Right(Some(file)) =>
-        file.sources match {
-          case source :: tail => // TODO other way to get a source.. + filter if available
-            val fileStream = Source.fromGraph(FileDownloader(storageEngine, file.sources.head))
-            .via(AESCipher.decryptor(AESKey, randomIv)) //TODO handle decompression if requested by chunks
+        file.sources/* .orderBy(_.priority) */ match { // TODO prioritize
+          case source :: _ =>
+            val decompression = source.compression match {
+              case Some("GZIP") => Compression.gunzip()
+              case Some("DEFLATE") => Compression.inflate()
+              case _ => Flow.fromFunction[ByteString, ByteString](identity) // TODO
+            }
+
+            val cipher = source.cipher match {
+              case Some("AES") => AESCipher.decryptor(AESKey, randomIv)
+              case _ => Flow.fromFunction[ByteString, ByteString](identity) // TODO
+            }
+
+            val fileStream = Source.fromGraph(FileDownloader(storageEngine, source))
+              .via(decompression)
+              .via(cipher)
 
             Ok.chunked(fileStream).withHeaders(
               ("Content-Transfer-Encoding", "Binary"),
-              if(request.request.queryString.contains("download"))
-                ("Content-disposition", s"attachment; filename=${file.node.name}")
+              if(forceDownload)
+                ("Content-disposition", s"attachment; filename=${file.node.name}") // Force download
               else
                 ("", "")
             ).as(file.metadata.mimeType)
@@ -142,21 +160,20 @@ class FilesController @Inject() (
     val account = request.account
     val file = File.initFrom(cleanedPath, account)
 
+    val cipherName = request.getQueryString("cipher").map(_.toUpperCase)
+    val compressionName = request.getQueryString("compression").map(_.toUpperCase)
+
     // Get requested compression and/or cipher
-    // TODO
-    val compression = Flow.fromFunction[ByteString, ByteString](identity)
-    /*request.getQueryString("compression") match {
+    val compression = compressionName match {
       case Some("GZIP") => Compression.gzip
       case Some("DEFLATE") => Compression.deflate
-      case _ => Flow.fromFunction[ByteString, ByteString](identity)
-    }*/
+      case /* None */ _ => Flow.fromFunction[ByteString, ByteString](identity) // TODO
+    }
 
-    // TODO
-    val cipher = AESCipher.encryptor(AESKey, randomIv)
-    /*request.getQueryString("cipher") match {
-      case Some("AES") => AESCipher.encryptor(null, null)
-      case _ => Flow.fromFunction[ByteString, ByteString](identity)
-    }*/
+    val cipher = cipherName match {
+      case Some("AES") => AESCipher.encryptor(AESKey, randomIv)
+      case /* None */ _ => Flow.fromFunction[ByteString, ByteString](identity) // TODO
+    }
 
     request.body
       .via(cipher)
@@ -166,7 +183,10 @@ class FilesController @Inject() (
         fileRepo.insert(
           file.copy(
             // Add the file source
-            sources = Seq(fileSource),
+            sources = Seq(fileSource.copy(
+              cipher = cipherName,
+              compression = compressionName
+            )),
             // Update the metadata to match
             metadata = file.metadata.copy(
               size = fileSource.size,
@@ -177,7 +197,6 @@ class FilesController @Inject() (
           case Right(f) =>
             Ok(Json.toJson(f))
           case Left(e) =>
-            // TODO only create the chunks if the file is successfully created
             storageEngine.deleteFile(fileSource.id)
             BadRequest(Json.toJson(e))
         }
