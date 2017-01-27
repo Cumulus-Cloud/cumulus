@@ -7,9 +7,9 @@ import javax.inject.{Inject, Singleton}
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Sink, Compression, Flow, Source}
+import akka.stream.scaladsl.{Compression, Flow, Sink, Source}
 import akka.util.ByteString
-import models.{Account, File, FileSource, Path}
+import models.{Account, File, FileSource}
 import play.api.i18n.MessagesApi
 import play.api.libs.json.Json
 import play.api.libs.streams.Accumulator
@@ -27,13 +27,14 @@ import scala.util.Try
 
 @Singleton
 class FilesController @Inject() (
-  val auth: AuthenticationActionService,
-  val directoryRepo: DirectoryRepository,
-  val accountRepo: AccountRepository,
-  val fileRepo: FileRepository,
-  val messagesApi: MessagesApi,
-  val conf: Conf
-) extends BaseController with Log {
+  auth: AuthenticationActionService,
+  fsActions: FsActionService,
+  directoryRepo: DirectoryRepository,
+  accountRepo: AccountRepository,
+  fileRepo: FileRepository,
+  messagesApi: MessagesApi,
+  conf: Conf
+) extends Controller with Log {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -44,26 +45,13 @@ class FilesController @Inject() (
   // TODO inject
   val storageEngine = LocalStorageEngine(conf.all)
 
-  case class RequestWithPath[A](filePath: String, account: Account, request: Request[A]) extends WrappedRequest[A](request)
-
-  def ActionWithPath(path: String) = new ActionRefiner[AuthenticatedRequest, RequestWithPath] {
-    def refine[A](request: AuthenticatedRequest[A]) = Future.successful {
-      Path.sanitize(path) match {
-        case p if p.isEmpty => Left(BadRequest("TODO invalid path")) // TODO
-        case p => Right(RequestWithPath(p,request.account, request))
-      }
-    }
-  }
-
-  def AuthenticatedActionWithPath(path: String) = auth.AuthenticatedAction andThen ActionWithPath(path)
-
   case class RequestWithFile[A](file: File, account: Account, request: Request[A]) extends WrappedRequest[A](request)
 
   def ActionWithFile(path: String) =
     auth.AuthenticatedAction andThen
-    ActionWithPath(path) andThen
-    new ActionRefiner[RequestWithPath, RequestWithFile] {
-      def refine[A](request: RequestWithPath[A]) = Future.successful {
+    fsActions.ActionWithPath(path) andThen
+    new ActionRefiner[fsActions.RequestWithPath, RequestWithFile] {
+      def refine[A](request: fsActions.RequestWithPath[A]) = Future.successful {
         val path = request.filePath
         val account = request.account
 
@@ -192,7 +180,7 @@ class FilesController @Inject() (
     * @param path The path for the future file
     * @return The authenticated request to be performed
     */
-  def upload(path: String) = AuthenticatedActionWithPath(path).async(customParser) { implicit request =>
+  def upload(path: String) = fsActions.AuthenticatedActionWithPath(path).async(customParser) { implicit request =>
 
     val cleanedPath = request.filePath
     val account = request.account
@@ -253,12 +241,22 @@ class FilesController @Inject() (
     })
   }
 
+  def delete(path: String) = ActionWithFile(path) {
+    implicit request =>
+      fileRepo.delete(request.file) match {
+        case Right(_) =>
+          Ok(Json.toJson(request.file))
+        case Left(e) =>
+          BadRequest(Json.toJson(e))
+      }
+  }
+
   def show(path: String) = ActionWithFile(path) {
     implicit request =>
       Ok(Json.toJson(request.file))
   }
 
-  def create(path: String) = AuthenticatedActionWithPath(path) { implicit request =>
+  def create(path: String) = fsActions.AuthenticatedActionWithPath(path) { implicit request =>
 
     val path = request.filePath
     val account = request.account

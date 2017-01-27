@@ -2,47 +2,73 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
-import models.{Path, Directory}
+import controllers.FilesController.RequestWithFile
+import models.{Account, File, Path, Directory}
 import play.api.i18n.MessagesApi
 import play.api.libs.json.Json
+import play.api.mvc.{ActionRefiner, WrappedRequest, Request, Controller}
 import repositories.AccountRepository
 import repositories.filesystem.{DirectoryRepository, FileRepository}
+import utils.Log
+
+import scala.concurrent.Future
 
 @Singleton
 class DirectoriesController @Inject() (
-  val accountRepo: AccountRepository,
-  val directoryRepo: DirectoryRepository,
-  val fileRepo: FileRepository,
-  val auth: AuthenticationActionService,
-  val messagesApi: MessagesApi
-) extends BaseController {
+  fsActions: FsActionService,
+  auth: AuthenticationActionService,
+  accountRepo: AccountRepository,
+  directoryRepo: DirectoryRepository,
+  fileRepo: FileRepository,
+  messagesApi: MessagesApi
+) extends Controller with Log {
 
-  def list(path: String) = auth.AuthenticatedAction { implicit request =>
 
-    val cleanedPath = Path.sanitize(path)
-    val account = request.account
+  case class RequestWithDirectory[A](directory: Directory, account: Account, request: Request[A]) extends WrappedRequest[A](request)
 
-    directoryRepo.getByPath(cleanedPath)(account) match {
-      case Right(Some(directory)) =>
-        Ok(Json.toJson(directory))
-      case Right(None) =>
-        NotFound
-      case Left(e) =>
-        BadRequest(Json.toJson(e))
-    }
+  def ActionWithDirectory(path: String) =
+    auth.AuthenticatedAction andThen
+      fsActions.ActionWithPath(path) andThen
+      new ActionRefiner[fsActions.RequestWithPath, RequestWithDirectory] {
+        def refine[A](request: fsActions.RequestWithPath[A]) = Future.successful {
+          val path = request.filePath
+          val account = request.account
+
+          directoryRepo.getByPath(path)(account) match {
+            case Right(Some(dir)) => Right(RequestWithDirectory(dir, account, request))
+            case Right(None) => Left(NotFound("TODO error")) // TODO
+            case Left(e) => Left(BadRequest(Json.toJson(e)))
+          }
+        }
+      }
+
+  def delete(path: String) = ActionWithDirectory(path) {
+    implicit request =>
+      directoryRepo.delete(request.directory) match {
+        case Right(_) =>
+          Ok(Json.toJson(request.directory))
+        case Left(e) =>
+          BadRequest(Json.toJson(e))
+      }
   }
 
-  def create(path: String) = auth.AuthenticatedAction { implicit request =>
+  def list(path: String) = ActionWithDirectory(path) {
+    implicit request =>
+      Ok(Json.toJson(request.directory))
+  }
 
-    val cleanedPath = Path.sanitize(path)
-    val account = request.account
+  def create(path: String) = fsActions.AuthenticatedActionWithPath(path) {
+    implicit request =>
 
-    directoryRepo.insert(Directory.initFrom(cleanedPath, account))(account) match {
-      case Right(directory) =>
-        Ok(Json.toJson(directory))
-      case Left(e) =>
-        BadRequest(Json.toJson(e))
-    }
+      val path = request.filePath
+      val account = request.account
+
+      directoryRepo.insert(Directory.initFrom(path, account))(account) match {
+        case Right(directory) =>
+          Ok(Json.toJson(directory))
+        case Left(e) =>
+          BadRequest(Json.toJson(e))
+      }
   }
 
 }
