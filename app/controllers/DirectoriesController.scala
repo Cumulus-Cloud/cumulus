@@ -10,11 +10,11 @@ import repositories.filesystem.{DirectoryRepository, FileRepository}
 
 @Singleton
 class DirectoriesController @Inject() (
-                                        val accountRepo: AccountRepository,
-                                        val directoryRepo: DirectoryRepository,
-                                        val fileRepo: FileRepository,
-                                        val auth: AuthenticationActionService,
-                                        val messagesApi: MessagesApi
+  val accountRepo: AccountRepository,
+  val directoryRepo: DirectoryRepository,
+  val fileRepo: FileRepository,
+  val auth: AuthenticationActionService,
+  val messagesApi: MessagesApi
 ) extends BaseController {
 
   def list(path: String) = auth.AuthenticatedAction { implicit request =>

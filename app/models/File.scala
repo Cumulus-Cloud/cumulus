@@ -85,7 +85,7 @@ case class FileSource(
   hash: String,
   cipher: Option[String],
   compression: Option[String],
-  secretKey: Option[String],
+  key: Option[String],
   storageEngine: String,
   storageEngineVersion: String,
   creation: DateTime

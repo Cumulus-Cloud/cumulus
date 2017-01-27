@@ -10,13 +10,11 @@ import anorm.JodaParameterMetaData._
 import models.{FileSource, FsNode}
 import org.joda.time.DateTime
 import play.api.db.DBApi
-import utils.{Conf, Utils}
 
 import scala.concurrent.ExecutionContext
 
 class FileSourceRepository @Inject()(
-  dbApi: DBApi,
-  conf: Conf
+  dbApi: DBApi
 )(
   implicit ec: ExecutionContext
 ) {
@@ -24,16 +22,11 @@ class FileSourceRepository @Inject()(
   import FileSourceRepository._
 
   private[filesystem] def selectSourcesNonAtomic(fileSystemElement: FsNode)(implicit c: Connection): Seq[FileSource] = {
-    selectFileChunks(fileSystemElement).as(parser *).map(
-      fs => fs.copy(secretKey = fs.secretKey.flatMap(Utils.Crypto.decrypt(_)(conf))) // Decrypt the key
-    )
+    selectFileChunks(fileSystemElement).as(parser *)
   }
 
   private[filesystem] def insertNonAtomic(fileSystemElement: FsNode, fileSource: FileSource)(implicit c: Connection) = {
-    insertFileSource(
-      fileSystemElement,
-      fileSource.copy(secretKey = fileSource.secretKey.map(Utils.Crypto.encrypt(_)(conf))) // Encrypt the key
-    ).execute()
+    insertFileSource(fileSystemElement, fileSource).execute()
   }
 
 }
@@ -48,12 +41,12 @@ object FileSourceRepository {
     get[String]("hash") ~
     get[Option[String]]("cipher") ~
     get[Option[String]]("compression") ~
-    get[Option[String]]("secretKey") ~
+    get[Option[String]]("key") ~
     get[String]("storage_engine") ~
     get[String]("storage_engine_version") ~
     get[DateTime]("creation") map {
-      case id ~ size ~ hash ~ cipher ~ compression ~ secretKey ~ storage_engine ~ storage_engine_version ~ creation
-        => FileSource(id, size, hash, cipher, compression, secretKey, storage_engine, storage_engine_version, creation)
+      case id ~ size ~ hash ~ cipher ~ compression ~ key ~ storage_engine ~ storage_engine_version ~ creation
+        => FileSource(id, size, hash, cipher, compression, key, storage_engine, storage_engine_version, creation)
     }
   }
 
@@ -69,7 +62,7 @@ object FileSourceRepository {
        hash,
        cipher,
        compression,
-       secretKey,
+       key,
        storage_engine,
        storage_engine_version,
        creation,
@@ -80,7 +73,7 @@ object FileSourceRepository {
        ${fileChunk.hash},
        ${fileChunk.cipher},
        ${fileChunk.compression},
-       ${fileChunk.secretKey},
+       ${fileChunk.key},
        ${fileChunk.storageEngine},
        ${fileChunk.storageEngineVersion},
        ${fileChunk.creation},

@@ -24,6 +24,8 @@ class AccountController @Inject() (
   val key = conf.cryptoKey
   val header = Json.obj("typ" -> "JWT", "alg" -> "HS256")
 
+  implicit val confImplicit = conf
+
   val signUpForm = Form(tuple(
     "mail" -> emailForm,
     "login" -> nonEmptyText,
@@ -34,7 +36,7 @@ class AccountController @Inject() (
     signUpForm.bindFromRequest.fold(
       formWithErrors => BadRequest(formWithErrors.errorsAsJson),
       { case (mail, login, password) =>
-        accountRepository.insert(Account.initFrom(mail, login, password).copy(roles = Seq("admin", "user"))) match {
+        accountRepository.insert(Account.initFrom(mail, login, password)) match {
           case Right(account) =>
             // TODO create a home directory and updating the FS and the user !
             val claim = Json.obj("user_id" -> account.id)

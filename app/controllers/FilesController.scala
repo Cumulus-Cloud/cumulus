@@ -1,18 +1,15 @@
 package controllers
 
 import java.net.URLConnection
-import java.security.MessageDigest
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 import javax.inject.{Inject, Singleton}
 
-import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.stream.{Graph, FlowShape, ActorMaterializer}
-import akka.stream.scaladsl.{Compression, Flow, Source}
+import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.{Sink, Compression, Flow, Source}
 import akka.util.ByteString
-import models.{Account, File, Path}
-import play.api.Configuration
+import models.{Account, File, FileSource, Path}
 import play.api.i18n.MessagesApi
 import play.api.libs.json.Json
 import play.api.libs.streams.Accumulator
@@ -21,11 +18,12 @@ import repositories.AccountRepository
 import repositories.filesystem.{DirectoryRepository, FileRepository}
 import storage.LocalStorageEngine
 import utils.EitherUtils._
-import utils._
 import utils.Utils.Crypto._
+import utils._
 import utils.streams.{AESCipher, FileDownloader, FileUploaderSink}
 
 import scala.concurrent.Future
+import scala.util.Try
 
 @Singleton
 class FilesController @Inject() (
@@ -95,7 +93,7 @@ class FilesController @Inject() (
     val fileSize = request.file.metadata.size
     val realRange = (range._1, if(range._2 > 0) range._2 else fileSize.toInt - 1 ) // TODO check validity & return 406 if not
 
-    request.file.sources match {
+    request.file.sources /* .orderBy(_.priority) */ match {
       case source :: _ =>
         if(source.cipher.isDefined || source.compression.isDefined)
           Redirect(routes.FilesController.download(path)) // Can't stream if compressed or ciphered, redirect to download
@@ -114,15 +112,23 @@ class FilesController @Inject() (
     }
   }
 
-  // AES key
-  private val passphrase = "hello i'm your secret key" // TODO get the key from somewhere, maybe config, database ?
-  private val AESKey = {
-    val key = MessageDigest.getInstance("SHA-1")
-      .digest(passphrase.getBytes("UTF-8"))
-      .slice(0, 16) // First 128 bit // TODO use 256 ? more ?
-
-    new SecretKeySpec(key, "AES")
-  }
+  // Helper to extract the required information for AES
+  private def getSaltAndKeyForAES(account: Account, source: FileSource): Either[Result, (ByteString, SecretKey)] = Try {
+      for {
+        key <- Utils.Crypto.decrypt(account.key) match {
+          case Some(key) => Right(new SecretKeySpec(key.toArray.slice(0, 16), "AES"))
+          case None => Left(BadRequest("Error - No account key")) // TODO
+        }
+        salt64 <- source.key match {
+          case Some(salt64) => Right(salt64)
+          case None => Left(BadRequest("Error - No salt provided, but required for AES")) // TODO
+        }
+        salt <- Utils.decodeBase64(salt64) match {
+          case Some(salt) => Right(salt)
+          case None => Left(BadRequest("Error - Salt can't be read, but is required for AES")) // TODO
+        }
+      } yield (salt, key)
+    } getOrElse Left(BadRequest("Error - Internal error")) // TODO log the error ?
 
   /**
     * Plain an simple download for file
@@ -136,25 +142,22 @@ class FilesController @Inject() (
     (for {
       source <- request.file.sources /* .orderBy(_.priority) */ match { // TODO prioritize
         case source :: _ => Right(source)
-        case Nil => Left(NotFound("TODO")) // TODO better error message
+        case Nil => Left(NotFound("TODO - no content")) // TODO better error message
       }
       decompression <- source.compression match {
-        case Some("DEFLATE") => Right(Compression.deflate)
-        case Some("GZIP") => Right(Compression.gzip)
+        case Some("DEFLATE") => Right(Compression.inflate())
+        case Some("GZIP") => Right(Compression.gunzip())
         case None => Right(Flow.fromFunction[ByteString, ByteString](identity))
-        case _ => Left(BadRequest("TODO"))
+        case _ => Left(BadRequest("TODO - Unknown compression"))
       }
       cipher <- source.cipher match {
         case Some("AES") =>
-          // TODO put into a try
-          extractHashAndKey(source.secretKey.getOrElse("")) match {
-            case Some((salt, key)) =>
-              Right(AESCipher.encryptor(new SecretKeySpec(key.toArray, "AES"), salt))
-            case None =>
-              Left(BadRequest("TODO"))
+          getSaltAndKeyForAES(request.account, source).map {
+            case (salt, key) =>
+              AESCipher.decryptor(key, salt)
           }
         case None => Right(Flow.fromFunction[ByteString, ByteString](identity))
-        case _ => Left(BadRequest("TODO"))
+        case _ => Left(BadRequest("TODO - Unknown cipher"))
       }
     } yield (source, decompression, cipher)).fold(identity, {
       case (source, decompression, cipher) =>
@@ -172,7 +175,16 @@ class FilesController @Inject() (
     })
   }
 
-  case class CipherHolder(salt: Option[ByteString], key: Option[SecretKey], stream: Graph[FlowShape[ByteString, ByteString], NotUsed])
+  // Helper to extract and generate the required information for AES
+  private def generateSaltAndGetKeyForAES(account: Account): Either[Result, (ByteString, SecretKey)] = Try {
+      for {
+        key <- Utils.Crypto.decrypt(account.key) match {
+          case Some(key) => Right(new SecretKeySpec(key.toArray.slice(0, 16), "AES"))
+          case None => Left(BadRequest("Error - No account key")) // TODO
+        }
+        salt <- Right(Utils.Crypto.randomSalt(16))
+      } yield (salt, key)
+    } getOrElse Left(BadRequest("Error - Internal error")) // TODO log the error ?
 
   /**
     * File upload endpoint. Takes all the body as whole file
@@ -194,21 +206,25 @@ class FilesController @Inject() (
         case Some("DEFLATE") => Right(Compression.deflate)
         case Some("GZIP") => Right(Compression.gzip)
         case None => Right(Flow.fromFunction[ByteString, ByteString](identity))
-        case _ => Left(BadRequest("TODO"))
+        case _ => Left(BadRequest("TODO - Unknown compression"))
       }
       cipher <- cipherName match {
         case Some("AES") =>
-          // TODO put into a try
-          val AESKey = Utils.Crypto.randomKey("AES", 256)
-          val salt = Utils.Crypto.randomSalt(16)
-          Right(CipherHolder(Some(salt), Some(AESKey), AESCipher.encryptor(AESKey, salt)))
-        case None => Right(CipherHolder(None, None, Flow.fromFunction[ByteString, ByteString](identity)))
-        case _ => Left(BadRequest("TODO"))
+          // We need to get the secret key to cipher the file
+          generateSaltAndGetKeyForAES(account).map {
+            case (salt, key) =>
+              (Some(salt), AESCipher.encryptor(key, salt))
+          }
+        case None => Right((None, Flow.fromFunction[ByteString, ByteString](identity)))
+        case _ => Left(BadRequest("TODO - Unknown cipher"))
       }
-    } yield (compression, cipher)).fold(Future.successful(_), {
-      case (compression, cipher) =>
+    } yield (compression, cipher)).fold({ error =>
+      request.body.runWith(Sink.cancelled)
+      Future.successful(error)
+    }, {
+      case (compression, Tuple2(salt, cipher)) =>
         request.body
-          .via(cipher.stream)
+          .via(cipher)
           .via(compression)
           .runWith(FileUploaderSink(storageEngine))
           .map(fileSource => {
@@ -217,9 +233,7 @@ class FilesController @Inject() (
                 // Add the file source
                 sources = Seq(fileSource.copy(
                   cipher = cipherName,
-                  secretKey = cipher.key.map(k => {
-                    Utils.encodeBase64(cipher.salt.getOrElse(ByteString.empty)) + "$" + Utils.encodeBase64(k.getEncoded)
-                  }),
+                  key = salt.map(Utils.encodeBase64), // Salt doesn't need to be protected
                   compression = compressionName
                 )),
                 // Update the metadata to match

@@ -8,6 +8,7 @@
     mail     VARCHAR(255)  NOT NULL,
     login    VARCHAR(64)   NOT NULL,
     password VARCHAR(64)   NOT NULL,
+    key      VARCHAR(255)  NOT NULL,
     creation TIMESTAMP     NOT NULL,
     roles    VARCHAR(64)[] NOT NULL,
     home     TEXT
@@ -20,12 +21,13 @@
   CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
   -- Create the admin
-  INSERT INTO account (id, mail, login, password, creation, roles)
+  INSERT INTO account (id, mail, login, password, key, creation, roles)
   VALUES (
     uuid_generate_v4(),
     'admin@admin.tld',
     'admin',
     'unusable', -- Since password are bcrypted, nobody will be able to use this account
+    'none',
     NOW(),
     '{"admin", "user"}'
   );
@@ -49,7 +51,7 @@
   );
 
   -- Create the root directory
-  INSERT INTO fsnode (id, location, name, node_type, creation, modification, account_id)
+  INSERT INTO fsnode (id, location, name, node_type, creation, modification, hidden, account_id)
   VALUES (
     uuid_generate_v4(),
     '/',
@@ -75,7 +77,7 @@
     hash                    VARCHAR(32) NOT NULL, -- Real hash
     cipher                  VARCHAR(32),
     compression             VARCHAR(32),
-    secretKey               VARCHAR(256),
+    key                     VARCHAR(255),
     storage_engine          TEXT        NOT NULL,
     storage_engine_version  TEXT        NOT NULL,
     creation                TIMESTAMP   NOT NULL,

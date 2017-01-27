@@ -22,12 +22,12 @@ import utils.EitherUtils._
   */
 @Singleton
 class HomeController @Inject() (
-                                 val accountRepo: AccountRepository,
-                                 val directoryRepo: DirectoryRepository,
-                                 val fileRepo: FileRepository,
-                                 val auth: AuthenticationActionService,
-                                 val messagesApi: MessagesApi,
-                                 val configuration: Configuration
+  val accountRepo: AccountRepository,
+  val directoryRepo: DirectoryRepository,
+  val fileRepo: FileRepository,
+  val auth: AuthenticationActionService,
+  val messagesApi: MessagesApi,
+  val configuration: Configuration
 ) extends BaseController {
 
   // Test :)

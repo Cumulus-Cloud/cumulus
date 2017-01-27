@@ -7,16 +7,36 @@ import javax.crypto.{Cipher, KeyGenerator, SecretKey}
 
 import akka.util.ByteString
 
+import scala.util.Try
+
 object Utils {
 
+  /**
+    * Encode in base 64 the provided bytes
+    *
+    * @param bytes The bytes to encode
+    * @return The encoded bytes
+    */
   def encodeBase64(bytes: ByteString): String = encodeBase64(bytes.toArray)
 
+  /**
+    * Encode in base 64 the provided byte array
+    *
+    * @param bytes The bytes to encode
+    * @return The encoded bytes
+    */
   def encodeBase64(bytes: Array[Byte]): String = {
     ByteString(Base64.getEncoder.encode(bytes)).utf8String
   }
 
-  def decodeBase64(encoded: String): ByteString = {
-    ByteString(Base64.getDecoder.decode(encoded.getBytes("UTF-8")))
+  /**
+    * Decode the provided base 64. If the string can"t be decoded, return a None
+ *
+    * @param encoded The encoded string
+    * @return The decoded string as bytes, or nothin
+    */
+  def decodeBase64(encoded: String): Option[ByteString] = {
+    Try(Some(ByteString(Base64.getDecoder.decode(encoded.getBytes("UTF-8"))))).getOrElse(None)
   }
 
   object Crypto {
@@ -26,10 +46,23 @@ object Utils {
       */
     implicit val random = new SecureRandom()
 
+    /**
+      * Helper to generate the hash of a string
+      *
+      * @param instance The hash to use
+      * @param toHash The string to hash
+      * @return The hash
+      */
     def hash(instance: String)(toHash: String) = {
       MessageDigest.getInstance(instance).digest(toHash.getBytes("UTF-8"))
     }
 
+    /**
+      * Helper to generate a SHA-1 hash of a string
+      *
+      * @param toHash The string to hash
+      * @return The hash
+      */
     def hashSHA1(toHash: String) = hash("SHA-1")(toHash)
 
     /**
@@ -60,6 +93,15 @@ object Utils {
       generator.generateKey()
     }
 
+    /**
+      * Helper to create a cipher
+      *
+      * @param mode The mode
+      * @param secretKey The secret key
+      * @param ivBytes The salt / Initialisation vector
+      * @param algorithm The algorithm to use
+      * @return The created cipher
+      */
     def createCipher(mode: Int, secretKey: SecretKey, ivBytes: ByteString, algorithm: String) = {
       val cipher = Cipher.getInstance(algorithm)
       val ivSpec = new IvParameterSpec(ivBytes.toArray)
@@ -67,13 +109,25 @@ object Utils {
       cipher
     }
 
+    /**
+      * Helper to create an AES Cipher
+      *
+      * @param mode The mode to use
+      * @param secretKey The secret ke
+      * @param ivBytes The salt / Initialisation vector
+      * @return The created cipher
+      */
     def createAESCipher(mode: Int, secretKey: SecretKey, ivBytes: ByteString) =
       createCipher(mode, secretKey, ivBytes, "AES/CBC/PKCS5Padding")
 
-    def extractHashAndKey(toDecode: String): Option[(ByteString, ByteString)] = {
+    private def extractHashAndKey(toDecode: String): Option[(ByteString, ByteString)] = {
       toDecode.split("\\$").toList match {
-        case salt64 :: encoded64 :: Nil => Some((decodeBase64(salt64), decodeBase64(encoded64)))
-        case _ => None
+        case salt64 :: encoded64 :: Nil =>
+          (decodeBase64(salt64), decodeBase64(encoded64)) match {
+            case (Some(salt), Some(key)) => Some((salt, key) )
+            case _ => None // Base 64 decoding failed
+          }
+        case _ => None // Not the right format
       }
     }
 
@@ -85,13 +139,13 @@ object Utils {
       * @param conf The configuration, containing the secret key
       * @return The decoded message, or none if the message is malformed
       */
-    def decrypt(toDecode: String)(implicit conf: Conf): Option[String] = {
+    def decrypt(toDecode: String)(implicit conf: Conf): Option[ByteString] = {
       extractHashAndKey(toDecode) match {
         case Some((salt, encoded)) =>
           val secretKey = new SecretKeySpec(hashSHA1(conf.cryptoKey).slice(0, 16), "AES")
           val cipher = createAESCipher(Cipher.DECRYPT_MODE, secretKey, salt)
 
-          Some(ByteString(cipher.doFinal(encoded.toArray)).utf8String)
+          Some(ByteString(cipher.doFinal(encoded.toArray)))
         case _ => None
       }
     }
@@ -104,12 +158,12 @@ object Utils {
       * @param conf The configuration, containing the secret key
       * @return The ciphered key, using AES, with a generated salt (salt$cipheredMessage)
       */
-    def encrypt(toEncode: String)(implicit conf: Conf) = {
+    def encrypt(toEncode: ByteString)(implicit conf: Conf): String = {
       val salt = randomSalt(16)
       val secretKey = new SecretKeySpec(hashSHA1(conf.cryptoKey).slice(0, 16), "AES")
       val cipher = createAESCipher(Cipher.ENCRYPT_MODE, secretKey, salt)
 
-      encodeBase64(salt) + "$" + encodeBase64(cipher.doFinal(toEncode.getBytes("UTF-8")))
+      encodeBase64(salt) + "$" + encodeBase64(cipher.doFinal(toEncode.toArray))
     }
   }
 

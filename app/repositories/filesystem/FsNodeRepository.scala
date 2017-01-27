@@ -277,7 +277,7 @@ object FsNodeRepository {
     get[DateTime]("modification") ~
     get[Boolean]("hidden") map {
       case id ~ location ~ name ~ node_type ~ creation ~ modification ~ hidden
-        => FsNode(id, location, name, node_type, creation, modification, hidden, Account.initFrom("", "", "") /* TODO */, Seq.empty)
+        => FsNode(id, location, name, node_type, creation, modification, hidden, Account.empty /* TODO */, Seq.empty)
     }
   }
 
