@@ -38,6 +38,7 @@
     node_type    TEXT      NOT NULL,
     creation     TIMESTAMP NOT NULL,
     modification TIMESTAMP NOT NULL,
+    hidden       BOOLEAN   NOT NULL,
     account_id   UUID      REFERENCES account(id)
   );
 
@@ -56,6 +57,7 @@
     'directory',
     NOW(),
     NOW(),
+    FALSE,
     (SELECT id FROM account WHERE login = 'admin')
   );
 
@@ -73,6 +75,7 @@
     hash                    VARCHAR(32) NOT NULL, -- Real hash
     cipher                  VARCHAR(32),
     compression             VARCHAR(32),
+    secretKey               VARCHAR(256),
     storage_engine          TEXT        NOT NULL,
     storage_engine_version  TEXT        NOT NULL,
     creation                TIMESTAMP   NOT NULL,

@@ -17,6 +17,7 @@ object FsElement {
     (JsPath \ "type").write[String] and
     (JsPath \ "creation").write[String] and
     (JsPath \ "modification").write[String] and
+    (JsPath \ "hidden").write[Boolean] and
     //(JsPath \ "creator").write[Account] and
     (JsPath \ "content").lazyWriteNullable(Writes.seq[FsElement](fsElementWrites)) and
     (JsPath \ "sources").lazyWriteNullable(Writes.seq[FileSource](FileSource.fileSourceWrites))
@@ -27,6 +28,7 @@ object FsElement {
     element.node.nodeType,
     element.node.creation.toString,
     element.node.modification.toString,
+    element.node.hidden,
     //element.node.creator
     element match {
       case dir: Directory if dir.content.nonEmpty => Some(dir.content)

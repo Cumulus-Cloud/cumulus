@@ -8,8 +8,8 @@
   },
   "private": true,
   "scripts": {
-    "build": "NODE_ENV=production webpack -p --config build/webpack.config.js",
-    "watch": "NODE_ENV=development webpack -w --config build/webpack.config.js",
+    "build": "set NODE_ENV=production && webpack -p --config build/webpack.config.js",
+    "watch": "set NODE_ENV=development && webpack -w --config build/webpack.config.js",
     "test": "echo 'soon'"
   },
   "repository": {

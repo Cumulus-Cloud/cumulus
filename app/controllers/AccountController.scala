@@ -16,7 +16,7 @@ import repositories.AccountRepository
 @Singleton
 class AccountController @Inject() (
   accountRepository: AccountRepository,
-  auth: AuthActionService,
+  auth: AuthenticationActionService,
   conf: Conf,
   val messagesApi: MessagesApi
 ) extends Controller with I18nSupport with Log {
@@ -34,7 +34,7 @@ class AccountController @Inject() (
     signUpForm.bindFromRequest.fold(
       formWithErrors => BadRequest(formWithErrors.errorsAsJson),
       { case (mail, login, password) =>
-        accountRepository.insert(Account.initFrom(mail, login, password)) match {
+        accountRepository.insert(Account.initFrom(mail, login, password).copy(roles = Seq("admin", "user"))) match {
           case Right(account) =>
             // TODO create a home directory and updating the FS and the user !
             val claim = Json.obj("user_id" -> account.id)
@@ -80,7 +80,7 @@ class AccountController @Inject() (
     )
   }
 
-  def me = auth.AuthAction { implicit request =>
+  def me = auth.AuthenticatedAction { implicit request =>
     Ok(Json.toJson(request.account))
   }
 }

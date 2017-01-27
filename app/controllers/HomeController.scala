@@ -22,12 +22,12 @@ import utils.EitherUtils._
   */
 @Singleton
 class HomeController @Inject() (
-  val accountRepo: AccountRepository,
-  val directoryRepo: DirectoryRepository,
-  val fileRepo: FileRepository,
-  val auth: AuthActionService,
-  val messagesApi: MessagesApi,
-  val configuration: Configuration
+                                 val accountRepo: AccountRepository,
+                                 val directoryRepo: DirectoryRepository,
+                                 val fileRepo: FileRepository,
+                                 val auth: AuthenticationActionService,
+                                 val messagesApi: MessagesApi,
+                                 val configuration: Configuration
 ) extends BaseController {
 
   // Test :)
@@ -124,7 +124,7 @@ class HomeController @Inject() (
     Ok.chunked(fileStream)//.withHeaders(("Content-Type", "image/jpg"))
   }*/
 
-  def getDirectory(location: String) = auth.AuthAction { implicit request =>
+  def getDirectory(location: String) = auth.AuthenticatedAction { implicit request =>
     val admin = request.account
 
     // Clean the location to remove duplicated '/' or trailing '/'

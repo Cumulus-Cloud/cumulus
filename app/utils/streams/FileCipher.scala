@@ -1,22 +1,16 @@
 package utils.streams
 
 import javax.crypto._
-import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 
-import akka.stream.{Attributes, Inlet, Outlet, FlowShape}
-import akka.stream.stage.{OutHandler, InHandler, GraphStageLogic, GraphStage}
+import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
+import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
 import akka.util.ByteString
+import utils.Utils
 
 /**
   * Helpers to generate AES/CBC cipher/decipher for Flow[FileChunk, FileChunk]
   */
 object AESCipher {
-  private def createCipher(mode: Int, keySpec: SecretKeySpec, ivBytes: Array[Byte]) = {
-    val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-    val ivSpec = new IvParameterSpec(ivBytes)
-    cipher.init(mode, keySpec, ivSpec)
-    cipher
-  }
 
   /**
     * Generate an AES/CBC cipher to encrypt a stream
@@ -25,10 +19,10 @@ object AESCipher {
     * @return The stream
     */
   def encryptor(
-    keySpec: SecretKeySpec,
-    ivBytes: Array[Byte]
+    keySpec: SecretKey,
+    ivBytes: ByteString
   ): FileCipher = {
-    FileCipher(createCipher(Cipher.ENCRYPT_MODE, keySpec, ivBytes))
+    FileCipher(Utils.Crypto.createAESCipher(Cipher.ENCRYPT_MODE, keySpec, ivBytes))
   }
 
   /**
@@ -38,10 +32,10 @@ object AESCipher {
     * @return The stream
     */
   def decryptor(
-     keySpec: SecretKeySpec,
-     ivBytes: Array[Byte]
+     keySpec: SecretKey,
+     ivBytes: ByteString
    ): FileCipher = {
-    FileCipher(createCipher(Cipher.DECRYPT_MODE, keySpec, ivBytes))
+    FileCipher(Utils.Crypto.createAESCipher(Cipher.DECRYPT_MODE, keySpec, ivBytes))
   }
 }
 

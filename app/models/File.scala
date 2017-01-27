@@ -3,8 +3,8 @@ package models
 import java.util.UUID
 
 import org.joda.time.DateTime
-import play.api.libs.json.{JsPath, Writes}
 import play.api.libs.functional.syntax._
+import play.api.libs.json.{JsPath, Writes}
 import storage.FileStorageEngine
 
 /**
@@ -85,6 +85,7 @@ case class FileSource(
   hash: String,
   cipher: Option[String],
   compression: Option[String],
+  secretKey: Option[String],
   storageEngine: String,
   storageEngineVersion: String,
   creation: DateTime
@@ -96,6 +97,7 @@ object FileSource {
     UUID.randomUUID(),
     0,
     "d41d8cd98f00b204e9800998ecf8427e", // MD5 of an empty string/file
+    None,
     None,
     None,
     engine.name,

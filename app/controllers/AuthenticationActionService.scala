@@ -15,10 +15,10 @@ import scala.util.{Failure, Success}
 
 case class AuthenticatedRequest[A](account: Account, request: Request[A]) extends WrappedRequest[A](request)
 
-class AuthActionService @Inject() (conf: Conf, accountRepository: AccountRepository) extends Log {
+class AuthenticationActionService @Inject()(conf: Conf, accountRepository: AccountRepository) extends Log {
   val key = conf.cryptoKey
 
-  object AuthAction extends ActionBuilder[AuthenticatedRequest] {
+  object AuthenticatedAction extends ActionBuilder[AuthenticatedRequest] {
     override def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]): Future[Result] = {
       val errorResponse = Json.obj("error" -> "Unauthorized")
       request.headers.get("Authorization")

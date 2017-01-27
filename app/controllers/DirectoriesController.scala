@@ -10,14 +10,14 @@ import repositories.filesystem.{DirectoryRepository, FileRepository}
 
 @Singleton
 class DirectoriesController @Inject() (
-  val accountRepo: AccountRepository,
-  val directoryRepo: DirectoryRepository,
-  val fileRepo: FileRepository,
-  val auth: AuthActionService,
-  val messagesApi: MessagesApi
+                                        val accountRepo: AccountRepository,
+                                        val directoryRepo: DirectoryRepository,
+                                        val fileRepo: FileRepository,
+                                        val auth: AuthenticationActionService,
+                                        val messagesApi: MessagesApi
 ) extends BaseController {
 
-  def list(path: String) = auth.AuthAction { implicit request =>
+  def list(path: String) = auth.AuthenticatedAction { implicit request =>
 
     val cleanedPath = Path.sanitize(path)
     val account = request.account
@@ -32,7 +32,7 @@ class DirectoriesController @Inject() (
     }
   }
 
-  def create(path: String) = auth.AuthAction { implicit request =>
+  def create(path: String) = auth.AuthenticatedAction { implicit request =>
 
     val cleanedPath = Path.sanitize(path)
     val account = request.account
