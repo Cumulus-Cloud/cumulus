@@ -2,11 +2,10 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
-import controllers.FilesController.RequestWithFile
-import models.{Account, File, Path, Directory}
+import models.{Account, Directory}
 import play.api.i18n.MessagesApi
 import play.api.libs.json.Json
-import play.api.mvc.{ActionRefiner, WrappedRequest, Request, Controller}
+import play.api.mvc.{ActionRefiner, Controller, Request, WrappedRequest}
 import repositories.AccountRepository
 import repositories.filesystem.{DirectoryRepository, FileRepository}
 import utils.Log
@@ -44,7 +43,10 @@ class DirectoriesController @Inject() (
 
   def delete(path: String) = ActionWithDirectory(path) {
     implicit request =>
-      directoryRepo.delete(request.directory) match {
+
+    val account = request.account
+
+      directoryRepo.delete(request.directory)(account) match {
         case Right(_) =>
           Ok(Json.toJson(request.directory))
         case Left(e) =>

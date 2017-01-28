@@ -38,6 +38,7 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
   val chunkOf100ko = 102400
   val chunkLocation = new File("unitTestPath")
 
+  val patience = 500.milli
   val storageEngine = LocalStorageEngine(app.injector.instanceOf[Configuration])
 
   private def createTestFile(file: File, size: Int): File = {
@@ -96,7 +97,7 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
           case _ => null // Will fail the test
         })
 
-      val source = Await.result(res, 1000.millis)
+      val source = Await.result(res, patience)
 
       assert(source.hash == computeFileHash(fileOf100ko))
     }
@@ -108,7 +109,7 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
           case _ => null // Will fail the test
         })
 
-      val source = Await.result(res, 1000.millis)
+      val source = Await.result(res, patience)
 
       assert(source.hash == computeFileHash(fileOf1Mo))
     }
@@ -119,12 +120,12 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
       val downloadFile = new File(chunkLocation, "unitTestFile1")
       val res = FileIO.fromPath(fileOf100ko.toPath)
         .runWith(FileUploaderSink(storageEngine))
-      val source = Await.result(res, 1000.millis)
+      val source = Await.result(res, patience)
 
       val res2 = Source.fromGraph(FileDownloader(storageEngine, source))
         .runWith(FileIO.toPath(downloadFile.toPath))
 
-      Await.result(res2, 100.millis)
+      Await.result(res2, patience)
 
       assert(computeFileHash(fileOf100ko) == computeFileHash(downloadFile))
     }
@@ -133,12 +134,12 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
       val downloadFile = new File(chunkLocation, "unitTestFile2")
       val res = FileIO.fromPath(fileOf1Mo.toPath)
         .runWith(FileUploaderSink(storageEngine))
-      val source = Await.result(res, 1000.millis)
+      val source = Await.result(res, patience)
 
       val res2 = Source.fromGraph(FileDownloader(storageEngine, source))
         .runWith(FileIO.toPath(downloadFile.toPath))
 
-      Await.result(res, 1000.millis)
+      Await.result(res2, patience)
 
       assert(computeFileHash(fileOf1Mo) == computeFileHash(downloadFile))
     }
@@ -147,25 +148,24 @@ class LocalStorageEngineSpec extends PlaySpec with OneAppPerSuite with BeforeAnd
       val downloadFile = new File(chunkLocation, "notUsed")
       val res = FileIO.fromPath(fileOf100ko.toPath)
         .runWith(FileUploaderSink(storageEngine))
-      val source = Await.result(res, 1000.millis)
+      val source = Await.result(res, patience)
 
-      val res2 = Source.fromGraph(FileDownloader(storageEngine, source.copy(size = source.size - 1)))
+      val res2 = Source.fromGraph(FileDownloader(storageEngine, source.copy(size = source.size + 1)))
         .runWith(FileIO.toPath(downloadFile.toPath))
 
-      assert(!Await.result(res2, 1000.millis).wasSuccessful)
+      assert(!Await.result(res2, patience).wasSuccessful)
     }
 
     "fails if the source hash is not the same as the predicted one" in {
       val downloadFile = new File(chunkLocation, "notUsed")
       val res = FileIO.fromPath(fileOf100ko.toPath)
         .runWith(FileUploaderSink(storageEngine))
-      val source = Await.result(res, 1000.millis)
-
+      val source = Await.result(res, patience)
 
       val res2 = Source.fromGraph(FileDownloader(storageEngine, source.copy(hash = source.hash + "error")))
         .runWith(FileIO.toPath(downloadFile.toPath))
 
-      assert(!Await.result(res2, 1000.millis).wasSuccessful)
+      assert(!Await.result(res2, patience).wasSuccessful)
     }
   }
 

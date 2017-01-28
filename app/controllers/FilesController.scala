@@ -243,7 +243,10 @@ class FilesController @Inject() (
 
   def delete(path: String) = ActionWithFile(path) {
     implicit request =>
-      fileRepo.delete(request.file) match {
+
+      val account = request.account
+
+      fileRepo.delete(request.file)(account) match {
         case Right(_) =>
           Ok(Json.toJson(request.file))
         case Left(e) =>
