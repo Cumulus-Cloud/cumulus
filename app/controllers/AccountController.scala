@@ -16,13 +16,15 @@ import repositories.AccountRepository
 @Singleton
 class AccountController @Inject() (
   accountRepository: AccountRepository,
-  auth: AuthActionService,
+  auth: AuthenticationActionService,
   conf: Conf,
   val messagesApi: MessagesApi
 ) extends Controller with I18nSupport with Log {
 
   val key = conf.cryptoKey
   val header = Json.obj("typ" -> "JWT", "alg" -> "HS256")
+
+  implicit val confImplicit = conf
 
   val signUpForm = Form(tuple(
     "mail" -> emailForm,
@@ -80,7 +82,7 @@ class AccountController @Inject() (
     )
   }
 
-  def me = auth.AuthAction { implicit request =>
+  def me = auth.AuthenticatedAction { implicit request =>
     Ok(Json.toJson(request.account))
   }
 }

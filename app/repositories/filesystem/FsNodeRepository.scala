@@ -274,9 +274,10 @@ object FsNodeRepository {
     get[String]("name") ~
     get[String]("node_type") ~
     get[DateTime]("creation") ~
-    get[DateTime]("modification") map {
-      case id ~ location ~ name ~ node_type ~ creation ~ modification
-        => FsNode(id, location, name, node_type, creation, modification, Account.initFrom("", "", "") /* TODO */, Seq.empty)
+    get[DateTime]("modification") ~
+    get[Boolean]("hidden") map {
+      case id ~ location ~ name ~ node_type ~ creation ~ modification ~ hidden
+        => FsNode(id, location, name, node_type, creation, modification, hidden, Account.empty /* TODO */, Seq.empty)
     }
   }
 
@@ -288,6 +289,7 @@ object FsNodeRepository {
        node_type,
        creation,
        modification,
+       hidden,
        account_id)
      VALUES (
        ${node.id}::uuid,
@@ -296,6 +298,7 @@ object FsNodeRepository {
        ${node.nodeType},
        ${node.creation},
        ${node.modification},
+       ${node.hidden},
        ${node.creator.id}::uuid
      );
     """
