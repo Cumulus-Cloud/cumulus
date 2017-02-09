@@ -71,11 +71,12 @@ object AccountRepository {
     get[String]("mail") ~
     get[String]("login") ~
     get[String]("password") ~
+    get[String]("key") ~
     get[DateTime]("creation") ~
     get[Array[String]]("roles") ~
     get[Option[String]]("home") map {
-      case id ~ mail ~ login ~ password ~ creation ~ roles ~ home
-        => Account(id, mail, login, password, creation, roles, home)
+      case id ~ mail ~ login ~ password ~ key ~ creation ~ roles ~ home
+        => Account(id, mail, login, password, key, creation, roles, home)
     }
   }
 
@@ -101,6 +102,7 @@ object AccountRepository {
        mail,
        login,
        password,
+       key,
        creation,
        roles)
      VALUES (
@@ -108,6 +110,7 @@ object AccountRepository {
        ${account.mail},
        ${account.login},
        ${account.password},
+       ${account.key},
        ${account.creation},
        ${account.roles.toArray[String]}
      );

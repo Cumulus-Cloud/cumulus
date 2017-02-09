@@ -13,17 +13,21 @@ trait FileStorageEngine {
 
   def name: String
 
-  def createChunk(name: UUID): OutputStream = createChunk(name.toString)
+  def createFile(name: UUID): OutputStream = createFile(name.toString)
 
-  def createChunk(name: String): OutputStream
+  def createFile(name: String): OutputStream
 
-  def readChunk(name: UUID): InputStream = readChunk(name.toString)
+  def readFile(name: UUID): InputStream = readFile(name.toString)
 
-  def readChunk(name: String): InputStream
+  def readFile(name: String): InputStream
 
-  def deleteChunk(name: String): Unit
+  def deleteFile(name: String): Unit
 
-  def deleteChunk(name: UUID): Unit = deleteChunk(name.toString)
+  def deleteFile(name: UUID): Unit = deleteFile(name.toString)
+
+  def isFileAvailable(name: String): Boolean
+
+  def isFileAvailable(name: UUID): Boolean = isFileAvailable(name.toString)
 
   def shutdown(): Unit
 

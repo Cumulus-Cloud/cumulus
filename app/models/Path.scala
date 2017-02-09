@@ -33,7 +33,7 @@ object Path {
     * @param path Path to clean
     * @return The sanitized path
     */
-  def sanitize(path: String): String = convertStringToPath(path).toString
+  def trim(path: String): String = convertStringToPath(path).toString.trim
 
-  def clean(path: String): String = sanitize(java.net.URLDecoder.decode(path, "UTF-8"))
+  def sanitize(path: String): String = trim(java.net.URLDecoder.decode(path, "UTF-8"))
 }
