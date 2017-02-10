@@ -2,7 +2,7 @@ package repositories.filesystem
 
 import javax.inject.Inject
 
-import models.{Account, File, Path}
+import models.{FileMetadata, Account, File, Path}
 import play.api.db.DBApi
 import repositories.ValidationError
 
@@ -11,7 +11,8 @@ import scala.concurrent.ExecutionContext
 class FileRepository @Inject()(
   dbApi: DBApi,
   nodeRepository: FsNodeRepository,
-  fileChunkRepository: FileChunkRepository
+  fileSourceRepository: FileSourceRepository,
+  fileMetadataRepository: FileMetadataRepository
 )(
  implicit ec: ExecutionContext
 ){
@@ -33,15 +34,18 @@ class FileRepository @Inject()(
       nodeRepository.insertNonAtomic(file.node) match {
         case Left(error) => Left(error)
         case Right(node) =>
-          // Insert the chunks
-          file.chunks.map(fileChunkRepository.insertNonAtomic(file.node, _))
+          // Insert the sources
+          file.sources.map(fileSourceRepository.insertNonAtomic(file.node, _))
+          // Insert the metadatas
+          fileMetadataRepository.insertNonAtomic(file.node, file.metadata)
+          // Return the inserted file
           Right(file.copy(node))
       }
     }
   }
 
   /**
-    * Return a file by its path, with its content
+    * Return a file by its path, with its content, sources and metadata
     *
     * @see [[FsNodeRepository.getByPath]]
     */
@@ -52,9 +56,13 @@ class FileRepository @Inject()(
         case Right(node) =>
           Right(
             node.map { n =>
+              val sources = fileSourceRepository.selectSourcesNonAtomic(n)
+
               File(
                 node = n,
-                chunks = fileChunkRepository.selectChunks(n)
+                sources = sources,
+                metadata = fileMetadataRepository.selectMetadata(n)
+                  .getOrElse(FileMetadata.default) // Should not happen, fallback
               )
             }
           )
@@ -86,5 +94,5 @@ class FileRepository @Inject()(
     }
   }
 
-  // TODO Search file by name/path
+  // TODO Search file by name/path, content ?
 }

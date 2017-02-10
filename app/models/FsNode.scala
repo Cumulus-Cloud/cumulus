@@ -21,6 +21,7 @@ case class FsNode(
   nodeType: String, // TODO custom case class ?
   creation: DateTime,
   modification: DateTime,
+  hidden: Boolean,
   creator: Account,
   permissions: Seq[Permission]
 ) {
@@ -71,6 +72,7 @@ object FsNode {
     nodeType,
     DateTime.now(),
     DateTime.now(),
+    hidden = false,
     creator,
     permissions = Seq(Permission(creator.id, Seq("read", "write")))
   )

@@ -9,6 +9,8 @@ class LocalStorageEngine extends FileStorageEngine {
 
   var path: String = "tmp/"
 
+  private def getFile(name: String): File = new File(path + File.separator + name)
+
   override def initialize(conf: Configuration): Unit = {
     Logger.debug("Local Storage Engine started")
     path = conf.getString("fileStorageEngine.LocalStorageEngine.path").getOrElse("tmp/")
@@ -22,19 +24,24 @@ class LocalStorageEngine extends FileStorageEngine {
 
   override def version: String = "0.1"
 
-  override def deleteChunk(name: String): Unit = {
-    val file = new File(path + "/" + name)
+  override def deleteFile(name: String): Unit = {
+    val file = getFile(name)
 
     if(file.exists)
       file.delete
   }
 
-  override def readChunk(name: String): InputStream = {
-    new FileInputStream(new File(path + "/" + name))
+  override def readFile(name: String): InputStream = {
+    new FileInputStream(getFile(name))
   }
 
-  override def createChunk(name: String): OutputStream = {
-    new FileOutputStream(new File(path + "/" + name))
+  override def createFile(name: String): OutputStream = {
+    new FileOutputStream(getFile(name))
+  }
+
+  override def isFileAvailable(name: String): Boolean = {
+    val file = getFile(name)
+    file.isFile && file.canRead
   }
 }
 

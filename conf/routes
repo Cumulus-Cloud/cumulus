@@ -4,25 +4,23 @@
 
 GET     /                           controllers.HomeController.index
 
-# Test
-GET     /bootstrap                  controllers.HomeController.bootstrap
-GET     /dir*location               controllers.HomeController.getDirectory(location: String)
-
 POST    /accounts/login             controllers.AccountController.login
 POST    /accounts/signup            controllers.AccountController.signUp
 GET     /accounts/me                controllers.AccountController.me
 
-GET     /api/directory*path        controllers.DirectoriesController.list(path)
-POST    /api/directory*path        controllers.DirectoriesController.create(path)
+GET     /api/directory*path         controllers.DirectoriesController.list(path)
+POST    /api/directory*path         controllers.DirectoriesController.create(path)
+DELETE  /api/directory*path         controllers.DirectoriesController.delete(path)
+# TODO move
 
-GET     /api/file/*path             controllers.FilesController.show(path)
-PUT     /api/file/*path             controllers.FilesController.create(path)
-POST    /api/file/*path             controllers.FilesController.upload(path)
+GET     /api/file*path              controllers.FilesController.show(path)
+PUT     /api/file*path              controllers.FilesController.create(path)
+DELETE  /api/file*path              controllers.FilesController.delete(path)
+# TODO move
 
-GET     /api/download/*path         controllers.FilesController.download(path)
-
-POST    /testUpload/:filename       controllers.HomeController.testUpload(filename: String)
-GET     /testDownload               controllers.HomeController.testDownload
+GET     /api/upload*path            controllers.FilesController.upload(path)
+GET     /api/download*path          controllers.FilesController.download(path)
+GET     /api/stream*path            controllers.FilesController.stream(path)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
