@@ -5,11 +5,11 @@ import { hashHistory } from "react-router"
 import { FsNode } from "../../models/FsNode"
 
 interface Props {
-  directory: FsNode
+  directory?: FsNode
 }
 
 export default function Breadcrumb({ directory }: Props) {
-  const paths = directory.location.substring(1, directory.location.length).split("/").filter(p => p !== "")
+  const paths = directory && directory.location.substring(1, directory.location.length).split("/").filter(p => p !== "") || []
   const pathsWithRoot = ["", ...paths]
   const len = pathsWithRoot.length
   return (
