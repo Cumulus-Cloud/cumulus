@@ -123,7 +123,7 @@ export function upload(path: string, file: Blob, progression?: (e: ProgressEvent
   return getAuthToken().then(token => {
     return new Promise((resolve, reject) => {
       let xhr = new XMLHttpRequest()
-      xhr.open("POST", `${BASE_API_URL}/api/file${path}`)
+      xhr.open("POST", `${BASE_API_URL}/api/upload${path}`)
       xhr.setRequestHeader("Authorization", token)
       xhr.addEventListener("load", function (e: any) {
         console.debug("upload load", e)
