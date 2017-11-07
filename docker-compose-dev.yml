@@ -1,0 +1,18 @@
+version: '3'
+services:
+    postgres:
+        image: postgres:10.0-alpine
+        environment:
+            POSTGRES_PASSWORD: cumulus
+            POSTGRES_USER: cumulus
+            POSTGRES_DB: cumulus
+        ports:
+            - 5432:5432
+        volumes:
+            - .pg-data/mongodb:/var/lib/postgresql/data
+
+    adminer:
+        image: adminer
+        ports:
+            - 5555:8080
+

@@ -1,3 +1,4 @@
+/*
 import "./directory.css"
 import * as React from "react"
 import { Action } from "redux"
@@ -87,3 +88,4 @@ const mapDispatchToProps = (dispatch: (action: Action) => void) => {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Directory)
+*/

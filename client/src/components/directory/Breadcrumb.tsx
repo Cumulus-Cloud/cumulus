@@ -1,3 +1,4 @@
+/*
 import "./breadcrumb.css"
 import * as React from "react"
 import { hashHistory } from "react-router"
@@ -36,3 +37,4 @@ export default function Breadcrumb({ directory }: Props) {
     </div>
   )
 }
+*/

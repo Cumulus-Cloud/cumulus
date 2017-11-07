@@ -1,3 +1,4 @@
+/*
 import { Action } from "redux"
 import { AppAction } from "../Redux"
 import { Directory } from "../models/FsNode"
@@ -74,3 +75,4 @@ export function createDirectory(path: string) {
     }
   })
 }
+*/

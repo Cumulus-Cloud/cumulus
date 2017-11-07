@@ -1,3 +1,4 @@
+/*
 import "./fsDirectory.css"
 import * as React from "react"
 import { hashHistory } from "react-router"
@@ -17,3 +18,4 @@ export default function FsDirectory({ fsNode }: Props) {
     </div>
   )
 }
+*/

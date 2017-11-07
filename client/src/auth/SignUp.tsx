@@ -1,3 +1,4 @@
+/*
 import * as React from "react"
 import { hashHistory } from "react-router"
 import { Account, AccountSignup, validateSignup } from "../models/Account"
@@ -101,3 +102,4 @@ export default class SignUp extends React.Component<void, State> {
     } as PartialState as State)
   }
 }
+*/

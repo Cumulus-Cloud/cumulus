@@ -1,3 +1,4 @@
+/*
 import "./actionsBar.css"
 import * as React from "react"
 import { createDirectory } from "../../directory/directoryActions"
@@ -52,3 +53,4 @@ export default class ActionsBar extends React.Component<Props, State> {
     this.handleCancel()
   }
 }
+*/

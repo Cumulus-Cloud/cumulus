@@ -1,3 +1,4 @@
+/*
 import "./uploadFile.css"
 import * as React from "react"
 import * as ReactDOM from "react-dom"
@@ -47,3 +48,4 @@ export default class UploadFile extends React.Component<Props, void> {
     )
   }
 }
+*/

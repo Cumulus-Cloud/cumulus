@@ -1,3 +1,4 @@
+/*
 import * as React from "react"
 
 import { Errors } from "../services/Api"
@@ -46,3 +47,4 @@ export default function CreateDirectoryDialog(props: Props) {
       </Dialog>
   )
 }
+*/

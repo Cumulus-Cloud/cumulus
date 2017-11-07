@@ -1,3 +1,4 @@
+/*
 import "./fsFile.css"
 import * as React from "react"
 import { FsNode } from "../../models/FsNode"
@@ -16,3 +17,4 @@ export default function FsFile({ fsNode }: Props) {
     </a>
   )
 }
+*/

@@ -1,3 +1,4 @@
+/*
 import { Action } from "redux"
 import { AppAction, getActionPayload } from "../Redux"
 import { Directory } from "../models/FsNode"
@@ -72,3 +73,4 @@ export function directoryReducer(state: DirectoryState = initDirectoryState, act
       return state
   }
 }
+*/

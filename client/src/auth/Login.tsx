@@ -1,3 +1,4 @@
+/*
 import * as React from "react"
 import { hashHistory } from "react-router"
 import { Account, AccountLogin, validateLogin } from "../models/Account"
@@ -97,3 +98,4 @@ export default class Login extends React.Component<void, State> {
     }
   }
 }
+*/

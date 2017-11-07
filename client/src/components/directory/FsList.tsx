@@ -1,3 +1,4 @@
+/*
 import "./fsList.css"
 import * as React from "react"
 import { FsNode } from "../../models/FsNode"
@@ -22,3 +23,4 @@ export default function FsList({ fsNodes }: Props) {
     </div>
   )
 }
+*/

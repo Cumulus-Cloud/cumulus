@@ -6,7 +6,7 @@ interface Props {
   height?: number
 }
 
-export default function FileIcon({ color = "#D8D8D8", width = 30, height = 30 }) {
+export default function FileIcon({ color = "#D8D8D8", width = 30, height = 30 }: Props) {
   return (
     <svg width={width} height={height} viewBox="0 0 80 80" version="1.1">
       <g id="file-icon" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">

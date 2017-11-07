@@ -1,3 +1,4 @@
+/*
 import { Account, AccountLogin, AccountSignup } from "../models/Account"
 import { Directory, FsNode } from "../models/FsNode"
 import { hashHistory } from "react-router"
@@ -156,3 +157,4 @@ export function getDownloadUrl(file: FsNode, cookie: boolean): string {
     }
   }
 }
+*/
