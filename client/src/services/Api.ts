@@ -1,14 +1,11 @@
-/*
-import { Account, AccountLogin, AccountSignup } from "../models/Account"
-import { Directory, FsNode } from "../models/FsNode"
-import { hashHistory } from "react-router"
+import { history } from "store"
 
-const BASE_API_URL = "http://localhost:9000"
+import { Account } from "../models/Account"
+// import { Directory, FsNode } from "../models/FsNode"
 
-const HEADERS = {
-  "Content-Type": "application/json",
-  "Accept": "application/json",
-}
+const HEADERS = [
+  ["Content-Type", "application/json"]
+]
 
 export interface ApiError<T> {
   errors?: T,
@@ -29,7 +26,7 @@ export function success(response: Response): Promise<any> {
       })
     })
   } else if (response.status === 404) {
-    hashHistory.push("/notfound")
+    history.push("/notfound")
     return Promise.reject({
       message: response.statusText
     })
@@ -41,12 +38,12 @@ export function success(response: Response): Promise<any> {
 }
 
 const AUTH_TOKEN_STORAGE_KEY = "AUTH_TOKEN_STORAGE_KEY"
-
+/*
 function getAuthToken(): Promise<string> {
   return new Promise((resolve, reject) => {
     const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
     if (!token) {
-      hashHistory.push("/login")
+      history.push("#/login")
       reject({
         message: "Unauthorized"
       })
@@ -68,7 +65,7 @@ function withAuth(path: string, options?: RequestInit, headers?: Headers): Promi
     })
   })
 }
-
+*/
 export function saveAuthToken(token: string, session: boolean = false) {
   (session ? sessionStorage : localStorage).setItem(AUTH_TOKEN_STORAGE_KEY, token)
 }
@@ -78,19 +75,23 @@ export function json(response: Response) {
   return response.json()
 }
 
+
 export interface AccountApiResponse {
   account: Account
   token: string
 }
-export function login(accountLogin: AccountLogin): Promise<AccountApiResponse> {
-  return fetch(`${BASE_API_URL}/accounts/login`, {
+export function login(email: string, password: string): Promise<AccountApiResponse> {
+  return fetch(`/accounts/login`, {
     method: "POST",
-    body: JSON.stringify(accountLogin),
+    body: JSON.stringify({
+      mail: email,
+      password
+    }),
     headers: HEADERS,
     credentials: "same-origin",
   }).then(success)
 }
-
+/*
 export function signup(accountSignup: AccountSignup): Promise<AccountApiResponse> {
   return fetch(`${BASE_API_URL}/accounts/signup`, {
     method: "POST",

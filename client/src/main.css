@@ -1,0 +1,17 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+:root {
+  --red: #E83E29;
+  --primary: #19284B;
+  --secondary: #215279;
+  --accent: #88C2A7;
+  --clear: #F6E9B4;
+  --white: #FFFFFF;
+  --black: #000000;
+}

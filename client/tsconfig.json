@@ -7,7 +7,14 @@
     "sourceMap": true,
     "noImplicitAny": true,
     "skipLibCheck": true,
-    "skipDefaultLibCheck": true
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "*": [
+        "src/*"
+      ]
+    },
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
     "./src/**/*"
