@@ -29,7 +29,7 @@ export default class LoginForm extends React.PureComponent<Props> {
           value={login.password}
           onChange={this.handleChange("password")}
         />
-        <div>
+        <div className={styles.action}>
           <Button label="Login" loading={loading} onClick={this.handleSubmit} />
         </div>
       </div>

@@ -1,5 +1,4 @@
 import { history } from "store"
-
 import { Account } from "../models/Account"
 // import { Directory, FsNode } from "../models/FsNode"
 
@@ -7,12 +6,24 @@ const HEADERS = [
   ["Content-Type", "application/json"]
 ]
 
-export interface ApiError<T> {
-  errors?: T,
-  onmessage?: string
+export type ApiError = BadRequest | Unauthorized
+
+export type BadRequest = {
+  type: "BadRequest"
+  errors: FormErrors
 }
 
-export type Errors = Record<string, string[]>
+export type Unauthorized = {
+  type: "Unauthorized"
+  message: string
+}
+
+export type Error = {
+  type: "Error"
+  message: string
+}
+
+export type FormErrors = Record<string, string[]>
 
 export function success(response: Response): Promise<any> {
   if (response.status >= 200 && response.status < 300) {
@@ -21,6 +32,7 @@ export function success(response: Response): Promise<any> {
     return new Promise((_, reject) => {
       return response.json().then(json => {
         reject({
+          type: "BadRequest",
           errors: json
         })
       })
@@ -28,10 +40,12 @@ export function success(response: Response): Promise<any> {
   } else if (response.status === 404) {
     history.push("/notfound")
     return Promise.reject({
+      type: "Unauthorized",
       message: response.statusText
     })
   } else {
     return Promise.reject({
+      type: "Error",
       message: response.statusText
     })
   }
@@ -75,32 +89,30 @@ export function json(response: Response) {
   return response.json()
 }
 
-
 export interface AccountApiResponse {
   account: Account
   token: string
 }
-export function login(email: string, password: string): Promise<AccountApiResponse> {
+
+export function login(mail: string, password: string): Promise<AccountApiResponse> {
   return fetch(`/accounts/login`, {
     method: "POST",
-    body: JSON.stringify({
-      mail: email,
-      password
-    }),
-    headers: HEADERS,
-    credentials: "same-origin",
-  }).then(success)
-}
-/*
-export function signup(accountSignup: AccountSignup): Promise<AccountApiResponse> {
-  return fetch(`${BASE_API_URL}/accounts/signup`, {
-    method: "POST",
-    body: JSON.stringify(accountSignup),
+    body: JSON.stringify({ mail, password }),
     headers: HEADERS,
     credentials: "same-origin",
   }).then(success)
 }
 
+export function signup(login: string, mail: string, password: string): Promise<AccountApiResponse> {
+  return fetch(`/accounts/signup`, {
+    method: "POST",
+    body: JSON.stringify({ login, mail, password }),
+    headers: HEADERS,
+    credentials: "same-origin",
+  }).then(success)
+}
+
+/*
 export function me(): Promise<Account> {
   return withAuth(`${BASE_API_URL}/accounts/me`, {
     method: "GET",
