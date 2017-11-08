@@ -6,9 +6,11 @@ import { createStore, combineReducers, applyMiddleware } from "redux"
 import { routerReducer, routerMiddleware } from "react-router-redux"
 import thunkMiddleware from "redux-thunk"
 import { LoginState, LoginReducer } from "login/LoginReducer"
+import { SignupState, SignupReducer } from "signup/SignupReducer"
 
 export interface GlobalState {
   login: LoginState
+  signup: SignupState
   router: Reducer<RouterState>
 }
 
@@ -16,6 +18,7 @@ export const history = createHashHistory()
 const middleware = routerMiddleware(history)
 const reducers = combineReducers({
   login: LoginReducer,
+  signup: SignupReducer,
   router: routerReducer,
 })
 const enhancer = composeWithDevTools(

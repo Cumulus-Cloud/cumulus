@@ -7,7 +7,8 @@ import * as ReactDOM from "react-dom"
 import { Route } from "react-router"
 import { Provider } from "react-redux"
 import { ConnectedRouter } from "react-router-redux"
-import LoginContainer from "./login/LoginContainer"
+import LoginContainer from "login/LoginContainer"
+import SignupContainer from "signup/SignupContainer"
 import { store, history } from "./store"
 
 ReactDOM.render(
@@ -16,6 +17,7 @@ ReactDOM.render(
       <div>
         <Route exact path="/" component={LoginContainer} />
         <Route exact path="/login" component={LoginContainer} />
+        <Route exact path="/signup" component={SignupContainer} />
       </div>
     </ConnectedRouter>
   </Provider>,

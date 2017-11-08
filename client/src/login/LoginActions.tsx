@@ -40,7 +40,7 @@ export function loginOnSubmit(mail: string, password: string): ThunkAction<void,
 export type LOGIN_ON_SUBMIT_SUCCESS = {
   type: "LOGIN_ON_SUBMIT_SUCCESS"
 }
-export function loginOnSubmitSuccess() {
+export function loginOnSubmitSuccess(): LOGIN_ON_SUBMIT_SUCCESS {
   return { type: "LOGIN_ON_SUBMIT_SUCCESS" }
 }
 
