@@ -5,17 +5,17 @@ import createHashHistory from "history/createHashHistory"
 import { createStore, combineReducers, applyMiddleware } from "redux"
 import { routerReducer, routerMiddleware } from "react-router-redux"
 import thunkMiddleware from "redux-thunk"
-import { AuthState, AuthReducer } from "auth/AuthReducer"
+import { LoginState, LoginReducer } from "login/LoginReducer"
 
 export interface GlobalState {
-  auth: AuthState
+  login: LoginState
   router: Reducer<RouterState>
 }
 
 export const history = createHashHistory()
 const middleware = routerMiddleware(history)
 const reducers = combineReducers({
-  auth: AuthReducer,
+  login: LoginReducer,
   router: routerReducer,
 })
 const enhancer = composeWithDevTools(
