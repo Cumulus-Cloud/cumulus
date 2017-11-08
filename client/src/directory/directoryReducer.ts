@@ -1,3 +1,7 @@
+
+export interface DirectoryState {
+}
+
 /*
 import { Action } from "redux"
 import { AppAction, getActionPayload } from "../Redux"

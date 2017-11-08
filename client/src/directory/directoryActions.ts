@@ -1,3 +1,16 @@
+import { Directory, FsNode } from "models/FsNode"
+
+export type DirectoryAction = ADD_DIRECTORY
+
+export type ADD_DIRECTORY = { type: "ADD_DIRECTORY", directory: Directory }
+export function addDirectory(directory: Directory): ADD_DIRECTORY {
+  return { type: "ADD_DIRECTORY", directory }
+}
+
+export type ADD_CREATED_FS_NODE = { type: "ADD_CREATED_FS_NODE", fsNode: FsNode }
+export function addCreatedFsNode(fsNode: FsNode): ADD_CREATED_FS_NODE {
+  return { type: "ADD_CREATED_FS_NODE", fsNode }
+}
 /*
 import { Action } from "redux"
 import { AppAction } from "../Redux"
@@ -6,30 +19,6 @@ import { FsNode } from "../models/FsNode"
 import * as Api from "../services/Api"
 import { store } from "./DirectoryContainer"
 
-export const ADD_DIRECTORY_ACTION: string = "ADD_DIRECTORY_ACTION"
-export function addDirectory(directory: Directory) {
-  return {
-    type: ADD_DIRECTORY_ACTION,
-    directory
-  }
-}
-
-
-export const LOADING_ACTION: string = "LOADING_ACTION"
-export function loading(loading: boolean) {
-  return {
-    type: LOADING_ACTION,
-    loading
-  }
-}
-
-export const ADD_CREATED_FS_NODE: string = "ADD_CREATED_FS_NODE"
-export function addCreatedFsNode(fsNode: FsNode) {
-  return {
-    type: ADD_CREATED_FS_NODE,
-    fsNode
-  }
-}
 
 export const CREATE_DIRECTORY_ERRORS: string = "CREATE_DIRECTORY_ERRORS"
 export function createDirectoryErrors(errors: Record<string, string[]>): AppAction {

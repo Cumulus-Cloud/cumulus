@@ -1,4 +1,4 @@
-import { ValidationErrors, validate } from "./validation"
+// import { ValidationErrors, validate } from "./validation"
 
 export type Role = "admin" | "user"
 
@@ -8,7 +8,7 @@ export interface Account {
   creation: string
   roles: Role[]
 }
-
+/*
 export interface AccountSignup {
   login: string
   mail: string,
@@ -56,3 +56,4 @@ const signupConstraints = {
 export function validateSignup(signup: AccountSignup): ValidationErrors<AccountSignup> | undefined {
   return validate(signup, signupConstraints)
 }
+*/
