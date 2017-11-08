@@ -31,6 +31,9 @@ export default class LoginForm extends React.PureComponent<Props> {
         />
         <div className={styles.action}>
           <Button label="Login" loading={loading} onClick={this.handleSubmit} />
+          <div className={styles.formError}>
+            {errors.login ? errors.login : null}
+          </div>
         </div>
       </div>
     )
