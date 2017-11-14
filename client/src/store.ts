@@ -7,10 +7,14 @@ import { routerReducer, routerMiddleware } from "react-router-redux"
 import thunkMiddleware from "redux-thunk"
 import { LoginState, LoginReducer } from "login/LoginReducer"
 import { SignupState, SignupReducer } from "signup/SignupReducer"
+import { DirectoryState, DirectoryReducer } from "directory/DirectoryReducer"
+import { NewFolderState, NewFolderReducer } from "newFolder/NewFolderReducer"
 
 export interface GlobalState {
   login: LoginState
   signup: SignupState
+  newFolder: NewFolderState
+  directory: DirectoryState
   router: Reducer<RouterState>
 }
 
@@ -19,6 +23,8 @@ const middleware = routerMiddleware(history)
 const reducers = combineReducers({
   login: LoginReducer,
   signup: SignupReducer,
+  newFolder: NewFolderReducer,
+  directory: DirectoryReducer,
   router: routerReducer,
 })
 const enhancer = composeWithDevTools(

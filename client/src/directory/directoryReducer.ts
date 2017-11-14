@@ -1,10 +1,27 @@
+import { DirectoryAction } from "./DirectoryActions"
+
+
+export type Loading = "CreateDirectory"
 
 export interface DirectoryState {
+  newDirectoryName: string
+  isNewDirectoryOpen: boolean
+  loading?: Loading
+}
+
+const initState: DirectoryState = {
+  newDirectoryName: "lol",
+  isNewDirectoryOpen: false,
+}
+export const DirectoryReducer = (state: DirectoryState = initState, action: DirectoryAction) => {
+  switch (action.type) {
+    case "CHANGE_NEW_DIRECTORY_NAME": return { ...state, newDirectoryName: action.name }
+    case "TOGGLE_CREATE_NEW_DIRECTORY": return { ...state, isNewDirectoryOpen: !state.isNewDirectoryOpen }
+    default: return state
+  }
 }
 
 /*
-import { Action } from "redux"
-import { AppAction, getActionPayload } from "../Redux"
 import { Directory } from "../models/FsNode"
 import * as Api from "../services/Api"
 

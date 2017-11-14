@@ -10,7 +10,6 @@ docker run \
 -v $HOME/.ivy2:/home/cumulus/.ivy2 \
 -v $HOME/.npm:/home/cumulus/.npm \
 -v $HOME/.sbt:/home/cumulus/.sbt \
--v $HOME/.npm:/home/cumulus/.npm \
 --name cumulus \
 --link postgres-test:postgres \
 -e DB_URL="jdbc:postgresql://postgres-test/cumulus" \

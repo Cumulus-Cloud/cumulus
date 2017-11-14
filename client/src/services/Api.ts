@@ -94,22 +94,28 @@ export interface AccountApiResponse {
   token: string
 }
 
-export function login(mail: string, password: string): Promise<AccountApiResponse> {
+export function login(mail: string, password: string): Promise<Account> {
   return fetch(`/accounts/login`, {
     method: "POST",
     body: JSON.stringify({ mail, password }),
     headers: HEADERS,
     credentials: "same-origin",
-  }).then(success)
+  }).then(success).then(response => {
+    saveAuthToken(response.token)
+    return response.account
+  })
 }
 
-export function signup(login: string, mail: string, password: string): Promise<AccountApiResponse> {
+export function signup(login: string, mail: string, password: string): Promise<Account> {
   return fetch(`/accounts/signup`, {
     method: "POST",
     body: JSON.stringify({ login, mail, password }),
     headers: HEADERS,
     credentials: "same-origin",
-  }).then(success)
+  }).then(success).then(response => {
+    saveAuthToken(response.token)
+    return response.account
+  })
 }
 
 /*

@@ -10,7 +10,7 @@ import { ConnectedRouter } from "react-router-redux"
 import LoginContainer from "login/LoginContainer"
 import SignupContainer from "signup/SignupContainer"
 import DirectoryContainer from "directory/DirectoryContainer"
-import { store, history } from "./store"
+import { store, history } from "store"
 
 ReactDOM.render(
   <Provider store={store}>
