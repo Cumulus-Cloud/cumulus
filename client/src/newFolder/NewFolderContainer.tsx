@@ -5,6 +5,7 @@ import { NewFolderState } from "newFolder/NewFolderReducer"
 import { GlobalState } from "store"
 import NewFolderFrom from "components/directory/NewFolderFrom"
 import Modal from "components/modals/Modal"
+import ModalActions from "components/modals/ModalActions"
 import FlatButton from "components/buttons/FlatButton"
 
 interface DispatchProps {
@@ -29,11 +30,19 @@ class NewFolderContainer extends React.PureComponent<Props> {
   renderModal = () => {
     const { newFolderName, onNewFolderNameChange, onWantCreateNewFolder } = this.props
     return (
-      <Modal title={"Create new directory"} onClose={onWantCreateNewFolder} onSubmit={this.handleOnSubmit}>
+      <Modal
+        title="Create new directory"
+        onClose={onWantCreateNewFolder}
+        onSubmit={this.handleOnSubmit}
+      >
         <NewFolderFrom
           name={newFolderName}
           onChange={onNewFolderNameChange}
         />
+        <ModalActions>
+          <FlatButton label="Cancel" onClick={onWantCreateNewFolder} />
+          <FlatButton label="Create" onClick={this.handleOnSubmit} />
+        </ModalActions>
       </Modal>
     )
   }
