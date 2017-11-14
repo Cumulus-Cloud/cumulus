@@ -11,15 +11,6 @@ import FsList from "../components/directory/FsList"
 import Breadcrumb from "../components/directory/Breadcrumb"
 import UploadFile from "../components/UploadFile"
 
-import AppBar from "material-ui/AppBar"
-import { Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle } from "material-ui/Toolbar"
-import RaisedButton from "material-ui/RaisedButton"
-import FlatButton from "material-ui/FlatButton"
-import Dialog from "material-ui/Dialog"
-import TextField from "material-ui/TextField"
-
-import CreateDirectoryDialog from "./CreateDirectoryDialog"
-
 interface Props extends DirectoryState {
   onCreateNewDirectory: () => void
   onNewDirectoryNameChange: (event: React.FormEvent<HTMLInputElement>) => void
@@ -29,29 +20,6 @@ const Directory = (props: Props) => {
   const { loading, directory, newDirectoryName, errors, whantCreateNewDirectory, onCreateNewDirectory, onNewDirectoryNameChange } = props
   return (
     <div>
-      <AppBar
-        title="Cumulus"
-        iconClassNameRight="muidocs-icon-navigation-expand-more"
-      />
-      <Toolbar>
-        <ToolbarGroup firstChild={true}>
-          <RaisedButton label="New Directory" primary={true} onClick={onCreateNewDirectory} />
-          {directory ? <UploadFile currentDirectory={directory} /> : null}
-        </ToolbarGroup>
-      </Toolbar>
-      <Breadcrumb directory={directory} />
-      <CreateDirectoryDialog
-        open={whantCreateNewDirectory}
-        newDirectoryName={newDirectoryName}
-        onCancel={onCreateNewDirectory}
-        errors={errors}
-        onNewDirectoryNameChange={onNewDirectoryNameChange}
-        onSubmit={() => {
-          if (directory) {
-            createDirectory(directory.location + "/" + newDirectoryName)
-          }
-        }}
-      />
       {loading
         ? <div>Loading</div>
         : <div>
