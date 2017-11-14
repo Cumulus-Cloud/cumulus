@@ -7,6 +7,7 @@ import AppBar from "components/AppBar"
 import Breadcrumb from "components/directory/Breadcrumb"
 import { history } from "store"
 import NewFolderContainer from "newFolder/NewFolderContainer"
+import * as Api from "services/Api"
 
 interface DispatchProps {
 }
@@ -14,6 +15,15 @@ interface DispatchProps {
 type Props = DirectoryState & DispatchProps
 
 class DirectoryContainer extends React.PureComponent<Props> {
+
+  componentWillMount() {
+    Api.me().then(me => {
+      console.log("Me", me)
+    }).catch(err => {
+      console.log("Me err", err)
+    })
+  }
+
   render() {
     return (
       <div>

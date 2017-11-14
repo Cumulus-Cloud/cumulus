@@ -25,7 +25,7 @@ export type Error = {
 
 export type FormErrors = Record<string, string[]>
 
-export function success(response: Response): Promise<any> {
+function success(response: Response): Promise<any> {
   if (response.status >= 200 && response.status < 300) {
     return response.json()
   } else if (response.status === 400) {
@@ -40,7 +40,7 @@ export function success(response: Response): Promise<any> {
   } else if (response.status === 404) {
     history.push("/notfound")
     return Promise.reject({
-      type: "Unauthorized",
+      type: "NotFound",
       message: response.statusText
     })
   } else {
@@ -52,12 +52,12 @@ export function success(response: Response): Promise<any> {
 }
 
 const AUTH_TOKEN_STORAGE_KEY = "AUTH_TOKEN_STORAGE_KEY"
-/*
+
 function getAuthToken(): Promise<string> {
   return new Promise((resolve, reject) => {
     const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
     if (!token) {
-      history.push("#/login")
+      history.replace("/login")
       reject({
         message: "Unauthorized"
       })
@@ -67,26 +67,21 @@ function getAuthToken(): Promise<string> {
   })
 }
 
-function withAuth(path: string, options?: RequestInit, headers?: Headers): Promise<any> {
+function withAuth(path: string, options?: RequestInit, headers?: Headers): Promise<Response> {
   return getAuthToken().then(token => {
     return fetch(path, {
       ...options,
-      headers: {
-        "Authorization": token,
-        ...headers
-      },
+      headers: [
+        ...HEADERS,
+        ["Authorization", token]
+      ],
       credentials: "same-origin",
     })
   })
 }
-*/
-export function saveAuthToken(token: string, session: boolean = false) {
-  (session ? sessionStorage : localStorage).setItem(AUTH_TOKEN_STORAGE_KEY, token)
-}
 
-export function json(response: Response) {
-  console.debug("json", response)
-  return response.json()
+function saveAuthToken(token: string, session: boolean = false) {
+  (session ? sessionStorage : localStorage).setItem(AUTH_TOKEN_STORAGE_KEY, token)
 }
 
 export interface AccountApiResponse {
@@ -118,13 +113,15 @@ export function signup(login: string, mail: string, password: string): Promise<A
   })
 }
 
-/*
+
 export function me(): Promise<Account> {
-  return withAuth(`${BASE_API_URL}/accounts/me`, {
+  return withAuth(`/accounts/me`, {
     method: "GET",
     headers: HEADERS,
   }).then(success)
 }
+
+/*
 
 export function directory(path: string): Promise<Directory> {
   return withAuth(`${BASE_API_URL}/api/directory/${path}`, {
