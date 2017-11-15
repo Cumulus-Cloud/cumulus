@@ -1,6 +1,6 @@
 import { history } from "store"
-import { Account } from "../models/Account"
-// import { Directory, FsNode } from "../models/FsNode"
+import { Account } from "models/Account"
+import { FsNode } from "models/FsNode"
 
 const HEADERS = [
   ["Content-Type", "application/json"]
@@ -121,18 +121,19 @@ export function me(): Promise<Account> {
   }).then(success)
 }
 
+export function createNewFolder(path: string): Promise<FsNode> {
+  return withAuth(`/api/directory${path}`, {
+    method: "POST",
+    body: JSON.stringify({})
+  }).then(success)
+}
+
 /*
 
 export function directory(path: string): Promise<Directory> {
   return withAuth(`${BASE_API_URL}/api/directory/${path}`, {
     method: "GET",
     headers: HEADERS,
-  }).then(success)
-}
-
-export function createDirectory(path: string): Promise<FsNode> {
-  return withAuth(`${BASE_API_URL}/api/directory${path}`, {
-    method: "POST"
   }).then(success)
 }
 
