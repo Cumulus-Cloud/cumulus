@@ -1,5 +1,5 @@
 
-.fs-file {
+.fsFile {
   display: flex;
   align-items: center;
   padding: 10px;
@@ -7,7 +7,7 @@
   cursor: pointer;
 }
 
-.fs-file-infos {
+.fsFileInfos {
   flex: 1;
   padding-left: 10px;
   padding-right: 10px;

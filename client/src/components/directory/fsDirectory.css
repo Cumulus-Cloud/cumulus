@@ -1,5 +1,5 @@
 
-.fs-directory {
+.fsDirectory {
   display: flex;
   align-items: center;
   padding: 10px;
@@ -7,7 +7,7 @@
   cursor: pointer;
 }
 
-.fs-directory-infos {
+.fsDirectoryInfos {
   flex: 1;
   padding-left: 10px;
   padding-right: 10px;

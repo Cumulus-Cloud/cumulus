@@ -31,7 +31,7 @@
     "@types/react-dom": "16.0.2",
     "@types/react-redux": "5.0.12",
     "@types/react-router": "4.0.16",
-    "@types/react-router-redux": "5.0.8",
+    "@types/react-router-redux": "5.0.10",
     "@types/validate.js": "0.0.2",
     "autoprefixer": "7.1.6",
     "awesome-typescript-loader": "3.3.0",

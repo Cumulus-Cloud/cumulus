@@ -1,6 +1,6 @@
 import { history } from "store"
 import { Account } from "models/Account"
-import { FsNode } from "models/FsNode"
+import { Directory, FsNode } from "models/FsNode"
 
 const HEADERS = [
   ["Content-Type", "application/json"]
@@ -128,20 +128,18 @@ export function createNewFolder(path: string): Promise<FsNode> {
   }).then(success)
 }
 
-/*
-
-export function directory(path: string): Promise<Directory> {
-  return withAuth(`${BASE_API_URL}/api/directory/${path}`, {
+export function fetchDirectory(path: string): Promise<Directory> {
+  return withAuth(`/api/directory/${path}`, {
     method: "GET",
     headers: HEADERS,
   }).then(success)
 }
-
+/*
 export function upload(path: string, file: Blob, progression?: (e: ProgressEvent) => void): Promise<FsNode> {
   return getAuthToken().then(token => {
     return new Promise((resolve, reject) => {
       let xhr = new XMLHttpRequest()
-      xhr.open("POST", `${BASE_API_URL}/api/upload${path}`)
+      xhr.open("POST", `/api/upload${path}`)
       xhr.setRequestHeader("Authorization", token)
       xhr.addEventListener("load", function (e: any) {
         console.debug("upload load", e)
@@ -160,18 +158,17 @@ export function upload(path: string, file: Blob, progression?: (e: ProgressEvent
     })
   })
 }
-
+*/
 export function getDownloadUrl(file: FsNode, cookie: boolean): string {
   if (cookie) {
-    return `${BASE_API_URL}/api/download${file.location}`
+    return `/api/download${file.location}`
   } else {
     const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
     if (!token) {
-      hashHistory.push("/login")
-      return `${BASE_API_URL}/login`
+      history.push("/login")
+      return `/login`
     } else {
-      return `${BASE_API_URL}/api/download${file.location}?token=${token}`
+      return `/api/download${file.location}?token=${token}`
     }
   }
 }
-*/
