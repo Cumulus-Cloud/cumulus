@@ -129,7 +129,7 @@ export function createNewFolder(path: string): Promise<FsNode> {
 }
 
 export function fetchDirectory(path: string): Promise<Directory> {
-  return withAuth(`/api/directory/${path}`, {
+  return withAuth(`/api/directory${path}`, {
     method: "GET",
     headers: HEADERS,
   }).then(success)

@@ -20,5 +20,5 @@ export default class FsDirectory extends React.PureComponent<Props> {
     )
   }
 
-  handleOnClick = () => history.push(this.props.fsNode.location)
+  handleOnClick = () => history.push(`files${this.props.fsNode.location}`)
 }
