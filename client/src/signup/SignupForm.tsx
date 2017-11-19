@@ -6,17 +6,17 @@ import { FormErrors } from "services/Api"
 
 interface Props {
   login: string
-  mail: string
+  email: string
   password: string
   loading: boolean
   formErrors: FormErrors
   onChange: (field: string, value: string) => void
-  onSubmit: (login: string, mail: string, password: string) => void
+  onSubmit: (login: string, email: string, password: string) => void
 }
 
 export default class SignupForm extends React.PureComponent<Props> {
   render() {
-    const { login, mail, password, formErrors, loading } = this.props
+    const { login, email, password, formErrors, loading } = this.props
     return (
       <div className={styles.signupForm}>
         <Input
@@ -29,9 +29,9 @@ export default class SignupForm extends React.PureComponent<Props> {
         <Input
           type="email"
           label="Email"
-          value={mail}
-          error={formErrors.mail}
-          onChange={this.handleChange("mail")}
+          value={email}
+          error={formErrors.email}
+          onChange={this.handleChange("email")}
         />
         <Input
           type="password"
@@ -53,7 +53,7 @@ export default class SignupForm extends React.PureComponent<Props> {
   handleChange = (field: string) => (value: string) => this.props.onChange(field, value)
 
   handleSubmit = () => {
-    const { login, mail, password, onSubmit } = this.props
-    onSubmit(login, mail, password)
+    const { login, email, password, onSubmit } = this.props
+    onSubmit(login, email, password)
   }
 }

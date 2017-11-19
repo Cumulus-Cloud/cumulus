@@ -3,7 +3,7 @@ import { FormErrors } from "services/Api"
 
 export interface SignupState {
   login: string
-  mail: string
+  email: string
   password: string
   loading: boolean
   formErrors: FormErrors
@@ -12,7 +12,7 @@ export interface SignupState {
 
 const initState: SignupState = {
   login: "",
-  mail: "",
+  email: "",
   password: "",
   formErrors: {},
   loading: false,
@@ -32,7 +32,7 @@ export const SignupReducer = (state: SignupState = initState, action: SignupActi
       return { ...state, [action.field]: action.value, formErrors }
     }
     case "SIGNUP_ON_SUBMIT": return { ...state, loading: true, formErrors: {} }
-    case "SIGNUP_ON_SUBMIT_SUCCESS": return { ...state, loading: false, login: "", mail: "", password: "" }
+    case "SIGNUP_ON_SUBMIT_SUCCESS": return { ...state, loading: false, login: "", email: "", password: "" }
     case "SIGNUP_ON_SUBMIT_ERROR": return { ...state, formErrors: action.errors, loading: false }
     default: return state
   }

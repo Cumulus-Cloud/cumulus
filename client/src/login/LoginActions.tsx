@@ -1,7 +1,7 @@
 import { ThunkAction } from "redux-thunk"
 import { GlobalState } from "store"
 import { history } from "store"
-import { Account } from "models/Account"
+import { User } from "models/User"
 import * as Api from "services/Api"
 
 export type LoginAction =
@@ -42,10 +42,10 @@ export function loginOnSubmit(mail: string, password: string): ThunkAction<void,
 
 export type LOGIN_ON_SUBMIT_SUCCESS = {
   type: "LOGIN_ON_SUBMIT_SUCCESS",
-  account: Account
+  user: User
 }
-export function loginOnSubmitSuccess(account: Account): LOGIN_ON_SUBMIT_SUCCESS {
-  return { type: "LOGIN_ON_SUBMIT_SUCCESS", account }
+export function loginOnSubmitSuccess(user: User): LOGIN_ON_SUBMIT_SUCCESS {
+  return { type: "LOGIN_ON_SUBMIT_SUCCESS", user }
 }
 
 export type LOGIN_ON_SUBMIT_ERROR = {

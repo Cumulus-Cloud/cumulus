@@ -9,20 +9,20 @@ import LinkButton from "components/buttons/LinkButton"
 
 interface DispatchProps {
   onChange: (field: string, value: string) => void
-  onSubmit: (login: string, mail: string, password: string) => void
+  onSubmit: (login: string, email: string, password: string) => void
 }
 
 type Props = SignupState & DispatchProps
 
 class SignupContainer extends React.PureComponent<Props> {
   render() {
-    const { login, mail, password, formErrors, loading, onChange, onSubmit } = this.props
+    const { login, email, password, formErrors, loading, onChange, onSubmit } = this.props
     return (
       <div className={styles.signupContainer}>
         <h2 className={styles.title}>Cumulus</h2>
         <SignupForm
           login={login}
-          mail={mail}
+          email={email}
           password={password}
           formErrors={formErrors}
           loading={loading}
@@ -42,7 +42,7 @@ const mapStateToProps = (state: GlobalState): SignupState => {
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
     onChange: (field, value) => dispatch(SignupActions.signupOnChange(field, value)),
-    onSubmit: (login, mail, password) => dispatch(SignupActions.signupOnSubmit(login, mail, password))
+    onSubmit: (login, email, password) => dispatch(SignupActions.signupOnSubmit(login, email, password))
   }
 }
 

@@ -1,5 +1,5 @@
 import { history } from "store"
-import { Account } from "models/Account"
+import { User } from "models/User"
 import { Directory, FsNode } from "models/FsNode"
 
 const HEADERS = [
@@ -85,11 +85,11 @@ function saveAuthToken(token: string, session: boolean = false) {
 }
 
 export interface AccountApiResponse {
-  account: Account
+  user: User
   token: string
 }
 
-export function login(mail: string, password: string): Promise<Account> {
+export function login(mail: string, password: string): Promise<User> {
   return fetch(`/accounts/login`, {
     method: "POST",
     body: JSON.stringify({ mail, password }),
@@ -101,10 +101,10 @@ export function login(mail: string, password: string): Promise<Account> {
   })
 }
 
-export function signup(login: string, mail: string, password: string): Promise<Account> {
-  return fetch(`/accounts/signup`, {
+export function signup(login: string, email: string, password: string): Promise<User> {
+  return fetch(`/users/signup`, {
     method: "POST",
-    body: JSON.stringify({ login, mail, password }),
+    body: JSON.stringify({ login, email, password }),
     headers: HEADERS,
     credentials: "same-origin",
   }).then(success).then(response => {
@@ -114,7 +114,7 @@ export function signup(login: string, mail: string, password: string): Promise<A
 }
 
 
-export function me(): Promise<Account> {
+export function me(): Promise<User> {
   return withAuth(`/accounts/me`, {
     method: "GET",
     headers: HEADERS,
