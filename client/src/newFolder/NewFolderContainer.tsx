@@ -38,7 +38,6 @@ class NewFolderContainer extends React.PureComponent<Props> {
       <Modal
         title="Create new directory"
         onClose={onWantCreateNewFolder}
-        onSubmit={this.handleOnSubmit}
       >
         <NewFolderFrom
           name={newFolderName}

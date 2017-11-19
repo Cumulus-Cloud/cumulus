@@ -9,11 +9,13 @@ import { LoginState, LoginReducer } from "login/LoginReducer"
 import { SignupState, SignupReducer } from "signup/SignupReducer"
 import { DirectoriesState, DirectoriesReducer } from "directories/DirectoriesReducer"
 import { NewFolderState, NewFolderReducer } from "newFolder/NewFolderReducer"
+import { UploadState, UploadReducer } from "upload/UploadReducer"
 
 export interface GlobalState {
   login: LoginState
   signup: SignupState
   newFolder: NewFolderState
+  upload: UploadState
   directories: DirectoriesState
   router: Reducer<RouterState>
 }
@@ -25,6 +27,7 @@ const reducers = combineReducers({
   login: LoginReducer,
   signup: SignupReducer,
   newFolder: NewFolderReducer,
+  upload: UploadReducer,
   directories: DirectoriesReducer as any,
   router: routerReducer,
 })

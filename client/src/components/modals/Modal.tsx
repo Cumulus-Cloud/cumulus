@@ -4,7 +4,6 @@ import * as styles from "./Modal.css"
 interface Props {
   title: string
   onClose: () => void
-  onSubmit: () => void
 }
 
 export default class Modal extends React.PureComponent<Props> {
@@ -21,5 +20,4 @@ export default class Modal extends React.PureComponent<Props> {
   }
 
   handleOnCancel = () => this.props.onClose()
-  handleOnSubmit = () => this.props.onSubmit()
 }

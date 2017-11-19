@@ -134,16 +134,16 @@ export function fetchDirectory(path: string): Promise<Directory> {
     headers: HEADERS,
   }).then(success)
 }
-/*
+
 export function upload(path: string, file: Blob, progression?: (e: ProgressEvent) => void): Promise<FsNode> {
-  return getAuthToken().then(token => {
-    return new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
+    getAuthToken().then(token => {
       let xhr = new XMLHttpRequest()
       xhr.open("POST", `/api/upload${path}`)
       xhr.setRequestHeader("Authorization", token)
-      xhr.addEventListener("load", function (e: any) {
-        console.debug("upload load", e)
-        resolve(JSON.parse(e.target.response))
+      xhr.addEventListener("load", event => {
+        console.debug("upload load", event)
+        resolve(JSON.parse((event.target) as any))
       })
       xhr.onerror = e => {
         console.debug("upload.onerror", e)
@@ -158,7 +158,7 @@ export function upload(path: string, file: Blob, progression?: (e: ProgressEvent
     })
   })
 }
-*/
+
 export function getDownloadUrl(file: FsNode, cookie: boolean): string {
   if (cookie) {
     return `/api/download${file.location}`

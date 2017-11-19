@@ -8,6 +8,7 @@ import AppBar from "components/AppBar"
 import Breadcrumb from "components/directory/Breadcrumb"
 import { history } from "store"
 import NewFolderContainer from "newFolder/NewFolderContainer"
+import UploadContainer from "upload/UploadContainer"
 import FsDirectory from "components/directory/FsDirectory"
 import FsFile from "components/directory/FsFile"
 import { FsNode, Directory } from "models/FsNode"
@@ -43,6 +44,7 @@ class DirectoriesContainer extends React.PureComponent<Props> {
         <AppBar />
         <Breadcrumb onPathClick={this.handleOnPathClick} />
         <NewFolderContainer />
+        <UploadContainer />
         <div>
           {!!directory ? this.renderDirectories(directory) : <div>Loading</div>}
         </div>
