@@ -1,41 +1,28 @@
+import "es6-promise/auto"
+import "es6-shim"
+import "reset-css/reset.css"
+import "./main.css"
 import * as React from "react"
 import * as ReactDOM from "react-dom"
-import { Router, Route, hashHistory } from "react-router"
-
-import Login from "./auth/Login"
-import SignUp from "./auth/SignUp"
-import DirectoryContainer from "./directory/DirectoryContainer"
-import NotFound from "./components/NotFound" 
-
-import { fetchDirectory } from "./directory/directoryActions"
-
-import * as Api from "./services/Api"
-import getMuiTheme from "material-ui/styles/getMuiTheme"
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider"
-import { deepOrange500 } from "material-ui/styles/colors"
-import * as injectTapEventPlugin from "react-tap-event-plugin"
-
-injectTapEventPlugin()
-
-const muiTheme = getMuiTheme({
-  palette: {
-    accent1Color: deepOrange500,
-  },
-})
+import { Route } from "react-router"
+import { Provider } from "react-redux"
+import { ConnectedRouter } from "react-router-redux"
+import LoginContainer from "login/LoginContainer"
+import SignupContainer from "signup/SignupContainer"
+import DirectoriesContainer from "directories/DirectoriesContainer"
+import { store, history } from "store"
 
 ReactDOM.render(
-  <MuiThemeProvider muiTheme={muiTheme}>
-    <Router history={hashHistory}>
-      <Route path="/login" component={Login}/>
-      <Route path="/signup" component={SignUp}/>
-      <Route path="notfound" component={NotFound} />
-      <Route path="/" component={DirectoryContainer} onEnter={_ => {
-        fetchDirectory("")
-      }} />
-      <Route path="/*" component={DirectoryContainer} onEnter={route => {
-        fetchDirectory(route.params["splat"])
-      }} />
-    </Router>
-  </MuiThemeProvider>,
+  <Provider store={store}>
+    <ConnectedRouter history={history}>
+      <div>
+        <Route exact path="/" component={LoginContainer} />
+        <Route exact path="/fs" component={DirectoriesContainer} />
+        <Route exact path="/fs/*" component={DirectoriesContainer} />
+        <Route exact path="/login" component={LoginContainer} />
+        <Route exact path="/signup" component={SignupContainer} />
+      </div>
+    </ConnectedRouter>
+  </Provider>,
   document.getElementById("app")
 )

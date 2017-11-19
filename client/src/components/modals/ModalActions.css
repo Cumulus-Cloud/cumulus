@@ -1,0 +1,5 @@
+.modalActions {
+  display: flex;
+  justify-content: right;
+  padding-top: 10px;
+}

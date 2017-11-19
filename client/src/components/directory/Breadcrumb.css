@@ -1,0 +1,34 @@
+.breadcrumb {
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1px solid #EEE;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.breadcrumbPathItemRoot {
+  padding: 5px;
+}
+
+.breadcrumbPath {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.breadcrumbPathItem {
+  padding: 5px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.breadcrumbPathItem:hover {
+  border: 1px solid #eee;
+  border-radius: 2px;
+}
+
+.breadcrumbPathArrow {
+  margin-left: 2px;
+  margin-right: 2px;
+}

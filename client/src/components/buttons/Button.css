@@ -1,0 +1,22 @@
+
+.button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--primary);
+  border-radius: 2px;
+  padding: 5px 20px;
+  cursor: pointer;
+  min-height: 40px;
+}
+
+.button:hover {
+  background-color: var(--secondary);
+}
+
+.label {
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--white);
+  cursor: pointer;
+}

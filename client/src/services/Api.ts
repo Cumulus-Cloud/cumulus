@@ -1,39 +1,51 @@
-import { Account, AccountLogin, AccountSignup } from "../models/Account"
-import { Directory, FsNode } from "../models/FsNode"
-import { hashHistory } from "react-router"
+import { history } from "store"
+import { Account } from "models/Account"
+import { Directory, FsNode } from "models/FsNode"
 
-const BASE_API_URL = "http://localhost:9000"
+const HEADERS = [
+  ["Content-Type", "application/json"]
+]
 
-const HEADERS = {
-  "Content-Type": "application/json",
-  "Accept": "application/json",
+export type ApiError = BadRequest | Unauthorized
+
+export type BadRequest = {
+  type: "BadRequest"
+  errors: FormErrors
 }
 
-export interface ApiError<T> {
-  errors?: T,
-  onmessage?: string
+export type Unauthorized = {
+  type: "Unauthorized"
+  message: string
 }
 
-export type Errors = Record<string, string[]>
+export type Error = {
+  type: "Error"
+  message: string
+}
 
-export function success(response: Response): Promise<any> {
+export type FormErrors = Record<string, string[]>
+
+function success(response: Response): Promise<any> {
   if (response.status >= 200 && response.status < 300) {
     return response.json()
   } else if (response.status === 400) {
     return new Promise((_, reject) => {
       return response.json().then(json => {
         reject({
+          type: "BadRequest",
           errors: json
         })
       })
     })
   } else if (response.status === 404) {
-    hashHistory.push("/notfound")
+    history.push("/notfound")
     return Promise.reject({
+      type: "NotFound",
       message: response.statusText
     })
   } else {
     return Promise.reject({
+      type: "Error",
       message: response.statusText
     })
   }
@@ -45,7 +57,7 @@ function getAuthToken(): Promise<string> {
   return new Promise((resolve, reject) => {
     const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
     if (!token) {
-      hashHistory.push("/login")
+      history.replace("/login")
       reject({
         message: "Unauthorized"
       })
@@ -55,79 +67,83 @@ function getAuthToken(): Promise<string> {
   })
 }
 
-function withAuth(path: string, options?: RequestInit, headers?: Headers): Promise<any> {
+function withAuth(path: string, options?: RequestInit, headers?: Headers): Promise<Response> {
   return getAuthToken().then(token => {
     return fetch(path, {
       ...options,
-      headers: {
-        "Authorization": token,
-        ...headers
-      },
+      headers: [
+        ...HEADERS,
+        ["Authorization", token]
+      ],
       credentials: "same-origin",
     })
   })
 }
 
-export function saveAuthToken(token: string, session: boolean = false) {
+function saveAuthToken(token: string, session: boolean = false) {
   (session ? sessionStorage : localStorage).setItem(AUTH_TOKEN_STORAGE_KEY, token)
-}
-
-export function json(response: Response) {
-  console.debug("json", response)
-  return response.json()
 }
 
 export interface AccountApiResponse {
   account: Account
   token: string
 }
-export function login(accountLogin: AccountLogin): Promise<AccountApiResponse> {
-  return fetch(`${BASE_API_URL}/accounts/login`, {
+
+export function login(mail: string, password: string): Promise<Account> {
+  return fetch(`/accounts/login`, {
     method: "POST",
-    body: JSON.stringify(accountLogin),
+    body: JSON.stringify({ mail, password }),
     headers: HEADERS,
     credentials: "same-origin",
-  }).then(success)
+  }).then(success).then(response => {
+    saveAuthToken(response.token)
+    return response.account
+  })
 }
 
-export function signup(accountSignup: AccountSignup): Promise<AccountApiResponse> {
-  return fetch(`${BASE_API_URL}/accounts/signup`, {
+export function signup(login: string, mail: string, password: string): Promise<Account> {
+  return fetch(`/accounts/signup`, {
     method: "POST",
-    body: JSON.stringify(accountSignup),
+    body: JSON.stringify({ login, mail, password }),
     headers: HEADERS,
     credentials: "same-origin",
-  }).then(success)
+  }).then(success).then(response => {
+    saveAuthToken(response.token)
+    return response.account
+  })
 }
+
 
 export function me(): Promise<Account> {
-  return withAuth(`${BASE_API_URL}/accounts/me`, {
+  return withAuth(`/accounts/me`, {
     method: "GET",
     headers: HEADERS,
   }).then(success)
 }
 
-export function directory(path: string): Promise<Directory> {
-  return withAuth(`${BASE_API_URL}/api/directory/${path}`, {
-    method: "GET",
-    headers: HEADERS,
+export function createNewFolder(path: string): Promise<FsNode> {
+  return withAuth(`/api/directory${path}`, {
+    method: "POST",
+    body: JSON.stringify({})
   }).then(success)
 }
 
-export function createDirectory(path: string): Promise<FsNode> {
-  return withAuth(`${BASE_API_URL}/api/directory${path}`, {
-    method: "POST"
+export function fetchDirectory(path: string): Promise<Directory> {
+  return withAuth(`/api/directory${path}`, {
+    method: "GET",
+    headers: HEADERS,
   }).then(success)
 }
 
 export function upload(path: string, file: Blob, progression?: (e: ProgressEvent) => void): Promise<FsNode> {
-  return getAuthToken().then(token => {
-    return new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
+    getAuthToken().then(token => {
       let xhr = new XMLHttpRequest()
-      xhr.open("POST", `${BASE_API_URL}/api/upload${path}`)
+      xhr.open("POST", `/api/upload${path}`)
       xhr.setRequestHeader("Authorization", token)
-      xhr.addEventListener("load", function (e: any) {
-        console.debug("upload load", e)
-        resolve(JSON.parse(e.target.response))
+      xhr.addEventListener("load", event => {
+        console.debug("upload load", event)
+        resolve(JSON.parse((event.target) as any))
       })
       xhr.onerror = e => {
         console.debug("upload.onerror", e)
@@ -145,14 +161,14 @@ export function upload(path: string, file: Blob, progression?: (e: ProgressEvent
 
 export function getDownloadUrl(file: FsNode, cookie: boolean): string {
   if (cookie) {
-    return `${BASE_API_URL}/api/download${file.location}`
+    return `/api/download${file.location}`
   } else {
     const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
     if (!token) {
-      hashHistory.push("/login")
-      return `${BASE_API_URL}/login`
+      history.push("/login")
+      return `/login`
     } else {
-      return `${BASE_API_URL}/api/download${file.location}?token=${token}`
+      return `/api/download${file.location}?token=${token}`
     }
   }
 }

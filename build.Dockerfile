@@ -5,11 +5,10 @@ RUN useradd -ms /bin/bash cumulus
 VOLUME /home/cumulus/project
 VOLUME /home/cumulus/.ivy2
 VOLUME /home/cumulus/.sbt
-VOLUME /home/cumulus/.npm
 
-RUN chown -R cumulus:cumulus /home/cumulus
+#RUN chown -R cumulus:cumulus /home/cumulus
 
-USER cumulus
+#USER cumulus
 
 WORKDIR /home/cumulus/project
 

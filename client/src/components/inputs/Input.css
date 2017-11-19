@@ -1,0 +1,35 @@
+
+.inputContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  padding-top: 10px;
+  padding-bottom: 17px;
+}
+
+.input {
+  padding: 5px 0;
+  font-size: 1rem;
+  border: none;
+  border-bottom: 1px solid var(--secondary);
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--accent);
+}
+
+.label {
+  color: var(--secondary);
+}
+
+.error {
+  margin-top: 3px;
+  font-size: .9rem;
+  color: var(--red);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}

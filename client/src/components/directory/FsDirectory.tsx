@@ -1,19 +1,26 @@
-import "./fsDirectory.css"
 import * as React from "react"
-import { hashHistory } from "react-router"
-
-import { FsNode } from "../../models/FsNode"
-import DirectoryIcon from "../icons/DirectoryIcon"
+import * as styles from "./FsDirectory.css"
+import { FsNode } from "models/FsNode"
+import DirectoryIcon from "components/icons/DirectoryIcon"
 
 interface Props {
   fsNode: FsNode
+  onClick: (fsNode: FsNode) => void
 }
 
-export default function FsDirectory({ fsNode }: Props) {
-  return (
-    <div className="fs-directory" onClick={() => hashHistory.push(fsNode.location)}>
-      <DirectoryIcon />
-      <div className="fs-directory-infos">{fsNode.name}</div>
-    </div>
-  )
+export default class FsDirectory extends React.PureComponent<Props> {
+  render() {
+    const { fsNode } = this.props
+    return (
+      <div className={styles.fsDirectory} onClick={this.handleOnClick}>
+        <DirectoryIcon />
+        <div className={styles.fsDirectoryInfos}>{fsNode.name}</div>
+      </div>
+    )
+  }
+
+  handleOnClick = () => {
+    const { fsNode, onClick } = this.props
+    onClick(fsNode)
+  }
 }

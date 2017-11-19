@@ -1,12 +1,29 @@
 {
   "compilerOptions": {
+    "jsx": "react",
     "target": "es5",
+    "strict": true,
+    "noUnusedLocals": true,
+    "sourceMap": true,
     "noImplicitAny": true,
-    "strictNullChecks": true,
-    "jsx": "react"
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "*": [
+        "src/*"
+      ]
+    },
+    "forceConsistentCasingInFileNames": true
   },
-  "filesGlob": [
-    "src/**/*.*",
-    "typings/**/*.*"
+  "include": [
+    "./src/**/*"
+  ],
+  "lib": [
+    "es5",
+    "es6",
+    "es2015.promise",
+    "es2017",
+    "dom"
   ]
 }

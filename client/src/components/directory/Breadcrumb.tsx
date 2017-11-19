@@ -1,38 +1,49 @@
-import "./breadcrumb.css"
+import * as styles from "./Breadcrumb.css"
 import * as React from "react"
-import { hashHistory } from "react-router"
-
-import { FsNode } from "../../models/FsNode"
+import { FsNode } from "models/FsNode"
 
 interface Props {
   directory?: FsNode
+  onPathClick: (path: string) => void
 }
 
-export default function Breadcrumb({ directory }: Props) {
-  const paths = directory && directory.location.substring(1, directory.location.length).split("/").filter(p => p !== "") || []
-  const pathsWithRoot = ["", ...paths]
-  const len = pathsWithRoot.length
-  return (
-    <div className="breadcrumb" >
-      {paths.length === 0 ?
-        <div className="breadcrumb-path-item-root">
-          {"Root"}
+export default class Breadcrumb extends React.PureComponent<Props> {
+  render() {
+    const { directory } = this.props
+    const paths = directory && directory.location.substring(1, directory.location.length).split("/").filter(p => p !== "") || []
+    const pathsWithRoot = ["/fs", ...paths]
+    const len = pathsWithRoot.length
+    return (
+      <div className={styles.breadcrumb}>
+        {paths.length === 0
+          ? this.renderRoot()
+          : pathsWithRoot.map((path, i) => this.renderBreadcrumbPath(paths, len, path, i))
+        }
+      </div>
+    )
+  }
+
+  renderBreadcrumbPath = (paths: string[], length: number, path: string, i: number) => {
+    return (
+      <div className={styles.breadcrumbPath} key={path}>
+        <div className={styles.breadcrumbPathItem} onClick={this.handlePathOnClick(paths.slice(0, i).join("/"))}>
+          {path === "/fs" ? "Root" : path}
         </div>
-        :
-        pathsWithRoot.map((path, i) => {
-          return (
-            <div className="breadcrumb-path" key={i + path}>
-              <div className="breadcrumb-path-item" onClick={() => {
-                hashHistory.push(paths.slice(0, i).join("/"))
-              }}>{path === "" ? "Root" : path}</div>
-              {i !== (len - 1) ?
-                <div className="breadcrumb-path-arrow">></div>
-                : null
-              }
-            </div>
-          )
-        })
-      }
-    </div>
-  )
+        {i !== (length - 1)
+          ? <div className="breadcrumbPathArrow">></div>
+          : null
+        }
+      </div>
+    )
+  }
+
+  handlePathOnClick = (path: string) => () => this.props.onPathClick(`/fs/${path}`)
+
+  renderRoot = () => {
+    return (
+      <div className={styles.breadcrumbPathItemRoot}>
+        Root
+      </div>
+    )
+  }
 }

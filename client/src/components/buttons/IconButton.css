@@ -1,0 +1,14 @@
+.iconButton {
+  min-width: 26px;
+  min-height: 26px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3px;
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.1);
+}
+
