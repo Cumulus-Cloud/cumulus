@@ -1,16 +1,16 @@
 # Ignore Play! working directory #
 bin/
 tmp/
-/db
-/lib/
-/logs/
-/modules
-/project/target
-/project/project
-/target
+/server/db
+/server/lib/
+/server/logs/
+/server/modules
+/server/project/target
+/server/project/project
+/server/target
 test-result
 *.eml
-/dist/
+/server/dist/
 .cache
 /.idea
 /.idea_modules
@@ -18,9 +18,21 @@ test-result
 /.project
 /.settings
 /RUNNING_PID
+/server/.idea
+/server/.idea_modules
+/server/.classpath
+/.project
+/.settings
+/RUNNING_PID
 
+# Node JS
 node_modules
 public/main.js
 public/main.css
 public/**/*.map
+
+# Postgre data
 .pg-data
+
+# Server upload path
+server/tmp

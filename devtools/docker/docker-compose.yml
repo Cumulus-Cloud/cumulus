@@ -1,0 +1,19 @@
+version: '3.4'
+services:
+
+  db:
+    image: postgres:10-alpine
+    environment:
+      POSTGRES_DB: cumulus
+      POSTGRES_PASSWORD: cumulus
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+  smtp:
+    image: jeanberu/mailcatcher
+    ports:
+      - 1026:1025 # SMTP
+      - 1081:1080 # Web interface
+

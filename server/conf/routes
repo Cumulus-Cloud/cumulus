@@ -1,0 +1,37 @@
+
+# App entrypoint
+GET     /                             io.cumulus.controllers.HomeController.index
+
+# User management routes
+POST    /users/login                  io.cumulus.controllers.UserController.login
+POST    /users/logout                 io.cumulus.controllers.UserController.logout
+POST    /users/signup                 io.cumulus.controllers.UserController.signUp
+GET     /users/me                     io.cumulus.controllers.UserController.me
+
+# API - FS get/update routes
+GET     /api/tree                     io.cumulus.controllers.FileSystemController.tree
+GET     /api/fs*path                  io.cumulus.controllers.FileSystemController.get(path)
+PUT     /api/fs*path                  io.cumulus.controllers.FileSystemController.create(path)
+POST    /api/fs*path                  io.cumulus.controllers.FileSystemController.update(path)
+DELETE  /api/fs*path                  io.cumulus.controllers.FileSystemController.delete(path)
+
+# API - Upload and download routes
+POST    /api/upload*path              io.cumulus.controllers.FileSystemController.upload(path)
+GET     /api/download*path            io.cumulus.controllers.FileSystemController.download(path, download: Option[Boolean])
+GET     /api/stream*path              io.cumulus.controllers.FileSystemController.stream(path)
+
+# API - Shared
+GET     /api/shared/fs*path           io.cumulus.controllers.SharingController.get(path, code, password: Option[String])
+GET     /api/shared/download*path     io.cumulus.controllers.SharingController.download(path, code, password: Option[String], download: Option[Boolean])
+GET     /api/shared/stream*path       io.cumulus.controllers.SharingController.stream(path, code, password: Option[String])
+
+# Shared 'pretty' routes for root element (file)
+GET     /shared/download/:code        io.cumulus.controllers.SharingController.downloadRoot(code, password: Option[String], download: Option[Boolean])
+GET     /shared/stream/:code          io.cumulus.controllers.SharingController.streamRoot(code, password: Option[String])
+
+# Test routes
+GET     /test                         io.cumulus.controllers.HomeController.test
+GET     /test/login                   io.cumulus.controllers.HomeController.testLogin
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file                 io.cumulus.controllers.utils.Assets.versioned(path = "/public", file: controllers.Assets.Asset)

@@ -1,0 +1,41 @@
+package io.cumulus.persistence.storage
+
+import java.time.LocalDateTime
+import java.util.UUID
+
+import io.cumulus.core.json.JsonFormat.bigIntFormat
+import play.api.libs.json.{Format, Json}
+
+/**
+  * Object (or chunk) of data stored on an abstract storage engine.
+  *
+  * @param id The unique ID of the chunk
+  * @param size The real size (in byte) of the object, with no compression nor encryption
+  * @param hash The real hash of the object, with no compression nor encryption
+  * @param storageSize The stored size of the object
+  * @param storageHash The hash of the stored object
+  * @param cipher The chipher used on the object
+  * @param compression The compression used on the object
+  * @param storageEngine The storage engine used with this object
+  * @param storageEngineVersion The version of the storage engine used with this object
+  * @param creation The creation date
+  */
+case class StorageObject(
+  id: UUID,
+  size: BigInt,
+  hash: String,
+  storageSize: BigInt,
+  storageHash: String,
+  cipher: Option[String],
+  compression: Option[String],
+  storageEngine: String,
+  storageEngineVersion: String,
+  creation: LocalDateTime
+)
+
+object StorageObject {
+
+  implicit val format: Format[StorageObject] =
+    Json.format[StorageObject]
+
+}
