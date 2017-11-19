@@ -9,7 +9,7 @@ var config = {
   entry: "./src/main.tsx",
   output: {
     filename: "main.js",
-    path: __dirname + "../../public"
+    path: __dirname + "../../server/public"
   },
   devtool: "source-map",
   resolve: {

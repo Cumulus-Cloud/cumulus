@@ -27,9 +27,9 @@ test-result
 
 # Node JS
 node_modules
-public/main.js
-public/main.css
-public/**/*.map
+server/public/main.js
+server/public/main.css
+server/public/**/*.map
 
 # Postgre data
 .pg-data
