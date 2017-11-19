@@ -10,7 +10,7 @@ import { history } from "store"
 import NewFolderContainer from "newFolder/NewFolderContainer"
 import FsDirectory from "components/directory/FsDirectory"
 import FsFile from "components/directory/FsFile"
-import { Directory } from "models/FsNode"
+import { FsNode, Directory } from "models/FsNode"
 
 interface DispatchProps {
   onFetchDirectory: (path: string) => void
@@ -26,8 +26,14 @@ class DirectoriesContainer extends React.PureComponent<Props> {
 
   componentWillMount() {
     const { path, onFetchDirectory } = this.props
-    console.log("DirectoriesContainer.componentWillMount", path)
-    onFetchDirectory(!!path ? path : "/")
+    onFetchDirectory(!!path ? `/${path}` : "/")
+  }
+
+  componentWillReceiveProps(nextProps: Props) {
+    const { path, onFetchDirectory } = this.props
+    if (path !== nextProps.path) {
+      onFetchDirectory(!!nextProps.path ? `/${nextProps.path}` : "/")
+    }
   }
 
   render() {
@@ -45,26 +51,25 @@ class DirectoriesContainer extends React.PureComponent<Props> {
   }
 
   renderDirectories = (directory: Directory) => {
-    console.log("renderDirectories", directory)
     return (directory.content || []).map(fsNode => {
       if (fsNode.type === "directory") {
-        return <FsDirectory key={fsNode.id} fsNode={fsNode} />
+        return <FsDirectory key={fsNode.id} fsNode={fsNode} onClick={this.handleDirectoryOnClick} />
       } else {
         return <FsFile key={fsNode.id} fsNode={fsNode} />
       }
     })
   }
 
+  handleDirectoryOnClick = (fsNode: FsNode) => history.push(`/fs${fsNode.location}`)
   handleOnPathClick = (path: string) => history.push(path)
 }
 
-const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<Params> }): DirectoriesState & Params => {
-  console.log(state)
+const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string[]> }): DirectoriesState & Params => {
   return {
     directory: state.directories.directory,
     loading: state.directories.loading,
     error: state.directories.error,
-    path: props.match && props.match.params.path
+    path: props.match && props.match.params[0]
   }
 }
 
