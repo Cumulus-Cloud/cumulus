@@ -11,7 +11,7 @@ export default class Breadcrumb extends React.PureComponent<Props> {
   render() {
     const { directory } = this.props
     const paths = directory && directory.location.substring(1, directory.location.length).split("/").filter(p => p !== "") || []
-    const pathsWithRoot = ["", ...paths]
+    const pathsWithRoot = ["/fs", ...paths]
     const len = pathsWithRoot.length
     return (
       <div className={styles.breadcrumb}>
@@ -27,7 +27,7 @@ export default class Breadcrumb extends React.PureComponent<Props> {
     return (
       <div className={styles.breadcrumbPath} key={path}>
         <div className={styles.breadcrumbPathItem} onClick={this.handlePathOnClick(paths.slice(0, i).join("/"))}>
-          {path === "" ? "Root" : path}
+          {path === "/fs" ? "Root" : path}
         </div>
         {i !== (length - 1)
           ? <div className="breadcrumbPathArrow">></div>
@@ -37,7 +37,7 @@ export default class Breadcrumb extends React.PureComponent<Props> {
     )
   }
 
-  handlePathOnClick = (path: string) => () => this.props.onPathClick(path)
+  handlePathOnClick = (path: string) => () => this.props.onPathClick(`/fs/${path}`)
 
   renderRoot = () => {
     return (

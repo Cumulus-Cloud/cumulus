@@ -42,7 +42,7 @@ class DirectoriesContainer extends React.PureComponent<Props> {
     return (
       <div>
         <AppBar />
-        <Breadcrumb onPathClick={this.handleOnPathClick} />
+        <Breadcrumb directory={directory} onPathClick={this.handleOnPathClick} />
         <NewFolderContainer />
         <UploadContainer />
         <div>
