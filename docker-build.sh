@@ -8,7 +8,6 @@ docker run --name postgres-test -e POSTGRES_PASSWORD=cumulus_test -e POSTGRES_US
 docker run \
 -v `pwd`:/home/cumulus/project \
 -v $HOME/.ivy2:/home/cumulus/.ivy2 \
--v $HOME/.npm:/home/cumulus/.npm \
 -v $HOME/.sbt:/home/cumulus/.sbt \
 --name cumulus \
 --link postgres-test:postgres \
