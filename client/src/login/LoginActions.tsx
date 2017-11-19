@@ -1,5 +1,7 @@
 import { ThunkAction } from "redux-thunk"
 import { GlobalState } from "store"
+import { history } from "store"
+import { Account } from "models/Account"
 import * as Api from "services/Api"
 
 export type LoginAction =
@@ -26,7 +28,8 @@ export function loginOnSubmit(mail: string, password: string): ThunkAction<void,
   return (dispatch) => {
     dispatch({ type: "LOGIN_ON_SUBMIT", mail, password })
     Api.login(mail, password).then(result => {
-      dispatch(loginOnSubmitSuccess())
+      dispatch(loginOnSubmitSuccess(result))
+      history.replace("/fs")
     }).catch((error: Api.ApiError) => {
       if (error.type === "BadRequest") {
         dispatch(loginOnSubmitError(error.errors))
@@ -38,10 +41,11 @@ export function loginOnSubmit(mail: string, password: string): ThunkAction<void,
 }
 
 export type LOGIN_ON_SUBMIT_SUCCESS = {
-  type: "LOGIN_ON_SUBMIT_SUCCESS"
+  type: "LOGIN_ON_SUBMIT_SUCCESS",
+  account: Account
 }
-export function loginOnSubmitSuccess(): LOGIN_ON_SUBMIT_SUCCESS {
-  return { type: "LOGIN_ON_SUBMIT_SUCCESS" }
+export function loginOnSubmitSuccess(account: Account): LOGIN_ON_SUBMIT_SUCCESS {
+  return { type: "LOGIN_ON_SUBMIT_SUCCESS", account }
 }
 
 export type LOGIN_ON_SUBMIT_ERROR = {

@@ -24,8 +24,8 @@ export const history = createHashHistory()
 const middleware = routerMiddleware(history)
 
 const reducers = combineReducers({
-  login: LoginReducer,
-  signup: SignupReducer,
+  login: LoginReducer as any,
+  signup: SignupReducer as any,
   newFolder: NewFolderReducer,
   upload: UploadReducer,
   directories: DirectoriesReducer as any,
