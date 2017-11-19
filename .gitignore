@@ -25,14 +25,5 @@ test-result
 /.settings
 /RUNNING_PID
 
-# Node JS
-node_modules
-server/public/main.js
-server/public/main.css
-server/public/**/*.map
-
-# Postgre data
-.pg-data
-
 # Server upload path
 server/tmp
