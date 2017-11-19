@@ -1,4 +1,3 @@
-
 export interface FsCommon {
   id: string
   location: string
