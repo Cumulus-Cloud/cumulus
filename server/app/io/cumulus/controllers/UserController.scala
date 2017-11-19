@@ -8,14 +8,13 @@ import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.controllers.utils.authentication.Authentication._
 import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
 import io.cumulus.models.User
-import io.cumulus.persistence.services.{FsNodeService, UserService}
+import io.cumulus.persistence.services.UserService
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}
 
 class UserController (
   cc: ControllerComponents,
-  userService: UserService,
-  fsNodeService: FsNodeService
+  userService: UserService
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) with Authentication[User] with ApiUtils with BodyParserJson {

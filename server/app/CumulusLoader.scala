@@ -86,7 +86,7 @@ class CumulusComponents(
 
   // Controllers
   lazy val homeController: HomeController       = new HomeController(controllerComponents)
-  lazy val userController: UserController       = new UserController(controllerComponents, userService, fsNodeService)
+  lazy val userController: UserController       = new UserController(controllerComponents, userService)
   lazy val fsController: FileSystemController   = new FileSystemController(controllerComponents, fsNodeService, sharingService)
   lazy val sharingController: SharingController = new SharingController(controllerComponents, sharingService)
   lazy val assetController: Assets              = new Assets(context.environment, assetsMetadata, httpErrorHandler, controllerComponents)

@@ -2,7 +2,7 @@ package io.cumulus.core.controllers.utils.api
 
 import play.api.i18n.Messages
 import play.api.libs.json.JsError
-import play.api.mvc.Results.{BadRequest, EntityTooLarge, Forbidden, InternalServerError, NotFound, Unauthorized}
+import play.api.mvc.Results.{BadRequest, EntityTooLarge, Forbidden, InternalServerError, NotFound}
 
 object ApiErrors {
 
