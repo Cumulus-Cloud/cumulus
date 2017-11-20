@@ -52,7 +52,7 @@ trait FileDownloader {
     range: Range
   )(implicit ec: ExecutionContext): Result = {
 
-    val objects = file.storage.foldLeft((0.toLong, 0.toLong, 0.toLong, Seq.empty[StorageObject])) {
+    val objects = file.storage.foldLeft((0l, 0l, 0l, Seq.empty[StorageObject])) {
       case ((cursor, from, to, storageObjects), storageObject) =>
         if(range.start > cursor + storageObject.size) {
           // Skip the object (before range start)
