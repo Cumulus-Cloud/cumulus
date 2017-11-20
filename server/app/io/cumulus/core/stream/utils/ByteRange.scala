@@ -1,8 +1,9 @@
 package io.cumulus.core.stream.utils
 
-import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
+import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
 import akka.util.ByteString
+import io.cumulus.core.utils.Range
 
 class ByteRange(range: Range) extends GraphStage[FlowShape[ByteString, ByteString]] {
   val in = Inlet[ByteString]("ByteRange.in")
@@ -10,7 +11,7 @@ class ByteRange(range: Range) extends GraphStage[FlowShape[ByteString, ByteStrin
   override val shape = FlowShape.of(in, out)
 
   override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = new GraphStageLogic(shape) {
-    private var read = 0
+    private var read: Long = 0
 
     setHandler(out, new OutHandler {
       override def onPull(): Unit = {
@@ -42,7 +43,7 @@ class ByteRange(range: Range) extends GraphStage[FlowShape[ByteString, ByteStrin
             bytes.size
 
           // Push the slice
-          push(out, bytes.drop(from).take(to - from))
+          push(out, bytes.drop(from.toInt).take((to - from).toInt))
 
           // Update the state
           read += bytes.size

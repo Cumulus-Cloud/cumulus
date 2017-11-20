@@ -1,6 +1,5 @@
 package io.cumulus.models.fs
 
-import io.cumulus.core.json.JsonFormat.bigIntFormat
 import play.api.libs.json.{Format, Json}
 
 /**
@@ -11,7 +10,7 @@ import play.api.libs.json.{Format, Json}
   * @param mimeType The mime type
   */
 case class FileMetadata(
-  size: BigInt,
+  size: Long,
   hash: String,
   mimeType: String
 )

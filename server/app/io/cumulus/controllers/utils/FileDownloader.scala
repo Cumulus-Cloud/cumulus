@@ -7,6 +7,7 @@ import akka.stream.scaladsl.Flow
 import akka.util.ByteString
 import io.cumulus.core.stream.storage.FileReader
 import io.cumulus.core.stream.utils.ByteRange
+import io.cumulus.core.utils.Range
 import io.cumulus.models.fs.File
 import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
 import play.api.http.HttpEntity
@@ -31,7 +32,7 @@ trait FileDownloader {
     Ok.sendEntity(
       HttpEntity.Streamed(
         source,
-        Some(file.size.toLong),
+        Some(file.size),
         Some(file.mimeType)
       )
     )
@@ -51,14 +52,14 @@ trait FileDownloader {
     range: Range
   )(implicit ec: ExecutionContext): Result = {
 
-    val objects = file.storage.foldLeft((0, 0, 0, Seq.empty[StorageObject])) {
+    val objects = file.storage.foldLeft((0.toLong, 0.toLong, 0.toLong, Seq.empty[StorageObject])) {
       case ((cursor, from, to, storageObjects), storageObject) =>
-        if(range.start > cursor + storageObject.size.toInt) {
+        if(range.start > cursor + storageObject.size) {
           // Skip the object (before range start)
-          (cursor + storageObject.size.toInt, from, to, storageObjects)
+          (cursor + storageObject.size, from, to, storageObjects)
         } else if(range.end < cursor) {
           // Skip the object (after range end)
-          (cursor + storageObject.size.toInt, from, to, storageObjects)
+          (cursor + storageObject.size, from, to, storageObjects)
         } else {
 
           val objectFrom = if(range.start > cursor)
@@ -69,10 +70,10 @@ trait FileDownloader {
           val objectTo = if(range.end < (cursor + storageObject.size))
             range.end - cursor
           else
-            storageObject.size.toInt
+            storageObject.size
 
           (
-            cursor + storageObject.size.toInt,
+            cursor + storageObject.size,
             if(objectFrom != 0) objectFrom else from,
             to + objectTo,
             storageObjects :+ storageObject

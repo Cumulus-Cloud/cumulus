@@ -9,7 +9,7 @@ object Counter {
   /**
     * Count the number of bytes of a stream.
     */
-  def apply: Flow[ByteString, Int, NotUsed] =
-    Flow[ByteString].fold(0)((size, bytes) => size + bytes.size)
+  def apply: Flow[ByteString, Long, NotUsed] =
+    Flow[ByteString].fold(0.toLong)((size, bytes) => size + bytes.size)
 
 }

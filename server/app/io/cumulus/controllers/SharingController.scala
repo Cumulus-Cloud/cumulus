@@ -9,6 +9,7 @@ import akka.util.ByteString
 import io.cumulus.controllers.utils.FileDownloader
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.stream.utils.AESCipher
+import io.cumulus.core.utils.Range
 import io.cumulus.persistence.services.SharingService
 import io.cumulus.persistence.storage.{LocalStorageEngine, StorageEngine}
 import play.api.mvc.{AbstractController, ControllerComponents}
@@ -38,19 +39,20 @@ class SharingController(
   def stream(path: String, code: String, password: Option[String]) = Action.async { implicit request =>
 
     // TODO duplicated
-    val headerRange = request.headers.get("Range").getOrElse("bytes=0-").split('=').toList match {
-      case "bytes" :: r :: Nil => r.split('-').map(_.toInt).toList match {
-        case from :: to :: Nil => (from, to)
-        case from :: Nil => (from, -1)
+    val headerRange: (Long, Long) =
+      request.headers.get("Range").getOrElse("bytes=0-").split('=').toList match {
+        case "bytes" :: r :: Nil => r.split('-').map(_.toLong).toList match {
+          case from :: to :: Nil => (from, to)
+          case from :: Nil => (from, -1)
+          case _ => (0, -1)
+        }
         case _ => (0, -1)
       }
-      case _ => (0, -1)
-    }
 
     sharingService.findSharedFile(code, path, password, None).map {
       case Right(file) =>
 
-        val realRange = (headerRange._1, if(headerRange._2 > 0) headerRange._2 else file.size.toInt - 1 ) // TODO check validity & return 406 if not
+        val realRange = (headerRange._1, if(headerRange._2 > 0) headerRange._2 else file.size - 1 ) // TODO check validity & return 406 if not
       val range = Range(realRange._1, realRange._2)
 
         val transformation =

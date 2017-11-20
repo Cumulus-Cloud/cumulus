@@ -13,6 +13,7 @@ import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.controllers.utils.bodyParser.{BodyParserJson, BodyParserStream}
 import io.cumulus.core.stream.storage.FileWriter
 import io.cumulus.core.stream.utils.AESCipher
+import io.cumulus.core.utils.Range
 import io.cumulus.models.User
 import io.cumulus.models.fs.Directory
 import io.cumulus.persistence.services.{FsNodeService, SharingService}
@@ -48,19 +49,20 @@ class FileSystemController(
   def stream(path: String) = AuthenticatedAction.async { implicit request =>
 
     // TODO duplicated
-    val headerRange = request.headers.get("Range").getOrElse("bytes=0-").split('=').toList match {
-      case "bytes" :: r :: Nil => r.split('-').map(_.toInt).toList match {
-        case from :: to :: Nil => (from, to)
-        case from :: Nil => (from, -1)
+    val headerRange: (Long, Long) =
+      request.headers.get("Range").getOrElse("bytes=0-").split('=').toList match {
+        case "bytes" :: r :: Nil => r.split('-').map(_.toLong).toList match {
+          case from :: to :: Nil => (from, to)
+          case from :: Nil => (from, -1)
+          case _ => (0, -1)
+        }
         case _ => (0, -1)
       }
-      case _ => (0, -1)
-    }
 
     fsNodeService.findFile(path).map {
       case Right(file) =>
 
-        val realRange = (headerRange._1, if(headerRange._2 > 0) headerRange._2 else file.size.toInt - 1 ) // TODO check validity & return 406 if not
+        val realRange = (headerRange._1, if(headerRange._2 > 0) headerRange._2 else file.size - 1 ) // TODO check validity & return 406 if not
         val range = Range(realRange._1, realRange._2)
 
         val transformation =

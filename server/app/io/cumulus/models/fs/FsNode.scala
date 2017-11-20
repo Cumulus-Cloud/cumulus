@@ -4,7 +4,6 @@ import java.net.URLEncoder
 import java.time.LocalDateTime
 import java.util.UUID
 
-import io.cumulus.core.json.JsonFormat.bigIntFormat
 import io.cumulus.models.Path
 import io.cumulus.persistence.storage.StorageObject
 import play.api.libs.json._
@@ -117,7 +116,7 @@ case class File(
   owner: UUID,
   permissions: Seq[Permission],
   metadata: FileMetadata,
-  size: BigInt,
+  size: Long,
   hash: String,
   mimeType: String,
   storage: Seq[StorageObject]
@@ -145,7 +144,7 @@ object File {
     owner: UUID,
     permissions: Seq[Permission],
     metadata: FileMetadata,
-    size: BigInt,
+    size: Long,
     hash: String,
     mimeType: String,
     storage: Seq[StorageObject]

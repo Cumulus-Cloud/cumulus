@@ -52,12 +52,4 @@ object JsonFormat {
 
   }
 
-  implicit def bigIntFormat: Format[BigInt] = new Format[BigInt] {
-    override def reads(json: JsValue): JsResult[BigInt] =
-      Json.fromJson[Int](json).map(i => BigInt(i))
-
-    override def writes(o: BigInt): JsValue =
-      Json.toJson(o.toInt)
-  }
-
 }

@@ -39,7 +39,7 @@ object FileWriter {
 
     val graph = GraphDSL.create() { implicit builder =>
       val broadcast = builder.add(Broadcast[ByteString](3))
-      val zip       = builder.add(ZipWith[Seq[StorageObject], Int, String, File] {
+      val zip       = builder.add(ZipWith[Seq[StorageObject], Long, String, File] {
         case (storageObjects, fileSize, fileSha1) =>
           // Create the file with the provided information
           File(

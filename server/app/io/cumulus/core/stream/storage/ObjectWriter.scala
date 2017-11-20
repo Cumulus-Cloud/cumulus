@@ -14,7 +14,7 @@ import akka.util.ByteString
 import io.cumulus.core.Logging
 import io.cumulus.core.stream.storage
 import io.cumulus.core.stream.storage.ObjectWriter.ObjectWriterState
-import io.cumulus.core.stream.utils.DigestCalculator
+import io.cumulus.core.stream.utils.{Counter, DigestCalculator}
 import io.cumulus.core.utils.Base64
 import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
 
@@ -169,11 +169,11 @@ object ObjectWriter {
     val sha1 = DigestCalculator.sha1
 
     // Will compute the total size of a byte stream
-    val size = Flow[ByteString].fold(0)((size, bytes) => size + bytes.size)
+    val size = Counter.apply
 
     val graph = GraphDSL.create() { implicit builder =>
       val broadcast = builder.add(Broadcast[ByteString](3))
-      val zip       = builder.add(ZipWith[StorageObject, Int, String, StorageObject] {
+      val zip       = builder.add(ZipWith[StorageObject, Long, String, StorageObject] {
         case (storageObject, objectSize, objectSha1) =>
           storageObject.copy(
             hash = objectSha1,

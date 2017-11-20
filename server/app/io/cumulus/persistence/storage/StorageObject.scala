@@ -3,7 +3,6 @@ package io.cumulus.persistence.storage
 import java.time.LocalDateTime
 import java.util.UUID
 
-import io.cumulus.core.json.JsonFormat.bigIntFormat
 import play.api.libs.json.{Format, Json}
 
 /**
@@ -22,9 +21,9 @@ import play.api.libs.json.{Format, Json}
   */
 case class StorageObject(
   id: UUID,
-  size: BigInt,
+  size: Long,
   hash: String,
-  storageSize: BigInt,
+  storageSize: Long,
   storageHash: String,
   cipher: Option[String],
   compression: Option[String],
