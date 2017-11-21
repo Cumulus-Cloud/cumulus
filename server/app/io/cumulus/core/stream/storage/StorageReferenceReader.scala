@@ -8,7 +8,7 @@ import akka.util.ByteString
 import io.cumulus.models.fs.File
 import io.cumulus.persistence.storage.StorageEngine
 
-object FileReader {
+object StorageReferenceReader {
 
   /**
     * Reads a file in its wholeness, and output a stream of its byte after applying the provided transformation
@@ -24,9 +24,9 @@ object FileReader {
     file: File
   )(implicit ec: ExecutionContext): Source[ByteString, NotUsed] = {
 
-    Source(file.storage.toList)
+    Source(file.storageReference.storage.toList)
       .splitWhen(_ => true)
-      .via(ObjectReader(storageEngine, transformation))
+      .via(StorageObjectReader(storageEngine, transformation))
       .mergeSubstreams
 
   }

@@ -10,9 +10,9 @@ import io.cumulus.core.stream.utils.{Chunker, Counter, DigestCalculator}
 import io.cumulus.core.utils.MimeType
 import io.cumulus.models.fs.File
 import io.cumulus.models.{Path, User}
-import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
+import io.cumulus.persistence.storage.{StorageEngine, StorageObject, StorageReference}
 
-object FileWriter {
+object StorageReferenceWriter {
 
   def apply(
     storageEngine: StorageEngine,
@@ -25,7 +25,7 @@ object FileWriter {
     // Split the incoming stream of bytes, and writes it to multiple files
     val objectsWriter =
       Chunker.splitter(objectSize, chunkSize)
-        .via(ObjectWriter(storageEngine, transformation))
+        .via(StorageObjectWriter(storageEngine, transformation))
         .mergeSubstreams
 
     // Will compute a SHA1 of the byte stream
@@ -41,15 +41,22 @@ object FileWriter {
       val broadcast = builder.add(Broadcast[ByteString](3))
       val zip       = builder.add(ZipWith[Seq[StorageObject], Long, String, File] {
         case (storageObjects, fileSize, fileSha1) =>
+          // TODO the storage reference should have a private key and detect the cipher and compression
+          val storageRef = StorageReference(
+            fileSize,
+            fileSha1,
+            None,
+            None,
+            None,
+            storageObjects
+          )
+
           // Create the file with the provided information
           File(
             path = path,
-            owner = user.id
-          ).copy(
-            size = fileSize,
-            hash = fileSha1,
+            owner = user.id,
             mimeType = MimeType.detect(path.name),
-            storage = storageObjects
+            storage = storageRef
           )
       })
 

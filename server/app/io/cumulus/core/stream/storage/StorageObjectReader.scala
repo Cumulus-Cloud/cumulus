@@ -10,8 +10,7 @@ import akka.stream.scaladsl.Flow
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.util.ByteString
 import io.cumulus.core.Logging
-import io.cumulus.core.stream.storage
-import io.cumulus.core.stream.storage.ObjectReader.ObjectReaderState
+import io.cumulus.core.stream.storage.StorageObjectReader.ObjectReaderState
 import io.cumulus.core.utils.Base64
 import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
 
@@ -25,7 +24,7 @@ import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
   * @param storageEngine The storage engine use (not that it should technically be retrieved directly from the objects)
   * @param bufferSize The buffer size to use, defaulted to 8096
   */
-class ObjectReader(
+class StorageObjectReader(
   storageEngine: StorageEngine,
   bufferSize: Int = 8096
 )(
@@ -150,7 +149,7 @@ class ObjectReader(
 
 }
 
-object ObjectReader {
+object StorageObjectReader {
 
   private case class ObjectReaderState(
     read: Int,
@@ -182,23 +181,23 @@ object ObjectReader {
   }
 
   /**
-    * @see [[storage.ObjectReader]]
+    * @see [[io.cumulus.core.stream.storage.StorageObjectReader]]
     */
-  def apply(storageEngine: StorageEngine)(implicit ec: ExecutionContext): ObjectReader =
-    new ObjectReader(storageEngine)
+  def apply(storageEngine: StorageEngine)(implicit ec: ExecutionContext): StorageObjectReader =
+    new StorageObjectReader(storageEngine)
 
   /**
-    * @see [[storage.ObjectReader]]
+    * @see [[io.cumulus.core.stream.storage.StorageObjectReader]]
     */
-  def apply(storageEngine: StorageEngine, bufferSize: Int)(implicit ec: ExecutionContext): ObjectReader =
-    new ObjectReader(storageEngine, bufferSize)
+  def apply(storageEngine: StorageEngine, bufferSize: Int)(implicit ec: ExecutionContext): StorageObjectReader =
+    new StorageObjectReader(storageEngine, bufferSize)
 
   /**
     * Apply a transformation to a reader.
     *
     * @param storageEngine The storage engine to use
     * @param transformation The transformation to perform
-    * @see [[storage.ObjectReader]]
+    * @see [[io.cumulus.core.stream.storage.StorageObjectReader]]
     */
   def apply(
     storageEngine: StorageEngine,
@@ -206,7 +205,7 @@ object ObjectReader {
     bufferSize: Int = 8096
   )(implicit ec: ExecutionContext): Flow[StorageObject, ByteString, NotUsed] = {
     Flow[StorageObject]
-      .via(ObjectReader(storageEngine, bufferSize))
+      .via(StorageObjectReader(storageEngine, bufferSize))
       .via(transformation)
   }
 

@@ -5,6 +5,7 @@ import com.typesafe.config.Config
 import controllers.AssetsComponents
 import io.cumulus.controllers.{FileSystemController, HomeController, SharingController, UserController}
 import io.cumulus.controllers.utils.Assets
+import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.HttpErrorHandler
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.QueryBuilder
@@ -54,7 +55,7 @@ class CumulusComponents(
 
   // Configurations
   implicit val config: Config      = configuration.underlying // for MailerComponents
-  //implicit val settings: Settings = new Settings(conf)
+  implicit val settings: Settings = new Settings(configuration)
 
   // Access the lazy val to trigger evolutions
   applicationEvolutions

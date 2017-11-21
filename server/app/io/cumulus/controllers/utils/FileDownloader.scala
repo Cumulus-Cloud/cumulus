@@ -5,7 +5,7 @@ import scala.concurrent.ExecutionContext
 import akka.NotUsed
 import akka.stream.scaladsl.Flow
 import akka.util.ByteString
-import io.cumulus.core.stream.storage.FileReader
+import io.cumulus.core.stream.storage.StorageReferenceReader
 import io.cumulus.core.stream.utils.ByteRange
 import io.cumulus.core.utils.Range
 import io.cumulus.models.fs.File
@@ -23,7 +23,7 @@ trait FileDownloader {
     forceDownload: Boolean
   )(implicit ec: ExecutionContext): Result = {
 
-    val source = FileReader(
+    val source = StorageReferenceReader(
       storageEngine,
       fileTransformation,
       file
@@ -52,7 +52,7 @@ trait FileDownloader {
     range: Range
   )(implicit ec: ExecutionContext): Result = {
 
-    val objects = file.storage.foldLeft((0l, 0l, 0l, Seq.empty[StorageObject])) {
+    val objects = file.storageReference.storage.foldLeft((0l, 0l, 0l, Seq.empty[StorageObject])) {
       case ((cursor, from, to, storageObjects), storageObject) =>
         if(range.start > cursor + storageObject.size) {
           // Skip the object (before range start)
@@ -81,10 +81,10 @@ trait FileDownloader {
         }
     }
 
-    val source = FileReader(
+    val source = StorageReferenceReader(
       storageEngine,
       fileTransformation,
-      file.copy(storage = objects._4)
+      file.copy(storageReference = file.storageReference.copy(storage = objects._4)) // TODO better way ?
     ).via(ByteRange(Range(objects._2, objects._3)))
 
     PartialContent

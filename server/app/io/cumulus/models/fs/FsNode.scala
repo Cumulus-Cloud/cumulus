@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 import io.cumulus.models.Path
-import io.cumulus.persistence.storage.StorageObject
+import io.cumulus.persistence.storage.StorageReference
 import play.api.libs.json._
 
 sealed trait FsNode {
@@ -119,7 +119,7 @@ case class File(
   size: Long,
   hash: String,
   mimeType: String,
-  storage: Seq[StorageObject]
+  storageReference: StorageReference
 ) extends FsNode {
 
   def modified(now: LocalDateTime): File =
@@ -147,7 +147,7 @@ object File {
     size: Long,
     hash: String,
     mimeType: String,
-    storage: Seq[StorageObject]
+    storage: StorageReference
   ): File =
     File(
       id,
@@ -167,7 +167,9 @@ object File {
 
   def apply(
     path: Path,
-    owner: UUID
+    owner: UUID,
+    mimeType: String,
+    storage: StorageReference
   ): File = {
     val now = LocalDateTime.now()
 
@@ -180,10 +182,10 @@ object File {
       owner = owner,
       permissions = Seq.empty,
       metadata = FileMetadata.default,
-      size = 0,
-      hash = "da39a3ee5e6b4b0d3255bfef95601890afd80709", // SH1 of an empty string/file
-      mimeType = "application/octet-stream",
-      storage = Seq.empty
+      size = storage.size,
+      hash = storage.hash,
+      mimeType = mimeType,
+      storage = storage
     )
   }
 

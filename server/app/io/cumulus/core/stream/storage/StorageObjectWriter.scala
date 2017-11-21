@@ -13,7 +13,7 @@ import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.util.ByteString
 import io.cumulus.core.Logging
 import io.cumulus.core.stream.storage
-import io.cumulus.core.stream.storage.ObjectWriter.ObjectWriterState
+import io.cumulus.core.stream.storage.StorageObjectWriter.ObjectWriterState
 import io.cumulus.core.stream.utils.{Counter, DigestCalculator}
 import io.cumulus.core.utils.Base64
 import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
@@ -24,7 +24,7 @@ import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
   *
   * @param storageEngine The storage engine to use
   */
-class ObjectWriter(storageEngine: StorageEngine)(implicit ec: ExecutionContext) extends GraphStage[FlowShape[ByteString, StorageObject]] with Logging {
+class StorageObjectWriter(storageEngine: StorageEngine)(implicit ec: ExecutionContext) extends GraphStage[FlowShape[ByteString, StorageObject]] with Logging {
 
   val in  = Inlet[ByteString]("ObjectWriter.in")
   val out = Outlet[StorageObject]("ObjectWriter.out")
@@ -103,7 +103,7 @@ class ObjectWriter(storageEngine: StorageEngine)(implicit ec: ExecutionContext) 
 
 }
 
-object ObjectWriter {
+object StorageObjectWriter {
 
   private case class ObjectWriterState(
     written: Int,
@@ -140,14 +140,14 @@ object ObjectWriter {
     * stage and the hash of the byte stream, and assume the this value are representative of the byte source.<br/>
     * <br/>
     * See
-    * [[storage.ObjectWriter#apply(io.cumulus.persistence.storage.StorageEngine, akka.stream.scaladsl.Flow, scala.concurrent.ExecutionContext)]]
+    * [[storage.StorageObjectWriter#apply(io.cumulus.persistence.storage.StorageEngine, akka.stream.scaladsl.Flow, scala.concurrent.ExecutionContext)]]
     * if a transformation is applied to the stream (compression, ..).
     *
     * @param storageEngine The storage engine to use
-    * @see [[storage.ObjectWriter]]
+    * @see [[storage.StorageObjectWriter]]
     */
-  def apply(storageEngine: StorageEngine)(implicit ec: ExecutionContext): ObjectWriter =
-    new ObjectWriter(storageEngine)
+  def apply(storageEngine: StorageEngine)(implicit ec: ExecutionContext): StorageObjectWriter =
+    new StorageObjectWriter(storageEngine)
 
   /**
     * Writer which takes an arbitrary transformation to apply to the byte stream before writing. This helper will
@@ -155,7 +155,7 @@ object ObjectWriter {
     *
     * @param storageEngine The storage engine to use
     * @param transformation The transformation to performs
-    * @see [[storage.ObjectWriter]]
+    * @see [[storage.StorageObjectWriter]]
     */
   def apply(
     storageEngine: StorageEngine,
@@ -163,7 +163,7 @@ object ObjectWriter {
   )(implicit ec: ExecutionContext): Flow[ByteString, StorageObject, NotUsed] = {
 
     // Will write the byte stream to a file
-    val objectWriter = ObjectWriter(storageEngine)
+    val objectWriter = StorageObjectWriter(storageEngine)
 
     // Will compute a SHA1 of the byte stream
     val sha1 = DigestCalculator.sha1

@@ -11,7 +11,7 @@ import io.cumulus.controllers.utils.FileDownloader
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.controllers.utils.bodyParser.{BodyParserJson, BodyParserStream}
-import io.cumulus.core.stream.storage.FileWriter
+import io.cumulus.core.stream.storage.StorageReferenceWriter
 import io.cumulus.core.stream.utils.AESCipher
 import io.cumulus.core.utils.Range
 import io.cumulus.models.UserSession
@@ -112,7 +112,7 @@ class FileSystemController(
              .via(AESCipher.encrypt(key, salt).get)
 
          val fileWriter =
-           FileWriter(
+           StorageReferenceWriter(
              storageEngine,
              transformation,
              path,
