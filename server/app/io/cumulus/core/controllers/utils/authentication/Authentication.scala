@@ -1,13 +1,14 @@
 package io.cumulus.core.controllers.utils.authentication
 
 
+import scala.concurrent.{ExecutionContext, Future}
+import scala.language.implicitConversions
+
+import io.cumulus.core.controllers.utils.api.ApiErrors
 import pdi.jwt.JwtSession
 import play.api.i18n.I18nSupport
 import play.api.libs.json.{Format, Writes}
 import play.api.mvc._
-import scala.concurrent.{ExecutionContext, Future}
-
-import io.cumulus.core.controllers.utils.api.ApiErrors
 
 /**
   * Authentication trait using JWT. Needs to be extends by a controller which wants to use authentication.
@@ -138,12 +139,20 @@ trait Authentication[USER] extends BaseController with I18nSupport {
   }
 
   /**
-    * Implicit converter from authenticated request to user
+    * Implicit converter from authenticated request to USER
     */
-  implicit def AuthenticatedRequestToUser[A](implicit r: AuthenticatedRequest[A]): USER = r.user
+  implicit def authenticatedRequestToUser[A](implicit r: AuthenticatedRequest[A]): USER =
+    r.user
+
+  /**
+    * Implicit converter from authenticated request to anything able to be implicitly be converted from USER
+    */
+  implicit def authenticatedRequestTo[A, B](implicit r: AuthenticatedRequest[A], converter: USER => B): B =
+    converter(r.user)
 
   /**
     * Create the JWT token for the session
+    *
     * @param payload The payload of the token
     */
   protected def createJwtSession(payload: USER)(implicit writes: Writes[USER]): JwtSession =

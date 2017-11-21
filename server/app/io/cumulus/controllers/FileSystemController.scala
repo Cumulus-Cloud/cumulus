@@ -14,7 +14,7 @@ import io.cumulus.core.controllers.utils.bodyParser.{BodyParserJson, BodyParserS
 import io.cumulus.core.stream.storage.FileWriter
 import io.cumulus.core.stream.utils.AESCipher
 import io.cumulus.core.utils.Range
-import io.cumulus.models.User
+import io.cumulus.models.UserSession
 import io.cumulus.models.fs.Directory
 import io.cumulus.persistence.services.{FsNodeService, SharingService}
 import io.cumulus.persistence.storage.{LocalStorageEngine, StorageEngine}
@@ -26,7 +26,7 @@ class FileSystemController(
   sharingService: SharingService
 )(
   implicit ec: ExecutionContext
-) extends AbstractController(cc) with Authentication[User] with ApiUtils with FileDownloader with BodyParserJson with BodyParserStream {
+) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with FileDownloader with BodyParserJson with BodyParserStream {
 
   // TODO inject
   implicit val system = ActorSystem()

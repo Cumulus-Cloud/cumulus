@@ -2,10 +2,33 @@ package io.cumulus.models
 
 import java.time.LocalDateTime
 import java.util.UUID
+import scala.language.implicitConversions
 
 import org.mindrot.jbcrypt.BCrypt
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+
+/**
+  * Session of the user. The private key is also used for decrypt and encrypt files, and thus should be present when
+  * crypting and decrypting files.
+  *
+  * @param user The connected user
+  * @param privateKey The user's private key
+  */
+case class UserSession(
+  user: User,
+  privateKey: String
+)
+
+object UserSession {
+
+  implicit def userSessionToUser(userSession: UserSession): User =
+    userSession.user
+
+  implicit def format: Format[UserSession] =
+    Json.format[UserSession]
+
+}
 
 /**
   * An user account
