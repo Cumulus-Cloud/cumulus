@@ -6,6 +6,7 @@ import akka.NotUsed
 import akka.stream.FlowShape
 import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, Sink, ZipWith}
 import akka.util.ByteString
+import io.cumulus.core.Settings
 import io.cumulus.core.stream.utils.{Chunker, Counter, DigestCalculator}
 import io.cumulus.core.utils.MimeType
 import io.cumulus.models.fs.File
@@ -17,14 +18,12 @@ object StorageReferenceWriter {
   def apply(
     storageEngine: StorageEngine,
     transformation: Flow[ByteString, ByteString, NotUsed],
-    path: Path,
-    objectSize: Int,
-    chunkSize: Int
-  )(implicit user: User, ec: ExecutionContext): Sink[ByteString, Future[File]] = {
+    path: Path
+  )(implicit user: User, settings: Settings, ec: ExecutionContext): Sink[ByteString, Future[File]] = {
 
     // Split the incoming stream of bytes, and writes it to multiple files
     val objectsWriter =
-      Chunker.splitter(objectSize, chunkSize)
+      Chunker.splitter(settings.storage.objectSize, settings.storage.chunkSize)
         .via(StorageObjectWriter(storageEngine, transformation))
         .mergeSubstreams
 

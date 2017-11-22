@@ -3,6 +3,7 @@ package io.cumulus.models
 import java.time.LocalDateTime
 import java.util.UUID
 
+import akka.util.ByteString
 import io.cumulus.core.utils.{Base64, Crypto}
 import play.api.libs.json.{Format, Json}
 
@@ -27,7 +28,7 @@ object Sharing {
   ): Sharing = Sharing(
     UUID.randomUUID(),
     Crypto.randomCode(16),
-    password.map(p => Base64.encode(Crypto.hashSHA256(p))),
+    password.map(p => Base64.encode(ByteString.empty)), // TODO //Crypto.hashSHA256(p))),
     expiration,
     needAuth,
     owner,

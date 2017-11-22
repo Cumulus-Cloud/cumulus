@@ -8,7 +8,7 @@ import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.anorm.{AnormPKOperations, AnormRepository}
 import io.cumulus.core.persistence.anorm.AnormSupport._
 import io.cumulus.core.persistence.query.QueryBuilder
-import io.cumulus.models.User
+import io.cumulus.models.{User, UserSecurity}
 
 class UserStore(
   implicit val qb: QueryBuilder[CumulusDB]
@@ -22,25 +22,42 @@ class UserStore(
       SqlParser.get[UUID]("id") ~
       SqlParser.get[String]("email") ~
       SqlParser.get[String]("login") ~
-      SqlParser.get[String]("password") ~
-      SqlParser.get[String]("key") ~
+      SqlParser.get[String]("encryptedPrivateKey") ~
+      SqlParser.get[String]("privateKeySalt") ~
+      SqlParser.get[String]("salt1") ~
+      SqlParser.get[String]("iv") ~
+      SqlParser.get[String]("passwordHash") ~
+      SqlParser.get[String]("salt2") ~
       SqlParser.get[LocalDateTime]("creation") ~
       SqlParser.get[Array[String]]("roles")
     ).map {
-      case id ~ email ~ login ~ password ~ key ~ creation ~ roles =>
-        User(id, email, login, password, key, creation, roles)
+      case id ~ email ~ login ~ encryptedPrivateKey ~ privateKeySalt ~ salt1 ~ iv ~ passwordHash ~ salt2 ~ creation ~ roles =>
+        val userSecurity = UserSecurity(
+          encryptedPrivateKey,
+          privateKeySalt,
+          salt1,
+          iv,
+          passwordHash,
+          salt2
+        )
+
+        User(id, email, login, userSecurity, creation, roles)
     }
   }
 
   def getParams(user: User): Seq[NamedParameter] = {
     Seq(
-      'id       -> user.id,
-      'email    -> user.email,
-      'login    -> user.login,
-      'password -> user.password,
-      'key      -> user.key,
-      'creation -> user.creation,
-      'roles    -> user.roles.toArray
+      'id                  -> user.id,
+      'email               -> user.email,
+      'login               -> user.login,
+      'encryptedPrivateKey -> user.security.encryptedPrivateKey,
+      'privateKeySalt      -> user.security.privateKeySalt,
+      'salt1               -> user.security.salt1,
+      'iv                  -> user.security.iv,
+      'passwordHash        -> user.security.passwordHash,
+      'salt2               -> user.security.salt2,
+      'creation            -> user.creation,
+      'roles               -> user.roles.toArray
     )
   }
 

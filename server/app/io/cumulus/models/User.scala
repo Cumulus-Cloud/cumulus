@@ -1,10 +1,14 @@
 package io.cumulus.models
 
+import java.security.Security
 import java.time.LocalDateTime
 import java.util.UUID
 import scala.language.implicitConversions
 
-import org.mindrot.jbcrypt.BCrypt
+import akka.util.ByteString
+import io.cumulus.core.utils.{Base64, Crypto}
+import io.cumulus.core.utils.Crypto._
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
@@ -13,12 +17,17 @@ import play.api.libs.json._
   * crypting and decrypting files.
   *
   * @param user The connected user
-  * @param privateKey The user's private key
+  * @param password The user's private key
   */
 case class UserSession(
   user: User,
-  privateKey: String
-)
+  password: String
+) {
+
+  def privateKeyAndSalt: (ByteString, ByteString) =
+    (user.security.privateKey(password), Base64.decode(user.security.privateKeySalt).get)
+
+}
 
 object UserSession {
 
@@ -36,8 +45,7 @@ object UserSession {
   * @param id The unique ID
   * @param email The mail
   * @param login The login
-  * @param password The hashed password
-  * @param key The secret key, ciphered with the server secret key
+  * @param security User's security information
   * @param creation The creation date
   * @param roles The roles of the user
   */
@@ -45,14 +53,13 @@ case class User(
   id: UUID,
   email: String,
   login: String,
-  password: String,
-  key: String,
+  security: UserSecurity,
   creation: LocalDateTime,
   roles: Seq[String]
 ) {
 
   /**
-    * Check if the acount is an admin account
+    * Check if the account is an admin account
     *
     * @return True if the user is an admin, false otherwise
     */
@@ -62,18 +69,92 @@ case class User(
 
 }
 
+case class UserSecurity(
+  encryptedPrivateKey: String,
+  privateKeySalt: String,
+  salt1: String,
+  iv: String,
+  passwordHash: String,
+  salt2: String
+) {
+
+  /**
+    * Test if the provided password is the password of the user.
+    */
+  def checkPassword(toTest: String): Boolean = {
+    // To test the password, we need to generate the hash then the second hash, and compare the results
+    val toTestHash = Crypto.scrypt(toTest, Base64.decode(salt1).get)
+    val toTestHashHash = Crypto.scrypt(toTestHash, Base64.decode(salt2).get)
+
+    Base64.encode(toTestHashHash) == passwordHash
+  }
+
+  /**
+    * Decode the private key using the provided password.
+    */
+  def privateKey(password: String): ByteString = {
+    val hash = Crypto.scrypt(password, Base64.decode(salt1).get)
+    Crypto.AESDecrypt(hash, Base64.decode(iv).get,  Base64.decode(encryptedPrivateKey).get)
+  }
+
+  /**
+    * Change the password
+    */
+  def changePassword(previousPassword: String, newPassword: String): UserSecurity = {
+    // TODO (decrypt, re-encrypt)
+    ???
+  }
+
+}
+
+object UserSecurity {
+
+  def apply(password: String): UserSecurity = {
+    Security.addProvider(new BouncyCastleProvider)
+
+    // Generate a random 256Bit key
+    val privateKey = Crypto.randomBytes(16)
+    val privateKeySalt = Crypto.randomBytes(16)
+
+    // Hash of the password to get a 256Bit AES key
+    val salt = Crypto.randomBytes(16)
+    val passwordHash = Crypto.scrypt(password, salt)
+
+    // Encrypt the hash of the private key
+    val iv = Crypto.randomBytes(16)
+    val encryptedPrivateKey = Crypto.AESEncrypt(passwordHash, iv, privateKey)
+
+    // Hash the hash of the password
+    val salt2 = Crypto.randomBytes(16)
+    val passwordHashHash = Crypto.scrypt(passwordHash, salt2)
+
+    UserSecurity(
+      encryptedPrivateKey = Base64.encode(encryptedPrivateKey),
+      privateKeySalt      = Base64.encode(privateKeySalt),
+      salt1               = Base64.encode(salt),
+      iv                  = Base64.encode(iv),
+      passwordHash        = Base64.encode(passwordHashHash),
+      salt2               = Base64.encode(salt2)
+    )
+  }
+
+  implicit def format: Format[UserSecurity] =
+    Json.format[UserSecurity]
+
+}
+
 object User {
 
-  def apply(email: String, login: String, password: String): User =
+  def apply(email: String, login: String, password: String): User = {
     User(
       UUID.randomUUID(),
       email,
       login,
-      BCrypt.hashpw(password, BCrypt.gensalt()),
-      "", //Utils.Crypto.encrypt(Utils.Crypto.randomSalt(512)), // Generate a random key large enough
+      UserSecurity(password),
       LocalDateTime.now,
       Seq[String]("user", "admin") // TODO remove admin :)
     )
+  }
 
   val apiWrite: OWrites[User] =(
     (__ \ "id").write[String] and
@@ -93,29 +174,5 @@ object User {
 
   implicit def format: Format[User] =
     Json.format[User]
-
-  /*
-  def initFrom(mail: String, login: String, password: String)(implicit conf: Conf): Account = Account(
-    UUID.randomUUID(),
-    mail,
-    login,
-    BCrypt.hashpw(password, BCrypt.gensalt()),
-    Utils.Crypto.encrypt(Utils.Crypto.randomSalt(512)), // Generate a random key large enough
-    DateTime.now,
-    Seq[String]("user", "admin"), // TODO remove admin :)
-    None
-  )
-
-  def empty: Account = Account(
-    UUID.randomUUID(),
-    "",
-    "",
-    "",
-    "",
-    DateTime.now,
-    Seq.empty[String],
-    None
-  )
-  */
 
 }

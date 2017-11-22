@@ -7,12 +7,12 @@ import scala.util.Try
 import io.cumulus.core.Logging
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.{QueryBuilder, QueryE}
+import io.cumulus.core.utils.Base64
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.User
 import io.cumulus.models.fs.Directory
 import io.cumulus.persistence.stores.UserStore._
 import io.cumulus.persistence.stores.{FsNodeStore, UserStore}
-import org.mindrot.jbcrypt.BCrypt
 import play.api.libs.json.__
 
 /**
@@ -74,7 +74,7 @@ class UserService(
 
     // Search an user by the login & check the hashed password
     userStore.findBy(loginField, login).map {
-      case Some(user) if BCrypt.checkpw(password, user.password) =>
+      case Some(user) if user.security.checkPassword(password) =>
         Right(user)
       case _ =>
         Left(AppError.validation("validation.user.invalid-login-or-password"))

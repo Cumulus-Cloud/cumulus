@@ -1,11 +1,12 @@
 package io.cumulus.core.utils
 
-import java.security.{MessageDigest, SecureRandom}
+import java.security.SecureRandom
 import java.util.Random
-import javax.crypto.spec.IvParameterSpec
-import javax.crypto.{Cipher, KeyGenerator, SecretKey}
+import javax.crypto.{Cipher, SecretKey}
+import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 
 import akka.util.ByteString
+import org.bouncycastle.crypto.generators.SCrypt
 
 object Crypto {
 
@@ -25,34 +26,50 @@ object Crypto {
   }
 
   /**
-    * Helper to generate the hash of a string.
+    * Generate a Scrypt hash of the provided password.
     *
-    * @param instance The hash to use
-    * @param toHash The string to hash
-    * @return The hash
+    * @param password The string of the password to hash
+    * @param salt The salt to use
     */
-  def hash(instance: String)(toHash: String): ByteString = {
-    val hash = MessageDigest.getInstance(instance).digest(toHash.getBytes("UTF-8"))
-    ByteString(hash)
+  def scrypt(password: String, salt: ByteString): ByteString =
+    scrypt(ByteString(password.getBytes("UTF-8")), salt)
+
+  /**
+    * Generate a Scrypt hash of the provided password.
+    *
+    * @param password The password to hash
+    * @param salt The salt to use
+    */
+  def scrypt(password: ByteString, salt: ByteString): ByteString =
+    ByteString(SCrypt.generate(password.toArray, salt.toArray, 32768, 8, 1, 16))
+
+  /**
+    * Shorthand to encrypt the provided byte string with the provided key and iv.
+    *
+    * @param key The key to use
+    * @param iv The initialization vector
+    * @param toEncrypt The bytes to encrypt
+    */
+  def AESEncrypt(key: ByteString, iv: ByteString, toEncrypt: ByteString): ByteString = {
+    val keySpec = new SecretKeySpec(key.toArray, "AES")
+    val cipher = createAESCipher(Cipher.ENCRYPT_MODE, keySpec, iv)
+
+    ByteString(cipher.doFinal(toEncrypt.toArray))
   }
 
   /**
-    * Helper to generate a SHA-1 hash of a string.
+    * Shorthand to decrypt the provided byte string with the provided key and iv.
     *
-    * @param toHash The string to hash
-    * @return The hash
+    * @param key The key to use
+    * @param iv The initialization vector
+    * @param toDecrypt The bytes to decrypt
     */
-  def hashSHA1(toHash: String): ByteString =
-    hash("SHA-1")(toHash)
+  def AESDecrypt(key: ByteString, iv: ByteString, toDecrypt: ByteString): ByteString = {
+    val keySpec = new SecretKeySpec(key.toArray, "AES")
+    val cipher = createAESCipher(Cipher.DECRYPT_MODE, keySpec, iv)
 
-  /**
-    * Helper to generate a SHA-256 hash of a string.
-    *
-    * @param toHash The string to hash
-    * @return The hash
-    */
-  def hashSHA256(toHash: String): ByteString =
-    hash("SHA-256")(toHash)
+    ByteString(cipher.doFinal(toDecrypt.toArray))
+  }
 
   /**
     * Generate a random salt.
@@ -61,25 +78,10 @@ object Crypto {
     * @param random The random to use (default is [[java.security.SecureRandom]])
     * @return The salt
     */
-  def randomSalt(size: Int)(implicit random: Random): ByteString = {
+  def randomBytes(size: Int)(implicit random: Random): ByteString = {
     val bytes = new Array[Byte](size)
     random.nextBytes(bytes)
-    ByteString(bytes.slice(0, 16))
-  }
-
-  /**
-    * Generate a random secret key.
-    *
-    * @param algorithm The name of the algorithm
-    * @param size The size of the key
-    * @param random The random to use (default is @java.security.SecureRandom)
-    * @return The generated secret key
-    */
-  def randomKey(algorithm: String, size: Int)(implicit random: SecureRandom): SecretKey = {
-    val generator = KeyGenerator.getInstance(algorithm)
-    generator.init(random)
-    generator.init(size)
-    generator.generateKey()
+    ByteString(bytes)
   }
 
   /**

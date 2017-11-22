@@ -90,7 +90,7 @@ object Chunker {
     * @param chunkSize The size of a chunk, defaulted to 8096
     * @see [[utils.Chunker]]
     */
-  def splitter(splitBy: Int, chunkSize: Int = 8096) = {
+  def splitter(splitBy: Long, chunkSize: Int = 8096) = {
 
     val splitEvery = splitBy / chunkSize
 

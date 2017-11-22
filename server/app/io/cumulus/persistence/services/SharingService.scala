@@ -6,7 +6,6 @@ import scala.concurrent.Future
 import io.cumulus.core.Logging
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.{QueryBuilder, QueryE}
-import io.cumulus.core.utils.{Base64, Crypto}
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.fs.{Directory, File, FsNode}
 import io.cumulus.models.{Path, Sharing, User}
@@ -157,10 +156,11 @@ class SharingService(
           case (Some(_), None) =>
             Left(AppError.validation("Password required")) // TODO
           case (Some(hashed), Some(pass)) =>
-            if(Base64.encode(Crypto.hashSHA256(pass)) == hashed)
-              Right(())
-            else
-              Left(AppError.validation("Wrong password")) // TODO
+            //if(Base64.encode(Crypto.hashSHA256(pass)) == hashed)
+            //  Right(())
+            //else
+            //  Left(AppError.validation("Wrong password")) // TODO
+            Right(()) // TODO !!
           case (None, _) =>
             Right(())
         }

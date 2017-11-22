@@ -8,6 +8,7 @@ import akka.stream.scaladsl.{Compression, Flow}
 import akka.util.ByteString
 import io.cumulus.controllers.payloads.fs._
 import io.cumulus.controllers.utils.FileDownloader
+import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.controllers.utils.bodyParser.{BodyParserJson, BodyParserStream}
@@ -25,7 +26,8 @@ class FileSystemController(
   fsNodeService: FsNodeService,
   sharingService: SharingService
 )(
-  implicit ec: ExecutionContext
+  implicit ec: ExecutionContext,
+  settings: Settings
 ) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with FileDownloader with BodyParserJson with BodyParserStream {
 
   // TODO inject
@@ -34,11 +36,6 @@ class FileSystemController(
 
   // TODO inject
   val storageEngine: StorageEngine = new LocalStorageEngine()
-
-  // TODO generate by user
-  // TODO also, derivate the private key from the user's clear password
-  val key = "CJkI5LEy+Jtxi/0Dd8/1GA==" // Crypto.randomKey("AES", 128)
-  val salt = "DQG+ivnNsojhm1SxDIkg5A==" // Crypto.randomSalt(16)
 
   def get(path: String) = AuthenticatedAction.async { implicit request =>
     ApiResponse {
@@ -65,9 +62,11 @@ class FileSystemController(
         val realRange = (headerRange._1, if(headerRange._2 > 0) headerRange._2 else file.size - 1 ) // TODO check validity & return 406 if not
         val range = Range(realRange._1, realRange._2)
 
+        val (privateKey, salt) = request.user.privateKeyAndSalt
+
         val transformation =
           Flow[ByteString]
-            .via(AESCipher.decrypt(key, salt).get)
+            .via(AESCipher.decrypt(privateKey, salt))
             .via(Compression.gunzip())
 
         streamFile(storageEngine, file, transformation, range)
@@ -82,10 +81,12 @@ class FileSystemController(
     fsNodeService.findFile(path).map {
       case Right(file) =>
 
+        val (privateKey, salt) = request.user.privateKeyAndSalt
+
         // TODO guess from the file and/or chunks
         val transformation =
           Flow[ByteString]
-            .via(AESCipher.decrypt(key, salt).get)
+            .via(AESCipher.decrypt(privateKey, salt))
             .via(Compression.gunzip())
 
         downloadFile(storageEngine, file, transformation, forceDownload.getOrElse(false))
@@ -101,23 +102,19 @@ class FileSystemController(
      fsNodeService.checkForNewNode(path).flatMap {
        case Right(_) =>
 
-         // TODO get info from conf and/or user
-         val chunkSize = 8096
-         val objectSize = 8096 * 10000 // ~ 60Mo
+         val (privateKey, salt) = request.user.privateKeyAndSalt
 
          // TODO get from conf and/or user
          val transformation =
            Flow[ByteString]
              .via(Compression.gzip)
-             .via(AESCipher.encrypt(key, salt).get)
+             .via(AESCipher.encrypt(privateKey, salt))
 
          val fileWriter =
            StorageReferenceWriter(
              storageEngine,
              transformation,
-             path,
-             objectSize,
-             chunkSize
+             path
            )
 
          request

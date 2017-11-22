@@ -69,10 +69,10 @@ object Dependencies {
     val core = "com.pauldijou" %% "jwt-play" % version
   }
 
-  object jbCrypt {
-    val version = "0.4"
+  object bouncyCastle {
+    val version = "1.58"
 
-    val core = "org.mindrot" % "jbcrypt" % version
+    val core = "org.bouncycastle" % "bcprov-jdk15on" % version
   }
 
   object scrimage {

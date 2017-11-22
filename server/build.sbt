@@ -55,7 +55,7 @@ lazy val cumulusServer = project
       Dependencies.scrimage.core,
       Dependencies.scrimage.ioExtra,
       // BCrypt
-      Dependencies.jbCrypt.core,
+      Dependencies.bouncyCastle.core,
       // Test dependencies
       Dependencies.scalatest.play % Test
     )
