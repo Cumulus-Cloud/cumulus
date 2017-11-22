@@ -1,18 +1,18 @@
-export interface FsCommon {
-  id: string
-  location: string
-  name: string
-  creation: string
-  modification: string
-}
+import { object, string, array, union, isoDate, boolean } from "validation.ts"
 
-export interface File extends FsCommon {
-  type: "file",
-}
+export const NodeTypeValidator = union("DIRECTORY", "FILE")
+export type NodeType = typeof NodeTypeValidator.T
 
-export interface Directory extends FsCommon {
-  type: "directory"
-  content: FsNode[]
-}
+export const FsNodeValidator = object({
+  id: string,
+  path: string,
+  nodeType: NodeTypeValidator,
+  creation: isoDate,
+  modification: isoDate,
+  hidden: boolean,
+  owner: string,
+  permissions: array(object({})), // TODO
+  content: array(object({})), // TODO
+})
 
-export type FsNode = Directory | File
+export type FsNode = typeof FsNodeValidator.T

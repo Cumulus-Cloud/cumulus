@@ -2,7 +2,7 @@ import { history } from "store"
 import { Validator } from "validation.ts"
 import { User, userValidator } from "models/User"
 import { object, string } from "validation.ts"
-import { Directory, FsNode } from "models/FsNode"
+import { FsNode, FsNodeValidator } from "models/FsNode"
 import { Promise } from "es6-shim"
 
 const HEADERS = [
@@ -16,11 +16,13 @@ export interface ApiError {
   args: string[]
 }
 
-function success<T = any>(response: Response): Promise<T> {
-  if (response.status >= 200 && response.status < 300) {
-    return response.json().then(response => validate(response, userApiResponse))
-  } else {
-    return response.json().then<any>(error => Promise.reject(error))
+function success<T = any>(validator: Validator<T>) {
+  return function (response: Response) {
+    if (response.status >= 200 && response.status < 300) {
+      return response.json().then(response => validate(response, validator))
+    } else {
+      return response.json().then<any>(error => Promise.reject(error))
+    }
   }
 }
 
@@ -76,7 +78,7 @@ export function login(login: string, password: string): Promise<User> {
     body: JSON.stringify({ login, password }),
     headers: HEADERS,
     credentials: "same-origin",
-  }).then(success).then(response => {
+  }).then(success(userValidator)).then(response => {
     saveAuthToken(response.token)
     return response.user
   })
@@ -88,7 +90,7 @@ export function signup(login: string, email: string, password: string): Promise<
     body: JSON.stringify({ login, email, password }),
     headers: HEADERS,
     credentials: "same-origin",
-  }).then(success).then(response => {
+  }).then(success(userValidator)).then(response => {
     saveAuthToken(response.token)
     return response.user
   })
@@ -99,21 +101,21 @@ export function me(): Promise<User> {
   return withAuth(`/accounts/me`, {
     method: "GET",
     headers: HEADERS,
-  }).then(success)
+  }).then(success(userValidator))
 }
 
 export function createNewFolder(path: string): Promise<FsNode> {
-  return withAuth(`/api/directory${path}`, {
+  return withAuth(`/api/fs${path}`, {
     method: "POST",
     body: JSON.stringify({})
-  }).then(success)
+  }).then(success(FsNodeValidator))
 }
 
-export function fetchDirectory(path: string): Promise<Directory> {
-  return withAuth(`/api/directory${path}`, {
+export function fetchDirectory(path: string): Promise<FsNode> {
+  return withAuth(`/api/fs${path}`, {
     method: "GET",
     headers: HEADERS,
-  }).then(success)
+  }).then(success(FsNodeValidator))
 }
 
 export function upload(path: string, file: Blob, progression?: (e: ProgressEvent) => void): Promise<FsNode> {
@@ -142,14 +144,14 @@ export function upload(path: string, file: Blob, progression?: (e: ProgressEvent
 
 export function getDownloadUrl(file: FsNode, cookie: boolean): string {
   if (cookie) {
-    return `/api/download${file.location}`
+    return `/api/download${file.path}`
   } else {
     const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
     if (!token) {
       history.push("/login")
       return `/login`
     } else {
-      return `/api/download${file.location}?token=${token}`
+      return `/api/download${file.path}?token=${token}`
     }
   }
 }

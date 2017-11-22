@@ -1,7 +1,7 @@
 import { AnyAction } from "redux"
 import { ThunkAction } from "redux-thunk"
 import { GlobalState } from "store"
-import { Directory } from "models/FsNode"
+import { FsNode } from "models/FsNode"
 import * as Api from "services/Api"
 import { OnCreateNewFolderSuccess } from "newFolder/NewFolderActions"
 
@@ -26,9 +26,9 @@ export function onFetchDirectory(path: string): ThunkAction<void, GlobalState, {
 
 export type OnFetchDirectorySuccess = {
   type: "OnFetchDirectorySuccess"
-  directory: Directory
+  directory: FsNode
 }
-export const onFetchDirectorySuccess = (directory: Directory): OnFetchDirectorySuccess => ({
+export const onFetchDirectorySuccess = (directory: FsNode): OnFetchDirectorySuccess => ({
   type: "OnFetchDirectorySuccess",
   directory
 })

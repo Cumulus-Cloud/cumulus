@@ -14,7 +14,7 @@ export default class FsFile extends React.PureComponent<Props> {
     return (
       <a href={Api.getDownloadUrl(fsNode, true)} className={styles.fsFile}>
         <FileIcon />
-        <div className={styles.fsFileInfos}>{fsNode.name}</div>
+        <div className={styles.fsFileInfos}>{fsNode.path}</div>
       </a>
     )
   }

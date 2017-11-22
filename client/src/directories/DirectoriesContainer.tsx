@@ -9,9 +9,9 @@ import Breadcrumb from "components/directory/Breadcrumb"
 import { history } from "store"
 import NewFolderContainer from "newFolder/NewFolderContainer"
 import UploadContainer from "upload/UploadContainer"
-import FsDirectory from "components/directory/FsDirectory"
-import FsFile from "components/directory/FsFile"
-import { FsNode, Directory } from "models/FsNode"
+// import FsDirectory from "components/directory/FsDirectory"
+// import FsFile from "components/directory/FsFile"
+import { FsNode } from "models/FsNode"
 
 interface DispatchProps {
   onFetchDirectory: (path: string) => void
@@ -52,17 +52,19 @@ class DirectoriesContainer extends React.PureComponent<Props> {
     )
   }
 
-  renderDirectories = (directory: Directory) => {
-    return (directory.content || []).map(fsNode => {
-      if (fsNode.type === "directory") {
-        return <FsDirectory key={fsNode.id} fsNode={fsNode} onClick={this.handleDirectoryOnClick} />
-      } else {
-        return <FsFile key={fsNode.id} fsNode={fsNode} />
-      }
-    })
+  renderDirectories = (directory: FsNode) => {
+    // return (directory.content || []).map(fsNode => {
+    //   if (fsNode. === "directory") {
+    //     return <FsDirectory key={fsNode.id} fsNode={fsNode} onClick={this.handleDirectoryOnClick} />
+    //   } else {
+    //     return <FsFile key={fsNode.id} fsNode={fsNode} />
+    //   }
+    // })
+
+    return null
   }
 
-  handleDirectoryOnClick = (fsNode: FsNode) => history.push(`/fs${fsNode.location}`)
+  handleDirectoryOnClick = (fsNode: FsNode) => history.push(`/fs${fsNode.path}`)
   handleOnPathClick = (path: string) => history.push(path)
 }
 

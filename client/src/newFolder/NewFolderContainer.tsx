@@ -3,7 +3,7 @@ import { connect, Dispatch } from "react-redux"
 import * as NewFolderActions from "newFolder/NewFolderActions"
 import { NewFolderState } from "newFolder/NewFolderReducer"
 import { GlobalState } from "store"
-import { Directory } from "models/FsNode"
+import { FsNode } from "models/FsNode"
 import NewFolderFrom from "newFolder/NewFolderFrom"
 import Modal from "components/modals/Modal"
 import ModalActions from "components/modals/ModalActions"
@@ -12,11 +12,11 @@ import FlatButton from "components/buttons/FlatButton"
 interface DispatchProps {
   onNewFolderNameChange: (newFolderName: string) => void
   onWantCreateNewFolder: () => void
-  onCreateNewFolder: (directory: Directory, newFolderName: string) => void
+  onCreateNewFolder: (directory: FsNode, newFolderName: string) => void
 }
 
 interface PropsState extends NewFolderState {
-  directory: Directory
+  directory: FsNode
 }
 
 type Props = PropsState & DispatchProps

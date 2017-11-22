@@ -1,8 +1,8 @@
 import { DirectoriesAction } from "directories/DirectoriesActions"
-import { Directory } from "models/FsNode"
+import { FsNode } from "models/FsNode"
 
 export interface DirectoriesState {
-  directory?: Directory
+  directory?: FsNode
   loading: boolean
   error?: any
 }

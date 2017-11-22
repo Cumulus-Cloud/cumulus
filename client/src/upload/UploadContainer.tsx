@@ -1,7 +1,7 @@
 import * as React from "react"
 import { connect, Dispatch } from "react-redux"
 import { GlobalState } from "store"
-import { Directory } from "models/FsNode"
+import { FsNode } from "models/FsNode"
 import * as UploadActions from "upload/UploadActions"
 import Modal from "components/modals/Modal"
 import ModalActions from "components/modals/ModalActions"
@@ -17,7 +17,7 @@ interface DispatchProps {
 interface PropsState {
   files: File[]
   wantUpload: boolean
-  directory: Directory
+  directory: FsNode
 }
 
 type Props = PropsState & DispatchProps
@@ -72,7 +72,7 @@ class NewFolderContainer extends React.PureComponent<Props> {
   handleOnUpload = () => {
     const { directory, files, onUploadFile } = this.props
     files.forEach(file => {
-      onUploadFile(`${directory.location}/${file.name}`.replace("//", "/"), file)
+      onUploadFile(`${directory.path}/${file.name}`.replace("//", "/"), file)
     })
   }
 

@@ -10,7 +10,7 @@ interface Props {
 export default class Breadcrumb extends React.PureComponent<Props> {
   render() {
     const { directory } = this.props
-    const paths = directory && directory.location.substring(1, directory.location.length).split("/").filter(p => p !== "") || []
+    const paths = directory && directory.path.substring(1, directory.path.length).split("/").filter(p => p !== "") || []
     const pathsWithRoot = ["/fs", ...paths]
     const len = pathsWithRoot.length
     return (
