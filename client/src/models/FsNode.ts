@@ -1,4 +1,4 @@
-import { object, string, array, union, isoDate, boolean, recursion } from "validation.ts"
+import { object, string, optional, array, union, isoDate, boolean, recursion } from "validation.ts"
 
 export const NodeTypeValidator = union("DIRECTORY", "FILE")
 export type NodeType = typeof NodeTypeValidator.T
@@ -22,5 +22,5 @@ export const FsNodeValidator = recursion<FsNode>(self => object({
   modification: isoDate,
   hidden: boolean,
   owner: string,
-  content: array(self),
+  content: optional(array(self)),
 }))

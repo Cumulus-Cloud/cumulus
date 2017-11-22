@@ -6,7 +6,9 @@ function validate<T>(value: T, validator: Validator<T>) {
   if (result.isOk()) {
     return Promise.resolve(value)
   } else {
-    return Promise.reject(result.get())
+    const error = result.get()
+    console.error("Response json error", error, value, validator)
+    return Promise.reject(error)
   }
 }
 
