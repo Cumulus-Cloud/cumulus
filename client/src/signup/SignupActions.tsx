@@ -31,13 +31,7 @@ export function signupOnSubmit(login: string, email: string, password: string): 
     Api.signup(login, email, password).then(result => {
       dispatch(signupOnSubmitSuccess(result))
       history.replace("/fs")
-    }).catch((error: Api.ApiError) => {
-      if (error.type === "BadRequest") {
-        dispatch(signupOnSubmitError(error.errors))
-      } else {
-        // TODO dispatch globa error (Toast)
-      }
-    })
+    }).catch((error: Api.ApiError) => dispatch(signupOnSubmitError(error)))
   }
 }
 
@@ -51,8 +45,8 @@ export function signupOnSubmitSuccess(user: User): SIGNUP_ON_SUBMIT_SUCCESS {
 
 export type SIGNUP_ON_SUBMIT_ERROR = {
   type: "SIGNUP_ON_SUBMIT_ERROR"
-  errors: Api.FormErrors
+  errors: Api.ApiError
 }
-export function signupOnSubmitError(errors: Api.FormErrors): SIGNUP_ON_SUBMIT_ERROR {
+export function signupOnSubmitError(errors: Api.ApiError): SIGNUP_ON_SUBMIT_ERROR {
   return { type: "SIGNUP_ON_SUBMIT_ERROR", errors }
 }

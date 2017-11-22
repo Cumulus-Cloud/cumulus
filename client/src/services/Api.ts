@@ -1,53 +1,35 @@
 import { history } from "store"
-import { User } from "models/User"
+import { Validator } from "validation.ts"
+import { User, userValidator } from "models/User"
+import { object, string } from "validation.ts"
 import { Directory, FsNode } from "models/FsNode"
+import { Promise } from "es6-shim"
 
 const HEADERS = [
   ["Content-Type", "application/json"]
 ]
 
-export type ApiError = BadRequest | Unauthorized
-
-export type BadRequest = {
-  type: "BadRequest"
-  errors: FormErrors
-}
-
-export type Unauthorized = {
-  type: "Unauthorized"
+export interface ApiError {
+  key: string
   message: string
+  errors: Record<string, ApiError[]>
+  args: string[]
 }
 
-export type Error = {
-  type: "Error"
-  message: string
-}
-
-export type FormErrors = Record<string, string[]>
-
-function success(response: Response): Promise<any> {
+function success<T = any>(response: Response): Promise<T> {
   if (response.status >= 200 && response.status < 300) {
-    return response.json()
-  } else if (response.status === 400) {
-    return new Promise((_, reject) => {
-      return response.json().then(json => {
-        reject({
-          type: "BadRequest",
-          errors: json
-        })
-      })
-    })
-  } else if (response.status === 404) {
-    history.push("/notfound")
-    return Promise.reject({
-      type: "NotFound",
-      message: response.statusText
-    })
+    return response.json().then(response => validate(response, userApiResponse))
   } else {
-    return Promise.reject({
-      type: "Error",
-      message: response.statusText
-    })
+    return response.json().then<any>(error => Promise.reject(error))
+  }
+}
+
+export function validate<T>(value: T, validator: Validator<T>) {
+  const result = validator.validate(value)
+  if (result.isOk()) {
+    return Promise.resolve(value)
+  } else {
+    return Promise.reject(result.get())
   }
 }
 
@@ -84,20 +66,19 @@ function saveAuthToken(token: string, session: boolean = false) {
   (session ? sessionStorage : localStorage).setItem(AUTH_TOKEN_STORAGE_KEY, token)
 }
 
-export interface AccountApiResponse {
-  user: User
+export const userApiResponse = object({
+  user: userValidator,
   token: string
-}
-
-export function login(mail: string, password: string): Promise<User> {
-  return fetch(`/accounts/login`, {
+})
+export function login(login: string, password: string): Promise<User> {
+  return fetch(`/users/login`, {
     method: "POST",
-    body: JSON.stringify({ mail, password }),
+    body: JSON.stringify({ login, password }),
     headers: HEADERS,
     credentials: "same-origin",
   }).then(success).then(response => {
     saveAuthToken(response.token)
-    return response.account
+    return response.user
   })
 }
 
@@ -109,7 +90,7 @@ export function signup(login: string, email: string, password: string): Promise<
     credentials: "same-origin",
   }).then(success).then(response => {
     saveAuthToken(response.token)
-    return response.account
+    return response.user
   })
 }
 

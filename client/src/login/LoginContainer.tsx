@@ -9,19 +9,19 @@ import LinkButton from "../components/buttons/LinkButton"
 
 interface DispatchProps {
   onChange: (field: string, value: string) => void
-  onSubmit: (mail: string, password: string) => void
+  onSubmit: (login: string, password: string) => void
 }
 
 type Props = LoginState & DispatchProps
 
 class LoginContainer extends React.PureComponent<Props> {
   render() {
-    const { mail, password, formErrors, loading, onChange, onSubmit } = this.props
+    const { login, password, formErrors, loading, onChange, onSubmit } = this.props
     return (
       <div className={styles.loginContainer}>
         <h2 className={styles.title}>Cumulus</h2>
         <LoginForm
-          mail={mail}
+          login={login}
           password={password}
           formErrors={formErrors}
           loading={loading}
@@ -41,7 +41,7 @@ const mapStateToProps = (state: GlobalState): LoginState => {
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
     onChange: (field, value) => dispatch(LoginActions.loginOnChange(field, value)),
-    onSubmit: (mail, password) => dispatch(LoginActions.loginOnSubmit(mail, password))
+    onSubmit: (login, password) => dispatch(LoginActions.loginOnSubmit(login, password))
   }
 }
 

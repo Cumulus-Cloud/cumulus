@@ -25,10 +25,12 @@ class UserController (
 
     userService.createUser(user).map {
       case Right(authenticatedUser) =>
-        // If the sign up is successful, redirect to the index page
         val session = UserSession(authenticatedUser, signInPayload.password)
         val token = createJwtSession(session)
-        Redirect(routes.HomeController.index()).withAuthentication(token)
+        Ok(Json.obj(
+          "token" -> token.refresh().serialize,
+          "user" -> Json.toJson(authenticatedUser)(User.apiWrite)
+        )).withAuthentication(token)
       case Left(error) =>
         toApiError(error)
     }
@@ -39,10 +41,12 @@ class UserController (
 
     userService.loginUser(loginPayload.login, loginPayload.password).map {
       case Right(authenticatedUser) =>
-        // If the authentication is successful, redirect to the index page
         val session = UserSession(authenticatedUser, loginPayload.password)
         val token = createJwtSession(session)
-        Redirect(routes.HomeController.index()).withAuthentication(token)
+        Ok(Json.obj(
+          "token" -> token.refresh().serialize,
+          "user" -> Json.toJson(authenticatedUser)(User.apiWrite)
+        )).withAuthentication(token)
       case Left(error) =>
         toApiError(error)
     }

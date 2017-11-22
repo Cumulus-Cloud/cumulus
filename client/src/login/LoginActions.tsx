@@ -21,22 +21,16 @@ export function loginOnChange(field: string, value: string): LOGIN_ON_CHANGE {
 
 export type LOGIN_ON_SUBMIT = {
   type: "LOGIN_ON_SUBMIT"
-  mail: string
+  login: string
   password: string
 }
-export function loginOnSubmit(mail: string, password: string): ThunkAction<void, GlobalState, {}> {
+export function loginOnSubmit(login: string, password: string): ThunkAction<void, GlobalState, {}> {
   return (dispatch) => {
-    dispatch({ type: "LOGIN_ON_SUBMIT", mail, password })
-    Api.login(mail, password).then(result => {
+    dispatch({ type: "LOGIN_ON_SUBMIT", login, password })
+    Api.login(login, password).then(result => {
       dispatch(loginOnSubmitSuccess(result))
       history.replace("/fs")
-    }).catch((error: Api.ApiError) => {
-      if (error.type === "BadRequest") {
-        dispatch(loginOnSubmitError(error.errors))
-      } else {
-        // TODO dispatch globa error (Toast)
-      }
-    })
+    }).catch((error: Api.ApiError) => dispatch(loginOnSubmitError(error)))
   }
 }
 
@@ -50,8 +44,8 @@ export function loginOnSubmitSuccess(user: User): LOGIN_ON_SUBMIT_SUCCESS {
 
 export type LOGIN_ON_SUBMIT_ERROR = {
   type: "LOGIN_ON_SUBMIT_ERROR"
-  errors: Api.FormErrors
+  errors: Api.ApiError
 }
-export function loginOnSubmitError(errors: Api.FormErrors): LOGIN_ON_SUBMIT_ERROR {
+export function loginOnSubmitError(errors: Api.ApiError): LOGIN_ON_SUBMIT_ERROR {
   return { type: "LOGIN_ON_SUBMIT_ERROR", errors }
 }

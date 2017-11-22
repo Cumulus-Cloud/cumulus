@@ -161,7 +161,7 @@ object User {
     (__ \ "email").write[String] and
     (__ \ "login").write[String] and
     (__ \ "creation").write[LocalDateTime] and
-    (__ \ "role").write[Seq[String]]
+    (__ \ "roles").write[Seq[String]]
   )(user =>
     (
       user.id.toString,
@@ -172,7 +172,6 @@ object User {
     )
   )
 
-  implicit def format: Format[User] =
-    Json.format[User]
+  implicit def format: Format[User] = Json.format[User]
 
 }
