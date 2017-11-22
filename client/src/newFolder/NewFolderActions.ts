@@ -24,7 +24,7 @@ export function onCreateNewFolder(currentDirectory: FsNode, newFolderName: strin
   return (dispatch) => {
     dispatch({ type: "OnCreateNewFolder", newFolderName })
     // TODO with current folder path
-    Api.createNewFolder(`${currentDirectory.path}/${newFolderName}`).then(fsNode => {
+    Api.createFnNode(`${currentDirectory.path}/${newFolderName}`, "DIRECTORY").then(fsNode => {
       dispatch(onCreateNewFolderSuccess(fsNode))
     }).catch(error => {
       dispatch(onCreateNewFolderError(error))

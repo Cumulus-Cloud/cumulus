@@ -17,7 +17,6 @@ ReactDOM.render(
     <ConnectedRouter history={history}>
       <div>
         <Route exact path="/" component={LoginContainer} />
-        <Route exact path="/fs" component={DirectoriesContainer} />
         <Route exact path="/fs/*" component={DirectoriesContainer} />
         <Route exact path="/login" component={LoginContainer} />
         <Route exact path="/signup" component={SignupContainer} />

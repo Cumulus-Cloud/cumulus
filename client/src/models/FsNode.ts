@@ -1,9 +1,20 @@
-import { object, string, array, union, isoDate, boolean } from "validation.ts"
+import { object, string, array, union, isoDate, boolean, recursion } from "validation.ts"
 
 export const NodeTypeValidator = union("DIRECTORY", "FILE")
 export type NodeType = typeof NodeTypeValidator.T
 
-export const FsNodeValidator = object({
+export type FsNode = {
+  id: string,
+  path: string,
+  nodeType: NodeType,
+  creation: string,
+  modification: string,
+  hidden: boolean,
+  owner: string,
+  content: FsNode[],
+}
+
+export const FsNodeValidator = recursion<FsNode>(self => object({
   id: string,
   path: string,
   nodeType: NodeTypeValidator,
@@ -11,8 +22,5 @@ export const FsNodeValidator = object({
   modification: isoDate,
   hidden: boolean,
   owner: string,
-  permissions: array(object({})), // TODO
-  content: array(object({})), // TODO
-})
-
-export type FsNode = typeof FsNodeValidator.T
+  content: array(self),
+}))

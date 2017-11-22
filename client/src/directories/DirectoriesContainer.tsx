@@ -9,8 +9,8 @@ import Breadcrumb from "components/directory/Breadcrumb"
 import { history } from "store"
 import NewFolderContainer from "newFolder/NewFolderContainer"
 import UploadContainer from "upload/UploadContainer"
-// import FsDirectory from "components/directory/FsDirectory"
-// import FsFile from "components/directory/FsFile"
+import FsDirectory from "components/directory/FsDirectory"
+import FsFile from "components/directory/FsFile"
 import { FsNode } from "models/FsNode"
 
 interface DispatchProps {
@@ -53,15 +53,13 @@ class DirectoriesContainer extends React.PureComponent<Props> {
   }
 
   renderDirectories = (directory: FsNode) => {
-    // return (directory.content || []).map(fsNode => {
-    //   if (fsNode. === "directory") {
-    //     return <FsDirectory key={fsNode.id} fsNode={fsNode} onClick={this.handleDirectoryOnClick} />
-    //   } else {
-    //     return <FsFile key={fsNode.id} fsNode={fsNode} />
-    //   }
-    // })
-
-    return null
+    return (directory.content || []).map(fsNode => {
+      if (fsNode.nodeType === "DIRECTORY") {
+        return <FsDirectory key={fsNode.id} fsNode={fsNode} onClick={this.handleDirectoryOnClick} />
+      } else {
+        return <FsFile key={fsNode.id} fsNode={fsNode} />
+      }
+    })
   }
 
   handleDirectoryOnClick = (fsNode: FsNode) => history.push(`/fs${fsNode.path}`)

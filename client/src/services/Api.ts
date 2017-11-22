@@ -1,13 +1,9 @@
 import { history } from "store"
-import { Validator } from "validation.ts"
 import { User, userValidator } from "models/User"
 import { object, string } from "validation.ts"
-import { FsNode, FsNodeValidator } from "models/FsNode"
+import { FsNode, FsNodeValidator, NodeType } from "models/FsNode"
 import { Promise } from "es6-shim"
-
-const HEADERS = [
-  ["Content-Type", "application/json"]
-]
+import { success } from "services/request"
 
 export interface ApiError {
   key: string
@@ -16,24 +12,9 @@ export interface ApiError {
   args: string[]
 }
 
-function success<T = any>(validator: Validator<T>) {
-  return function (response: Response) {
-    if (response.status >= 200 && response.status < 300) {
-      return response.json().then(response => validate(response, validator))
-    } else {
-      return response.json().then<any>(error => Promise.reject(error))
-    }
-  }
-}
-
-export function validate<T>(value: T, validator: Validator<T>) {
-  const result = validator.validate(value)
-  if (result.isOk()) {
-    return Promise.resolve(value)
-  } else {
-    return Promise.reject(result.get())
-  }
-}
+const HEADERS = [
+  ["Content-Type", "application/json"]
+]
 
 const AUTH_TOKEN_STORAGE_KEY = "AUTH_TOKEN_STORAGE_KEY"
 
@@ -78,7 +59,7 @@ export function login(login: string, password: string): Promise<User> {
     body: JSON.stringify({ login, password }),
     headers: HEADERS,
     credentials: "same-origin",
-  }).then(success(userValidator)).then(response => {
+  }).then(success(userApiResponse)).then(response => {
     saveAuthToken(response.token)
     return response.user
   })
@@ -90,7 +71,7 @@ export function signup(login: string, email: string, password: string): Promise<
     body: JSON.stringify({ login, email, password }),
     headers: HEADERS,
     credentials: "same-origin",
-  }).then(success(userValidator)).then(response => {
+  }).then(success(userApiResponse)).then(response => {
     saveAuthToken(response.token)
     return response.user
   })
@@ -104,10 +85,10 @@ export function me(): Promise<User> {
   }).then(success(userValidator))
 }
 
-export function createNewFolder(path: string): Promise<FsNode> {
+export function createFnNode(path: string, nodeType: NodeType): Promise<FsNode> {
   return withAuth(`/api/fs${path}`, {
-    method: "POST",
-    body: JSON.stringify({})
+    method: "PUT",
+    body: JSON.stringify({ nodeType })
   }).then(success(FsNodeValidator))
 }
 
