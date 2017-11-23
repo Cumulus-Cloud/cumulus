@@ -126,7 +126,7 @@
 		{
 			"name": "Create a directory",
 			"request": {
-				"method": "POST",
+				"method": "PUT",
 				"header": [],
 				"body": {},
 				"url": {
@@ -138,6 +138,63 @@
 						"api",
 						"fs",
 						"test"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Upload a file",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "file",
+					"file": {
+						"src": ""
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/upload/test/image.jpg",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"upload",
+						"test",
+						"image.jpg"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Share a file",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"operation\" : \"SHARE_LINK\"\n}"
+				},
+				"url": {
+					"raw": "{{url}}/api/fs/test/image.jpg",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"fs",
+						"test",
+						"image.jpg"
 					]
 				},
 				"description": ""

@@ -69,6 +69,40 @@ case class User(
 
 }
 
+object User {
+
+  def apply(email: String, login: String, password: String): User = {
+    User(
+      UUID.randomUUID(),
+      email,
+      login,
+      UserSecurity(password),
+      LocalDateTime.now,
+      Seq[String]("user", "admin") // TODO remove admin :)
+    )
+  }
+
+  val apiWrite: OWrites[User] =(
+    (__ \ "id").write[String] and
+    (__ \ "email").write[String] and
+    (__ \ "login").write[String] and
+    (__ \ "creation").write[LocalDateTime] and
+    (__ \ "roles").write[Seq[String]]
+  )(user =>
+    (
+      user.id.toString,
+      user.email,
+      user.login,
+      user.creation,
+      user.roles
+    )
+  )
+
+  implicit def format: Format[User] =
+    Json.format[User]
+
+}
+
 case class UserSecurity(
   encryptedPrivateKey: String,
   privateKeySalt: String,
@@ -140,39 +174,5 @@ object UserSecurity {
 
   implicit def format: Format[UserSecurity] =
     Json.format[UserSecurity]
-
-}
-
-object User {
-
-  def apply(email: String, login: String, password: String): User = {
-    User(
-      UUID.randomUUID(),
-      email,
-      login,
-      UserSecurity(password),
-      LocalDateTime.now,
-      Seq[String]("user", "admin") // TODO remove admin :)
-    )
-  }
-
-  val apiWrite: OWrites[User] =(
-    (__ \ "id").write[String] and
-    (__ \ "email").write[String] and
-    (__ \ "login").write[String] and
-    (__ \ "creation").write[LocalDateTime] and
-    (__ \ "role").write[Seq[String]]
-  )(user =>
-    (
-      user.id.toString,
-      user.email,
-      user.login,
-      user.creation,
-      user.roles
-    )
-  )
-
-  implicit def format: Format[User] =
-    Json.format[User]
 
 }

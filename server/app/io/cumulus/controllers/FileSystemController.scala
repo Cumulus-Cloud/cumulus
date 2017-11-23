@@ -2,8 +2,7 @@ package io.cumulus.controllers
 
 import scala.concurrent.{ExecutionContext, Future}
 
-import akka.actor.ActorSystem
-import akka.stream._
+import akka.stream.Materializer
 import akka.stream.scaladsl.{Compression, Flow}
 import akka.util.ByteString
 import io.cumulus.controllers.payloads.fs._
@@ -15,27 +14,23 @@ import io.cumulus.core.controllers.utils.bodyParser.{BodyParserJson, BodyParserS
 import io.cumulus.core.stream.storage.StorageReferenceWriter
 import io.cumulus.core.stream.utils.AESCipher
 import io.cumulus.core.utils.Range
-import io.cumulus.models.UserSession
 import io.cumulus.models.fs.Directory
+import io.cumulus.models.{Sharing, UserSession}
 import io.cumulus.persistence.services.{FsNodeService, SharingService}
-import io.cumulus.persistence.storage.{LocalStorageEngine, StorageEngine}
+import io.cumulus.persistence.storage.StorageEngine
+import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}
 
 class FileSystemController(
   cc: ControllerComponents,
   fsNodeService: FsNodeService,
-  sharingService: SharingService
+  sharingService: SharingService,
+  storageEngine: StorageEngine
 )(
   implicit ec: ExecutionContext,
+  materializer: Materializer,
   settings: Settings
 ) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with FileDownloader with BodyParserJson with BodyParserStream {
-
-  // TODO inject
-  implicit val system = ActorSystem()
-  implicit val materializer = ActorMaterializer()
-
-  // TODO inject
-  val storageEngine: StorageEngine = new LocalStorageEngine()
 
   def get(path: String) = AuthenticatedAction.async { implicit request =>
     ApiResponse {
@@ -104,7 +99,7 @@ class FileSystemController(
 
          val (privateKey, salt) = request.user.privateKeyAndSalt
 
-         // TODO get from conf and/or user
+         // TODO get from conf and/or file
          val transformation =
            Flow[ByteString]
              .via(Compression.gzip)
@@ -155,8 +150,15 @@ class FileSystemController(
         ApiResponse(fsNodeService.createDirectory(directory))
       case FsOperationMove(to) =>
         ApiResponse(fsNodeService.moveNode(path, to))
-      case FsOperationShareLink(password, duration, needAuth) =>
-        ApiResponse(sharingService.shareNode(path, duration, password, needAuth.getOrElse(false)))
+      case FsOperationShareLink(_, duration, _) =>
+        ApiResponse {
+          sharingService.shareNode(path, request.user.password, duration).map {
+            case Right((sharing, secretCode)) =>
+              Right(Json.toJsObject(sharing)(Sharing.apiWrite) + ("key" -> Json.toJson(secretCode)))
+            case Left(e) =>
+              Left(e)
+          }
+        }
       case FsOperationDelete(_) =>
         ApiResponse(fsNodeService.deleteNode(path))
     }

@@ -2,7 +2,7 @@ package io.cumulus.core.controllers.utils.api
 
 import play.api.i18n.Messages
 import play.api.libs.json.JsError
-import play.api.mvc.Results.{BadRequest, EntityTooLarge, Forbidden, InternalServerError, NotFound}
+import play.api.mvc.Results.{BadRequest, EntityTooLarge, Forbidden, InternalServerError, NotFound, Unauthorized}
 
 object ApiErrors {
 
@@ -19,6 +19,9 @@ object ApiErrors {
 
   def forbidden(arg: String)(implicit messages: Messages) =
     ApiError(Forbidden, key = s"$keyRoot.forbidden", arg)
+
+  def unauthorized(arg: String)(implicit messages: Messages) =
+    ApiError(Unauthorized, key = s"$keyRoot.forbidden", arg)
 
   def payloadTooLarge(maxSize: Long)(implicit messages: Messages) =
     ApiError(EntityTooLarge, key = s"$keyRoot.entity-too-large", humanReadableByteSize(maxSize))
