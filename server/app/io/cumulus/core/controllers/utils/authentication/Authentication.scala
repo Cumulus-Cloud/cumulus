@@ -2,7 +2,6 @@ package io.cumulus.core.controllers.utils.authentication
 
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.language.implicitConversions
 
 import io.cumulus.core.controllers.utils.api.ApiErrors
 import pdi.jwt.JwtSession
@@ -25,7 +24,7 @@ import play.api.mvc._
   * def test2 = AuthenticatedAction.withErrorHandler { _: AuthenticatedRequest[AnyContent] =>
   *   Ok("test2")
   * } { _: Request[AnyContent] =>
-  *   Future.successful(Forbidden("test2"))
+  *   Future.successful(Unauthorized("test2"))
   * }
   *
   * def test3 = AuthenticatedAction.async { _: AuthenticatedRequest[AnyContent] =>
@@ -40,7 +39,7 @@ import play.api.mvc._
   *   _: AuthenticatedRequest[CaseDraftPayload] =>
   *     Future.successful(Ok("test1"))
   * } { _: Request[CaseDraftPayload] =>
-  *   Future.successful(Forbidden("test2"))
+  *   Future.successful(Unauthorized("test2"))
   * }
   *
   * }}}
@@ -68,10 +67,10 @@ trait Authentication[USER] extends BaseController with I18nSupport {
   protected object AuthenticatedAction {
 
     /**
-      * Default error handler returning a `ApiErrors.forbidden("api-error.forbidden").toResult`
+      * Default error handler returning a `ApiErrors.unauthorized("api-error.forbidden").toResult`
       */
     def defaultErrorHandler: ErrorHandler = { implicit request: Request[_] =>
-      Future.successful(ApiErrors.forbidden("api-error.forbidden").toResult)
+      Future.successful(ApiErrors.unauthorized("api-error.forbidden").toResult)
     }
 
     def apply(

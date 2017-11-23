@@ -3,6 +3,19 @@ package io.cumulus.core.utils
 import scala.util.Try
 
 import akka.util.ByteString
+import com.google.common.io.BaseEncoding
+
+object Base16 {
+
+  def encode(bytes: ByteString): String =
+    BaseEncoding.base16.encode(bytes.toArray)
+
+  def decode(encoded: String): Option[ByteString] =
+    Try {
+      Some(ByteString(BaseEncoding.base16.decode(encoded.toCharArray)))
+    } getOrElse None
+
+}
 
 object Base64 {
 
@@ -14,26 +27,6 @@ object Base64 {
     */
   def encode(bytes: ByteString): String =
     encode(bytes.toArray)
-
-  /**
-    * Encode in base 16 the provided bytes, using only `0123456789ABCDEF`.
-    *
-    * @param bytes The bytes to encode
-    * @return The encoded bytes
-    */
-  def encodeBase16(bytes: ByteString): String = {
-    getHex(bytes.toArray)
-  }
-
-  private val HEXES = "0123456789ABCDEF"
-
-  private def getHex(raw: Array[Byte]): String = {
-    val hex = new StringBuilder(2 * raw.length)
-    for (b <- raw) {
-      hex.append(HEXES.charAt((b & 0xF0) >> 4)).append(HEXES.charAt(b & 0x0F))
-    }
-    hex.toString
-  }
 
   /**
     * Encode in base 64 the provided byte array.

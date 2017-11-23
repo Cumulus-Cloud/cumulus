@@ -17,6 +17,9 @@ object AppError {
   def notFound(key: String, args: String*): AppError =
     GlobalError(AppErrorType.NOT_FOUND, key, args: _*)
 
+  def unauthorized(key: String, args: String*): AppError =
+    GlobalError(AppErrorType.UNAUTHORIZED, key, args: _*)
+
   def forbidden(key: String, args: String*): AppError =
     GlobalError(AppErrorType.FORBIDDEN, key, args: _*)
 

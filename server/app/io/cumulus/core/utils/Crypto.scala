@@ -22,7 +22,7 @@ object Crypto {
   def randomCode(size: Int): String = {
     val bytes = new Array[Byte](size/2)
     random.nextBytes(bytes)
-    Base64.encodeBase16(ByteString(bytes))
+    Base16.encode(ByteString(bytes))
   }
 
   /**

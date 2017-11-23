@@ -6,9 +6,11 @@ import scala.concurrent.Future
 import io.cumulus.core.Logging
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.{QueryBuilder, QueryE}
+import io.cumulus.core.utils.{Base16, Base64, Crypto}
+import io.cumulus.core.utils.Crypto._
 import io.cumulus.core.validation.AppError
+import io.cumulus.models._
 import io.cumulus.models.fs.{Directory, File, FsNode}
-import io.cumulus.models.{Path, Sharing, User}
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore, UserStore}
 
 class SharingService(
@@ -23,43 +25,49 @@ class SharingService(
   // TODO doc
   def shareNode(
     path: Path,
-    expiration: Option[Int] = None,
-    password: Option[String] = None,
-    needAuth: Boolean = false
-  )(implicit user: User): Future[Either[AppError, Sharing]] = {
+    password: String,
+    expiration: Option[Int] = None
+  )(implicit user: User): Future[Either[AppError, (Sharing, String)]] = {
 
     for {
       // Get the node to share
       node <- QueryE.getOrNotFound(fsNodeStore.findAndLockByPathAndUser(path, user))
 
+      // We need the private key
+      (privateKey, salt) = (user.security.privateKey(password), Base64.decode(user.security.privateKeySalt).get)
+
+      // Generate a secret code
+      secretCode = Crypto.randomBytes(16)
+
       // Create the sharing
       sharing = Sharing(
-        password,
         expiration.map(LocalDateTime.now.plusSeconds(_)),
-        needAuth,
         user.id,
-        node.id
+        node.id,
+        privateKey,
+        salt,
+        secretCode
       )
 
       // Save the sharing
       _ <- QueryE.lift(sharingStore.create(sharing))
 
-    } yield sharing
+    } yield (sharing, Base16.encode(secretCode))
 
   }.commit()
 
   // TODO doc
   def deleteSharing(
-    code: String
-  )(implicit user: User): Future[Either[AppError, Sharing]] = {
+    reference: String
+  )(implicit user: User): Future[Either[AppError, Unit]] = {
 
     for {
       // Get the sharing
-      sharing <- QueryE.getOrNotFound(sharingStore.findAndLockBy(SharingStore.codeField, code))
+      sharing <- QueryE.getOrNotFound(sharingStore.findAndLockBy(SharingStore.referenceField, reference))
 
       _ <- QueryE.pure {
         if(sharing.owner != user.id)
-          Left(AppError.forbidden("")) // TOOD
+          Left(AppError.forbidden("")) // TODO
         else
           Right(())
       }
@@ -67,21 +75,21 @@ class SharingService(
       // Delete it
       _ <- QueryE.lift(sharingStore.delete(sharing.id))
 
-    } yield sharing
+    } yield ()
 
   }.commit()
 
   // TODO doc
   def findSharedDirectory(
-    code: String,
+    reference: String,
     path: Path,
-    password: Option[String],
-    user: Option[User]
-  ): Future[Either[AppError, Directory]] = {
+    secretCode: String
+  ): Future[Either[AppError, (Sharing, Directory)]] = {
 
     for {
       // Find the node
-      node <- find(code, path, password, user)
+      result <- find(reference, path, secretCode)
+      (sharing, node) = result
 
       // Check if the node is a directory
       directory <- QueryE.pure {
@@ -92,21 +100,21 @@ class SharingService(
             Left(AppError.validation("validation.fs-node.not-directory", path))
         }
       }
-    } yield directory
+    } yield (sharing, directory)
 
   }.commit()
 
   // TODO doc
   def findSharedFile(
-    code: String,
+    reference: String,
     path: Path,
-    password: Option[String],
-    user: Option[User]
-  ): Future[Either[AppError, File]] = {
+    secretCode: String
+  ): Future[Either[AppError, (Sharing, File)]] = {
 
     for {
       // Find the node
-      node <- find(code, path, password, user)
+      result <- find(reference, path, secretCode)
+      (sharing, node) = result
 
       // Check if the node is a directory
       file <- QueryE.pure {
@@ -117,52 +125,36 @@ class SharingService(
             Left(AppError.validation("validation.fs-node.not-file", path))
         }
       }
-    } yield file
+    } yield (sharing, file)
 
   }.commit()
 
   // TODO doc
   def findSharedNode(
-    code: String,
+    reference: String,
     path: Path,
-    password: Option[String],
-    user: Option[User]
-  ): Future[Either[AppError, FsNode]] =
-    find(code, path, password, user).commit()
+    secretCode: String
+  ): Future[Either[AppError, (Sharing, FsNode)]] =
+    find(reference, path, secretCode).commit()
 
   // TODO doc
   private def find(
-    code: String,
+    reference: String,
     path: Path,
-    password: Option[String],
-    user: Option[User]
+    secretCode: String
   ) = {
 
     for {
       // Find the sharing used
-      sharing <- QueryE.getOrNotFound(sharingStore.findBy(SharingStore.codeField, code))
+      sharing <- QueryE.getOrNotFound(sharingStore.findBy(SharingStore.referenceField, reference))
 
-      // Check if auth is required
+      // Test the secret code
       _ <- QueryE.pure {
-        if(sharing.needAuth && user.isEmpty)
-          Left(AppError.forbidden("Authentication required")) // TODO
-        else
-          Right(())
-      }
-
-      // Check the password, if defined
-      _ <- QueryE.pure {
-        (sharing.password, password) match {
-          case (Some(_), None) =>
-            Left(AppError.validation("Password required")) // TODO
-          case (Some(hashed), Some(pass)) =>
-            //if(Base64.encode(Crypto.hashSHA256(pass)) == hashed)
-            //  Right(())
-            //else
-            //  Left(AppError.validation("Wrong password")) // TODO
-            Right(()) // TODO !!
-          case (None, _) =>
+        Base16.decode(secretCode) match {
+          case Some(code) if sharing.security.checkSecretCode(code) =>
             Right(())
+          case _ =>
+            Left(AppError.unauthorized("Invalid code")) // TODO
         }
       }
 
@@ -192,7 +184,7 @@ class SharingService(
         }
       }
 
-    } yield node
+    } yield (sharing, node)
 
   }
 

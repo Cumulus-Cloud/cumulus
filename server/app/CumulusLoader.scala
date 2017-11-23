@@ -3,13 +3,14 @@ import scala.concurrent.ExecutionContextExecutor
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.typesafe.config.Config
 import controllers.AssetsComponents
-import io.cumulus.controllers.{FileSystemController, HomeController, SharingController, UserController}
 import io.cumulus.controllers.utils.Assets
+import io.cumulus.controllers.{FileSystemController, HomeController, SharingController, UserController}
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.HttpErrorHandler
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.QueryBuilder
 import io.cumulus.persistence.services.{FsNodeService, SharingService, UserService}
+import io.cumulus.persistence.storage.{LocalStorageEngine, StorageEngine}
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore, UserStore}
 import play.api._
 import play.api.db.evolutions.EvolutionsComponents
@@ -85,11 +86,14 @@ class CumulusComponents(
   lazy val fsNodeService: FsNodeService   = new FsNodeService(fsNodeStore, sharingStore)
   lazy val sharingService: SharingService = new SharingService(userStore, fsNodeStore, sharingStore)
 
+  // Storage engine
+  lazy val storageEngine: StorageEngine = new LocalStorageEngine()
+
   // Controllers
   lazy val homeController: HomeController       = new HomeController(controllerComponents)
   lazy val userController: UserController       = new UserController(controllerComponents, userService)
-  lazy val fsController: FileSystemController   = new FileSystemController(controllerComponents, fsNodeService, sharingService)
-  lazy val sharingController: SharingController = new SharingController(controllerComponents, sharingService)
+  lazy val fsController: FileSystemController   = new FileSystemController(controllerComponents, fsNodeService, sharingService, storageEngine)
+  lazy val sharingController: SharingController = new SharingController(controllerComponents, sharingService, storageEngine)
   lazy val assetController: Assets              = new Assets(context.environment, assetsMetadata, httpErrorHandler, controllerComponents)
 
 }

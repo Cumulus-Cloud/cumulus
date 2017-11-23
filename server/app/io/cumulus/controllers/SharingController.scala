@@ -2,41 +2,39 @@ package io.cumulus.controllers
 
 import scala.concurrent.ExecutionContext
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Compression, Flow}
 import akka.util.ByteString
 import io.cumulus.controllers.utils.FileDownloader
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.stream.utils.AESCipher
-import io.cumulus.core.utils.Range
+import io.cumulus.core.utils.{Base16, Base64, Range}
 import io.cumulus.persistence.services.SharingService
-import io.cumulus.persistence.storage.{LocalStorageEngine, StorageEngine}
+import io.cumulus.persistence.storage.StorageEngine
 import play.api.mvc.{AbstractController, ControllerComponents}
 
 class SharingController(
   cc: ControllerComponents,
-  sharingService: SharingService
+  sharingService: SharingService,
+  storageEngine: StorageEngine
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) with ApiUtils with FileDownloader {
 
-  // TODO inject
-  implicit val system = ActorSystem()
-  implicit val materializer = ActorMaterializer()
+  def get(path: String, reference: String, key: String) = Action.async { implicit request =>
+    ApiResponse {
+      sharingService.findSharedNode(reference, path, key).map {
+        case Right((_, node)) =>
+          Right(node)
+        case Left(e) =>
+          Left(e)
+      }
+    }
+  }
 
-  // TODO inject
-  val storageEngine: StorageEngine = new LocalStorageEngine()
+  def streamRoot(reference: String, key: String) =
+    stream("/", reference, key)
 
-  // TODO generate by user
-  // TODO also, derivate the private key from the user's clear password
-  val key = "CJkI5LEy+Jtxi/0Dd8/1GA==" // Crypto.randomKey("AES", 128)
-  val salt = "DQG+ivnNsojhm1SxDIkg5A==" // Crypto.randomSalt(16)
-
-  def streamRoot(code: String, password: Option[String]) =
-    stream("/", code, password)
-
-  def stream(path: String, code: String, password: Option[String]) = Action.async { implicit request =>
+  def stream(path: String, reference: String, key: String) = Action.async { implicit request =>
 
     // TODO duplicated
     val headerRange: (Long, Long) =
@@ -49,15 +47,21 @@ class SharingController(
         case _ => (0, -1)
       }
 
-    sharingService.findSharedFile(code, path, password, None).map {
-      case Right(file) =>
+    sharingService.findSharedFile(reference, path, key).map {
+      case Right((sharing, file)) =>
+
+        val (privateKey, salt) = (
+          sharing.security.privateKey(Base16.decode(key).get),
+          Base64.decode(sharing.security.privateKeySalt).get
+        )
 
         val realRange = (headerRange._1, if(headerRange._2 > 0) headerRange._2 else file.size - 1 ) // TODO check validity & return 406 if not
-      val range = Range(realRange._1, realRange._2)
+        val range = Range(realRange._1, realRange._2)
 
+        // TODO guess from the file and/or chunks
         val transformation =
           Flow[ByteString]
-            .via(AESCipher.decrypt(key, salt).get)
+            .via(AESCipher.decrypt(privateKey, salt))
             .via(Compression.gunzip())
 
         streamFile(storageEngine, file, transformation, range)
@@ -67,30 +71,29 @@ class SharingController(
     }
   }
 
-  def downloadRoot(code: String, password: Option[String], forceDownload: Option[Boolean]) =
-    download("/", code, password, forceDownload)
+  def downloadRoot(reference: String, key: String, forceDownload: Option[Boolean]) =
+    download("/", reference, key, forceDownload)
 
-  def download(path: String, code: String, password: Option[String], forceDownload: Option[Boolean]) = Action.async { implicit request =>
+  def download(path: String, reference: String, key: String, forceDownload: Option[Boolean]) = Action.async { implicit request =>
 
-    sharingService.findSharedFile(code, path, password, None).map {
-      case Right(file) =>
+    sharingService.findSharedFile(reference, path, key).map {
+      case Right((sharing, file)) =>
+
+        val (privateKey, salt) = (
+          sharing.security.privateKey(Base16.decode(key).get),
+          Base64.decode(sharing.security.privateKeySalt).get
+        )
 
         // TODO guess from the file and/or chunks
         val transformation =
           Flow[ByteString]
-            .via(AESCipher.decrypt(key, salt).get)
+            .via(AESCipher.decrypt(privateKey, salt))
             .via(Compression.gunzip())
 
         downloadFile(storageEngine, file, transformation, forceDownload.getOrElse(false))
 
       case Left(e) =>
         toApiError(e)
-    }
-  }
-
-  def get(path: String, code: String, password: Option[String]) = Action.async { implicit request =>
-    ApiResponse {
-      sharingService.findSharedNode(code, path, password, None)
     }
   }
 

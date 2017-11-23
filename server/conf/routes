@@ -21,13 +21,13 @@ GET     /api/download*path            io.cumulus.controllers.FileSystemControlle
 GET     /api/stream*path              io.cumulus.controllers.FileSystemController.stream(path)
 
 # API - Shared
-GET     /api/shared/fs*path           io.cumulus.controllers.SharingController.get(path, code, password: Option[String])
-GET     /api/shared/download*path     io.cumulus.controllers.SharingController.download(path, code, password: Option[String], download: Option[Boolean])
-GET     /api/shared/stream*path       io.cumulus.controllers.SharingController.stream(path, code, password: Option[String])
+GET     /api/shared/fs*path           io.cumulus.controllers.SharingController.get(path, reference, key)
+GET     /api/shared/download*path     io.cumulus.controllers.SharingController.download(path, reference, key, download: Option[Boolean])
+GET     /api/shared/stream*path       io.cumulus.controllers.SharingController.stream(path, reference, key)
 
 # Shared 'pretty' routes for root element (file)
-GET     /shared/download/:code        io.cumulus.controllers.SharingController.downloadRoot(code, password: Option[String], download: Option[Boolean])
-GET     /shared/stream/:code          io.cumulus.controllers.SharingController.streamRoot(code, password: Option[String])
+GET     /shared/download/:reference   io.cumulus.controllers.SharingController.downloadRoot(reference, key, download: Option[Boolean])
+GET     /shared/stream/:reference     io.cumulus.controllers.SharingController.streamRoot(reference, key)
 
 # Test routes
 GET     /test                         io.cumulus.controllers.HomeController.test

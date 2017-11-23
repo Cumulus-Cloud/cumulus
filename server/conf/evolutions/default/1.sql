@@ -35,23 +35,27 @@
 
   -- Sharing
   CREATE TABLE sharing (
-    id         UUID          PRIMARY KEY,
-    code       VARCHAR(64)   NOT NULL,
-    password   VARCHAR(255)          ,
-    expiration TIMESTAMP             ,
-    needAuth   BOOLEAN       NOT NULL,
-    user_id    UUID          REFERENCES cumulus_user(id), -- Owner
-    fsNode_id  UUID          REFERENCES fs_node(id)       -- Node shared
+    id                  UUID          PRIMARY KEY,
+    reference           VARCHAR(64)   NOT NULL,
+    expiration          TIMESTAMP             ,
+    user_id             UUID          REFERENCES cumulus_user(id), -- Owner
+    fsNode_id           UUID          REFERENCES fs_node(id),       -- Node shared
+    encryptedPrivateKey VARCHAR(64)   NOT NULL,
+    privateKeySalt      VARCHAR(64)   NOT NULL,
+    salt1               VARCHAR(64)   NOT NULL,
+    iv                  VARCHAR(64)   NOT NULL,
+    secretCodeHash      VARCHAR(64)   NOT NULL,
+    salt2               VARCHAR(64)   NOT NULL
   );
 
-  CREATE UNIQUE INDEX sharing_code_unique ON sharing (code);
+  CREATE UNIQUE INDEX sharing_reference_unique ON sharing (reference);
 
 # --- !Downs
 
   DROP INDEX IF EXISTS user_mail_unique;
   DROP INDEX IF EXISTS user_login_unique;
   DROP INDEX IF EXISTS fs_node_unique_path;
-  DROP INDEX IF EXISTS sharing_code_unique;
+  DROP INDEX IF EXISTS sharing_reference_unique;
 
   DROP TABLE IF EXISTS sharing;
   DROP TABLE IF EXISTS fs_node;
