@@ -36,6 +36,14 @@ export const DirectoriesReducer = (state: DirectoriesState = initState, action: 
       }
     }
     case "OnDeleteFsNodeError": return { ...state, error: action.error, deleteLoading: undefined }
+    case "OnUploadFileSuccess": {
+      if (state.directory) {
+        const newFsNode = { ...state.directory, content: [...state.directory.content, action.fsNode] }
+        return { ...state, directory: newFsNode }
+      } else {
+        return state
+      }
+    }
     default: return state
   }
 }

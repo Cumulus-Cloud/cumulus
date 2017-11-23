@@ -4,6 +4,7 @@ import { GlobalState } from "store"
 import { FsNode } from "models/FsNode"
 import * as Api from "services/Api"
 import { OnCreateNewFolderSuccess } from "newFolder/NewFolderActions"
+import { OnUploadFileSuccess } from "upload/UploadActions"
 
 export type DirectoriesAction =
   OnFetchDirectory |
@@ -12,7 +13,8 @@ export type DirectoriesAction =
   OnCreateNewFolderSuccess |
   OnDeleteFsNode |
   OnDeleteFsNodeSuccess |
-  OnDeleteFsNodeError
+  OnDeleteFsNodeError |
+  OnUploadFileSuccess
 
 export interface OnFetchDirectory extends AnyAction {
   type: "OnFetchDirectory"
@@ -57,9 +59,6 @@ export function onDeleteFsNode(fsNode: FsNode): ThunkAction<void, GlobalState, {
       .catch(error => dispatch(onDeleteFsNodeError(error)))
   }
 }
-
-
-
 
 export type OnDeleteFsNodeSuccess = {
   type: "OnDeleteFsNodeSuccess",
