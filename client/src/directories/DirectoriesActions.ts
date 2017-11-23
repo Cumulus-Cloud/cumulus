@@ -9,7 +9,10 @@ export type DirectoriesAction =
   OnFetchDirectory |
   OnFetchDirectorySuccess |
   OnFetchDirectoryError |
-  OnCreateNewFolderSuccess
+  OnCreateNewFolderSuccess |
+  OnDeleteFsNode |
+  OnDeleteFsNodeSuccess |
+  OnDeleteFsNodeError
 
 export interface OnFetchDirectory extends AnyAction {
   type: "OnFetchDirectory"
@@ -41,3 +44,38 @@ export const onFetchDirectoryError = (error: any): OnFetchDirectoryError => ({
   type: "OnFetchDirectoryError",
   error
 })
+
+export type OnDeleteFsNode = {
+  type: "OnDeleteFsNode",
+  fsNode: FsNode
+}
+export function onDeleteFsNode(fsNode: FsNode): ThunkAction<void, GlobalState, {}> {
+  return (dispatch) => {
+    dispatch({ type: "OnDeleteFsNode", fsNode })
+    Api.deleteFsNode(fsNode)
+      .then(() => dispatch(onDeleteFsNodeSuccess(fsNode)))
+      .catch(error => dispatch(onDeleteFsNodeError(error)))
+  }
+}
+
+
+
+
+export type OnDeleteFsNodeSuccess = {
+  type: "OnDeleteFsNodeSuccess",
+  fsNode: FsNode
+}
+export const onDeleteFsNodeSuccess = (fsNode: FsNode): OnDeleteFsNodeSuccess => ({
+  type: "OnDeleteFsNodeSuccess",
+  fsNode
+})
+
+export type OnDeleteFsNodeError = {
+  type: "OnDeleteFsNodeError",
+  error: Api.ApiError
+}
+export const onDeleteFsNodeError = (error: Api.ApiError): OnDeleteFsNodeError => ({
+  type: "OnDeleteFsNodeError",
+  error
+})
+

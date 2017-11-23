@@ -1,0 +1,25 @@
+
+.content {
+  width: 100%;
+  border-left: 1px solid #EEE;
+  border-right: 1px solid #EEE;
+  border-bottom: 1px solid #EEE;
+}
+
+@media screen and (min-width: 400px) {
+  .content {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+}
+
+.directories {
+  width: 100%;
+}
+
+.actions {
+  padding: 5px;
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1px solid #EEE;
+}

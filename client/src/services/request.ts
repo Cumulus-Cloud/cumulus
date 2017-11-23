@@ -12,10 +12,16 @@ function validate<T>(value: T, validator: Validator<T>) {
   }
 }
 
-export function success<T>(validator: Validator<T>) {
+export function success<T>(validator?: Validator<T>) {
   return function (response: Response) {
-    if (response.status >= 200 && response.status < 300) {
-      return response.json().then(response => validate(response, validator))
+    if (response.status === 204) {
+      return
+    } else if (response.status >= 200 && response.status < 300) {
+      if (!!validator) {
+        return response.json().then(response => validate(response, validator))
+      } else {
+        return response.json()
+      }
     } else if (response.status === 403) {
       history.replace("/login")
       return response.json().then(error => Promise.reject(error))

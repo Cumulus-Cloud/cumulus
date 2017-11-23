@@ -99,6 +99,13 @@ export function fetchDirectory(path: string): Promise<FsNode> {
   }).then(success(FsNodeValidator))
 }
 
+export function deleteFsNode(fsNode: FsNode): Promise<void> {
+  return withAuth(`/api/fs${fsNode.path}`, {
+    method: "DELETE",
+    headers: HEADERS,
+  }).then(success())
+}
+
 export function upload(path: string, file: Blob, progression?: (e: ProgressEvent) => void): Promise<FsNode> {
   return new Promise((resolve, reject) => {
     getAuthToken().then(token => {
@@ -106,11 +113,9 @@ export function upload(path: string, file: Blob, progression?: (e: ProgressEvent
       xhr.open("POST", `/api/upload${path}`)
       xhr.setRequestHeader("Authorization", token)
       xhr.addEventListener("load", event => {
-        console.debug("upload load", event)
-        resolve(JSON.parse((event.target) as any))
+        resolve(JSON.parse((event.target as any).response))
       })
       xhr.onerror = e => {
-        console.debug("upload.onerror", e)
         reject({
           message: (e.target as any).responseText
         })

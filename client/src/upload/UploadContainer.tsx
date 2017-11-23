@@ -17,6 +17,8 @@ interface DispatchProps {
 interface PropsState {
   files: File[]
   wantUpload: boolean
+  loading: boolean
+  progress: number
   directory: FsNode
 }
 
@@ -34,7 +36,7 @@ class NewFolderContainer extends React.PureComponent<Props> {
   }
 
   renderModal = () => {
-    const { onWantUpload, files } = this.props
+    const { onWantUpload, files, loading, progress } = this.props
     return (
       <Modal
         title="Upload"
@@ -63,7 +65,7 @@ class NewFolderContainer extends React.PureComponent<Props> {
         </div>
         <ModalActions>
           <FlatButton label="Cancel" onClick={onWantUpload} />
-          <FlatButton label="Upload" onClick={this.handleOnUpload} />
+          <FlatButton label="Upload" loading={loading} onClick={this.handleOnUpload} />
         </ModalActions>
       </Modal>
     )
@@ -85,6 +87,8 @@ const mapStateToProps = (state: GlobalState): PropsState => {
   return {
     files: state.upload.files,
     wantUpload: state.upload.wantUpload,
+    loading: state.upload.loading,
+    progress: state.upload.progress,
     directory: state.directories.directory!
   }
 }

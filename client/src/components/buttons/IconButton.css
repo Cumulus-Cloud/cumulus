@@ -1,10 +1,8 @@
 .iconButton {
-  min-width: 26px;
-  min-height: 26px;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 3px;
+  padding: 5px;
   cursor: pointer;
 }
 

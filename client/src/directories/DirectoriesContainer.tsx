@@ -1,4 +1,5 @@
 import * as React from "react"
+import * as styles from "./DirectoriesContainer.css"
 import { connect, Dispatch } from "react-redux"
 import { match as RouterMatch } from "react-router"
 import * as DirectoriesActions from "directories/DirectoriesActions"
@@ -15,6 +16,7 @@ import { FsNode } from "models/FsNode"
 
 interface DispatchProps {
   onFetchDirectory: (path: string) => void
+  onDeleteFsNode: (fsNode: FsNode) => void
 }
 
 interface Params {
@@ -40,13 +42,17 @@ class DirectoriesContainer extends React.PureComponent<Props> {
   render() {
     const { directory } = this.props
     return (
-      <div>
+      <div className={styles.directoriesContainer}>
         <AppBar />
-        <Breadcrumb directory={directory} onPathClick={this.handleOnPathClick} />
-        <NewFolderContainer />
-        <UploadContainer />
-        <div>
-          {!!directory ? this.renderDirectories(directory) : <div>Loading</div>}
+        <div className={styles.actions}>
+          <NewFolderContainer />
+          <UploadContainer />
+        </div>
+        <div className={styles.content}>
+          <Breadcrumb directory={directory} onPathClick={this.handleOnPathClick} />
+          <div className={styles.directories}>
+            {!!directory ? this.renderDirectories(directory) : <div>Loading</div>}
+          </div>
         </div>
       </div>
     )
@@ -57,7 +63,7 @@ class DirectoriesContainer extends React.PureComponent<Props> {
       if (fsNode.nodeType === "DIRECTORY") {
         return <FsDirectory key={fsNode.id} fsNode={fsNode} onClick={this.handleDirectoryOnClick} />
       } else {
-        return <FsFile key={fsNode.id} fsNode={fsNode} />
+        return <FsFile key={fsNode.id} fsNode={fsNode} onCancel={this.props.onDeleteFsNode} />
       }
     })
   }
@@ -70,6 +76,7 @@ const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string
   return {
     directory: state.directories.directory,
     loading: state.directories.loading,
+    deleteLoading: state.directories.deleteLoading,
     error: state.directories.error,
     path: props.match && props.match.params[0]
   }
@@ -77,7 +84,8 @@ const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string
 
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onFetchDirectory: path => dispatch(DirectoriesActions.onFetchDirectory(path))
+    onFetchDirectory: path => dispatch(DirectoriesActions.onFetchDirectory(path)),
+    onDeleteFsNode: fsNode => dispatch(DirectoriesActions.onDeleteFsNode(fsNode)),
   }
 }
 
