@@ -29,7 +29,7 @@ export function loginOnSubmit(login: string, password: string): ThunkAction<void
     dispatch({ type: "LOGIN_ON_SUBMIT", login, password })
     Api.login(login, password).then(result => {
       dispatch(loginOnSubmitSuccess(result))
-      history.replace("/fs")
+      history.replace("/fs/")
     }).catch((error: Api.ApiError) => dispatch(loginOnSubmitError(error)))
   }
 }

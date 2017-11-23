@@ -7,11 +7,15 @@ body {
 }
 
 :root {
-  --red: #E83E29;
-  --primary: #19284B;
-  --secondary: #215279;
-  --accent: #88C2A7;
-  --clear: #F6E9B4;
-  --white: #FFFFFF;
-  --black: #000000;
+  --error: #E83E29;
+
+  --darkPrimary: #303f9f;
+  --lightPrimary: #c5cae9;
+  --primary: #3f51b5;
+
+  --text: #FFFFFF;
+  --primaryText: #212121;
+  --secondaryText: #757575;
+  --accent: #4caf50;
+  --divider: #BDBDBD;
 }

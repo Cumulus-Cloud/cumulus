@@ -3,7 +3,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--primary);
+  background-color: var(--darkPrimary);
   border-radius: 2px;
   padding: 5px 20px;
   cursor: pointer;
@@ -11,12 +11,12 @@
 }
 
 .button:hover {
-  background-color: var(--secondary);
+  background-color: var(--primary);
 }
 
 .label {
   font-size: 1rem;
   font-weight: bold;
-  color: var(--white);
+  color: var(--text);
   cursor: pointer;
 }

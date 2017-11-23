@@ -13,7 +13,7 @@
 }
 
 .link {
-  color: var(--secondary);
+  color: var(--primary);
   font-size: 1rem;
   text-decoration: none;
 }

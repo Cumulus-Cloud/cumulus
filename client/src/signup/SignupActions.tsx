@@ -30,7 +30,7 @@ export function signupOnSubmit(login: string, email: string, password: string): 
     dispatch({ type: "SIGNUP_ON_SUBMIT", login, email, password })
     Api.signup(login, email, password).then(result => {
       dispatch(signupOnSubmitSuccess(result))
-      history.replace("/fs")
+      history.replace("/fs/")
     }).catch((error: Api.ApiError) => dispatch(signupOnSubmitError(error)))
   }
 }
