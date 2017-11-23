@@ -14,7 +14,7 @@
   height: 20px;
   margin-top: 10px;
   font-size: .9rem;
-  color: var(--red);
+  color: var(--error);
 }
 
 @media screen and (min-width: 400px) {

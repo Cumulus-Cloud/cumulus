@@ -1,7 +1,7 @@
 import * as React from "react"
 import { connect, Dispatch } from "react-redux"
 import { GlobalState } from "store"
-import { Directory } from "models/FsNode"
+import { FsNode } from "models/FsNode"
 import * as UploadActions from "upload/UploadActions"
 import Modal from "components/modals/Modal"
 import ModalActions from "components/modals/ModalActions"
@@ -17,7 +17,9 @@ interface DispatchProps {
 interface PropsState {
   files: File[]
   wantUpload: boolean
-  directory: Directory
+  loading: boolean
+  progress: number
+  directory: FsNode
 }
 
 type Props = PropsState & DispatchProps
@@ -34,7 +36,7 @@ class NewFolderContainer extends React.PureComponent<Props> {
   }
 
   renderModal = () => {
-    const { onWantUpload, files } = this.props
+    const { onWantUpload, files, loading, progress } = this.props
     return (
       <Modal
         title="Upload"
@@ -63,7 +65,7 @@ class NewFolderContainer extends React.PureComponent<Props> {
         </div>
         <ModalActions>
           <FlatButton label="Cancel" onClick={onWantUpload} />
-          <FlatButton label="Upload" onClick={this.handleOnUpload} />
+          <FlatButton label="Upload" loading={loading} onClick={this.handleOnUpload} />
         </ModalActions>
       </Modal>
     )
@@ -72,7 +74,7 @@ class NewFolderContainer extends React.PureComponent<Props> {
   handleOnUpload = () => {
     const { directory, files, onUploadFile } = this.props
     files.forEach(file => {
-      onUploadFile(`${directory.location}/${file.name}`.replace("//", "/"), file)
+      onUploadFile(`${directory.path}/${file.name}`.replace("//", "/"), file)
     })
   }
 
@@ -85,6 +87,8 @@ const mapStateToProps = (state: GlobalState): PropsState => {
   return {
     files: state.upload.files,
     wantUpload: state.upload.wantUpload,
+    loading: state.upload.loading,
+    progress: state.upload.progress,
     directory: state.directories.directory!
   }
 }

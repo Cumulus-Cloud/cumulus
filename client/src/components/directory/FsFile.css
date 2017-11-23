@@ -1,10 +1,18 @@
 
 .fsFile {
+  width: 100%;
   display: flex;
   align-items: center;
   padding: 10px;
   border-bottom: 1px solid #EEE;
-  cursor: pointer;
+}
+
+.icon {
+
+}
+
+.actions {
+  padding-right: 10px;
 }
 
 .fsFileInfos {

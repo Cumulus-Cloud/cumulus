@@ -2,40 +2,40 @@ import * as React from "react"
 import * as styles from "login/LoginForm.css"
 import Input from "components/inputs/Input"
 import Button from "components/buttons/Button"
-import { FormErrors } from "services/Api"
+import { ApiError } from "services/Api"
 
 interface Props {
-  mail: string
+  login: string
   password: string
   loading: boolean
-  formErrors: FormErrors
+  formErrors?: ApiError
   onChange: (field: string, value: string) => void
-  onSubmit: (mail: string, password: string) => void
+  onSubmit: (login: string, password: string) => void
 }
 
 export default class LoginForm extends React.PureComponent<Props> {
   render() {
-    const { mail, password, formErrors, loading } = this.props
+    const { login, password, formErrors, loading } = this.props
     return (
       <div className={styles.loginForm}>
         <Input
-          type="email"
-          label="Email"
-          value={mail}
-          error={formErrors.mail}
-          onChange={this.handleChange("mail")}
+          type="text"
+          label="Login"
+          value={login}
+          error={formErrors && formErrors.errors && formErrors.errors.login && formErrors.errors.login.map(e => e.message).join(", ")}
+          onChange={this.handleChange("login")}
         />
         <Input
           type="password"
           label="Password"
           value={password}
-          error={formErrors.password}
+          error={formErrors && formErrors.errors && formErrors.errors.password && formErrors.errors.password.map(e => e.message).join(", ")}
           onChange={this.handleChange("password")}
         />
         <div className={styles.action}>
           <Button label="Login" loading={loading} onClick={this.handleSubmit} />
           <div className={styles.formError}>
-            {formErrors.login ? formErrors.login : null}
+            {formErrors && formErrors.message ? formErrors.message : null}
           </div>
         </div>
       </div>
@@ -45,7 +45,7 @@ export default class LoginForm extends React.PureComponent<Props> {
   handleChange = (field: string) => (value: string) => this.props.onChange(field, value)
 
   handleSubmit = () => {
-    const { mail, password, onSubmit } = this.props
-    onSubmit(mail, password)
+    const { login, password, onSubmit } = this.props
+    onSubmit(login, password)
   }
 }

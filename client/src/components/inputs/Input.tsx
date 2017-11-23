@@ -6,7 +6,7 @@ type InputType = "text" | "email" | "password"
 interface Props {
   label: string
   value: string
-  error?: string[]
+  error?: string
   type?: InputType
   onChange: (value: string) => void
 }
@@ -23,7 +23,7 @@ export default class Input extends React.PureComponent<Props> {
           value={value}
           onChange={this.handleOnChange}
         />
-        {error ? <div className={styles.error}>{error.join(", ")}</div> : null}
+        {error ? <div className={styles.error}>{error}</div> : null}
       </div>
     )
   }

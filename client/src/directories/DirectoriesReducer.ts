@@ -1,9 +1,10 @@
 import { DirectoriesAction } from "directories/DirectoriesActions"
-import { Directory } from "models/FsNode"
+import { FsNode } from "models/FsNode"
 
 export interface DirectoriesState {
-  directory?: Directory
+  directory?: FsNode
   loading: boolean
+  deleteLoading?: string
   error?: any
 }
 
@@ -20,6 +21,25 @@ export const DirectoriesReducer = (state: DirectoriesState = initState, action: 
     case "OnCreateNewFolderSuccess": {
       if (state.directory) {
         return { ...state, directory: { ...state.directory, content: [...state.directory.content, action.newFolder] } }
+      } else {
+        return state
+      }
+    }
+
+    case "OnDeleteFsNode": return { ...state, deleteLoading: action.fsNode.id }
+    case "OnDeleteFsNodeSuccess": {
+      if (state.directory) {
+        const newFsNode = { ...state.directory, content: state.directory.content.filter(fsNode => fsNode.id !== action.fsNode.id) }
+        return { ...state, directory: newFsNode, deleteLoading: undefined }
+      } else {
+        return { ...state, deleteLoading: undefined }
+      }
+    }
+    case "OnDeleteFsNodeError": return { ...state, error: action.error, deleteLoading: undefined }
+    case "OnUploadFileSuccess": {
+      if (state.directory) {
+        const newFsNode = { ...state.directory, content: [...state.directory.content, action.fsNode] }
+        return { ...state, directory: newFsNode }
       } else {
         return state
       }

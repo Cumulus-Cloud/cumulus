@@ -12,7 +12,7 @@
   padding: 5px 0;
   font-size: 1rem;
   border: none;
-  border-bottom: 1px solid var(--secondary);
+  border-bottom: 1px solid var(--primary);
   outline: none;
 }
 
@@ -21,13 +21,13 @@
 }
 
 .label {
-  color: var(--secondary);
+  color: var(--primary);
 }
 
 .error {
   margin-top: 3px;
   font-size: .9rem;
-  color: var(--red);
+  color: var(--error);
   position: absolute;
   bottom: 0;
   left: 0;

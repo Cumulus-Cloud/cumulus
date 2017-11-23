@@ -1,12 +1,12 @@
 import { SignupAction } from "signup/SignupActions"
-import { FormErrors } from "services/Api"
+import { ApiError } from "services/Api"
 
 export interface SignupState {
   login: string
   email: string
   password: string
   loading: boolean
-  formErrors: FormErrors
+  formErrors?: ApiError
 }
 
 
@@ -14,13 +14,13 @@ const initState: SignupState = {
   login: "",
   email: "",
   password: "",
-  formErrors: {},
   loading: false,
 }
 
 export const SignupReducer = (state: SignupState = initState, action: SignupAction) => {
   switch (action.type) {
     case "SIGNUP_ON_CHANGE": {
+      /*
       const formErrors = Object.keys(state.formErrors).reduce((acc, key) => {
         // TODO optimise
         if (key !== action.field) {
@@ -29,7 +29,8 @@ export const SignupReducer = (state: SignupState = initState, action: SignupActi
           return acc
         }
       }, {})
-      return { ...state, [action.field]: action.value, formErrors }
+      */
+      return { ...state, [action.field]: action.value, /*formErrors*/ }
     }
     case "SIGNUP_ON_SUBMIT": return { ...state, loading: true, formErrors: {} }
     case "SIGNUP_ON_SUBMIT_SUCCESS": return { ...state, loading: false, login: "", email: "", password: "" }

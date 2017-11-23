@@ -1,6 +1,6 @@
 import { ThunkAction } from "redux-thunk"
 import { GlobalState } from "store"
-import { FsNode, Directory } from "models/FsNode"
+import { FsNode } from "models/FsNode"
 import * as Api from "services/Api"
 
 export type NewFolderAction =
@@ -20,11 +20,11 @@ export type OnWantCreateNewFolder = { type: "OnWantCreateNewFolder" }
 export const onWantCreateNewFolder = (): OnWantCreateNewFolder => ({ type: "OnWantCreateNewFolder" })
 
 export type OnCreateNewFolder = { type: "OnCreateNewFolder", newFolderName: string }
-export function onCreateNewFolder(currentDirectory: Directory, newFolderName: string): ThunkAction<void, GlobalState, {}> {
+export function onCreateNewFolder(currentDirectory: FsNode, newFolderName: string): ThunkAction<void, GlobalState, {}> {
   return (dispatch) => {
     dispatch({ type: "OnCreateNewFolder", newFolderName })
     // TODO with current folder path
-    Api.createNewFolder(`${currentDirectory.location}/${newFolderName}`).then(fsNode => {
+    Api.createFnNode(`${currentDirectory.path}/${newFolderName}`, "DIRECTORY").then(fsNode => {
       dispatch(onCreateNewFolderSuccess(fsNode))
     }).catch(error => {
       dispatch(onCreateNewFolderError(error))

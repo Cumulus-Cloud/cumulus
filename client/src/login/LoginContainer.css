@@ -8,7 +8,7 @@
 }
 
 .title {
-  color: var(--primary);
+  color: var(--darkPrimary);
   font-size: 1.2rem;
   font-weight: bold;
   margin-bottom: 30px;

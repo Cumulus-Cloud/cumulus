@@ -1,55 +1,20 @@
 import { history } from "store"
-import { User } from "models/User"
-import { Directory, FsNode } from "models/FsNode"
+import { User, userValidator } from "models/User"
+import { object, string } from "validation.ts"
+import { FsNode, FsNodeValidator, NodeType } from "models/FsNode"
+import { Promise } from "es6-shim"
+import { success } from "services/request"
+
+export interface ApiError {
+  key: string
+  message: string
+  errors: Record<string, ApiError[]>
+  args: string[]
+}
 
 const HEADERS = [
   ["Content-Type", "application/json"]
 ]
-
-export type ApiError = BadRequest | Unauthorized
-
-export type BadRequest = {
-  type: "BadRequest"
-  errors: FormErrors
-}
-
-export type Unauthorized = {
-  type: "Unauthorized"
-  message: string
-}
-
-export type Error = {
-  type: "Error"
-  message: string
-}
-
-export type FormErrors = Record<string, string[]>
-
-function success(response: Response): Promise<any> {
-  if (response.status >= 200 && response.status < 300) {
-    return response.json()
-  } else if (response.status === 400) {
-    return new Promise((_, reject) => {
-      return response.json().then(json => {
-        reject({
-          type: "BadRequest",
-          errors: json
-        })
-      })
-    })
-  } else if (response.status === 404) {
-    history.push("/notfound")
-    return Promise.reject({
-      type: "NotFound",
-      message: response.statusText
-    })
-  } else {
-    return Promise.reject({
-      type: "Error",
-      message: response.statusText
-    })
-  }
-}
 
 const AUTH_TOKEN_STORAGE_KEY = "AUTH_TOKEN_STORAGE_KEY"
 
@@ -84,20 +49,19 @@ function saveAuthToken(token: string, session: boolean = false) {
   (session ? sessionStorage : localStorage).setItem(AUTH_TOKEN_STORAGE_KEY, token)
 }
 
-export interface AccountApiResponse {
-  user: User
+export const userApiResponse = object({
+  user: userValidator,
   token: string
-}
-
-export function login(mail: string, password: string): Promise<User> {
-  return fetch(`/accounts/login`, {
+})
+export function login(login: string, password: string): Promise<User> {
+  return fetch(`/users/login`, {
     method: "POST",
-    body: JSON.stringify({ mail, password }),
+    body: JSON.stringify({ login, password }),
     headers: HEADERS,
     credentials: "same-origin",
-  }).then(success).then(response => {
+  }).then(success(userApiResponse)).then(response => {
     saveAuthToken(response.token)
-    return response.account
+    return response.user
   })
 }
 
@@ -107,9 +71,9 @@ export function signup(login: string, email: string, password: string): Promise<
     body: JSON.stringify({ login, email, password }),
     headers: HEADERS,
     credentials: "same-origin",
-  }).then(success).then(response => {
+  }).then(success(userApiResponse)).then(response => {
     saveAuthToken(response.token)
-    return response.account
+    return response.user
   })
 }
 
@@ -118,21 +82,28 @@ export function me(): Promise<User> {
   return withAuth(`/accounts/me`, {
     method: "GET",
     headers: HEADERS,
-  }).then(success)
+  }).then(success(userValidator))
 }
 
-export function createNewFolder(path: string): Promise<FsNode> {
-  return withAuth(`/api/directory${path}`, {
-    method: "POST",
-    body: JSON.stringify({})
-  }).then(success)
+export function createFnNode(path: string, nodeType: NodeType): Promise<FsNode> {
+  return withAuth(`/api/fs${path}`, {
+    method: "PUT",
+    body: JSON.stringify({ nodeType })
+  }).then(success(FsNodeValidator))
 }
 
-export function fetchDirectory(path: string): Promise<Directory> {
-  return withAuth(`/api/directory${path}`, {
+export function fetchDirectory(path: string): Promise<FsNode> {
+  return withAuth(`/api/fs${path}`, {
     method: "GET",
     headers: HEADERS,
-  }).then(success)
+  }).then(success(FsNodeValidator))
+}
+
+export function deleteFsNode(fsNode: FsNode): Promise<void> {
+  return withAuth(`/api/fs${fsNode.path}`, {
+    method: "DELETE",
+    headers: HEADERS,
+  }).then(success())
 }
 
 export function upload(path: string, file: Blob, progression?: (e: ProgressEvent) => void): Promise<FsNode> {
@@ -142,11 +113,9 @@ export function upload(path: string, file: Blob, progression?: (e: ProgressEvent
       xhr.open("POST", `/api/upload${path}`)
       xhr.setRequestHeader("Authorization", token)
       xhr.addEventListener("load", event => {
-        console.debug("upload load", event)
-        resolve(JSON.parse((event.target) as any))
+        resolve(JSON.parse((event.target as any).response))
       })
       xhr.onerror = e => {
-        console.debug("upload.onerror", e)
         reject({
           message: (e.target as any).responseText
         })
@@ -161,14 +130,14 @@ export function upload(path: string, file: Blob, progression?: (e: ProgressEvent
 
 export function getDownloadUrl(file: FsNode, cookie: boolean): string {
   if (cookie) {
-    return `/api/download${file.location}`
+    return `/api/download${file.path}`
   } else {
     const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
     if (!token) {
       history.push("/login")
       return `/login`
     } else {
-      return `/api/download${file.location}?token=${token}`
+      return `/api/download${file.path}?token=${token}`
     }
   }
 }
