@@ -26,8 +26,10 @@ class Chunker(chunkSize: Int) extends GraphStage[FlowShape[ByteString, ByteStrin
 
     setHandler(out, new OutHandler {
       override def onPull(): Unit = {
-        if (isClosed(in)) emitChunk()
-        else pull(in)
+        if (isClosed(in) || buffer.size >= chunkSize)
+          emitChunk()
+        else
+          pull(in)
       }
     })
 
