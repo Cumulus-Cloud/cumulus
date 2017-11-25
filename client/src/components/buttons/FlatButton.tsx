@@ -25,8 +25,8 @@ export default class FlatButton extends React.PureComponent<Props> {
   }
 
   handleOnClick = () => {
-    const { onClick } = this.props
-    if (onClick) {
+    const { onClick, loading } = this.props
+    if (onClick && loading !== true) {
       onClick()
     }
   }

@@ -22,7 +22,7 @@ export function success<T>(validator?: Validator<T>) {
       } else {
         return response.json()
       }
-    } else if (response.status === 403) {
+    } else if (response.status === 401) {
       history.replace("/login")
       return response.json().then(error => Promise.reject(error))
     } else {
