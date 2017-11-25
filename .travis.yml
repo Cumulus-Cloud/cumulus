@@ -1,6 +1,6 @@
 language: scala
 scala:
-  - 2.11.8
+  - 2.12.4
 jdk:
   - oraclejdk8
 services:
@@ -13,7 +13,9 @@ cache:
     - $HOME/.npm
 
 script:
-  - ./docker-build.sh
+  - cd client && npm install && npm run build && cd ../
+  - cd server && sbt stage && cd ../
+  - docker build -f Dockerfile -t wadjetz/cumulus .
 
 after_success:
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
