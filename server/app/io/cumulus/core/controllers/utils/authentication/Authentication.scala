@@ -123,13 +123,15 @@ trait Authentication[USER] extends BaseController with I18nSupport {
         override def parser = bodyParser
 
         override def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
-          val jwtSession =
-            JwtSession.deserialize(request.cookies.get(COOKIE_NAME).getOrElse(Cookie(COOKIE_NAME, "")).value)
-
+          val token = request.headers.get("Authorization").getOrElse(
+            request.cookies.get(COOKIE_NAME).getOrElse(Cookie(COOKIE_NAME, "")).value
+          )
+          val jwtSession = JwtSession.deserialize(token)
           jwtSession.getAs[USER](TOKEN_FIELD).map(AuthenticatedRequest(_, request)) match {
             case Some(authenticatedRequest) => block(authenticatedRequest).map(_.withAuthentication(jwtSession))
             case None                       => errorHandler(request)
           }
+
         }
 
         override protected def executionContext = ec
