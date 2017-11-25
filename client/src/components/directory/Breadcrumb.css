@@ -18,6 +18,7 @@
 }
 
 .breadcrumbPathItem {
+  color: var(--darkPrimary);
   padding: 5px;
   cursor: pointer;
   border: 1px solid transparent;
@@ -26,9 +27,4 @@
 .breadcrumbPathItem:hover {
   border: 1px solid #eee;
   border-radius: 2px;
-}
-
-.breadcrumbPathArrow {
-  margin-left: 2px;
-  margin-right: 2px;
 }

@@ -13,6 +13,8 @@ import UploadContainer from "upload/UploadContainer"
 import FsDirectory from "components/directory/FsDirectory"
 import FsFile from "components/directory/FsFile"
 import { FsNode } from "models/FsNode"
+import Empty from "components/directory/Empty"
+import Loader from "components/directory/Loader"
 
 interface DispatchProps {
   onFetchDirectory: (path: string) => void
@@ -51,21 +53,28 @@ class DirectoriesContainer extends React.PureComponent<Props> {
         <div className={styles.content}>
           <Breadcrumb directory={directory} onPathClick={this.handleOnPathClick} />
           <div className={styles.directories}>
-            {!!directory ? this.renderDirectories(directory) : <div>Loading</div>}
+            {!!directory ? this.renderDirectories(directory) : <Loader />}
           </div>
         </div>
       </div>
     )
   }
 
-  renderDirectories = (directory: FsNode) => {
-    return (directory.content || []).map(fsNode => {
-      if (fsNode.nodeType === "DIRECTORY") {
-        return <FsDirectory key={fsNode.id} fsNode={fsNode} onClick={this.handleDirectoryOnClick} />
-      } else {
-        return <FsFile key={fsNode.id} fsNode={fsNode} onCancel={this.props.onDeleteFsNode} />
-      }
-    })
+  renderDirectories = (fsNode: FsNode) => {
+    const content = fsNode.content || []
+    if (content.length > 0) {
+      return content.map(this.renderFsNode)
+    } else {
+      return <Empty />
+    }
+  }
+
+  renderFsNode = (fsNode: FsNode) => {
+    if (fsNode.nodeType === "DIRECTORY") {
+      return <FsDirectory key={fsNode.id} fsNode={fsNode} onClick={this.handleDirectoryOnClick} />
+    } else {
+      return <FsFile key={fsNode.id} fsNode={fsNode} onCancel={this.props.onDeleteFsNode} />
+    }
   }
 
   handleDirectoryOnClick = (fsNode: FsNode) => history.push(`/fs${fsNode.path}`)
