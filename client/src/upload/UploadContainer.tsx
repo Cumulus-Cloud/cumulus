@@ -37,7 +37,7 @@ class NewFolderContainer extends React.PureComponent<Props> {
   }
 
   renderModal = () => {
-    const { onWantUpload, files, loading } = this.props
+    const { onWantUpload, files, loading, progress } = this.props
     return (
       <Modal
         title="Upload"
