@@ -3,7 +3,7 @@ import scala.concurrent.ExecutionContextExecutor
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.typesafe.config.Config
 import controllers.AssetsComponents
-import io.cumulus.controllers.utils.Assets
+import io.cumulus.controllers.utils.{Assets, LoggingFilter}
 import io.cumulus.controllers.{FileSystemController, HomeController, SharingController, UserController}
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.HttpErrorHandler
@@ -73,7 +73,8 @@ class CumulusComponents(
   override lazy val messagesApi: MessagesApi = new HoconMessagesApiProvider(environment, configuration, langs, httpConfiguration).get
 
   // HTTP components
-  override lazy val httpFilters: Seq[EssentialFilter]  = Seq()
+  lazy val loggingFilter: LoggingFilter = new LoggingFilter()
+  override lazy val httpFilters: Seq[EssentialFilter]  = Seq(loggingFilter)
   override lazy val httpErrorHandler: HttpErrorHandler = new HttpErrorHandler()(messagesApi)
 
   // Stores

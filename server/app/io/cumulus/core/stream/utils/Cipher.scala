@@ -5,7 +5,6 @@ import javax.crypto.spec.SecretKeySpec
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
 import akka.util.ByteString
-import io.cumulus.core.stream.utils
 import io.cumulus.core.utils.{Base64, Crypto}
 
 
@@ -64,7 +63,7 @@ class Cipher(cipher: javax.crypto.Cipher) extends GraphStage[FlowShape[ByteStrin
 object Cipher {
 
   /**
-    * @see [[utils.Cipher]]
+    * @see [[io.cumulus.core.stream.utils.Cipher]]
     */
   def apply(cipher: javax.crypto.Cipher): Cipher =
     new Cipher(cipher)

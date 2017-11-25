@@ -4,7 +4,6 @@ import akka.stream.scaladsl.{Flow, Source}
 import akka.stream.stage._
 import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
 import akka.util.ByteString
-import io.cumulus.core.stream.utils
 
 /**
   * Splits and/or merge incoming `ByteString` to ensure that every `ByteString` outputted is the exact same length,
@@ -26,8 +25,10 @@ class Chunker(chunkSize: Int) extends GraphStage[FlowShape[ByteString, ByteStrin
 
     setHandler(out, new OutHandler {
       override def onPull(): Unit = {
-        if (isClosed(in)) emitChunk()
-        else pull(in)
+        if (isClosed(in) || buffer.size >= chunkSize)
+          emitChunk()
+        else
+          pull(in)
       }
     })
 
@@ -72,7 +73,7 @@ class Chunker(chunkSize: Int) extends GraphStage[FlowShape[ByteString, ByteStrin
 object Chunker {
 
   /**
-    * @see [[utils.Chunker]]
+    * @see [[io.cumulus.core.stream.utils.Chunker]]
     */
   def apply(chunkSize: Int): Chunker =
     new Chunker(chunkSize)
@@ -88,7 +89,7 @@ object Chunker {
     *
     * @param splitBy The total amount of byte to send to each sub-stream
     * @param chunkSize The size of a chunk, defaulted to 8096
-    * @see [[utils.Chunker]]
+    * @see [[io.cumulus.core.stream.utils.Chunker]]
     */
   def splitter(splitBy: Long, chunkSize: Int = 8096) = {
 
