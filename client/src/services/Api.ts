@@ -77,7 +77,6 @@ export function signup(login: string, email: string, password: string): Promise<
   })
 }
 
-
 export function me(): Promise<User> {
   return withAuth(`/accounts/me`, {
     method: "GET",
@@ -110,7 +109,8 @@ export function logout(): Promise<void> {
   localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
   sessionStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
   return fetch("/users/logout", {
-    method: "POST"
+    method: "POST",
+    credentials: "same-origin",
   }).then(() => {
     history.replace("/login")
   }).catch(() => {
