@@ -1,0 +1,13 @@
+
+.empty {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.title {
+  font-size: 1.2rem;
+  color: var(--primaryText);
+}
