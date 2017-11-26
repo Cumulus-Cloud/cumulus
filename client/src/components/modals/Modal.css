@@ -8,15 +8,21 @@
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.37);
-  padding: 30px;
+  padding: 20px;
   z-index: 20;
 }
 
 .content {
-  min-width: 600px;
+  width: 100%;
   background-color: white;
   border-radius: 2px;
   padding: 20px 20px 10px 20px;
+}
+
+@media screen and (min-width: 600px) {
+  .content {
+    max-width: 600px;
+  }
 }
 
 .title {
