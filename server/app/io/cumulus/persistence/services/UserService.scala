@@ -7,7 +7,6 @@ import scala.util.Try
 import io.cumulus.core.Logging
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.{QueryBuilder, QueryE}
-import io.cumulus.core.utils.Base64
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.User
 import io.cumulus.models.fs.Directory

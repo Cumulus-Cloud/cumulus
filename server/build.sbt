@@ -29,6 +29,7 @@ lazy val cumulusServer = project
   .in(file("."))
   .settings(
     name := "cumulus-server",
+    routesImport += "io.cumulus.models.Path",
     libraryDependencies ++= Seq(
       ws,
       // i18n

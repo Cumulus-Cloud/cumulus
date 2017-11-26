@@ -38,7 +38,6 @@ case class ApiError(
             seqValidationErrors.flatMap { err =>
               err.messages.map(
                 key => {
-                  println(err)
                   Json.obj(
                     "key"     -> key,
                     "message" -> Messages(key, err.args: _*),
@@ -70,15 +69,15 @@ object ApiError {
 
   private val anyWrites = Writes[Any] {
     case s: String                    => JsString(s)
-    case nb: Int                      => JsNumber(nb)
-    case nb: Short                    => JsNumber(nb)
-    case nb: Long                     => JsNumber(nb)
-    case nb: Double                   => JsNumber(nb)
-    case nb: Float                    => JsNumber(nb)
+    case nb: Int                      => JsNumber(BigDecimal(nb))
+    case nb: Short                    => JsNumber(BigDecimal(nb))
+    case nb: Long                     => JsNumber(BigDecimal(nb))
+    case nb: Double                   => JsNumber(BigDecimal(nb))
+    case nb: Float                    => JsNumber(BigDecimal(nb.toDouble))
     case b: Boolean                   => JsBoolean(b)
     case js: JsValue                  => js
     case (key: String, value: String) => Json.obj(key -> value)
-    case x                            => JsString(x.toString)
+    case other                        => JsString(other.toString)
   }
   private val argsWrites = Writes.traversableWrites[Any](anyWrites)
 }

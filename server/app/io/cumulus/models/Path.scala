@@ -3,6 +3,7 @@ package io.cumulus.models
 import scala.language.implicitConversions
 
 import play.api.libs.json._
+import play.api.mvc.PathBindable
 
 /**
   * A path, either for a directory or for a for a file
@@ -54,6 +55,12 @@ object Path {
     new Format[Path] {
       override def reads(json: JsValue): JsResult[Path] = Json.fromJson[String](json).map(Path.convertStringToPath)
       override def writes(o: Path): JsValue             = JsString(o)
+    }
+
+  implicit def pathBinder(implicit stringBinder: PathBindable[String]) =
+    new PathBindable[Path] {
+      def bind(key: String, value: String) = stringBinder.bind(key, value).map(Path.sanitize)
+      def unbind(key: String, value: Path) = value.toString
     }
 
 }
