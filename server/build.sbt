@@ -25,10 +25,14 @@ scalacOptions in ThisBuild := Seq(
   "-opt-inline-from"
 )
 
+// Removes twirl unused warnings
+TwirlKeys.templateImports := Seq()
+
 lazy val cumulusServer = project
   .in(file("."))
   .settings(
     name := "cumulus-server",
+    // Allow to use `Path` in route
     routesImport += "io.cumulus.models.Path",
     libraryDependencies ++= Seq(
       ws,

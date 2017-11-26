@@ -10,7 +10,6 @@ import io.cumulus.core.persistence.query.{Query, QueryBuilder}
 import io.cumulus.models.fs.{Directory, FsNode}
 import io.cumulus.models.{Path, User}
 import io.cumulus.persistence.stores.FsNodeStore._
-import play.api.libs.json.Json
 
 class FsNodeStore(
   implicit val qb: QueryBuilder[CumulusDB]
@@ -79,7 +78,7 @@ class FsNodeStore(
   }
 
   def rowParser: RowParser[FsNode] = {
-    implicit def fsNodeCase: Column[FsNode] = AnormSupport.column[FsNode](FsNode.format)
+    implicit def fsNodeCase: Column[FsNode] = AnormSupport.column[FsNode](FsNode.internalFormat)
 
     SqlParser.get[FsNode]("metadata")
   }
@@ -100,7 +99,7 @@ class FsNodeStore(
       'modification -> updatedFsNode.modification,
       'hidden       -> updatedFsNode.hidden,
       'user_id      -> updatedFsNode.owner,
-      'metadata     -> Json.toJsObject(updatedFsNode)
+      'metadata     -> FsNode.internalFormat.writes(updatedFsNode)
     )
   }
 

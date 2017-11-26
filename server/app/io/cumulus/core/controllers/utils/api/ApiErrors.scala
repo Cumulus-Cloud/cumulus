@@ -1,5 +1,6 @@
 package io.cumulus.core.controllers.utils.api
 
+import io.cumulus.core.json.JsonFormat
 import play.api.i18n.Messages
 import play.api.libs.json.JsError
 import play.api.mvc.Results.{BadRequest, EntityTooLarge, Forbidden, InternalServerError, NotFound, Unauthorized}
@@ -24,17 +25,7 @@ object ApiErrors {
     ApiError(Unauthorized, key = s"$keyRoot.forbidden", arg)
 
   def payloadTooLarge(maxSize: Long)(implicit messages: Messages) =
-    ApiError(EntityTooLarge, key = s"$keyRoot.entity-too-large", humanReadableByteSize(maxSize))
-
-  private def humanReadableByteSize(fileSize: Long): String = {
-    if (fileSize <= 0)
-      "0 B"
-    else {
-      val units: Array[String] = Array("B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-      val digitGroup: Int      = (Math.log10(fileSize) / Math.log10(1024)).toInt
-      f"${fileSize / Math.pow(1024, digitGroup)}%3.2f ${units(digitGroup)}"
-    }
-  }
+    ApiError(EntityTooLarge, key = s"$keyRoot.entity-too-large", JsonFormat.humanReadable(maxSize))
 
   def notFound(implicit messages: Messages) =
     ApiError(NotFound, key = s"$keyRoot.not-found")

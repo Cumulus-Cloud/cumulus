@@ -4,8 +4,10 @@ import java.net.URLEncoder
 import java.time.LocalDateTime
 import java.util.UUID
 
+import io.cumulus.core.json.JsonFormat
 import io.cumulus.models.Path
 import io.cumulus.persistence.storage.StorageReference
+import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 sealed trait FsNode {
@@ -32,15 +34,15 @@ sealed trait FsNode {
 
 object FsNode {
 
-  implicit val reads: Reads[FsNode] = {
+  private def reads(fileReader: Reads[File], directoryReader: Reads[Directory]): Reads[FsNode] = {
     case jsObject: JsObject =>
       (jsObject \ "nodeType")
         .asOpt[String]
         .flatMap(FsNodeType.withNameInsensitiveOption) match {
         case Some(FsNodeType.DIRECTORY) =>
-          Directory.format.reads(jsObject)
+          directoryReader.reads(jsObject)
         case Some(FsNodeType.FILE) =>
-          File.format.reads(jsObject)
+          fileReader.reads(jsObject)
         case other =>
           JsError(__ \ "nodeType", JsonValidationError("validation.fs-node.unknown-type", other))
       }
@@ -48,16 +50,22 @@ object FsNode {
       JsError("validation.parsing.cannot-parse")
   }
 
-  implicit val writes: OWrites[FsNode] = {
+  private def writes(fileWriter: OWrites[File], directoryWriter: OWrites[Directory]): OWrites[FsNode] = {
     case directory: Directory =>
-      Directory.format.writes(directory)
+      directoryWriter.writes(directory)
     case file: File =>
-      File.format.writes(file)
+      fileWriter.writes(file)
   }
 
-  implicit val format: OFormat[FsNode] =
-    OFormat(reads, writes)
 
+  implicit val reads: Reads[FsNode]    = reads(File.reads, Directory.reads)
+  implicit val writes: OWrites[FsNode] = writes(File.writes, Directory.writes)
+  implicit val format: OFormat[FsNode] = OFormat(reads, writes)
+
+  // We want different non-implicit writers en readers for the database
+  val internalReads: Reads[FsNode]    = reads(File.internalReads, Directory.internalReads)
+  val internalWrites: OWrites[FsNode] = writes(File.internalWrites, Directory.internalWrites)
+  val internalFormat: OFormat[FsNode] = OFormat(internalReads, internalWrites)
 }
 
 case class Directory(
@@ -82,7 +90,8 @@ case class Directory(
 
 object Directory {
 
-  def apply(
+  /** Default newly created directory */
+  def create(
     creator: UUID,
     path: Path
   ): Directory = {
@@ -101,8 +110,41 @@ object Directory {
     )
   }
 
+  implicit val reads: Reads[Directory] = Json.reads[Directory]
+
+  implicit val writes: OWrites[Directory] = (
+    (JsPath \ "id").write[UUID] and
+    (JsPath \ "path").write[Path] and
+    (JsPath \ "name").write[String] and
+    (JsPath \ "nodeType").write[FsNodeType] and
+    (JsPath \ "creation").write[LocalDateTime] and
+    (JsPath \ "modification").write[LocalDateTime] and
+    (JsPath \ "hidden").write[Boolean] and
+    (JsPath \ "owner").write[UUID] and
+    (JsPath \ "content").lazyWrite[Seq[FsNode]] { content =>
+      Writes.traversableWrites[FsNode](FsNode.writes).writes(content)
+    }
+  ){ directory =>
+    (
+      directory.id,
+      directory.path,
+      directory.path.name,
+      directory.nodeType,
+      directory.creation,
+      directory.modification,
+      directory.hidden,
+      directory.owner,
+      directory.content
+    )
+  }
+
   implicit val format: OFormat[Directory] =
-    Json.format[Directory]
+    OFormat(reads, writes)
+
+  // We want different non-implicit writers en readers for the database
+  val internalReads: Reads[Directory]    = reads
+  val internalWrites: OWrites[Directory] = Json.writes[Directory]
+  val internalFormat: OFormat[Directory] = OFormat(internalReads, internalWrites)
 
 }
 
@@ -132,40 +174,8 @@ case class File(
 
 object File {
 
-  implicit val format: OFormat[File] =
-    Json.format[File]
-
-  def apply(
-    id: UUID,
-    path: Path,
-    creation: LocalDateTime,
-    modification: LocalDateTime,
-    hidden: Boolean,
-    owner: UUID,
-    permissions: Seq[Permission],
-    metadata: FileMetadata,
-    size: Long,
-    hash: String,
-    mimeType: String,
-    storage: StorageReference
-  ): File =
-    File(
-      id,
-      path,
-      FsNodeType.FILE,
-      creation,
-      modification,
-      hidden,
-      owner,
-      permissions,
-      metadata,
-      size,
-      hash,
-      mimeType,
-      storage
-    )
-
-  def apply(
+  /** Default newly created file */
+  def create(
     path: Path,
     owner: UUID,
     mimeType: String,
@@ -176,6 +186,7 @@ object File {
     File(
       id = UUID.randomUUID(),
       path = path,
+      nodeType = FsNodeType.FILE,
       creation = now,
       modification = now,
       hidden = false,
@@ -185,8 +196,48 @@ object File {
       size = storage.size,
       hash = storage.hash,
       mimeType = mimeType,
-      storage = storage
+      storageReference = storage
     )
   }
+
+  implicit val reads: Reads[File] = Json.reads[File]
+
+  implicit val writes: OWrites[File] = (
+    (JsPath \ "id").write[UUID] and
+    (JsPath \ "path").write[Path] and
+    (JsPath \ "name").write[String] and
+    (JsPath \ "nodeType").write[FsNodeType] and
+    (JsPath \ "creation").write[LocalDateTime] and
+    (JsPath \ "modification").write[LocalDateTime] and
+    (JsPath \ "hidden").write[Boolean] and
+    (JsPath \ "owner").write[UUID] and
+    (JsPath \ "size").write[Long] and
+    (JsPath \ "humanReadableSize").write[String] and
+    (JsPath \ "hash").write[String] and
+    (JsPath \ "mimeType").write[String]
+  ){ file =>
+    (
+      file.id,
+      file.path,
+      file.path.name,
+      file.nodeType,
+      file.creation,
+      file.modification,
+      file.hidden,
+      file.owner,
+      file.size,
+      JsonFormat.humanReadable(file.size),
+      file.hash,
+      file.mimeType
+    )
+  }
+
+  implicit val format: OFormat[File] =
+    OFormat(reads, writes)
+
+  // We want different non-implicit writers en readers for the database
+  val internalReads: Reads[File]    = reads
+  val internalWrites: OWrites[File] = Json.writes[File]
+  val internalFormat: OFormat[File] = OFormat(internalReads, internalWrites)
 
 }
