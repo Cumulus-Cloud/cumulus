@@ -5,7 +5,7 @@ import * as LoginActions from "./LoginActions"
 import { GlobalState } from "store"
 import LoginForm from "./LoginForm"
 import { LoginState } from "./LoginReducer"
-import LinkButton from "../components/buttons/LinkButton"
+import LinkButton from "components/buttons/LinkButton"
 
 interface DispatchProps {
   onChange: (field: string, value: string) => void
