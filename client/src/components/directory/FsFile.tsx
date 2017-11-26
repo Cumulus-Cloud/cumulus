@@ -5,6 +5,8 @@ import * as Api from "services/Api"
 import FileIcon from "components/icons/FileIcon"
 import IconButton from "components/buttons/IconButton"
 import CancelIcon from "components/icons/CancelIcon"
+import Dropdown, { DropdownItem } from "components/Dropdown"
+import MoreHorizIcon from "components/icons/MoreHorizIcon"
 
 interface Props {
   fsNode: FsNode
@@ -23,9 +25,9 @@ export default class FsFile extends React.PureComponent<Props> {
           <a href={Api.getDownloadUrl(fsNode, true)}>{fsNode.path}</a>
         </div>
         <div className={styles.actions}>
-          <IconButton onClick={this.handleOnCancel}>
-            <CancelIcon />
-          </IconButton>
+          <Dropdown right renderAction={() => <IconButton><MoreHorizIcon /></IconButton>}>
+            <DropdownItem name="Delete" icon={<CancelIcon />} onClick={this.handleOnCancel} />
+          </Dropdown>
         </div>
       </div>
     )

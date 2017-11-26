@@ -1,9 +1,8 @@
 
 .content {
   width: 100%;
-  border-left: 1px solid #EEE;
-  border-right: 1px solid #EEE;
-  border-bottom: 1px solid #EEE;
+  display: flex;
+  padding: 10px
 }
 
 @media screen and (min-width: 400px) {
@@ -15,11 +14,22 @@
 
 .directories {
   width: 100%;
+  margin-top: 30px;
+  box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.07);
 }
 
 .actions {
   padding: 5px;
   display: flex;
   flex-direction: row;
-  border-bottom: 1px solid #EEE;
+}
+
+.actionBar {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--secondaryBg);
+  box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.07);
 }
