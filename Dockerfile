@@ -4,7 +4,11 @@ RUN apk add --no-cache bash
 
 COPY server/target/universal/stage /opt/cumulus
 
-VOLUME /usr/logs/cumulus
+ENV STORAGE_PATH /opt/cumulus/storage
+
+VOLUME [ "/opt/cumulus/log", "/opt/cumulus/storage" ]
+
+EXPOSE 9000
 
 WORKDIR /opt/cumulus
 
