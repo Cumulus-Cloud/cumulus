@@ -3,8 +3,8 @@
   display: flex;
   align-items: center;
   padding: 10px;
-  border-bottom: 1px solid #EEE;
   cursor: pointer;
+  background-color: var(--secondaryBg);
 }
 
 .fsDirectoryInfos {

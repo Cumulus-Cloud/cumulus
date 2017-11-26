@@ -46,12 +46,14 @@ class DirectoriesContainer extends React.PureComponent<Props> {
     return (
       <div className={styles.directoriesContainer}>
         <AppBar />
-        <div className={styles.actions}>
-          <NewFolderContainer />
-          <UploadContainer />
+        <div className={styles.actionBar}>
+          <Breadcrumb directory={directory} onPathClick={this.handleOnPathClick} />
+          <div className={styles.actions}>
+            <NewFolderContainer />
+            <UploadContainer />
+          </div>
         </div>
         <div className={styles.content}>
-          <Breadcrumb directory={directory} onPathClick={this.handleOnPathClick} />
           <div className={styles.directories}>
             {!!directory ? this.renderDirectories(directory) : <Loader />}
           </div>

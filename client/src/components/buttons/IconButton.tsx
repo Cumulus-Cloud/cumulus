@@ -14,7 +14,7 @@ export default class IconButton extends React.PureComponent<Props> {
       <div className={styles.iconButton} onClick={this.handleOnClick}>
         {loading
           ? <LoaderIcon />
-          : <div>{children}</div>
+          : children
         }
       </div>
     )

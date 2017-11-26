@@ -1,14 +1,16 @@
 .breadcrumb {
-  padding: 10px;
   display: flex;
   flex-direction: row;
-  border-bottom: 1px solid #EEE;
-  align-items: center;
   flex-wrap: wrap;
+  align-items: center;
+  padding: 9px 0;
 }
 
 .breadcrumbPathItemRoot {
-  padding: 5px;
+  margin-left: 7px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .breadcrumbPath {

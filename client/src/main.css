@@ -4,6 +4,7 @@
 
 body {
   font-family: Helvetica, Arial, sans-serif;
+  background-color: var(--primaryBg);
 }
 
 :root {
@@ -18,4 +19,7 @@ body {
   --secondaryText: #757575;
   --accent: #4caf50;
   --divider: #BDBDBD;
+
+  --primaryBg: #EEEEEE;
+  --secondaryBg: #ffffff;
 }
