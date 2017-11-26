@@ -44,7 +44,7 @@ export default class Breadcrumb extends React.PureComponent<Props> {
 
   renderRoot = () => {
     return (
-      <div className={styles.breadcrumbPathItemRoot}>
+      <div className={styles.breadcrumbPathItemRoot} onClick={this.handlePathOnClick("")}>
         <HomeIcon />
       </div>
     )
