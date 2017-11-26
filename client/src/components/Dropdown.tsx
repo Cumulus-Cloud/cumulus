@@ -47,7 +47,7 @@ export default class Dropdown extends React.Component<Props, State> {
         <div className={styles.action} onClick={this.onOpen}>
           {renderAction()}
         </div>
-        {open ? <ul className={itemsClasses}>{children}</ul> : null}
+        {open ? <ul className={itemsClasses} onClick={this.onClose}>{children}</ul> : null}
       </div>
     )
   }
