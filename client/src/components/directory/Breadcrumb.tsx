@@ -19,7 +19,7 @@ export default class Breadcrumb extends React.PureComponent<Props> {
     return (
       <div className={styles.breadcrumb}>
         {paths.length === 0
-          ? this.renderRoot()
+          ? this.renderRoot(false)
           : pathsWithRoot.map((path, i) => this.renderBreadcrumbPath(paths, len, path, i))
         }
       </div>
@@ -43,9 +43,9 @@ export default class Breadcrumb extends React.PureComponent<Props> {
 
   handlePathOnClick = (path: string) => () => this.props.onPathClick(`/fs/${path}`)
 
-  renderRoot = () => {
+  renderRoot = (clickable: boolean = true) => {
     return (
-      <IconButton className={styles.breadcrumbPathItemRoot} onClick={this.handlePathOnClick("")}>
+      <IconButton className={styles.breadcrumbPathItemRoot} onClick={clickable ? this.handlePathOnClick("") : undefined}>
         <HomeIcon />
       </IconButton>
     )
