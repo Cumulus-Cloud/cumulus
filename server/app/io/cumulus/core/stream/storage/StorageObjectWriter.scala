@@ -12,7 +12,6 @@ import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, ZipWith}
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.util.ByteString
 import io.cumulus.core.Logging
-import io.cumulus.core.stream.storage
 import io.cumulus.core.stream.storage.StorageObjectWriter.ObjectWriterState
 import io.cumulus.core.stream.utils.{Counter, DigestCalculator}
 import io.cumulus.core.utils.Base64
@@ -140,11 +139,11 @@ object StorageObjectWriter {
     * stage and the hash of the byte stream, and assume the this value are representative of the byte source.<br/>
     * <br/>
     * See
-    * [[storage.StorageObjectWriter#apply(io.cumulus.persistence.storage.StorageEngine, akka.stream.scaladsl.Flow, scala.concurrent.ExecutionContext)]]
+    * [[io.cumulus.core.stream.storage.StorageObjectWriter#apply(io.cumulus.persistence.storage.StorageEngine, akka.stream.scaladsl.Flow, scala.concurrent.ExecutionContext) StorageObjectWriter]]
     * if a transformation is applied to the stream (compression, ..).
     *
     * @param storageEngine The storage engine to use
-    * @see [[storage.StorageObjectWriter]]
+    * @see [[io.cumulus.core.stream.storage.StorageObjectWriter StorageObjectWriter]]
     */
   def apply(storageEngine: StorageEngine)(implicit ec: ExecutionContext): StorageObjectWriter =
     new StorageObjectWriter(storageEngine)
@@ -155,7 +154,7 @@ object StorageObjectWriter {
     *
     * @param storageEngine The storage engine to use
     * @param transformation The transformation to performs
-    * @see [[storage.StorageObjectWriter]]
+    * @see [[io.cumulus.core.stream.storage.StorageObjectWriter StorageObjectWriter]]
     */
   def apply(
     storageEngine: StorageEngine,
