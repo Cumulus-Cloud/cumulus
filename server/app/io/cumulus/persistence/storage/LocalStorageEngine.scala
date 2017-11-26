@@ -8,17 +8,12 @@ import scala.concurrent.{ExecutionContext, Future}
 import akka.stream.IOResult
 import akka.stream.scaladsl.{FileIO, Source}
 import akka.util.ByteString
+import io.cumulus.core.Settings
 import io.cumulus.core.validation.AppError
 
-sealed trait StorageEngineResult
+class LocalStorageEngine(implicit settings: Settings) extends StorageEngine {
 
-case class StorageEngineFailed(error: String, exception: Option[Throwable]) extends StorageEngineResult
-
-case class StorageEngineSuccessful() extends StorageEngineResult
-
-class LocalStorageEngine extends StorageEngine {
-
-  val storage: String = "tmp/"
+  val storage: String = settings.storageEngines.localStorageEngine.path
 
   override def name: String = "LocalStorageEngine"
 
