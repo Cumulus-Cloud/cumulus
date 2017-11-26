@@ -106,6 +106,18 @@ export function deleteFsNode(fsNode: FsNode): Promise<void> {
   }).then(success())
 }
 
+export function logout(): Promise<void> {
+  localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
+  sessionStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
+  return fetch("/users/logout", {
+    method: "POST"
+  }).then(() => {
+    history.replace("/login")
+  }).catch(() => {
+    history.replace("/login")
+  })
+}
+
 export function upload(path: string, file: Blob, progression?: (e: ProgressEvent) => void): Promise<FsNode> {
   return new Promise((resolve, reject) => {
     getAuthToken().then(token => {
