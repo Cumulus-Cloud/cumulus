@@ -5,6 +5,7 @@
   align-items: center;
   flex-direction: column;
   height: 100vh;
+  background-color: var(--secondaryBg);
 }
 
 .title {
