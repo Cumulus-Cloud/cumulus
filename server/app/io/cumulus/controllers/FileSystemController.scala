@@ -15,7 +15,7 @@ import io.cumulus.core.stream.storage.StorageReferenceWriter
 import io.cumulus.core.stream.utils.AESCipher
 import io.cumulus.core.utils.Range
 import io.cumulus.models.fs.Directory
-import io.cumulus.models.{Sharing, UserSession}
+import io.cumulus.models.{Path, Sharing, UserSession}
 import io.cumulus.persistence.services.{FsNodeService, SharingService}
 import io.cumulus.persistence.storage.StorageEngine
 import play.api.libs.json.Json
@@ -32,13 +32,13 @@ class FileSystemController(
   settings: Settings
 ) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with FileDownloader with BodyParserJson with BodyParserStream {
 
-  def get(path: String) = AuthenticatedAction.async { implicit request =>
+  def get(path: Path) = AuthenticatedAction.async { implicit request =>
     ApiResponse {
       fsNodeService.findNode(path)
     }
   }
 
-  def stream(path: String) = AuthenticatedAction.async { implicit request =>
+  def stream(path: Path) = AuthenticatedAction.async { implicit request =>
 
     // TODO duplicated
     val headerRange: (Long, Long) =
@@ -71,7 +71,7 @@ class FileSystemController(
     }
   }
 
-  def download(path: String, forceDownload: Option[Boolean]) = AuthenticatedAction.async { implicit request =>
+  def download(path: Path, forceDownload: Option[Boolean]) = AuthenticatedAction.async { implicit request =>
 
     fsNodeService.findFile(path).map {
       case Right(file) =>
@@ -91,7 +91,7 @@ class FileSystemController(
     }
   }
 
- def upload(path: String) = AuthenticatedAction.async(streamBody) { implicit request =>
+ def upload(path: Path) = AuthenticatedAction.async(streamBody) { implicit request =>
    ApiResponse {
      // Check that the file can be uploaded
      fsNodeService.checkForNewNode(path).flatMap {
@@ -136,14 +136,14 @@ class FileSystemController(
     }
   }
 
-  def create(path: String) = AuthenticatedAction.async { implicit request =>
+  def create(path: Path) = AuthenticatedAction.async { implicit request =>
     ApiResponse {
       val directory = Directory(request.user.id, path)
       fsNodeService.createDirectory(directory)
     }
   }
 
-  def update(path: String) = AuthenticatedAction.async(parseJson[FsOperation]) { implicit request =>
+  def update(path: Path) = AuthenticatedAction.async(parseJson[FsOperation]) { implicit request =>
     request.body match {
       case FsOperationCreate(_) =>
         val directory = Directory(request.user.id, path)
@@ -164,7 +164,7 @@ class FileSystemController(
     }
   }
 
-  def delete(path: String) = AuthenticatedAction.async { implicit request =>
+  def delete(path: Path) = AuthenticatedAction.async { implicit request =>
     ApiResponse {
       fsNodeService.deleteNode(path)
     }

@@ -8,6 +8,7 @@ import io.cumulus.controllers.utils.FileDownloader
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.stream.utils.AESCipher
 import io.cumulus.core.utils.{Base16, Base64, Range}
+import io.cumulus.models.Path
 import io.cumulus.persistence.services.SharingService
 import io.cumulus.persistence.storage.StorageEngine
 import play.api.mvc.{AbstractController, ControllerComponents}
@@ -20,7 +21,7 @@ class SharingController(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) with ApiUtils with FileDownloader {
 
-  def get(path: String, reference: String, key: String) = Action.async { implicit request =>
+  def get(path: Path, reference: String, key: String) = Action.async { implicit request =>
     ApiResponse {
       sharingService.findSharedNode(reference, path, key).map {
         case Right((_, node)) =>
@@ -34,7 +35,7 @@ class SharingController(
   def streamRoot(reference: String, key: String) =
     stream("/", reference, key)
 
-  def stream(path: String, reference: String, key: String) = Action.async { implicit request =>
+  def stream(path: Path, reference: String, key: String) = Action.async { implicit request =>
 
     // TODO duplicated
     val headerRange: (Long, Long) =
@@ -74,7 +75,7 @@ class SharingController(
   def downloadRoot(reference: String, key: String, forceDownload: Option[Boolean]) =
     download("/", reference, key, forceDownload)
 
-  def download(path: String, reference: String, key: String, forceDownload: Option[Boolean]) = Action.async { implicit request =>
+  def download(path: Path, reference: String, key: String, forceDownload: Option[Boolean]) = Action.async { implicit request =>
 
     sharingService.findSharedFile(reference, path, key).map {
       case Right((sharing, file)) =>
