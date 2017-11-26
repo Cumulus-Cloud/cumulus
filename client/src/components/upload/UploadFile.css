@@ -1,0 +1,23 @@
+
+.uploadFile {
+  width: 100%;
+  display: inline-flex;
+  padding: 10px;
+  align-items: center;
+
+  border-radius: 2px;
+  border: 1px solid var(--divider);
+}
+
+.infos {
+  padding: 0 10px;
+  height: 30px;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.name {
+  color: var(--primaryText);
+}

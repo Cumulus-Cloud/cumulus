@@ -6,8 +6,8 @@ import * as UploadActions from "upload/UploadActions"
 import Modal from "components/modals/Modal"
 import ModalActions from "components/modals/ModalActions"
 import FlatButton from "components/buttons/FlatButton"
-import UploadFile from "components/UploadFile"
-import ProgressBar from "components/progress/ProgressBar"
+import Uploader from "components/upload/Uploader"
+import UploadFile from "components/upload/UploadFile"
 
 interface DispatchProps {
   onWantUpload: () => void
@@ -39,31 +39,10 @@ class NewFolderContainer extends React.PureComponent<Props> {
   renderModal = () => {
     const { onWantUpload, files, loading, progress } = this.props
     return (
-      <Modal
-        title="Upload"
-        onClose={onWantUpload}
-      >
+      <Modal title="Upload" onClose={onWantUpload}>
         <div>
-          <ProgressBar progress={progress} indeterminate={progress === 100 && loading} />
-          <UploadFile onChange={this.handleOnChange} />
-          {files.map(file => {
-            return (
-              <div key={file.name}>
-                <div>
-                  Name : {file.name}
-                </div>
-                <div>
-                  Size : {file.size}
-                </div>
-                <div>
-                  Type : {file.type}
-                </div>
-                <div>
-                  Modification Date : {(file as any).lastModified}
-                </div>
-              </div>
-            )
-          })}
+          <Uploader onChange={this.handleOnChange} />
+          {files.map(file => <UploadFile key={file.name} progress={progress} loading={loading} file={file} />)}
         </div>
         <ModalActions>
           <FlatButton label="Cancel" onClick={onWantUpload} />
