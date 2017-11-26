@@ -51,7 +51,7 @@ object StorageReferenceWriter {
           )
 
           // Create the file with the provided information
-          File(
+          File.create(
             path = path,
             owner = user.id,
             mimeType = MimeType.detect(path.name),

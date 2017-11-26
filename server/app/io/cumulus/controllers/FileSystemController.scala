@@ -138,7 +138,7 @@ class FileSystemController(
 
   def create(path: Path) = AuthenticatedAction.async { implicit request =>
     ApiResponse {
-      val directory = Directory(request.user.id, path)
+      val directory = Directory.create(request.user.id, path)
       fsNodeService.createDirectory(directory)
     }
   }
@@ -146,7 +146,7 @@ class FileSystemController(
   def update(path: Path) = AuthenticatedAction.async(parseJson[FsOperation]) { implicit request =>
     request.body match {
       case FsOperationCreate(_) =>
-        val directory = Directory(request.user.id, path)
+        val directory = Directory.create(request.user.id, path)
         ApiResponse(fsNodeService.createDirectory(directory))
       case FsOperationMove(to) =>
         ApiResponse(fsNodeService.moveNode(path, to))

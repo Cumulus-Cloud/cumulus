@@ -52,4 +52,14 @@ object JsonFormat {
 
   }
 
+  def humanReadable(size: Long): String = {
+    if (size <= 0) {
+      "0 B"
+    } else {
+      val units: Array[String] = Array("B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+      val digitGroup: Int      = (Math.log10(size) / Math.log10(1024)).toInt
+      f"${size / Math.pow(1024, digitGroup)}%3.2f ${units(digitGroup)}"
+    }
+  }
+
 }
