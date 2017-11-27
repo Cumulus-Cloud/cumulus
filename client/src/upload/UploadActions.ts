@@ -23,11 +23,10 @@ export function onUploadFile(path: string, file: File): ThunkAction<void, Global
   return (dispatch) => {
     dispatch({ type: "OnUploadFile", file })
     const progress = (e: ProgressEvent) => {
-      console.log("onProgressUpload", e)
-      dispatch(onProgressUpload(e.loaded * 100 / e.total))
+      const progress = Math.round(e.loaded * 100 / e.total)
+      dispatch(onProgressUpload(progress))
     }
-
-    Api.upload(path, file, debounce(progress, 500))
+    Api.upload(path, file, debounce(progress, 30))
       .then(fsNode => dispatch(onUploadFileSuccess(fsNode)))
       .catch(error => dispatch(onUploadFileError(error)))
   }
@@ -38,8 +37,8 @@ export function onUploadFileSuccess(fsNode: FsNode): OnUploadFileSuccess {
   return { type: "OnUploadFileSuccess", fsNode }
 }
 
-export type OnUploadFileError = { type: "OnUploadFileError", error: any }
-export function onUploadFileError(error: any): OnUploadFileError {
+export type OnUploadFileError = { type: "OnUploadFileError", error: Api.ApiError }
+export function onUploadFileError(error: Api.ApiError): OnUploadFileError {
   return { type: "OnUploadFileError", error }
 }
 

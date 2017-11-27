@@ -77,7 +77,6 @@ export function signup(login: string, email: string, password: string): Promise<
   })
 }
 
-
 export function me(): Promise<User> {
   return withAuth(`/accounts/me`, {
     method: "GET",
@@ -104,6 +103,19 @@ export function deleteFsNode(fsNode: FsNode): Promise<void> {
     method: "DELETE",
     headers: HEADERS,
   }).then(success())
+}
+
+export function logout(): Promise<void> {
+  localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
+  sessionStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
+  return fetch("/users/logout", {
+    method: "POST",
+    credentials: "same-origin",
+  }).then(() => {
+    history.replace("/login")
+  }).catch(() => {
+    history.replace("/login")
+  })
 }
 
 export function upload(path: string, file: Blob, progression?: (e: ProgressEvent) => void): Promise<FsNode> {

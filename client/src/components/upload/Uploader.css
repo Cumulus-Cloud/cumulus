@@ -1,0 +1,36 @@
+.uploader {
+  position: relative;
+  border-radius: 3px;
+  border: 2px dashed var(--primary);
+  background-color: var(--primaryBg);
+  margin-bottom: 20px;
+}
+
+.uploader:hover {
+  background-color: var(--lightPrimary);
+}
+
+.hover {
+  background-color: var(--lightPrimary);
+}
+
+.input {
+  width: 100%;
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  cursor: pointer;
+}
+
+.label {
+  width: 100%;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all .2s;
+  cursor: pointer;
+}

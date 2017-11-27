@@ -15,6 +15,20 @@ interface Props {
 }
 
 export default class SignupForm extends React.PureComponent<Props> {
+  componentWillMount() {
+    document.addEventListener("keydown", this.onKeyPressHandler, false)
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener("keydown", this.onKeyPressHandler, false)
+  }
+
+  onKeyPressHandler = (e: KeyboardEvent) => {
+    if (e.code === "Enter") {
+      this.handleSubmit()
+    }
+  }
+
   render() {
     const { login, email, password, formErrors, loading } = this.props
     return (

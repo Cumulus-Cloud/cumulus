@@ -1,17 +1,23 @@
 import * as React from "react"
 import * as styles from "./IconButton.css"
 import LoaderIcon from "components/icons/LoaderIcon"
+import classNames from "utils/ClassNames"
 
 interface Props {
   loading?: boolean
   onClick?: () => void
+  className?: string
 }
 
 export default class IconButton extends React.PureComponent<Props> {
   render() {
-    const { loading = false, children } = this.props
+    const { className, children, loading = false } = this.props
+    const classes = classNames({
+      [styles.iconButton]: true,
+      [className || ""]: !!className,
+    })
     return (
-      <div className={styles.iconButton} onClick={this.handleOnClick}>
+      <div className={classes} onClick={this.handleOnClick}>
         {loading
           ? <LoaderIcon />
           : children

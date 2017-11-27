@@ -18,6 +18,7 @@ body {
   --primaryText: #212121;
   --secondaryText: #757575;
   --accent: #4caf50;
+  --accentLight: rgba(76, 175, 79, 0.369);
   --divider: #BDBDBD;
 
   --primaryBg: #EEEEEE;

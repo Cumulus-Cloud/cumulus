@@ -3,14 +3,11 @@
   flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
-  padding: 9px 0;
+  padding: 9px;
 }
 
 .breadcrumbPathItemRoot {
-  margin-left: 7px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  padding: 1px;
 }
 
 .breadcrumbPath {

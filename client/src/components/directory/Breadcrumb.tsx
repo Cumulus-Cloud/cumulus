@@ -3,6 +3,7 @@ import * as React from "react"
 import { FsNode } from "models/FsNode"
 import HomeIcon from "components/icons/HomeIcon"
 import ArrowRightIcon from "components/icons/ArrowRightIcon"
+import IconButton from "components/buttons/IconButton"
 
 interface Props {
   directory?: FsNode
@@ -18,7 +19,7 @@ export default class Breadcrumb extends React.PureComponent<Props> {
     return (
       <div className={styles.breadcrumb}>
         {paths.length === 0
-          ? this.renderRoot()
+          ? this.renderRoot(false)
           : pathsWithRoot.map((path, i) => this.renderBreadcrumbPath(paths, len, path, i))
         }
       </div>
@@ -42,11 +43,11 @@ export default class Breadcrumb extends React.PureComponent<Props> {
 
   handlePathOnClick = (path: string) => () => this.props.onPathClick(`/fs/${path}`)
 
-  renderRoot = () => {
+  renderRoot = (clickable: boolean = true) => {
     return (
-      <div className={styles.breadcrumbPathItemRoot} onClick={this.handlePathOnClick("")}>
+      <IconButton className={styles.breadcrumbPathItemRoot} onClick={clickable ? this.handlePathOnClick("") : undefined}>
         <HomeIcon />
-      </div>
+      </IconButton>
     )
   }
 }
