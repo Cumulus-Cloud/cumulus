@@ -1,6 +1,6 @@
 import * as React from "react"
 import * as styles from "./FlatButton.css"
-import LoaderIcon from "components/icons/LoaderIcon"
+import LoaderIcon from "icons/LoaderIcon"
 
 export type FlatButtonType = "default" | "primary" | "accent" | "link"
 

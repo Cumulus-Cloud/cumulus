@@ -1,6 +1,6 @@
 import * as React from "react"
 import * as styles from "./IconButton.css"
-import LoaderIcon from "components/icons/LoaderIcon"
+import LoaderIcon from "icons/LoaderIcon"
 import classNames from "utils/ClassNames"
 
 interface Props {

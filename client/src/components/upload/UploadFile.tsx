@@ -1,9 +1,9 @@
 import * as styles from "./UploadFile.css"
 import * as React from "react"
 import ProgressBar from "components/progress/ProgressBar"
-import FileIcon from "components/icons/FileIcon"
+import FileIcon from "icons/FileIcon"
 import IconButton from "components/buttons/IconButton"
-import CancelIcon from "components/icons/CancelIcon"
+import CancelIcon from "icons/CancelIcon"
 
 interface Props {
   progress: number
