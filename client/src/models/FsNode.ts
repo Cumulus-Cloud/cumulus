@@ -1,22 +1,40 @@
-import { object, string, optional, array, union, isoDate, boolean, recursion } from "validation.ts"
+import { object, string, number, optional, array, union, isoDate, boolean, recursion, literal } from "validation.ts"
 
 export const NodeTypeValidator = union("DIRECTORY", "FILE")
 export type NodeType = typeof NodeTypeValidator.T
 
-export type FsNode = {
+export const FsFileValidator = object({
   id: string,
+  nodeType: literal("FILE"),
   path: string,
-  nodeType: NodeType,
+  name: string,
   creation: string,
   modification: string,
   hidden: boolean,
   owner: string,
-  content: FsNode[],
+  size: number,
+  humanReadableSize: string,
+  hash: string,
+  mimeType: string,
+})
+export type FsFile = typeof FsFileValidator.T
+
+export interface FsDirectory {
+  id: string
+  nodeType: "DIRECTORY"
+  path: string
+  name: string
+  creation: string
+  modification: string
+  hidden: boolean
+  owner: string
+  content: FsNode[]
 }
 
-export const FsNodeValidator = recursion<FsNode>(self => object({
+export const FsDirectoryValidator = recursion<FsFile | FsDirectory>(self => object({
   id: string,
   path: string,
+  name: string,
   nodeType: NodeTypeValidator,
   creation: isoDate,
   modification: isoDate,
@@ -24,3 +42,15 @@ export const FsNodeValidator = recursion<FsNode>(self => object({
   owner: string,
   content: optional(array(self)),
 }))
+
+export const FsNodeValidator = union(FsDirectoryValidator, FsFileValidator)
+
+export type FsNode = typeof FsNodeValidator.T
+
+export function isFile(fsNode: FsNode): fsNode is FsFile {
+  return (fsNode as FsFile).nodeType === "FILE"
+}
+
+export function isDirectory(fsNode: FsNode): fsNode is FsDirectory {
+  return (fsNode as FsDirectory).nodeType === "DIRECTORY"
+}
