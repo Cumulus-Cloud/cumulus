@@ -1,6 +1,6 @@
 import * as React from "react"
 import * as styles from "./Loader.css"
-import LoaderIcon from "components/icons/LoaderIcon"
+import LoaderIcon from "icons/LoaderIcon"
 
 export default function Loader(props: {}): JSX.Element {
   return (

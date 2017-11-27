@@ -1,8 +1,8 @@
 import * as styles from "./Breadcrumb.css"
 import * as React from "react"
 import { FsNode } from "models/FsNode"
-import HomeIcon from "components/icons/HomeIcon"
-import ArrowRightIcon from "components/icons/ArrowRightIcon"
+import HomeIcon from "icons/HomeIcon"
+import ArrowRightIcon from "icons/ArrowRightIcon"
 import IconButton from "components/buttons/IconButton"
 
 interface Props {

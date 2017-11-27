@@ -1,7 +1,7 @@
 import * as React from "react"
 import * as styles from "./FsDirectory.css"
 import { FsNode } from "models/FsNode"
-import DirectoryIcon from "components/icons/DirectoryIcon"
+import DirectoryIcon from "icons/DirectoryIcon"
 
 interface Props {
   fsNode: FsNode

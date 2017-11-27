@@ -2,11 +2,11 @@ import * as styles from "./FsFile.css"
 import * as React from "react"
 import { FsNode } from "models/FsNode"
 import * as Api from "services/Api"
-import FileIcon from "components/icons/FileIcon"
+import FileIcon from "icons/FileIcon"
 import IconButton from "components/buttons/IconButton"
-import CancelIcon from "components/icons/CancelIcon"
+import CancelIcon from "icons/CancelIcon"
 import Dropdown, { DropdownItem } from "components/menus/Dropdown"
-import MoreHorizIcon from "components/icons/MoreHorizIcon"
+import MoreHorizIcon from "icons/MoreHorizIcon"
 
 interface Props {
   fsNode: FsNode
