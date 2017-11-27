@@ -1,19 +1,20 @@
 import * as React from "react"
-import * as styles from "login/LoginForm.css"
+import * as styles from "auth/signup/SignupForm.css"
 import Input from "components/inputs/Input"
 import Button from "components/buttons/Button"
 import { ApiError } from "services/Api"
 
 interface Props {
   login: string
+  email: string
   password: string
   loading: boolean
   formErrors?: ApiError
   onChange: (field: string, value: string) => void
-  onSubmit: (login: string, password: string) => void
+  onSubmit: (login: string, email: string, password: string) => void
 }
 
-export default class LoginForm extends React.PureComponent<Props> {
+export default class SignupForm extends React.PureComponent<Props> {
   componentWillMount() {
     document.addEventListener("keydown", this.onKeyPressHandler, false)
   }
@@ -29,15 +30,22 @@ export default class LoginForm extends React.PureComponent<Props> {
   }
 
   render() {
-    const { login, password, formErrors, loading } = this.props
+    const { login, email, password, formErrors, loading } = this.props
     return (
-      <div className={styles.loginForm}>
+      <div className={styles.signupForm}>
         <Input
           type="text"
           label="Login"
           value={login}
           error={formErrors && formErrors.errors && formErrors.errors.login && formErrors.errors.login.map(e => e.message).join(", ")}
           onChange={this.handleChange("login")}
+        />
+        <Input
+          type="email"
+          label="Email"
+          value={email}
+          error={formErrors && formErrors.errors && formErrors.errors.email && formErrors.errors.email.map(e => e.message).join(", ")}
+          onChange={this.handleChange("email")}
         />
         <Input
           type="password"
@@ -47,7 +55,7 @@ export default class LoginForm extends React.PureComponent<Props> {
           onChange={this.handleChange("password")}
         />
         <div className={styles.action}>
-          <Button label="Login" loading={loading} onClick={this.handleSubmit} />
+          <Button label="Signup" loading={loading} onClick={this.handleSubmit} />
           <div className={styles.formError}>
             {formErrors && formErrors.message ? formErrors.message : null}
           </div>
@@ -59,7 +67,7 @@ export default class LoginForm extends React.PureComponent<Props> {
   handleChange = (field: string) => (value: string) => this.props.onChange(field, value)
 
   handleSubmit = () => {
-    const { login, password, onSubmit } = this.props
-    onSubmit(login, password)
+    const { login, email, password, onSubmit } = this.props
+    onSubmit(login, email, password)
   }
 }

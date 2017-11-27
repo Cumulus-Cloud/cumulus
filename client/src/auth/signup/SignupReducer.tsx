@@ -1,4 +1,4 @@
-import { SignupAction } from "signup/SignupActions"
+import { SignupAction } from "./SignupActions"
 import { ApiError } from "services/Api"
 
 export interface SignupState {

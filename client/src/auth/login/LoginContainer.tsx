@@ -1,5 +1,5 @@
 import * as React from "react"
-import * as styles from "login/LoginContainer.css"
+import * as styles from "auth/login/LoginContainer.css"
 import { connect, Dispatch } from "react-redux"
 import * as LoginActions from "./LoginActions"
 import { GlobalState } from "store"

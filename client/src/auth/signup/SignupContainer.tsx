@@ -1,10 +1,10 @@
 import * as React from "react"
-import * as styles from "signup/SignupContainer.css"
+import * as styles from "./SignupContainer.css"
 import { connect, Dispatch } from "react-redux"
-import * as SignupActions from "signup/SignupActions"
+import * as SignupActions from "auth/signup/SignupActions"
 import { GlobalState } from "store"
-import SignupForm from "signup/SignupForm"
-import { SignupState } from "signup/SignupReducer"
+import SignupForm from "auth/signup/SignupForm"
+import { SignupState } from "auth/signup/SignupReducer"
 import LinkButton from "components/buttons/LinkButton"
 
 interface DispatchProps {
