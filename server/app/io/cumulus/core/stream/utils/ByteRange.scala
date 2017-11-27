@@ -65,4 +65,7 @@ object ByteRange {
   def apply(range: Range): ByteRange =
     new ByteRange(range)
 
+  def apply(from: Long, to: Long): ByteRange =
+    ByteRange(Range(from, to))
+
 }
