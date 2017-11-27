@@ -33,7 +33,7 @@ class NewFolderContainer extends React.PureComponent<Props> {
   }
 
   renderModal = () => {
-    const { newFolderName, onNewFolderNameChange, onWantCreateNewFolder } = this.props
+    const { error, newFolderName, onNewFolderNameChange, onWantCreateNewFolder } = this.props
     return (
       <Modal
         title={Messages("ui.createNewFolder")}
@@ -41,7 +41,9 @@ class NewFolderContainer extends React.PureComponent<Props> {
       >
         <NewFolderFrom
           name={newFolderName}
+          error={error}
           onChange={onNewFolderNameChange}
+          onSubmit={this.handleOnSubmit}
         />
         <ModalActions>
           <FlatButton label={Messages("ui.cancel")} onClick={onWantCreateNewFolder} />

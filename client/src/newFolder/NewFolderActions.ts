@@ -38,8 +38,8 @@ export const onCreateNewFolderSuccess = (newFolder: FsNode): OnCreateNewFolderSu
   newFolder
 })
 
-export type OnCreateNewFolderError = { type: "OnCreateNewFolderError", error: any }
-export const onCreateNewFolderError = (error: any): OnCreateNewFolderError => ({
+export type OnCreateNewFolderError = { type: "OnCreateNewFolderError", error: Api.ApiError }
+export const onCreateNewFolderError = (error: Api.ApiError): OnCreateNewFolderError => ({
   type: "OnCreateNewFolderError",
   error
 })
