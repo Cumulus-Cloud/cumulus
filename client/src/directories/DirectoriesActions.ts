@@ -40,9 +40,9 @@ export const onFetchDirectorySuccess = (directory: FsNode): OnFetchDirectorySucc
 
 export type OnFetchDirectoryError = {
   type: "OnFetchDirectoryError"
-  error: any
+  error: Api.ApiError
 }
-export const onFetchDirectoryError = (error: any): OnFetchDirectoryError => ({
+export const onFetchDirectoryError = (error: Api.ApiError): OnFetchDirectoryError => ({
   type: "OnFetchDirectoryError",
   error
 })

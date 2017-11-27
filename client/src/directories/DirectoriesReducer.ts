@@ -1,11 +1,12 @@
 import { DirectoriesAction } from "directories/DirectoriesActions"
-import { FsNode } from "models/FsNode"
+import { FsNode, isDirectory } from "models/FsNode"
+import { ApiError } from "services/Api"
 
 export interface DirectoriesState {
   directory?: FsNode
   loading: boolean
   deleteLoading?: string
-  error?: any
+  error?: ApiError
 }
 
 const initState: DirectoriesState = {
@@ -19,7 +20,7 @@ export const DirectoriesReducer = (state: DirectoriesState = initState, action: 
     case "OnFetchDirectorySuccess": return { ...state, directory: action.directory, loading: false }
     case "OnFetchDirectoryError": return { ...state, error: action.error, loading: false }
     case "OnCreateNewFolderSuccess": {
-      if (state.directory) {
+      if (state.directory && isDirectory(state.directory)) {
         return { ...state, directory: { ...state.directory, content: [...state.directory.content, action.newFolder] } }
       } else {
         return state
@@ -28,7 +29,7 @@ export const DirectoriesReducer = (state: DirectoriesState = initState, action: 
 
     case "OnDeleteFsNode": return { ...state, deleteLoading: action.fsNode.id }
     case "OnDeleteFsNodeSuccess": {
-      if (state.directory) {
+      if (state.directory && isDirectory(state.directory)) {
         const newFsNode = { ...state.directory, content: state.directory.content.filter(fsNode => fsNode.id !== action.fsNode.id) }
         return { ...state, directory: newFsNode, deleteLoading: undefined }
       } else {
@@ -37,7 +38,7 @@ export const DirectoriesReducer = (state: DirectoriesState = initState, action: 
     }
     case "OnDeleteFsNodeError": return { ...state, error: action.error, deleteLoading: undefined }
     case "OnUploadFileSuccess": {
-      if (state.directory) {
+      if (state.directory && isDirectory(state.directory)) {
         const newFsNode = { ...state.directory, content: [...state.directory.content, action.fsNode] }
         return { ...state, directory: newFsNode }
       } else {

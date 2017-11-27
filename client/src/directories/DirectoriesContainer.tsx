@@ -12,7 +12,7 @@ import NewFolderContainer from "newFolder/NewFolderContainer"
 import UploadContainer from "upload/UploadContainer"
 import FsDirectory from "components/directory/FsDirectory"
 import FsFile from "components/directory/FsFile"
-import { FsNode } from "models/FsNode"
+import { FsNode, isDirectory } from "models/FsNode"
 import Empty from "components/directory/Empty"
 import Loader from "components/directory/Loader"
 
@@ -63,9 +63,13 @@ class DirectoriesContainer extends React.PureComponent<Props> {
   }
 
   renderDirectories = (fsNode: FsNode) => {
-    const content = fsNode.content || []
-    if (content.length > 0) {
-      return content.map(this.renderFsNode)
+    if (isDirectory(fsNode)) {
+      const content = fsNode.content || []
+      if (content.length > 0) {
+        return content.map(this.renderFsNode)
+      } else {
+        return <Empty />
+      }
     } else {
       return <Empty />
     }

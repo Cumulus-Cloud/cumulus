@@ -1,6 +1,6 @@
 import * as styles from "./FsFile.css"
 import * as React from "react"
-import { FsNode } from "models/FsNode"
+import { FsFile as FsFileModel } from "models/FsNode"
 import * as Api from "services/Api"
 import FileIcon from "icons/FileIcon"
 import IconButton from "components/buttons/IconButton"
@@ -9,8 +9,8 @@ import Dropdown, { DropdownItem } from "components/menus/Dropdown"
 import MoreHorizIcon from "icons/MoreHorizIcon"
 
 interface Props {
-  fsNode: FsNode
-  onCancel: (fsNode: FsNode) => void
+  fsNode: FsFileModel
+  onCancel: (fsNode: FsFileModel) => void
 }
 
 export default class FsFile extends React.PureComponent<Props> {
@@ -22,7 +22,7 @@ export default class FsFile extends React.PureComponent<Props> {
           <FileIcon />
         </div>
         <div className={styles.fsFileInfos}>
-          <a href={Api.getDownloadUrl(fsNode, true)}>{fsNode.path}</a>
+          <a href={Api.getDownloadUrl(fsNode, true)}>{fsNode.name}</a>
         </div>
         <div className={styles.actions}>
           <Dropdown right renderAction={() => <IconButton><MoreHorizIcon /></IconButton>}>
