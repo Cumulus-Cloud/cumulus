@@ -14,10 +14,10 @@ export default class AppBar extends React.PureComponent<Props> {
   render() {
     return (
       <div className={styles.appBar}>
-        <div className={styles.appTitle}>Cumulus</div>
+        <div className={styles.appTitle}>{Messages("ui.appName")}</div>
         <div className={styles.actions}>
           <Dropdown right renderAction={() => <IconButton><MoreVertiIcon color="#FFFFFF" /></IconButton>}>
-            <DropdownItem name="Logout" icon={<LogoutIcon />} onClick={this.handleOnLogout} />
+            <DropdownItem name={Messages("ui.auth.logout")} icon={<LogoutIcon />} onClick={this.handleOnLogout} />
           </Dropdown>
         </div>
       </div>

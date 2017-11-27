@@ -44,7 +44,7 @@ export default class Uploader extends React.Component<Props, State> {
           onDragEnter={this.handleOnDragEnter}
           onDragLeave={this.handleOnDragLeave}
         />
-        <label className={labelClasses} htmlFor="uploader-input">Uploader</label>
+        <label className={labelClasses} htmlFor="uploader-input">{Messages("ui.uploader")}</label>
       </div>
     )
   }

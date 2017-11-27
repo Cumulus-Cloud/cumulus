@@ -19,7 +19,7 @@ class LoginContainer extends React.PureComponent<Props> {
     const { login, password, formErrors, loading, onChange, onSubmit } = this.props
     return (
       <div className={styles.loginContainer}>
-        <h2 className={styles.title}>Cumulus</h2>
+        <h2 className={styles.title}>{Messages("ui.appName")}</h2>
         <LoginForm
           login={login}
           password={password}
@@ -28,7 +28,7 @@ class LoginContainer extends React.PureComponent<Props> {
           onChange={onChange}
           onSubmit={onSubmit}
         />
-        <LinkButton href="#/signup">Signup</LinkButton>
+        <LinkButton href="#/signup">{Messages("ui.auth.signup")}</LinkButton>
       </div>
     )
   }

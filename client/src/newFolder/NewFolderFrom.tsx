@@ -12,7 +12,7 @@ export default class NewFolderFrom extends React.PureComponent<Props> {
     const { name, onChange } = this.props
     return (
       <div className={styles.newFolderFrom}>
-        <Input label="Folder Name" value={name} onChange={onChange} />
+        <Input label={Messages("ui.folderName")} value={name} onChange={onChange} />
       </div>
     )
   }
