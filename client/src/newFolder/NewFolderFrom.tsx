@@ -30,7 +30,7 @@ export default class NewFolderFrom extends React.PureComponent<Props> {
     return (
       <div className={styles.newFolderFrom}>
         <Input
-          label="Folder Name"
+          label={Messages("ui.folderName")}
           value={name}
           onChange={onChange}
           error={error && error.errors && error.errors.path && error.errors.path.map(e => e.message).join()}

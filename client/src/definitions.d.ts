@@ -7,3 +7,4 @@ declare module '*.css' {
   export = classNames
 }
 
+declare function Messages(key: string, ...args: string[]): string

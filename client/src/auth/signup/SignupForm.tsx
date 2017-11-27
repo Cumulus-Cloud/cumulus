@@ -35,27 +35,27 @@ export default class SignupForm extends React.PureComponent<Props> {
       <div className={styles.signupForm}>
         <Input
           type="text"
-          label="Login"
+          label={Messages("ui.auth.login")}
           value={login}
           error={formErrors && formErrors.errors && formErrors.errors.login && formErrors.errors.login.map(e => e.message).join(", ")}
           onChange={this.handleChange("login")}
         />
         <Input
           type="email"
-          label="Email"
+          label={Messages("ui.auth.email")}
           value={email}
           error={formErrors && formErrors.errors && formErrors.errors.email && formErrors.errors.email.map(e => e.message).join(", ")}
           onChange={this.handleChange("email")}
         />
         <Input
           type="password"
-          label="Password"
+          label={Messages("ui.auth.password")}
           value={password}
           error={formErrors && formErrors.errors && formErrors.errors.password && formErrors.errors.password.map(e => e.message).join(", ")}
           onChange={this.handleChange("password")}
         />
         <div className={styles.action}>
-          <Button label="Signup" loading={loading} onClick={this.handleSubmit} />
+          <Button label={Messages("ui.auth.signup")} loading={loading} onClick={this.handleSubmit} />
           <div className={styles.formError}>
             {formErrors && formErrors.message ? formErrors.message : null}
           </div>

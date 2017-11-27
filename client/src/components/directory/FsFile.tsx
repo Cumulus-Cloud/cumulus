@@ -26,7 +26,7 @@ export default class FsFile extends React.PureComponent<Props> {
         </div>
         <div className={styles.actions}>
           <Dropdown right renderAction={() => <IconButton><MoreHorizIcon /></IconButton>}>
-            <DropdownItem name="Delete" icon={<CancelIcon />} onClick={this.handleOnCancel} />
+            <DropdownItem name={Messages("ui.delete")} icon={<CancelIcon />} onClick={this.handleOnCancel} />
           </Dropdown>
         </div>
       </div>

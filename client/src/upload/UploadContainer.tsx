@@ -30,7 +30,7 @@ class NewFolderContainer extends React.PureComponent<Props> {
     const { wantUpload, onWantUpload } = this.props
     return (
       <div>
-        <FlatButton label="Upload" onClick={onWantUpload} />
+        <FlatButton label={Messages("ui.upload")} onClick={onWantUpload} />
         {wantUpload ? this.renderModal() : null}
       </div>
     )
@@ -39,14 +39,14 @@ class NewFolderContainer extends React.PureComponent<Props> {
   renderModal = () => {
     const { onWantUpload, files, loading, progress } = this.props
     return (
-      <Modal title="Upload" onClose={onWantUpload}>
+      <Modal title={Messages("ui.upload")} onClose={onWantUpload}>
         <div>
           <Uploader onChange={this.handleOnChange} />
           {files.map(file => <UploadFile key={file.name} progress={progress} loading={loading} file={file} />)}
         </div>
         <ModalActions>
-          <FlatButton label="Cancel" onClick={onWantUpload} />
-          <FlatButton label="Upload" loading={loading} onClick={this.handleOnUpload} />
+          <FlatButton label={Messages("ui.cancel")} onClick={onWantUpload} />
+          <FlatButton label={Messages("ui.upload")} loading={loading} onClick={this.handleOnUpload} />
         </ModalActions>
       </Modal>
     )
