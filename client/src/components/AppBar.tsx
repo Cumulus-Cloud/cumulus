@@ -1,16 +1,12 @@
 import * as React from "react"
 import * as styles from "./AppBar.css"
 import IconButton from "components/buttons/IconButton"
-import Dropdown, { DropdownItem } from "components/Dropdown"
+import Dropdown, { DropdownItem } from "components/menus/Dropdown"
 import MoreVertiIcon from "components/icons/MoreVertiIcon"
 import LogoutIcon from "components/icons/LogoutIcon"
 import * as Api from "services/Api"
 
-interface Props {
-
-}
-
-export default class AppBar extends React.PureComponent<Props> {
+export default class AppBar extends React.PureComponent<{}> {
   render() {
     return (
       <div className={styles.appBar}>

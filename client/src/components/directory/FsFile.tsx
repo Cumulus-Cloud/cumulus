@@ -5,7 +5,7 @@ import * as Api from "services/Api"
 import FileIcon from "components/icons/FileIcon"
 import IconButton from "components/buttons/IconButton"
 import CancelIcon from "components/icons/CancelIcon"
-import Dropdown, { DropdownItem } from "components/Dropdown"
+import Dropdown, { DropdownItem } from "components/menus/Dropdown"
 import MoreHorizIcon from "components/icons/MoreHorizIcon"
 
 interface Props {

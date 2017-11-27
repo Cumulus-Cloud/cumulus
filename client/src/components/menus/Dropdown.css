@@ -1,11 +1,6 @@
 
 .dropdown {
-  
   position: relative;
-}
-
-.action {
-
 }
 
 .items {
@@ -27,7 +22,6 @@
 .itemsLeft {
   left: 0;
 }
-
 
 .item {
   width: 100%;
