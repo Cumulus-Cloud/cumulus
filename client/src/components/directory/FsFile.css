@@ -8,10 +8,6 @@
   background-color: var(--secondaryBg);
 }
 
-.icon {
-
-}
-
 .actions {
   padding-right: 10px;
 }
@@ -20,4 +16,9 @@
   flex: 1;
   padding-left: 10px;
   padding-right: 10px;
+}
+
+.name {
+  color: var(--primaryText);
+  text-decoration: none;
 }

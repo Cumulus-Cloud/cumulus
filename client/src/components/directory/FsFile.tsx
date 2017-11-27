@@ -18,11 +18,9 @@ export default class FsFile extends React.PureComponent<Props> {
     const { fsNode } = this.props
     return (
       <div className={styles.fsFile}>
-        <div className={styles.icon}>
-          <FileIcon />
-        </div>
+        <FileIcon />
         <div className={styles.fsFileInfos}>
-          <a href={Api.getDownloadUrl(fsNode, true)}>{fsNode.name}</a>
+          <a className={styles.name} href={Api.getDownloadUrl(fsNode, true)}>{fsNode.name}</a>
         </div>
         <div className={styles.actions}>
           <Dropdown right renderAction={() => <IconButton><MoreHorizIcon /></IconButton>}>
