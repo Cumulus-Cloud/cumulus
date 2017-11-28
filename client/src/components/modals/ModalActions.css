@@ -1,5 +1,6 @@
 .modalActions {
   display: flex;
   justify-content: right;
-  padding-top: 10px;
+  padding: 8px 24px;
+  background-color: var(--secondaryBg);
 }

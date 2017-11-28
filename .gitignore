@@ -25,9 +25,6 @@ test-result
 /.settings
 /RUNNING_PID
 
-# Because we use yarn
-client/package-lock.json
-
 # Server runtime directories
 /server/tmp/
 /server/log/

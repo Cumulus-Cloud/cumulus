@@ -3,6 +3,7 @@ import * as styles from "./DirectoriesContainer.css"
 import { connect, Dispatch } from "react-redux"
 import { match as RouterMatch } from "react-router"
 import * as DirectoriesActions from "directories/DirectoriesActions"
+import * as PreviewActions from "preview/PreviewActions"
 import { GlobalState } from "store"
 import { DirectoriesState } from "directories/DirectoriesReducer"
 import AppBar from "components/AppBar"
@@ -10,15 +11,17 @@ import Breadcrumb from "components/directory/Breadcrumb"
 import { history } from "store"
 import NewFolderContainer from "newFolder/NewFolderContainer"
 import UploadContainer from "upload/UploadContainer"
+import PreviewContainer from "preview/PreviewContainer"
 import FsDirectory from "components/directory/FsDirectory"
 import FsFile from "components/directory/FsFile"
-import { FsNode, isDirectory } from "models/FsNode"
+import { FsNode, FsFile as FsFileModel , isDirectory } from "models/FsNode"
 import Empty from "components/directory/Empty"
 import Loader from "components/directory/Loader"
 
 interface DispatchProps {
   onFetchDirectory: (path: string) => void
   onDeleteFsNode: (fsNode: FsNode) => void
+  onShowPreview: (fsNode?: FsFileModel) => void
 }
 
 interface Params {
@@ -57,6 +60,7 @@ class DirectoriesContainer extends React.PureComponent<Props> {
           <div className={styles.directories}>
             {!!directory ? this.renderDirectories(directory) : <Loader />}
           </div>
+          <PreviewContainer />
         </div>
       </div>
     )
@@ -79,7 +83,7 @@ class DirectoriesContainer extends React.PureComponent<Props> {
     if (fsNode.nodeType === "DIRECTORY") {
       return <FsDirectory key={fsNode.id} fsNode={fsNode} onClick={this.handleDirectoryOnClick} />
     } else {
-      return <FsFile key={fsNode.id} fsNode={fsNode} onCancel={this.props.onDeleteFsNode} />
+      return <FsFile key={fsNode.id} fsNode={fsNode} onCancel={this.props.onDeleteFsNode} onShowPreview={this.props.onShowPreview} />
     }
   }
 
@@ -101,6 +105,7 @@ const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
     onFetchDirectory: path => dispatch(DirectoriesActions.onFetchDirectory(path)),
     onDeleteFsNode: fsNode => dispatch(DirectoriesActions.onDeleteFsNode(fsNode)),
+    onShowPreview: fsFile => dispatch(PreviewActions.onShowPreview(fsFile))
   }
 }
 

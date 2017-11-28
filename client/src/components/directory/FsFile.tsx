@@ -11,6 +11,7 @@ import MoreHorizIcon from "icons/MoreHorizIcon"
 interface Props {
   fsNode: FsFileModel
   onCancel: (fsNode: FsFileModel) => void
+  onShowPreview: (fsNode: FsFileModel) => void
 }
 
 export default class FsFile extends React.PureComponent<Props> {
@@ -20,7 +21,10 @@ export default class FsFile extends React.PureComponent<Props> {
       <div className={styles.fsFile}>
         <FileIcon />
         <div className={styles.fsFileInfos}>
-          <a className={styles.name} href={Api.getDownloadUrl(fsNode, true)}>{fsNode.name}</a>
+          {fsNode.name.endsWith(".mp4")
+            ? <div className={styles.name} onClick={this.handleOnClick}>{fsNode.name}</div>
+            : <a className={styles.name} href={Api.getDownloadUrl(fsNode, true)}>{fsNode.name}</a>
+          }
         </div>
         <div className={styles.actions}>
           <Dropdown right renderAction={() => <IconButton><MoreHorizIcon /></IconButton>}>
@@ -30,6 +34,8 @@ export default class FsFile extends React.PureComponent<Props> {
       </div>
     )
   }
+
+  handleOnClick = () => this.props.onShowPreview(this.props.fsNode)
 
   handleOnCancel = () => this.props.onCancel(this.props.fsNode)
 }
