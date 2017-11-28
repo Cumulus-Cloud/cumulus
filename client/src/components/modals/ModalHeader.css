@@ -1,0 +1,12 @@
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  padding: 24px 24px 10px 24px;
+  background-color: var(--secondaryBg);
+}
+
+.title {
+  font-size: 1.4rem;
+  color: var(--primaryText);
+}

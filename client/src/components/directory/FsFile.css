@@ -21,4 +21,5 @@
 .name {
   color: var(--primaryText);
   text-decoration: none;
+  cursor: pointer;
 }

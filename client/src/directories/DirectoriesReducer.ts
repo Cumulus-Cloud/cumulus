@@ -1,5 +1,5 @@
 import { DirectoriesAction } from "directories/DirectoriesActions"
-import { FsNode, isDirectory } from "models/FsNode"
+import { FsNode, FsFile, isDirectory } from "models/FsNode"
 import { ApiError } from "services/Api"
 
 export interface DirectoriesState {
@@ -7,6 +7,7 @@ export interface DirectoriesState {
   loading: boolean
   deleteLoading?: string
   error?: ApiError
+  previewFsFile?: FsFile
 }
 
 const initState: DirectoriesState = {
@@ -45,6 +46,7 @@ export const DirectoriesReducer = (state: DirectoriesState = initState, action: 
         return state
       }
     }
+    case "ShowPreview": return { ...state, previewFsFile: action.fsFile }
     default: return state
   }
 }

@@ -60,7 +60,6 @@ interface DropdownItemProps {
   name: string,
   icon?: JSX.Element
   onClick?: () => void
-  href?: string
 }
 
 export function DropdownItem(props: DropdownItemProps) {
@@ -70,6 +69,23 @@ export function DropdownItem(props: DropdownItemProps) {
       <div className={styles.label}>
         {props.name}
       </div>
+    </li>
+  )
+}
+
+interface DropdownLinkProps {
+  name: string,
+  icon?: JSX.Element
+  href: string
+}
+
+export function DropdownLink(props: DropdownLinkProps) {
+  return (
+    <li className={styles.item}>
+      {props.icon}
+      <a className={styles.label} href={props.href}>
+        {props.name}
+      </a>
     </li>
   )
 }

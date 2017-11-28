@@ -4,6 +4,8 @@ import { GlobalState } from "store"
 import { FsNode } from "models/FsNode"
 import * as UploadActions from "upload/UploadActions"
 import Modal from "components/modals/Modal"
+import ModalHeader from "components/modals/ModalHeader"
+import ModalContent from "components/modals/ModalContent"
 import ModalActions from "components/modals/ModalActions"
 import FlatButton from "components/buttons/FlatButton"
 import Uploader from "components/upload/Uploader"
@@ -39,11 +41,12 @@ class NewFolderContainer extends React.PureComponent<Props> {
   renderModal = () => {
     const { onWantUpload, files, loading, progress } = this.props
     return (
-      <Modal title={Messages("ui.upload")} onClose={onWantUpload}>
-        <div>
+      <Modal onClose={onWantUpload}>
+        <ModalHeader title={Messages("ui.upload")} />
+        <ModalContent>
           <Uploader onChange={this.handleOnChange} />
           {files.map(file => <UploadFile key={file.name} progress={progress} loading={loading} file={file} />)}
-        </div>
+        </ModalContent>
         <ModalActions>
           <FlatButton label={Messages("ui.cancel")} onClick={onWantUpload} />
           <FlatButton label={Messages("ui.upload")} loading={loading} onClick={this.handleOnUpload} />

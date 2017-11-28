@@ -36,6 +36,8 @@
 }
 
 .label {
+  color: var(--primaryText);
   margin-left: 10px;
   white-space: nowrap;
+  text-decoration: none;
 }

@@ -54,3 +54,14 @@ export function isFile(fsNode: FsNode): fsNode is FsFile {
 export function isDirectory(fsNode: FsNode): fsNode is FsDirectory {
   return (fsNode as FsDirectory).nodeType === "DIRECTORY"
 }
+
+export const videosPreviewAvailable = [
+  ".mp4"
+]
+export const imagesPreviewAvailable = [
+  ".jpg",
+  ".png",
+  ".jpeg",
+  ".gif",
+  ".bmp"
+]
