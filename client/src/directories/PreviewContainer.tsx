@@ -1,9 +1,11 @@
 import * as React from "react"
+import * as styles from "./PreviewContainer.css"
 import { connect, Dispatch } from "react-redux"
 import * as DirectoriesActions from "./DirectoriesActions"
 import { GlobalState } from "store"
 import { FsFile, videosPreviewAvailable, imagesPreviewAvailable } from "models/FsNode"
 import Modal from "components/modals/Modal"
+import ModalActions from "components/modals/ModalActions"
 import FlatButton from "components/buttons/FlatButton"
 import VideoPlayer from "components/preview/VideoPlayer"
 import ImagePreview from "components/preview/ImagePreview"
@@ -29,8 +31,12 @@ class PreviewContainer extends React.PureComponent<Props> {
     const { onShowPreview } = this.props
     return (
       <Modal onClose={() => onShowPreview(undefined)}>
-        {this.renderPreview(fsFile)}
-        <FlatButton label={Messages("ui.cancel")} onClick={() => onShowPreview(undefined)} />
+        <div className={styles.previewModal}>
+          {this.renderPreview(fsFile)}
+          <ModalActions>
+            <FlatButton label={Messages("ui.close")} onClick={() => onShowPreview(undefined)} />
+          </ModalActions>
+        </div>
       </Modal>
     )
   }

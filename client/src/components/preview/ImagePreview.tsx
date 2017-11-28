@@ -9,9 +9,7 @@ export default class ImagePreview extends React.PureComponent<Props> {
   render() {
     const { src } = this.props
     return (
-      <div>
-        <img className={styles.imagePreview} src={src} />
-      </div>
+      <img className={styles.imagePreview} src={src} />
     )
   }
 }

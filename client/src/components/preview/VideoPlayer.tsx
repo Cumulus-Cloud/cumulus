@@ -9,9 +9,7 @@ export default class VideoPlayer extends React.PureComponent<Props> {
   render() {
     const { src } = this.props
     return (
-      <div>
-        <video className={styles.videoPlayer} controls src={src} />
-      </div>
+      <video className={styles.videoPlayer} controls src={src} />
     )
   }
 }
