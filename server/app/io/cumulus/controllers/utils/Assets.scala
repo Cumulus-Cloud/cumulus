@@ -35,4 +35,5 @@ class Assets(
   def messages: Action[Unit] = Action(parse.empty) { implicit req =>
     Ok(jsMessages(Some("window.Messages"))(messagesApi.preferred(req)))
   }
+
 }

@@ -9,7 +9,6 @@ POST    /users/signup                 io.cumulus.controllers.UserController.sign
 GET     /users/me                     io.cumulus.controllers.UserController.me
 
 # API - FS get/update routes
-GET     /api/tree                     io.cumulus.controllers.FileSystemController.tree
 GET     /api/fs*path                  io.cumulus.controllers.FileSystemController.get(path: Path)
 PUT     /api/fs*path                  io.cumulus.controllers.FileSystemController.create(path: Path)
 POST    /api/fs*path                  io.cumulus.controllers.FileSystemController.update(path: Path)
@@ -33,6 +32,7 @@ GET     /shared/stream/:reference     io.cumulus.controllers.SharingController.s
 GET     /test                         io.cumulus.controllers.HomeController.test
 GET     /test/login                   io.cumulus.controllers.HomeController.testLogin
 
+# Front internationalization
 GET     /messages.js                  io.cumulus.controllers.utils.Assets.messages
 
 # Map static resources from the /public folder to the /assets URL path

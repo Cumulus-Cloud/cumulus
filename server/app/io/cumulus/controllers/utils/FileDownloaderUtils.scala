@@ -6,15 +6,32 @@ import akka.NotUsed
 import akka.stream.scaladsl.Flow
 import akka.util.ByteString
 import io.cumulus.core.stream.storage.StorageReferenceReader
-import io.cumulus.core.stream.utils.ByteRange
 import io.cumulus.core.utils.Range
 import io.cumulus.models.fs.File
-import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
+import io.cumulus.persistence.storage.StorageEngine
 import play.api.http.HttpEntity
-import play.api.mvc.Result
 import play.api.mvc.Results._
+import play.api.mvc.{Request, Result}
 
-trait FileDownloader {
+trait FileDownloaderUtils {
+
+  protected def headerRange(request: Request[_], file: File): Range = {
+    val headerRange: (Long, Long) =
+      request.headers.get("Range").getOrElse("bytes=0-").split('=').toList match {
+        case "bytes" :: r :: Nil => r.split('-').map(_.toLong).toList match {
+          case from :: to :: Nil => (from, to)
+          case from :: Nil => (from, -1)
+          case _ => (0, -1)
+        }
+        case _ => (0, -1)
+      }
+
+    // TODO check validity & return 406 if not
+    Range(
+      headerRange._1,
+      if(headerRange._2 > 0) headerRange._2 else file.size - 1
+    )
+  }
 
   protected def downloadFile(
     storageEngine: StorageEngine,
@@ -52,40 +69,12 @@ trait FileDownloader {
     range: Range
   )(implicit ec: ExecutionContext): Result = {
 
-    val objects = file.storageReference.storage.foldLeft((0l, 0l, 0l, Seq.empty[StorageObject])) {
-      case ((cursor, from, to, storageObjects), storageObject) =>
-        if(range.start > cursor + storageObject.size) {
-          // Skip the object (before range start)
-          (cursor + storageObject.size, from, to, storageObjects)
-        } else if(range.end < cursor) {
-          // Skip the object (after range end)
-          (cursor + storageObject.size, from, to, storageObjects)
-        } else {
-
-          val objectFrom = if(range.start > cursor)
-            range.start - cursor
-          else
-            0
-
-          val objectTo = if(range.end < (cursor + storageObject.size))
-            range.end - cursor
-          else
-            storageObject.size
-
-          (
-            cursor + storageObject.size,
-            if(objectFrom != 0) objectFrom else from,
-            to + objectTo,
-            storageObjects :+ storageObject
-          )
-        }
-    }
-
     val source = StorageReferenceReader(
       storageEngine,
       fileTransformation,
-      file.copy(storageReference = file.storageReference.copy(storage = objects._4)) // TODO better way ?
-    ).via(ByteRange(Range(objects._2, objects._3)))
+      file,
+      range
+    )
 
     PartialContent
       .sendEntity(
