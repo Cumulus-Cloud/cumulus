@@ -3,7 +3,6 @@ import * as styles from "./DirectoriesContainer.css"
 import { connect, Dispatch } from "react-redux"
 import { match as RouterMatch } from "react-router"
 import * as DirectoriesActions from "directories/DirectoriesActions"
-import * as PreviewActions from "preview/PreviewActions"
 import { GlobalState } from "store"
 import { DirectoriesState } from "directories/DirectoriesReducer"
 import AppBar from "components/AppBar"
@@ -11,7 +10,7 @@ import Breadcrumb from "components/directory/Breadcrumb"
 import { history } from "store"
 import NewFolderContainer from "newFolder/NewFolderContainer"
 import UploadContainer from "upload/UploadContainer"
-import PreviewContainer from "preview/PreviewContainer"
+import PreviewContainer from "./PreviewContainer"
 import FsDirectory from "components/directory/FsDirectory"
 import FsFile from "components/directory/FsFile"
 import { FsNode, FsFile as FsFileModel , isDirectory } from "models/FsNode"
@@ -105,7 +104,7 @@ const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
     onFetchDirectory: path => dispatch(DirectoriesActions.onFetchDirectory(path)),
     onDeleteFsNode: fsNode => dispatch(DirectoriesActions.onDeleteFsNode(fsNode)),
-    onShowPreview: fsFile => dispatch(PreviewActions.onShowPreview(fsFile))
+    onShowPreview: fsFile => dispatch(DirectoriesActions.onShowPreview(fsFile))
   }
 }
 

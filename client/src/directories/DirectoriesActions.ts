@@ -1,7 +1,7 @@
 import { AnyAction } from "redux"
 import { ThunkAction } from "redux-thunk"
 import { GlobalState } from "store"
-import { FsNode } from "models/FsNode"
+import { FsNode, FsFile } from "models/FsNode"
 import * as Api from "services/Api"
 import { OnCreateNewFolderSuccess } from "newFolder/NewFolderActions"
 import { OnUploadFileSuccess } from "upload/UploadActions"
@@ -14,7 +14,8 @@ export type DirectoriesAction =
   OnDeleteFsNode |
   OnDeleteFsNodeSuccess |
   OnDeleteFsNodeError |
-  OnUploadFileSuccess
+  OnUploadFileSuccess |
+  ShowPreview
 
 export interface OnFetchDirectory extends AnyAction {
   type: "OnFetchDirectory"
@@ -76,5 +77,11 @@ export type OnDeleteFsNodeError = {
 export const onDeleteFsNodeError = (error: Api.ApiError): OnDeleteFsNodeError => ({
   type: "OnDeleteFsNodeError",
   error
+})
+
+export type ShowPreview = { type: "ShowPreview", fsFile?: FsFile }
+export const onShowPreview = (fsFile?: FsFile): ShowPreview => ({
+  type: "ShowPreview",
+  fsFile,
 })
 
