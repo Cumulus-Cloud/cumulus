@@ -76,13 +76,12 @@ export function DropdownItem(props: DropdownItemProps) {
 interface DropdownLinkProps {
   name: string,
   icon?: JSX.Element
-  onClick?: () => void
   href: string
 }
 
 export function DropdownLink(props: DropdownLinkProps) {
   return (
-    <li className={styles.item} onClick={props.onClick}>
+    <li className={styles.item}>
       {props.icon}
       <a className={styles.label} href={props.href}>
         {props.name}
