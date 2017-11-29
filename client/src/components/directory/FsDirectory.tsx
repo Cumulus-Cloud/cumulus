@@ -2,25 +2,42 @@ import * as React from "react"
 import * as styles from "./FsDirectory.css"
 import { FsDirectory as FsDirectoryModel } from "models/FsNode"
 import DirectoryIcon from "icons/DirectoryIcon"
+import Dropdown, { DropdownItem } from "components/menus/Dropdown"
+import MoreHorizIcon from "icons/MoreHorizIcon"
+import IconButton from "components/buttons/IconButton"
+import DeleteIcon from "icons/DeleteIcon"
 
 interface Props {
-  fsNode: FsDirectoryModel
+  fsDirectory: FsDirectoryModel
   onClick: (fsNode: FsDirectoryModel) => void
+  onDelete: (fsDirectory: FsDirectoryModel) => void
 }
 
 export default class FsDirectory extends React.PureComponent<Props> {
   render() {
-    const { fsNode } = this.props
+    const { fsDirectory } = this.props
     return (
-      <div className={styles.fsDirectory} onClick={this.handleOnClick}>
+      <div className={styles.fsDirectory}>
         <DirectoryIcon />
-        <div className={styles.fsDirectoryInfos}>{fsNode.name}</div>
+        <div className={styles.fsDirectoryInfos} onClick={this.handleOnClick}>
+          {fsDirectory.name}
+        </div>
+        <div className={styles.actions}>
+          <Dropdown right renderAction={() => <IconButton><MoreHorizIcon /></IconButton>}>
+            <DropdownItem name={Messages("ui.delete")} icon={<DeleteIcon />} onClick={this.handleOnDelete} />
+          </Dropdown>
+        </div>
       </div>
     )
   }
 
+  handleOnDelete = () => {
+    const { fsDirectory, onDelete } = this.props
+    onDelete(fsDirectory)
+  }
+
   handleOnClick = () => {
-    const { fsNode, onClick } = this.props
-    onClick(fsNode)
+    const { fsDirectory, onClick } = this.props
+    onClick(fsDirectory)
   }
 }

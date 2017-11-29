@@ -11,7 +11,7 @@ import MoreHorizIcon from "icons/MoreHorizIcon"
 
 interface Props {
   fsNode: FsFileModel
-  onCancel: (fsNode: FsFileModel) => void
+  onDelete: (fsNode: FsFileModel) => void
   onShowPreview: (fsNode: FsFileModel) => void
 }
 
@@ -34,7 +34,7 @@ export default class FsFile extends React.PureComponent<Props> {
               name={Messages("ui.download")}
               icon={<FileDownloadIcon />}
             />
-            <DropdownItem name={Messages("ui.delete")} icon={<DeleteIcon />} onClick={this.handleOnCancel} />
+            <DropdownItem name={Messages("ui.delete")} icon={<DeleteIcon />} onClick={this.handleOnDelete} />
           </Dropdown>
         </div>
       </div>
@@ -47,5 +47,5 @@ export default class FsFile extends React.PureComponent<Props> {
 
   handleOnClick = () => this.props.onShowPreview(this.props.fsNode)
 
-  handleOnCancel = () => this.props.onCancel(this.props.fsNode)
+  handleOnDelete = () => this.props.onDelete(this.props.fsNode)
 }

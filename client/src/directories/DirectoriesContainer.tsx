@@ -79,10 +79,24 @@ class DirectoriesContainer extends React.PureComponent<Props> {
   }
 
   renderFsNode = (fsNode: FsNode) => {
-    if (fsNode.nodeType === "DIRECTORY") {
-      return <FsDirectory key={fsNode.id} fsNode={fsNode} onClick={this.handleDirectoryOnClick} />
+    if (isDirectory(fsNode)) {
+      return (
+        <FsDirectory
+          key={fsNode.id}
+          fsDirectory={fsNode}
+          onClick={this.handleDirectoryOnClick}
+          onDelete={this.props.onDeleteFsNode}
+        />
+      )
     } else {
-      return <FsFile key={fsNode.id} fsNode={fsNode} onCancel={this.props.onDeleteFsNode} onShowPreview={this.props.onShowPreview} />
+      return (
+        <FsFile
+          key={fsNode.id}
+          fsNode={fsNode}
+          onDelete={this.props.onDeleteFsNode}
+          onShowPreview={this.props.onShowPreview}
+        />
+      )
     }
   }
 
