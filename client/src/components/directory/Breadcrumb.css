@@ -17,10 +17,20 @@
 }
 
 .breadcrumbPathItem {
+  max-width: 260px;
   color: var(--darkPrimary);
   padding: 5px;
   cursor: pointer;
   border: 1px solid transparent;
+  hyphens: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media screen and (min-width: 500px) {
+  .breadcrumbPathItem {
+    max-width: 500px;
+  }
 }
 
 .breadcrumbPathItem:hover {
