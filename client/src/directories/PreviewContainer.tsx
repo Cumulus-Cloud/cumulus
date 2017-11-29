@@ -44,7 +44,7 @@ class PreviewContainer extends React.PureComponent<Props> {
   renderPreview = (fsFile: FsFile) => {
     if (videosPreviewAvailable.filter(v => fsFile.name.toLowerCase().endsWith(v)).length > 0) {
       return <VideoPlayer src={`/api/stream${fsFile.path}`} />
-    } else if (imagesPreviewAvailable.filter(img => fsFile.name.toLowerCase().endsWith(".jpg")).length > 0) {
+    } else if (imagesPreviewAvailable.filter(img => fsFile.name.toLowerCase().endsWith(img)).length > 0) {
       return <ImagePreview src={Api.getDownloadUrl(fsFile, true)} />
     }
   }
