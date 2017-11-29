@@ -12,6 +12,9 @@ var config = {
     path: __dirname + "../../server/public"
   },
   devtool: "source-map",
+  stats: {
+    children: false
+  },
   resolve: {
     extensions: [".ts", ".tsx", ".js", ".json"],
     modules: [path.resolve(__dirname, './src'), 'node_modules']
