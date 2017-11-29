@@ -5,8 +5,9 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 import akka.util.ByteString
+import io.cumulus.core.json.JsonFormat._
+import io.cumulus.core.utils.Crypto
 import io.cumulus.core.utils.Crypto._
-import io.cumulus.core.utils.{Base64, Crypto}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{Format, Json, OWrites, __}
@@ -61,12 +62,12 @@ object Sharing {
 }
 
 case class SharingSecurity(
-  encryptedPrivateKey: String,
-  privateKeySalt: String ,
-  salt1: String,
-  iv: String,
-  secretCodeHash: String,
-  salt2: String
+  encryptedPrivateKey: ByteString,
+  privateKeySalt: ByteString ,
+  salt1: ByteString,
+  iv: ByteString,
+  secretCodeHash: ByteString,
+  salt2: ByteString
 ) {
 
   /**
@@ -74,18 +75,18 @@ case class SharingSecurity(
     */
   def checkSecretCode(toTest: ByteString): Boolean = {
     // To test the password, we need to generate the hash then the second hash, and compare the results
-    val toTestHash = Crypto.scrypt(toTest, Base64.decode(salt1).get)
-    val toTestHashHash = Crypto.scrypt(toTestHash, Base64.decode(salt2).get)
+    val toTestHash = Crypto.scrypt(toTest, salt1)
+    val toTestHashHash = Crypto.scrypt(toTestHash, salt2)
 
-    Base64.encode(toTestHashHash) == secretCodeHash
+    toTestHashHash == secretCodeHash
   }
 
   /**
     * Decode the private key using the provided secret code.
     */
   def privateKey(secredCode: ByteString): ByteString = {
-    val hash = Crypto.scrypt(secredCode, Base64.decode(salt1).get)
-    Crypto.AESDecrypt(hash, Base64.decode(iv).get, Base64.decode(encryptedPrivateKey).get)
+    val hash = Crypto.scrypt(secredCode, salt1)
+    Crypto.AESDecrypt(hash, iv, encryptedPrivateKey)
   }
 
 }
@@ -108,12 +109,12 @@ object SharingSecurity {
     val secretCodeHashHash = Crypto.scrypt(secretCodeHash, salt2)
 
     SharingSecurity(
-      encryptedPrivateKey = Base64.encode(encryptedPrivateKey),
-      privateKeySalt      = Base64.encode(privateKeySalt),
-      salt1               = Base64.encode(salt),
-      iv                  = Base64.encode(iv),
-      secretCodeHash      = Base64.encode(secretCodeHashHash),
-      salt2               = Base64.encode(salt2)
+      encryptedPrivateKey = encryptedPrivateKey,
+      privateKeySalt      = privateKeySalt,
+      salt1               = salt,
+      iv                  = iv,
+      secretCodeHash      = secretCodeHashHash,
+      salt2               = salt2
     )
   }
 

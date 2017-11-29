@@ -7,7 +7,8 @@ import akka.util.ByteString
 import io.cumulus.controllers.utils.FileDownloaderUtils
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.stream.utils.AESCipher
-import io.cumulus.core.utils.{Base16, Base64}
+import io.cumulus.core.utils.Base16
+import io.cumulus.core.validation.AppError
 import io.cumulus.models.Path
 import io.cumulus.persistence.services.SharingService
 import io.cumulus.persistence.storage.StorageEngine
@@ -39,19 +40,22 @@ class SharingController(
     sharingService.findSharedFile(reference, path, key).map {
       case Right((sharing, file)) =>
 
-        val range = headerRange(request, file)
-        val (privateKey, salt) = (
-          sharing.security.privateKey(Base16.decode(key).get),
-          Base64.decode(sharing.security.privateKeySalt).get
-        )
+        (for {
+          range      <- headerRange(request, file)
+          decodedKey <- Base16.decode(key).toRight(AppError.validation("Invalid key provided")) // TODO
+          privateKey  = sharing.security.privateKey(decodedKey)
+          salt        = sharing.security.privateKeySalt
+        } yield {
 
-        // TODO guess from the file and/or chunks
-        val transformation =
-          Flow[ByteString]
-            .via(AESCipher.decrypt(privateKey, salt))
-            .via(Compression.gunzip())
+          // TODO guess from the file and/or chunks
+          val transformation =
+            Flow[ByteString]
+              .via(AESCipher.decrypt(privateKey, salt))
+              .via(Compression.gunzip())
 
-        streamFile(storageEngine, file, transformation, range)
+          streamFile(storageEngine, file, transformation, range)
+
+        }).left.map(toApiError).merge
 
       case Left(e) =>
         toApiError(e)
@@ -65,18 +69,17 @@ class SharingController(
     sharingService.findSharedFile(reference, path, key).map {
       case Right((sharing, file)) =>
 
-        val (privateKey, salt) = (
-          sharing.security.privateKey(Base16.decode(key).get),
-          Base64.decode(sharing.security.privateKeySalt).get
-        )
+        Base16.decode(key).toRight(AppError.validation("validation.sharing.invalid-key")).map { privateKey =>
+          val salt = sharing.security.privateKeySalt
 
-        // TODO guess from the file and/or chunks
-        val transformation =
-          Flow[ByteString]
-            .via(AESCipher.decrypt(privateKey, salt))
-            .via(Compression.gunzip())
+          // TODO guess from the file and/or chunks
+          val transformation =
+            Flow[ByteString]
+              .via(AESCipher.decrypt(privateKey, salt))
+              .via(Compression.gunzip())
 
-        downloadFile(storageEngine, file, transformation, forceDownload.getOrElse(false))
+          downloadFile(storageEngine, file, transformation, forceDownload.getOrElse(false))
+        }.left.map(toApiError).merge
 
       case Left(e) =>
         toApiError(e)

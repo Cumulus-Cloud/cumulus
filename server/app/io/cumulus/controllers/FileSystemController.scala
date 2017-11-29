@@ -41,16 +41,18 @@ class FileSystemController(
     fsNodeService.findFile(path).map {
       case Right(file) =>
 
-        val range = headerRange(request, file)
-        val (privateKey, salt) = request.user.privateKeyAndSalt
+        headerRange(request, file).map { range =>
+          val (privateKey, salt) = request.user.privateKeyAndSalt
 
-        // TODO guess from the file and/or chunks
-        val transformation =
-          Flow[ByteString]
-            .via(AESCipher.decrypt(privateKey, salt))
-            .via(Compression.gunzip())
+          // TODO guess from the file and/or chunks
+          val transformation =
+            Flow[ByteString]
+              .via(AESCipher.decrypt(privateKey, salt))
+              .via(Compression.gunzip())
 
-        streamFile(storageEngine, file, transformation, range)
+          streamFile(storageEngine, file, transformation, range)
+
+        }.left.map(toApiError).merge
 
       case Left(e) =>
         toApiError(e)

@@ -6,8 +6,8 @@ import scala.concurrent.Future
 import io.cumulus.core.Logging
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.{QueryBuilder, QueryE}
-import io.cumulus.core.utils.{Base16, Base64, Crypto}
 import io.cumulus.core.utils.Crypto._
+import io.cumulus.core.utils.{Base16, Crypto}
 import io.cumulus.core.validation.AppError
 import io.cumulus.models._
 import io.cumulus.models.fs.{Directory, File, FsNode}
@@ -34,7 +34,7 @@ class SharingService(
       node <- QueryE.getOrNotFound(fsNodeStore.findAndLockByPathAndUser(path, user))
 
       // We need the private key
-      (privateKey, salt) = (user.security.privateKey(password), Base64.decode(user.security.privateKeySalt).get)
+      (privateKey, salt) = (user.security.privateKey(password), user.security.privateKeySalt)
 
       // Generate a secret code
       secretCode = Crypto.randomBytes(16)
@@ -154,7 +154,7 @@ class SharingService(
           case Some(code) if sharing.security.checkSecretCode(code) =>
             Right(())
           case _ =>
-            Left(AppError.unauthorized("Invalid code")) // TODO
+            Left(AppError.unauthorized("validation.sharing.invalid-key"))
         }
       }
 
@@ -162,7 +162,7 @@ class SharingService(
       _ <- QueryE.pure {
         (sharing.expiration, LocalDateTime.now) match {
           case (Some(expiration), now) if expiration.isBefore(now) =>
-            Left(AppError.validation("Sharing expired")) // TODO
+            Left(AppError.validation("validation.sharing.expired")) // TODO
           case _ =>
             Right(())
         }

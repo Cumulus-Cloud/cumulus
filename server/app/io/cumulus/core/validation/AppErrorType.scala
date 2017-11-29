@@ -24,6 +24,9 @@ object AppErrorType extends Enum[AppErrorType] {
   /** Used when the information provided are invalid */
   case object VALIDATION extends AppErrorType(Results.BadRequest)
 
+  /** Used when the information provided are not acceptable (i.e. invalid range) */
+  case object NOT_ACCEPTABLE extends AppErrorType(Results.NotAcceptable)
+
   /** Used for any unexpected error */
   case object TECHNICAL extends AppErrorType(Results.InternalServerError)
 

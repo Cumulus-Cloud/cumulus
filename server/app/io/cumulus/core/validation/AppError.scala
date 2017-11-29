@@ -35,6 +35,9 @@ object AppError {
   def validation(path: JsPath, key: String, args: String*): AppError =
     validation(FieldValidationError(path, key, args: _*))
 
+  def notAcceptable(key: String, args: String*): AppError =
+    GlobalError(AppErrorType.NOT_ACCEPTABLE, key, args: _*)
+
   def technical(key: String, args: String*): AppError =
     GlobalError(AppErrorType.TECHNICAL, key, args: _*)
 
