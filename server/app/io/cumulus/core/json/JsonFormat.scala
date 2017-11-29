@@ -3,7 +3,9 @@ package io.cumulus.core.json
 import java.util.UUID
 import scala.util.Try
 
+import akka.util.ByteString
 import cats.data.NonEmptyList
+import io.cumulus.core.utils.Base64
 import julienrf.json.derived
 import play.api.libs.json._
 
@@ -49,6 +51,21 @@ object JsonFormat {
 
     override def writes(o: NonEmptyList[A]): JsValue =
       JsArray(o.toList.map(format.writes))
+
+  }
+
+  implicit def byteStringFormat: Format[ByteString] = new Format[ByteString] {
+
+    override def reads(json: JsValue): JsResult[ByteString] =
+      Json.fromJson[String](json).flatMap { s =>
+         Base64.decode(s) match {
+          case Some(byteString) => JsSuccess(byteString)
+          case _                => JsError("Invalid ByteString (invalid base 64 encoding)")
+        }
+      }
+
+    override def writes(o: ByteString): JsValue =
+      JsString(Base64.encode(o))
 
   }
 

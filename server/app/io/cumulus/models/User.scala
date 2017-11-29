@@ -6,7 +6,8 @@ import java.util.UUID
 import scala.language.implicitConversions
 
 import akka.util.ByteString
-import io.cumulus.core.utils.{Base64, Crypto}
+import io.cumulus.core.json.JsonFormat._
+import io.cumulus.core.utils.Crypto
 import io.cumulus.core.utils.Crypto._
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import play.api.libs.functional.syntax._
@@ -25,7 +26,7 @@ case class UserSession(
 ) {
 
   def privateKeyAndSalt: (ByteString, ByteString) =
-    (user.security.privateKey(password), Base64.decode(user.security.privateKeySalt).get)
+    (user.security.privateKey(password), user.security.privateKeySalt)
 
 }
 
@@ -104,12 +105,12 @@ object User {
 }
 
 case class UserSecurity(
-  encryptedPrivateKey: String,
-  privateKeySalt: String,
-  salt1: String,
-  iv: String,
-  passwordHash: String,
-  salt2: String
+  encryptedPrivateKey: ByteString,
+  privateKeySalt: ByteString,
+  salt1: ByteString,
+  iv: ByteString,
+  passwordHash: ByteString,
+  salt2: ByteString
 ) {
 
   /**
@@ -117,18 +118,18 @@ case class UserSecurity(
     */
   def checkPassword(toTest: String): Boolean = {
     // To test the password, we need to generate the hash then the second hash, and compare the results
-    val toTestHash = Crypto.scrypt(toTest, Base64.decode(salt1).get)
-    val toTestHashHash = Crypto.scrypt(toTestHash, Base64.decode(salt2).get)
+    val toTestHash = Crypto.scrypt(toTest, salt1)
+    val toTestHashHash = Crypto.scrypt(toTestHash, salt2)
 
-    Base64.encode(toTestHashHash) == passwordHash
+    toTestHashHash == passwordHash
   }
 
   /**
     * Decode the private key using the provided password.
     */
   def privateKey(password: String): ByteString = {
-    val hash = Crypto.scrypt(password, Base64.decode(salt1).get)
-    Crypto.AESDecrypt(hash, Base64.decode(iv).get,  Base64.decode(encryptedPrivateKey).get)
+    val hash = Crypto.scrypt(password, salt1)
+    Crypto.AESDecrypt(hash, iv, encryptedPrivateKey)
   }
 
   /**
@@ -163,12 +164,12 @@ object UserSecurity {
     val passwordHashHash = Crypto.scrypt(passwordHash, salt2)
 
     UserSecurity(
-      encryptedPrivateKey = Base64.encode(encryptedPrivateKey),
-      privateKeySalt      = Base64.encode(privateKeySalt),
-      salt1               = Base64.encode(salt),
-      iv                  = Base64.encode(iv),
-      passwordHash        = Base64.encode(passwordHashHash),
-      salt2               = Base64.encode(salt2)
+      encryptedPrivateKey = encryptedPrivateKey,
+      privateKeySalt      = privateKeySalt,
+      salt1               = salt,
+      iv                  = iv,
+      passwordHash        = passwordHashHash,
+      salt2               = salt2
     )
   }
 

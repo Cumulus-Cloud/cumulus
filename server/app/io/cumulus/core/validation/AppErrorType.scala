@@ -13,19 +13,22 @@ sealed abstract class AppErrorType(val status: Results.Status) extends EnumEntry
 object AppErrorType extends Enum[AppErrorType] {
 
   /** Used when a resource is not found */
-  case object NOT_FOUND extends AppErrorType(Results.NotFound)
+  case object NotFound extends AppErrorType(Results.NotFound)
 
   /** Used when the user should be logged in */
-  case object UNAUTHORIZED extends AppErrorType(Results.Unauthorized)
+  case object Unauthorized extends AppErrorType(Results.Unauthorized)
 
   /** Used when the user has no sufficient rights */
-  case object FORBIDDEN extends AppErrorType(Results.Forbidden)
+  case object Forbidden extends AppErrorType(Results.Forbidden)
 
   /** Used when the information provided are invalid */
-  case object VALIDATION extends AppErrorType(Results.BadRequest)
+  case object Validation extends AppErrorType(Results.BadRequest)
+
+  /** Used when the information provided are not acceptable (i.e. invalid range) */
+  case object NotAcceptable extends AppErrorType(Results.NotAcceptable)
 
   /** Used for any unexpected error */
-  case object TECHNICAL extends AppErrorType(Results.InternalServerError)
+  case object Technical extends AppErrorType(Results.InternalServerError)
 
   override val values: immutable.IndexedSeq[AppErrorType] = findValues
 }

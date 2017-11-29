@@ -3,7 +3,9 @@ package io.cumulus.core.persistence.anorm
 import java.sql.{Clob, PreparedStatement}
 import java.util.UUID
 
+import akka.util.ByteString
 import anorm._
+import io.cumulus.core.utils.Base64
 import org.apache.commons.io.IOUtils
 import org.postgresql.util.PGobject
 import play.api.libs.json._
@@ -18,10 +20,22 @@ object AnormSupport {
     */
   implicit object UUIDStatement extends ToStatement[UUID] {
     override def set(s: PreparedStatement, index: Int, v: UUID): Unit = {
-      val jsonObject = new PGobject()
-      jsonObject.setType("uuid")
-      jsonObject.setValue(v.toString)
-      s.setObject(index, jsonObject)
+      val uuid = new PGobject()
+      uuid.setType("uuid")
+      uuid.setValue(v.toString)
+      s.setObject(index, uuid)
+    }
+  }
+
+  /**
+    * Implicit statement for ByteString with PostgreSQL.
+    */
+  implicit object ByteStringStatement extends ToStatement[ByteString] {
+    override def set(s: PreparedStatement, index: Int, v: ByteString): Unit = {
+      val byteString = new PGobject()
+      byteString.setType("text")
+      byteString.setValue(Base64.encode(v))
+      s.setObject(index, byteString)
     }
   }
 
@@ -36,6 +50,27 @@ object AnormSupport {
       s.setObject(index, jsonObject)
     }
   }
+
+
+  /**
+    * Implicit statement for ByteString with PostgreSQL, using an internal Base64 storage for convenience.
+    */
+  implicit def columnByteString: Column[ByteString] = Column.nonNull(
+    (value, meta) => {
+      val MetaDataItem(qualified, _, _) = meta
+      value match {
+        case s: String =>
+          Base64.decode(s) match {
+            case Some(byteString) =>
+              Right(byteString)
+            case None =>
+              Left(TypeDoesNotMatch(s"String '$s' is not a valid base 64 encoded string"))
+          }
+        case _ =>
+          cannotConvertError(value, qualified, "ByteString")
+      }
+    }
+  )
 
   /**
     * Column parser for JsObject with PostgreSQL.

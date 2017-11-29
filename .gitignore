@@ -29,3 +29,5 @@ test-result
 /server/tmp/
 /server/log/
 /server/storage/
+cumulus-log/
+

@@ -8,6 +8,7 @@ import pdi.jwt.JwtSession
 import play.api.i18n.I18nSupport
 import play.api.libs.json.{Format, Writes}
 import play.api.mvc._
+import Authentication._
 
 /**
   * Authentication trait using JWT. Needs to be extends by a controller which wants to use authentication.
@@ -50,8 +51,6 @@ import play.api.mvc._
   *              `Writes[USER]` must be in the scope of the controller.
   */
 trait Authentication[USER] extends BaseController with I18nSupport {
-
-  import Authentication._
 
   case class AuthenticatedRequest[A](user: USER, request: Request[A]) extends WrappedRequest[A](request)
 
@@ -124,9 +123,9 @@ trait Authentication[USER] extends BaseController with I18nSupport {
 
         override def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
           val jwtSession =
-            JwtSession.deserialize(request.cookies.get(COOKIE_NAME).getOrElse(Cookie(COOKIE_NAME, "")).value)
+            JwtSession.deserialize(request.cookies.get(cookieName).getOrElse(Cookie(cookieName, "")).value)
 
-          jwtSession.getAs[USER](TOKEN_FIELD).map(AuthenticatedRequest(_, request)) match {
+          jwtSession.getAs[USER](tokenField).map(AuthenticatedRequest(_, request)) match {
             case Some(authenticatedRequest) => block(authenticatedRequest).map(_.withAuthentication(jwtSession))
             case None                       => errorHandler(request)
           }
@@ -155,14 +154,14 @@ trait Authentication[USER] extends BaseController with I18nSupport {
     * @param payload The payload of the token
     */
   protected def createJwtSession(payload: USER)(implicit writes: Writes[USER]): JwtSession =
-    JwtSession() + (TOKEN_FIELD, payload)
+    JwtSession() + (tokenField, payload)
 
 }
 
 object Authentication {
 
-  val TOKEN_FIELD = "content"
-  val COOKIE_NAME = "auth"
+  val tokenField = "content"
+  val cookieName = "auth"
 
   implicit class AuthResult(val result: Result) extends AnyVal {
 
@@ -171,13 +170,13 @@ object Authentication {
       * @param jwtSession The JWT session to serialize
       */
     def withAuthentication(jwtSession: JwtSession): Result =
-      result.withCookies(Cookie(Authentication.COOKIE_NAME, jwtSession.refresh().serialize))
+      result.withCookies(Cookie(Authentication.cookieName, jwtSession.refresh().serialize))
 
     /**
       * Remove the cookie containing the aforementioned session
       */
     def withoutAuthentication: Result =
-      result.discardingCookies(DiscardingCookie(Authentication.COOKIE_NAME))
+      result.discardingCookies(DiscardingCookie(Authentication.cookieName))
 
   }
 }

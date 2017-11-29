@@ -3,6 +3,7 @@ package io.cumulus.persistence.stores
 import java.time.LocalDateTime
 import java.util.UUID
 
+import akka.util.ByteString
 import anorm._
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.anorm.{AnormPKOperations, AnormRepository}
@@ -24,12 +25,12 @@ class SharingStore(
       SqlParser.get[Option[LocalDateTime]]("expiration") ~
       SqlParser.get[UUID]("user_id") ~
       SqlParser.get[UUID]("fsNode_id") ~
-      SqlParser.get[String]("encryptedPrivateKey") ~
-      SqlParser.get[String]("privateKeySalt") ~
-      SqlParser.get[String]("salt1") ~
-      SqlParser.get[String]("iv") ~
-      SqlParser.get[String]("secretCodeHash") ~
-      SqlParser.get[String]("salt2")
+      SqlParser.get[ByteString]("encryptedPrivateKey") ~
+      SqlParser.get[ByteString]("privateKeySalt") ~
+      SqlParser.get[ByteString]("salt1") ~
+      SqlParser.get[ByteString]("iv") ~
+      SqlParser.get[ByteString]("secretCodeHash") ~
+      SqlParser.get[ByteString]("salt2")
     ).map {
       case id ~ reference ~ expiration ~ owner ~ fsNode ~ encryptedPrivateKey ~ privateKeySalt ~ salt1 ~ iv ~ secretCodeHash ~ salt2 =>
         val sharingSecurity = SharingSecurity(

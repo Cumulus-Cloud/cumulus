@@ -4,6 +4,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import akka.NotUsed
 import akka.stream.FlowShape
+import akka.stream.scaladsl.GraphDSL.Implicits._
 import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, Sink, ZipWith}
 import akka.util.ByteString
 import io.cumulus.core.Settings
@@ -58,8 +59,6 @@ object StorageReferenceWriter {
             storage = storageRef
           )
       })
-
-      import GraphDSL.Implicits._
 
       // Compute the size and hash of the file while writing it using the provided storage engine
       broadcast ~> objectsWriter ~> groupObjects ~> zip.in0

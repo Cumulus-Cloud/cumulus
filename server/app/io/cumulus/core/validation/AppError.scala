@@ -15,16 +15,16 @@ sealed trait AppError {
 object AppError {
 
   def notFound(key: String, args: String*): AppError =
-    GlobalError(AppErrorType.NOT_FOUND, key, args: _*)
+    GlobalError(AppErrorType.NotFound, key, args: _*)
 
   def unauthorized(key: String, args: String*): AppError =
-    GlobalError(AppErrorType.UNAUTHORIZED, key, args: _*)
+    GlobalError(AppErrorType.Unauthorized, key, args: _*)
 
   def forbidden(key: String, args: String*): AppError =
-    GlobalError(AppErrorType.FORBIDDEN, key, args: _*)
+    GlobalError(AppErrorType.Forbidden, key, args: _*)
 
   def validation(key: String, args: String*): AppError =
-    GlobalError(AppErrorType.VALIDATION, key, args: _*)
+    GlobalError(AppErrorType.Validation, key, args: _*)
 
   def validation(errors: NonEmptyList[FieldValidationError]): AppError =
     ValidationError(errors)
@@ -35,8 +35,11 @@ object AppError {
   def validation(path: JsPath, key: String, args: String*): AppError =
     validation(FieldValidationError(path, key, args: _*))
 
+  def notAcceptable(key: String, args: String*): AppError =
+    GlobalError(AppErrorType.NotAcceptable, key, args: _*)
+
   def technical(key: String, args: String*): AppError =
-    GlobalError(AppErrorType.TECHNICAL, key, args: _*)
+    GlobalError(AppErrorType.Technical, key, args: _*)
 
   /**
     * Error are almost always used as left. Use this implicit conversion to simply return an error where
@@ -66,7 +69,7 @@ object FieldValidationError {
   * Validation error, composed of multiple errors
   */
 case class ValidationError(errors: NonEmptyList[FieldValidationError]) extends AppError {
-  val errorType: AppErrorType = AppErrorType.VALIDATION
+  val errorType: AppErrorType = AppErrorType.Validation
 }
 
 /**

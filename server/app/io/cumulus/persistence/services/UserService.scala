@@ -110,6 +110,7 @@ class UserService(
 
       // Also create the root element of its own file-system
       _ <- QueryE.lift(fsNodeStore.create(Directory.create(user.id, "/")))
+
     } yield user
 
   }.commit()
