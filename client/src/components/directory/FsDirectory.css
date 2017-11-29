@@ -14,3 +14,7 @@
   padding-right: 10px;
   color: var(--primaryText);
 }
+
+.actions {
+  padding-right: 10px;
+}

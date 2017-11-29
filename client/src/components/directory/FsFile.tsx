@@ -4,14 +4,14 @@ import { FsFile as FsFileModel, videosPreviewAvailable, imagesPreviewAvailable }
 import * as Api from "services/Api"
 import FileIcon from "icons/FileIcon"
 import IconButton from "components/buttons/IconButton"
-import CancelIcon from "icons/CancelIcon"
+import DeleteIcon from "icons/DeleteIcon"
 import FileDownloadIcon from "icons/FileDownloadIcon"
 import Dropdown, { DropdownItem, DropdownLink } from "components/menus/Dropdown"
 import MoreHorizIcon from "icons/MoreHorizIcon"
 
 interface Props {
   fsNode: FsFileModel
-  onCancel: (fsNode: FsFileModel) => void
+  onDelete: (fsNode: FsFileModel) => void
   onShowPreview: (fsNode: FsFileModel) => void
 }
 
@@ -32,9 +32,9 @@ export default class FsFile extends React.PureComponent<Props> {
             <DropdownLink
               href={Api.getDownloadUrl(fsNode, true)}
               name={Messages("ui.download")}
-              icon={<FileDownloadIcon width={20} height={20} />}
+              icon={<FileDownloadIcon />}
             />
-            <DropdownItem name={Messages("ui.delete")} icon={<CancelIcon />} onClick={this.handleOnCancel} />
+            <DropdownItem name={Messages("ui.delete")} icon={<DeleteIcon />} onClick={this.handleOnDelete} />
           </Dropdown>
         </div>
       </div>
@@ -47,5 +47,5 @@ export default class FsFile extends React.PureComponent<Props> {
 
   handleOnClick = () => this.props.onShowPreview(this.props.fsNode)
 
-  handleOnCancel = () => this.props.onCancel(this.props.fsNode)
+  handleOnDelete = () => this.props.onDelete(this.props.fsNode)
 }
