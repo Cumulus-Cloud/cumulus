@@ -20,7 +20,9 @@ export default class FsDirectory extends React.PureComponent<Props> {
       <div className={styles.fsDirectory}>
         <DirectoryIcon />
         <div className={styles.fsDirectoryInfos} onClick={this.handleOnClick}>
-          {fsDirectory.name}
+          <h1 className={styles.title}>
+            {fsDirectory.name}
+          </h1>
         </div>
         <div className={styles.actions}>
           <Dropdown right renderAction={() => <IconButton><MoreHorizIcon /></IconButton>}>
