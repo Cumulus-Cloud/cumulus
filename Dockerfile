@@ -1,5 +1,8 @@
 FROM java:8u111-jre-alpine
 
+MAINTAINER "Wadjetz <egor.neon@gmail.com>"
+LABEL maintainer="Wadjetz <egor.neon@gmail.com>"
+
 RUN apk add --no-cache bash
 
 COPY server/target/universal/stage /opt/cumulus
