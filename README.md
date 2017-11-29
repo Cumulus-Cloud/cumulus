@@ -2,7 +2,7 @@
 
 ## Deploy and use Cumulus
 
-We recomand using `docker` and `docker-compose` to easily manage and deploy the Cumulus app
+We recommend using `docker` and `docker-compose` to easily manage and deploy the Cumulus app.
 
 ### Using docker compose
 
