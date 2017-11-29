@@ -11,11 +11,13 @@
 
 .infos {
   padding: 0 10px;
-  height: 30px;
+  min-height: 30px;
   display: flex;
   flex: 1;
   flex-direction: column;
   justify-content: space-between;
+  overflow: auto;
+  overflow-wrap: break-word;
 }
 
 .name {

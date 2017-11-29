@@ -14,7 +14,11 @@ export default class FsDirectory extends React.PureComponent<Props> {
     return (
       <div className={styles.fsDirectory} onClick={this.handleOnClick}>
         <DirectoryIcon />
-        <div className={styles.fsDirectoryInfos}>{fsNode.name}</div>
+        <div className={styles.fsDirectoryInfos} onClick={this.handleOnClick}>
+          <h1 className={styles.title}>
+            {fsNode.name}
+          </h1>
+        </div>
       </div>
     )
   }

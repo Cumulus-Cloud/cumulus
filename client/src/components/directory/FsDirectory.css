@@ -12,5 +12,10 @@
   flex: 1;
   padding-left: 10px;
   padding-right: 10px;
+  overflow: auto;
+  overflow-wrap: break-word;
+}
+
+.title {
   color: var(--primaryText);
 }
