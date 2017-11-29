@@ -1,7 +1,7 @@
 FROM java:8u111-jre-alpine
 
-MAINTAINER Cumulus
-LABEL maintainer="Cumulus"
+MAINTAINER "Wadjetz <egor.neon@gmail.com>"
+LABEL maintainer="Wadjetz <egor.neon@gmail.com>"
 
 RUN apk add --no-cache bash
 
