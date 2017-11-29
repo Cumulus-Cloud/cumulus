@@ -1,7 +1,7 @@
 const path = require("path")
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const ExtractTextPlugin = require("extract-text-webpack-plugin")
 const webpack = require("webpack")
-const autoprefixer = require('autoprefixer')
+const autoprefixer = require("autoprefixer")
 
 const development = process.env.NODE_ENV === "development";
 
@@ -17,7 +17,7 @@ var config = {
   },
   resolve: {
     extensions: [".ts", ".tsx", ".js", ".json"],
-    modules: [path.resolve(__dirname, './src'), 'node_modules']
+    modules: [path.resolve(__dirname, "./src"), "node_modules"]
   },
   module: {
     rules: [
@@ -25,22 +25,22 @@ var config = {
       { test: /\.js$/, enforce: "pre", loader: "source-map-loader" },
       {
         test: /\.css$/, use: ExtractTextPlugin.extract({
-          fallback: 'style-loader', use: [
-            { loader: 'css-loader', query: { modules: true, localIdentName: '[local]-[hash:base64:5]' } },
-            { loader: 'postcss-loader', options: { plugins: (loader) => [autoprefixer({ browsers: ['last 3 versions'] })] } },
+          fallback: "style-loader", use: [
+            { loader: "css-loader", query: { modules: true, localIdentName: "[local]-[hash:base64:5]" } },
+            { loader: "postcss-loader", options: { plugins: (loader) => [autoprefixer({ browsers: ["last 3 versions"] })] } },
           ]
         })
       }
     ]
   },
-  plugins: [new ExtractTextPlugin({ filename: 'main.css', allChunks: true })]
+  plugins: [new ExtractTextPlugin({ filename: "main.css", allChunks: true })]
 };
 
 if (!development) {
   config.plugins.push(
     new webpack.DefinePlugin({
-      'process.env': {
-        'NODE_ENV': JSON.stringify('production')
+      "process.env": {
+        "NODE_ENV": JSON.stringify("production")
       }
     })
   ),

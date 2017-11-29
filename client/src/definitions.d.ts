@@ -1,5 +1,5 @@
 
-declare module '*.css' {
+declare module "*.css" {
   interface ClassNames {
     [className: string]: string
   }
