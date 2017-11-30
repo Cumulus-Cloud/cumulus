@@ -22,4 +22,15 @@
 
 .name {
   color: var(--primaryText);
+  font-size: 1.2rem;
+}
+
+.parametres {
+  display: flex;
+  flex-direction: row;
+  padding: 5px 0;
+}
+
+.parametre {
+  margin-right: 10px;
 }

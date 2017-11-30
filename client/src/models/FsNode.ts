@@ -3,6 +3,12 @@ import { object, string, number, optional, array, union, isoDate, boolean, recur
 export const NodeTypeValidator = union("DIRECTORY", "FILE")
 export type NodeType = typeof NodeTypeValidator.T
 
+export const CompressionValidator = union("GZIP", "DEFLATE")
+export type Compression = typeof CompressionValidator.T
+
+export const CipherValidator = literal("AES")
+export type Cipher = typeof CipherValidator.T
+
 export const FsFileValidator = object({
   id: string,
   nodeType: literal("FILE"),
@@ -16,6 +22,8 @@ export const FsFileValidator = object({
   humanReadableSize: string,
   hash: string,
   mimeType: string,
+  cipher: CipherValidator,
+  compression: CompressionValidator,
 })
 export type FsFile = typeof FsFileValidator.T
 
@@ -56,7 +64,8 @@ export function isDirectory(fsNode: FsNode): fsNode is FsDirectory {
 }
 
 export const videosPreviewAvailable = [
-  ".mp4"
+  ".mp4",
+  ".mkv"
 ]
 export const imagesPreviewAvailable = [
   ".jpg",

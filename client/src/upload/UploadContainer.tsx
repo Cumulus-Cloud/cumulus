@@ -1,8 +1,9 @@
 import * as React from "react"
 import { connect, Dispatch } from "react-redux"
 import { GlobalState } from "store"
-import { FsNode } from "models/FsNode"
+import { FsNode, Compression, Cipher } from "models/FsNode"
 import * as UploadActions from "upload/UploadActions"
+import { UploadState } from "./UploadReducer"
 import Modal from "components/modals/Modal"
 import ModalHeader from "components/modals/ModalHeader"
 import ModalContent from "components/modals/ModalContent"
@@ -10,18 +11,18 @@ import ModalActions from "components/modals/ModalActions"
 import FlatButton from "components/buttons/FlatButton"
 import Uploader from "components/upload/Uploader"
 import UploadFile from "components/upload/UploadFile"
+import { FileToUpload } from "models/FileToUpload"
 
 interface DispatchProps {
   onWantUpload: () => void
-  onAddFiles: (files: File[]) => void
-  onUploadFile: (path: string, file: File) => void
+  onAddFiles: (filesToUpload: FileToUpload[]) => void
+  onRemoveFileToUpload: (fileToUpload: FileToUpload) => void
+  onUploadFile: (path: string, fileToUpload: FileToUpload) => void
+  onSelectCipher: (fileToUpload: FileToUpload, cipher?: Cipher) => void
+  onSelectCompression: (fileToUpload: FileToUpload, compression?: Compression) => void
 }
 
-interface PropsState {
-  files: File[]
-  wantUpload: boolean
-  loading: boolean
-  progress: number
+interface PropsState extends UploadState {
   directory: FsNode
 }
 
@@ -39,41 +40,80 @@ class NewFolderContainer extends React.PureComponent<Props> {
   }
 
   renderModal = () => {
-    const { onWantUpload, files, loading, progress } = this.props
+    const { onWantUpload, filesToUpload } = this.props
     return (
       <Modal onClose={onWantUpload}>
         <ModalHeader title={Messages("ui.upload")} />
         <ModalContent>
           <Uploader onChange={this.handleOnChange} />
-          {files.map(file => <UploadFile key={file.name} progress={progress} loading={loading} file={file} />)}
+          {filesToUpload.map(this.renderFileToUpload)}
         </ModalContent>
         <ModalActions>
           <FlatButton label={Messages("ui.cancel")} onClick={onWantUpload} />
-          <FlatButton label={Messages("ui.upload")} loading={loading} onClick={this.handleOnUpload} />
+          {this.renderActions()}
         </ModalActions>
       </Modal>
     )
   }
 
+  renderActions = () => {
+    const { filesToUpload, onWantUpload } = this.props
+    const isDone = filesToUpload.filter(f => !f.done).length === 0
+    if (isDone) {
+      return (
+        <FlatButton
+          label={Messages("ui.done")}
+          loading={!!filesToUpload.find(fileToUpload => fileToUpload.loading)}
+          onClick={onWantUpload}
+        />
+      )
+    } else {
+      return (
+        <FlatButton
+          label={Messages("ui.upload")}
+          loading={!!filesToUpload.find(fileToUpload => fileToUpload.loading)}
+          onClick={this.handleOnUpload}
+        />
+      )
+    }
+  }
+
+  renderFileToUpload = (fileToUpload: FileToUpload) => {
+    const { onRemoveFileToUpload, onSelectCipher, onSelectCompression } = this.props
+    return (
+      <UploadFile
+        key={fileToUpload.id}
+        fileToUpload={fileToUpload}
+        onDelete={onRemoveFileToUpload}
+        onSelectCipher={onSelectCipher}
+        onSelectCompression={onSelectCompression}
+      />
+    )
+  }
+
   handleOnUpload = () => {
-    const { directory, files, onUploadFile } = this.props
-    files.forEach(file => {
-      onUploadFile(`${directory.path}/${file.name}`.replace("//", "/"), file)
+    const { directory, filesToUpload, onUploadFile } = this.props
+    filesToUpload.filter(f => !f.done).forEach(fileToUpload => {
+      onUploadFile(`${directory.path}/${fileToUpload.file.name}`.replace("//", "/"), fileToUpload)
     })
   }
 
   handleOnChange = (fileList: FileList) => {
-    this.props.onAddFiles([fileList[0]])
+    const { idCounter } = this.props
+    this.props.onAddFiles([{
+      id: idCounter,
+      progress: 0,
+      loading: false,
+      file: fileList[0],
+      done: false,
+    }])
   }
 }
 
 const mapStateToProps = (state: GlobalState): PropsState => {
   return {
-    files: state.upload.files,
-    wantUpload: state.upload.wantUpload,
-    loading: state.upload.loading,
-    progress: state.upload.progress,
-    directory: state.directories.directory!
+    ...state.upload,
+    directory: state.directories.directory!,
   }
 }
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
@@ -81,6 +121,9 @@ const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
     onWantUpload: () => dispatch(UploadActions.onWantUpload()),
     onAddFiles: (files) => dispatch(UploadActions.onAddFiles(files)),
     onUploadFile: (path, file) => dispatch(UploadActions.onUploadFile(path, file)),
+    onRemoveFileToUpload: fileToUpload => dispatch(UploadActions.onRemoveFileToUpload(fileToUpload)),
+    onSelectCipher: (fileToUpload, cipher) => dispatch(UploadActions.onSelectCipher(fileToUpload, cipher)),
+    onSelectCompression: (fileToUpload, compression) => dispatch(UploadActions.onSelectCompression(fileToUpload, compression)),
   }
 }
 
