@@ -1,5 +1,6 @@
 import { DirectoriesAction } from "directories/DirectoriesActions"
 import { FsNode, FsFile, isDirectory } from "models/FsNode"
+import { Share } from "models/Share"
 import { ApiError } from "services/Api"
 
 export interface DirectoriesState {
@@ -8,11 +9,15 @@ export interface DirectoriesState {
   deleteLoading?: string
   error?: ApiError
   previewFsFile?: FsFile
+  sharedFsNode?: FsNode
+  share?: Share
+  sharingLoader: boolean
 }
 
 const initState: DirectoriesState = {
   loading: false,
-  error: undefined
+  sharingLoader: false,
+  error: undefined,
 }
 
 export const DirectoriesReducer = (state: DirectoriesState = initState, action: DirectoriesAction) => {
@@ -47,6 +52,10 @@ export const DirectoriesReducer = (state: DirectoriesState = initState, action: 
       }
     }
     case "ShowPreview": return { ...state, previewFsFile: action.fsFile }
+    case "Sharing": return { ...state, sharingLoader: true }
+    case "SharingSuccess": return { ...state, sharingLoader: false, sharedFsNode: action.fsNode, share: action.share }
+    case "SharingError": return { ...state, sharingLoader: false, error: action.error, sharedFsNode: undefined, share: undefined }
+    case "CloseShare": return { ...state, sharedFsNode: undefined, share: undefined }
     default: return state
   }
 }

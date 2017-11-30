@@ -3,6 +3,7 @@ import { User, userValidator } from "models/User"
 import { object, string } from "validation.ts"
 import { FsNode, FsNodeValidator, NodeType } from "models/FsNode"
 import { FileToUpload } from "models/FileToUpload"
+import { Share, ShareValidator } from "models/Share"
 import { Promise } from "es6-shim"
 import { success } from "services/request"
 import querystring from "utils/querystring"
@@ -105,6 +106,14 @@ export function deleteFsNode(fsNode: FsNode): Promise<void> {
     method: "DELETE",
     headers: HEADERS,
   }).then(success())
+}
+
+export function share(fsNode: FsNode): Promise<Share> {
+  return withAuth(`/api/fs${encodeURI(fsNode.path)}`, {
+    method: "POST",
+    headers: HEADERS,
+    body: JSON.stringify({ operation: "SHARE_LINK" })
+  }).then(success(ShareValidator))
 }
 
 export function logout(): Promise<void> {

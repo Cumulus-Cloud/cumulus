@@ -14,13 +14,22 @@ import PreviewContainer from "./PreviewContainer"
 import FsDirectory from "components/directory/FsDirectory"
 import FsFile from "components/directory/FsFile"
 import { FsNode, FsFile as FsFileModel , isDirectory } from "models/FsNode"
+import { Share } from "models/Share"
 import Empty from "components/directory/Empty"
 import Loader from "components/directory/Loader"
+import querystring from "utils/querystring"
+import Modal from "components/modals/Modal"
+import ModalActions from "components/modals/ModalActions"
+import ModalHeader from "components/modals/ModalHeader"
+import ModalContent from "components/modals/ModalContent"
+import FlatButton from "components/buttons/FlatButton"
 
 interface DispatchProps {
   onFetchDirectory: (path: string) => void
   onDeleteFsNode: (fsNode: FsNode) => void
   onShowPreview: (fsNode?: FsFileModel) => void
+  onSharing: (fsNode: FsNode) => void
+  onCloseShare: () => void
 }
 
 interface Params {
@@ -44,7 +53,7 @@ class DirectoriesContainer extends React.PureComponent<Props> {
   }
 
   render() {
-    const { directory } = this.props
+    const { directory, share, sharedFsNode } = this.props
     return (
       <div className={styles.directoriesContainer}>
         <AppBar />
@@ -60,6 +69,7 @@ class DirectoriesContainer extends React.PureComponent<Props> {
             {!!directory ? this.renderDirectories(directory) : <Loader />}
           </div>
           <PreviewContainer />
+          {!!share && !!sharedFsNode ? this.renderShareModal(share, sharedFsNode) : null}
         </div>
       </div>
     )
@@ -92,24 +102,41 @@ class DirectoriesContainer extends React.PureComponent<Props> {
       return (
         <FsFile
           key={fsNode.id}
-          fsNode={fsNode}
+          fsFile={fsNode}
           onDelete={this.props.onDeleteFsNode}
           onShowPreview={this.props.onShowPreview}
+          onSharing={this.props.onSharing}
         />
       )
     }
   }
 
+  renderShareModal = (share: Share, sharedFsNode: FsNode) => {
+    const { onCloseShare } = this.props
+    const qs = querystring({
+      reference: share.reference,
+      key: share.key,
+      download: "true"
+    })
+    return (
+      <Modal onClose={onCloseShare}>
+        <ModalHeader title={Messages("ui.share")} />
+        <ModalContent>
+          {encodeURI(`${document.location.origin}/api/shared/download${sharedFsNode.path}${qs}`)}
+        </ModalContent>
+        <ModalActions>
+          <FlatButton label={Messages("ui.cancel")} onClick={onCloseShare} />
+        </ModalActions>
+      </Modal>
+    )
+  }
   handleDirectoryOnClick = (fsNode: FsNode) => history.push(`/fs${fsNode.path}`)
   handleOnPathClick = (path: string) => history.push(path)
 }
 
 const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string[]> }): DirectoriesState & Params => {
   return {
-    directory: state.directories.directory,
-    loading: state.directories.loading,
-    deleteLoading: state.directories.deleteLoading,
-    error: state.directories.error,
+    ...state.directories,
     path: props.match && props.match.params[0]
   }
 }
@@ -118,7 +145,9 @@ const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
     onFetchDirectory: path => dispatch(DirectoriesActions.onFetchDirectory(path)),
     onDeleteFsNode: fsNode => dispatch(DirectoriesActions.onDeleteFsNode(fsNode)),
-    onShowPreview: fsFile => dispatch(DirectoriesActions.onShowPreview(fsFile))
+    onShowPreview: fsFile => dispatch(DirectoriesActions.onShowPreview(fsFile)),
+    onSharing: fsNode => dispatch(DirectoriesActions.onSharing(fsNode)),
+    onCloseShare: () => dispatch(DirectoriesActions.onCloseShare()),
   }
 }
 

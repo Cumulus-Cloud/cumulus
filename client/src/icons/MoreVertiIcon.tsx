@@ -14,5 +14,3 @@ export default function MoreVertiIcon({ color = "#303f9f", width = 24, height = 
     </svg>
   )
 }
-
-
