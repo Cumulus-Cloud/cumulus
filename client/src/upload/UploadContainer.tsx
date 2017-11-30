@@ -57,14 +57,14 @@ class NewFolderContainer extends React.PureComponent<Props> {
   }
 
   renderActions = () => {
-    const { filesToUpload } = this.props
+    const { filesToUpload, onWantUpload } = this.props
     const isDone = filesToUpload.filter(f => !f.done).length === 0
     if (isDone) {
       return (
         <FlatButton
           label={Messages("ui.done")}
           loading={!!filesToUpload.find(fileToUpload => fileToUpload.loading)}
-          onClick={this.handleOnUpload}
+          onClick={onWantUpload}
         />
       )
     } else {
