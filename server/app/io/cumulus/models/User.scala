@@ -61,8 +61,6 @@ case class SharingSession(
 
 }
 
-
-
 /**
   * An user account
   *

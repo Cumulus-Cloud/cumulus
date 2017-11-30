@@ -46,7 +46,6 @@ class SharingController(
         res <- EitherT(sharingService.findSharedFile(reference, path, key))
         (sharing, user, file) = res
 
-        //
         range <- EitherT.fromEither[Future](headerRange(request, file))
 
         // Decode the key & generate a session
