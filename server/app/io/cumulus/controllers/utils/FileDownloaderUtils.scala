@@ -2,14 +2,13 @@ package io.cumulus.controllers.utils
 
 import scala.concurrent.ExecutionContext
 
-import akka.NotUsed
-import akka.stream.scaladsl.Flow
-import akka.util.ByteString
 import io.cumulus.core.stream.storage.StorageReferenceReader
 import io.cumulus.core.utils.Range
 import io.cumulus.core.validation.AppError
+import io.cumulus.models.Session
 import io.cumulus.models.fs.File
 import io.cumulus.persistence.storage.StorageEngine
+import io.cumulus.stages.{Ciphers, Compressions}
 import play.api.http.HttpEntity
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
@@ -42,60 +41,67 @@ trait FileDownloaderUtils {
   protected def downloadFile(
     storageEngine: StorageEngine,
     file: File,
-    fileTransformation: Flow[ByteString, ByteString, NotUsed],
     forceDownload: Boolean
-  )(implicit ec: ExecutionContext): Result = {
+  )(implicit
+    session: Session,
+    ciphers: Ciphers,
+    compressions: Compressions,
+    ec: ExecutionContext
+  ): Either[AppError, Result] = {
 
-    val source = StorageReferenceReader(
+    StorageReferenceReader(
       storageEngine,
-      fileTransformation,
       file
-    )
+    ).map { source =>
 
-    Ok.sendEntity(
-      HttpEntity.Streamed(
-        source,
-        Some(file.size),
-        Some(file.mimeType)
+      Ok.sendEntity(
+        HttpEntity.Streamed(
+          source,
+          Some(file.size),
+          Some(file.mimeType)
+        )
       )
-    )
-    .withHeaders(
-      if(forceDownload)
-        "Content-Disposition" -> s"attachment; filename*=UTF-8''${file.name}"
-      else
-        "Content-Disposition" -> "inline"
-    )
+      .withHeaders(
+        if(forceDownload)
+          "Content-Disposition" -> s"attachment; filename*=UTF-8''${file.name}"
+        else
+          "Content-Disposition" -> "inline"
+      )
+    }
 
   }
 
   protected def streamFile(
     storageEngine: StorageEngine,
     file: File,
-    fileTransformation: Flow[ByteString, ByteString, NotUsed],
     range: Range
-  )(implicit ec: ExecutionContext): Result = {
+  )(implicit
+    session: Session,
+    ciphers: Ciphers,
+    compressions: Compressions,
+    ec: ExecutionContext
+  ): Either[AppError, Result] = {
 
-    val source = StorageReferenceReader(
+    StorageReferenceReader(
       storageEngine,
-      fileTransformation,
       file,
       range
-    )
+    ).map { source =>
 
-    PartialContent
-      .sendEntity(
-        HttpEntity.Streamed(
-          source,
-          None,
-          Some(file.mimeType)
+      PartialContent
+        .sendEntity(
+          HttpEntity.Streamed(
+            source,
+            None,
+            Some(file.mimeType)
+          )
         )
-      )
-      .withHeaders(
-        ("Content-Transfer-Encoding", "Binary"),
-        ("Content-Range", s"bytes ${range.start}-${range.end}/${file.size}"),
-        ("Accept-Ranges", "bytes")
-      )
-
+        .withHeaders(
+          ("Content-Transfer-Encoding", "Binary"),
+          ("Content-Range", s"bytes ${range.start}-${range.end}/${file.size}"),
+          ("Accept-Ranges", "bytes")
+        )
+    }
   }
 
 }

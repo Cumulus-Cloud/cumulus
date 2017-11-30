@@ -2,7 +2,6 @@ package io.cumulus.core.stream.storage
 
 import scala.concurrent.{ExecutionContext, Future}
 
-import akka.NotUsed
 import akka.stream.FlowShape
 import akka.stream.scaladsl.GraphDSL.Implicits._
 import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, Sink, ZipWith}
@@ -11,16 +10,26 @@ import io.cumulus.core.Settings
 import io.cumulus.core.stream.utils.{Chunker, Counter, DigestCalculator}
 import io.cumulus.core.utils.MimeType
 import io.cumulus.models.fs.File
-import io.cumulus.models.{Path, User}
+import io.cumulus.models.{Path, UserSession}
 import io.cumulus.persistence.storage.{StorageEngine, StorageObject, StorageReference}
+import io.cumulus.stages.{CipherStage, CompressionStage}
 
 object StorageReferenceWriter {
 
   def apply(
     storageEngine: StorageEngine,
-    transformation: Flow[ByteString, ByteString, NotUsed],
+    cipher: Option[CipherStage],
+    compression: Option[CompressionStage],
     path: Path
-  )(implicit user: User, settings: Settings, ec: ExecutionContext): Sink[ByteString, Future[File]] = {
+  )(implicit user: UserSession, settings: Settings, ec: ExecutionContext): Sink[ByteString, Future[File]] = {
+
+    val (privateKey, salt) =  user.privateKeyAndSalt
+
+    // Create the transformation
+    val transformation =
+      Flow[ByteString]
+        .via(compression.map(_.compress).getOrElse(Flow[ByteString]))
+        .via(cipher.map(_.encrypt(privateKey, salt)).getOrElse(Flow[ByteString]))
 
     // Split the incoming stream of bytes, and writes it to multiple files
     val objectsWriter =
@@ -41,14 +50,12 @@ object StorageReferenceWriter {
       val broadcast = builder.add(Broadcast[ByteString](3))
       val zip       = builder.add(ZipWith[Seq[StorageObject], Long, String, File] {
         case (storageObjects, fileSize, fileSha1) =>
-          // TODO the storage reference should have a private key and detect the cipher and compression
           val storageRef = StorageReference(
-            fileSize,
-            fileSha1,
-            None,
-            None,
-            None,
-            storageObjects
+            size = fileSize,
+            hash = fileSha1,
+            cipher = cipher.map(_.name),
+            compression = compression.map(_.name),
+            storage = storageObjects
           )
 
           // Create the file with the provided information

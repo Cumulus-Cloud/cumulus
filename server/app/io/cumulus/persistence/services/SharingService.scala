@@ -84,12 +84,12 @@ class SharingService(
     reference: String,
     path: Path,
     secretCode: String
-  ): Future[Either[AppError, (Sharing, Directory)]] = {
+  ): Future[Either[AppError, (Sharing, User, Directory)]] = {
 
     for {
       // Find the node
       result <- find(reference, path, secretCode)
-      (sharing, node) = result
+      (sharing, user, node) = result
 
       // Check if the node is a directory
       directory <- QueryE.pure {
@@ -100,7 +100,7 @@ class SharingService(
             Left(AppError.validation("validation.fs-node.not-directory", path))
         }
       }
-    } yield (sharing, directory)
+    } yield (sharing, user, directory)
 
   }.commit()
 
@@ -109,14 +109,14 @@ class SharingService(
     reference: String,
     path: Path,
     secretCode: String
-  ): Future[Either[AppError, (Sharing, File)]] = {
+  ): Future[Either[AppError, (Sharing, User, File)]] = {
 
     for {
       // Find the node
       result <- find(reference, path, secretCode)
-      (sharing, node) = result
+      (sharing, user, node) = result
 
-      // Check if the node is a directory
+      // Check if the node is a file
       file <- QueryE.pure {
         node match {
           case file: File =>
@@ -125,7 +125,7 @@ class SharingService(
             Left(AppError.validation("validation.fs-node.not-file", path))
         }
       }
-    } yield (sharing, file)
+    } yield (sharing, user, file)
 
   }.commit()
 
@@ -134,7 +134,7 @@ class SharingService(
     reference: String,
     path: Path,
     secretCode: String
-  ): Future[Either[AppError, (Sharing, FsNode)]] =
+  ): Future[Either[AppError, (Sharing, User, FsNode)]] =
     find(reference, path, secretCode).commit()
 
   // TODO doc
@@ -162,7 +162,7 @@ class SharingService(
       _ <- QueryE.pure {
         (sharing.expiration, LocalDateTime.now) match {
           case (Some(expiration), now) if expiration.isBefore(now) =>
-            Left(AppError.validation("validation.sharing.expired")) // TODO
+            Left(AppError.validation("validation.sharing.expired"))
           case _ =>
             Right(())
         }
@@ -184,7 +184,7 @@ class SharingService(
         }
       }
 
-    } yield (sharing, node)
+    } yield (sharing, sharingUser, node)
 
   }
 

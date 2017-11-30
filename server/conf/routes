@@ -15,7 +15,7 @@ POST    /api/fs*path                  io.cumulus.controllers.FileSystemControlle
 DELETE  /api/fs*path                  io.cumulus.controllers.FileSystemController.delete(path: Path)
 
 # API - Upload and download routes
-POST    /api/upload*path              io.cumulus.controllers.FileSystemController.upload(path: Path)
+POST    /api/upload*path              io.cumulus.controllers.FileSystemController.upload(path: Path, cipher: Option[String], compression: Option[String])
 GET     /api/download*path            io.cumulus.controllers.FileSystemController.download(path: Path, download: Option[Boolean])
 GET     /api/stream*path              io.cumulus.controllers.FileSystemController.stream(path: Path)
 
