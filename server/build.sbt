@@ -32,8 +32,9 @@ lazy val cumulusServer = project
   .in(file("."))
   .settings(
     name := "cumulus-server",
-    // Allow to use `Path` in route
+    // Allow to use `Path` and `FsNodeType` in route
     routesImport += "io.cumulus.models.Path",
+    routesImport += "io.cumulus.models.fs.FsNodeType",
     libraryDependencies ++= Seq(
       ws,
       // i18n

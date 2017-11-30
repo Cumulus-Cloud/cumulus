@@ -3,16 +3,19 @@
 GET     /                             io.cumulus.controllers.HomeController.index
 
 # User management routes
-POST    /users/login                  io.cumulus.controllers.UserController.login
-POST    /users/logout                 io.cumulus.controllers.UserController.logout
-POST    /users/signup                 io.cumulus.controllers.UserController.signUp
-GET     /users/me                     io.cumulus.controllers.UserController.me
+POST    /api/users/login              io.cumulus.controllers.UserController.login
+POST    /api/users/logout             io.cumulus.controllers.UserController.logout
+POST    /api/users/signup             io.cumulus.controllers.UserController.signUp
+GET     /api/users/me                 io.cumulus.controllers.UserController.me
 
 # API - FS get/update routes
 GET     /api/fs*path                  io.cumulus.controllers.FileSystemController.get(path: Path)
 PUT     /api/fs*path                  io.cumulus.controllers.FileSystemController.create(path: Path)
 POST    /api/fs*path                  io.cumulus.controllers.FileSystemController.update(path: Path)
 DELETE  /api/fs*path                  io.cumulus.controllers.FileSystemController.delete(path: Path)
+
+# API- Search
+GET     /api/search*path              io.cumulus.controllers.FileSystemController.search(path: Path, name: String, nodeType: Option[FsNodeType], `type`: Option[String])
 
 # API - Upload and download routes
 POST    /api/upload*path              io.cumulus.controllers.FileSystemController.upload(path: Path, cipher: Option[String], compression: Option[String])

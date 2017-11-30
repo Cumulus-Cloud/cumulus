@@ -12,7 +12,7 @@ import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.controllers.utils.bodyParser.{BodyParserJson, BodyParserStream}
 import io.cumulus.core.stream.storage.StorageReferenceWriter
-import io.cumulus.models.fs.Directory
+import io.cumulus.models.fs.{Directory, FsNodeType}
 import io.cumulus.models.{Path, Sharing, UserSession}
 import io.cumulus.persistence.services.{FsNodeService, SharingService}
 import io.cumulus.persistence.storage.StorageEngine
@@ -36,6 +36,12 @@ class FileSystemController(
   def get(path: Path) = AuthenticatedAction.async { implicit request =>
     ApiResponse {
       fsNodeService.findNode(path)
+    }
+  }
+
+  def search(path: Path, name: String, nodeType: Option[FsNodeType], mimeType: Option[String]) = AuthenticatedAction.async { implicit request =>
+    ApiResponse {
+      fsNodeService.searchNodes(path, name, nodeType, mimeType)
     }
   }
 
