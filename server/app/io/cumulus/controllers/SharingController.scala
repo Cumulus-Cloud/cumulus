@@ -1,31 +1,34 @@
 package io.cumulus.controllers
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-import akka.stream.scaladsl.{Compression, Flow}
-import akka.util.ByteString
+import cats.data.EitherT
+import cats.implicits._
 import io.cumulus.controllers.utils.FileDownloaderUtils
 import io.cumulus.core.controllers.utils.api.ApiUtils
-import io.cumulus.core.stream.utils.AESCipher
 import io.cumulus.core.utils.Base16
 import io.cumulus.core.validation.AppError
-import io.cumulus.models.Path
+import io.cumulus.models.{Path, SharingSession}
 import io.cumulus.persistence.services.SharingService
 import io.cumulus.persistence.storage.StorageEngine
+import io.cumulus.stages.{Ciphers, Compressions}
 import play.api.mvc.{AbstractController, ControllerComponents}
 
 class SharingController(
   cc: ControllerComponents,
   sharingService: SharingService,
   storageEngine: StorageEngine
-)(
-  implicit ec: ExecutionContext
+)(implicit
+  ec: ExecutionContext,
+  ciphers: Ciphers,
+  compressions: Compressions
 ) extends AbstractController(cc) with ApiUtils with FileDownloaderUtils {
 
   def get(path: Path, reference: String, key: String) = Action.async { implicit request =>
     ApiResponse {
       sharingService.findSharedNode(reference, path, key).map {
-        case Right((_, node)) =>
+        case Right((_, _, node)) =>
+          // TODO change the path to not return the node real path
           Right(node)
         case Left(e) =>
           Left(e)
@@ -37,28 +40,24 @@ class SharingController(
     stream("/", reference, key)
 
   def stream(path: Path, reference: String, key: String) = Action.async { implicit request =>
-    sharingService.findSharedFile(reference, path, key).map {
-      case Right((sharing, file)) =>
+    ApiResponse.result {
+      for {
+        // Get the sharing, the user and the file
+        res <- EitherT(sharingService.findSharedFile(reference, path, key))
+        (sharing, user, file) = res
 
-        (for {
-          range      <- headerRange(request, file)
-          decodedKey <- Base16.decode(key).toRight(AppError.validation("Invalid key provided")) // TODO
-          privateKey  = sharing.security.privateKey(decodedKey)
-          salt        = sharing.security.privateKeySalt
-        } yield {
+        range <- EitherT.fromEither[Future](headerRange(request, file))
 
-          // TODO guess from the file and/or chunks
-          val transformation =
-            Flow[ByteString]
-              .via(AESCipher.decrypt(privateKey, salt))
-              .via(Compression.gunzip())
+        // Decode the key & generate a session
+        decodedKey <- EitherT.fromEither[Future](Base16.decode(key).toRight(AppError.validation("validation.sharing.invalid-key")))
+        session = SharingSession(user, sharing, decodedKey)
 
-          streamFile(storageEngine, file, transformation, range)
-
-        }).left.map(toApiError).merge
-
-      case Left(e) =>
-        toApiError(e)
+        // Stream the file
+        result <- EitherT.fromEither[Future] {
+          implicit val sharingSession = session
+          streamFile(storageEngine, file, range)
+        }
+      } yield result
     }
   }
 
@@ -66,23 +65,22 @@ class SharingController(
     download("/", reference, key, forceDownload)
 
   def download(path: Path, reference: String, key: String, forceDownload: Option[Boolean]) = Action.async { implicit request =>
-    sharingService.findSharedFile(reference, path, key).map {
-      case Right((sharing, file)) =>
+    ApiResponse.result {
+      for {
+        // Get the sharing, the user and the file
+        res <- EitherT(sharingService.findSharedFile(reference, path, key))
+        (sharing, user, file) = res
 
-        Base16.decode(key).toRight(AppError.validation("validation.sharing.invalid-key")).map { privateKey =>
-          val salt = sharing.security.privateKeySalt
+        // Decode the key & generate a session
+        decodedKey <- EitherT.fromEither[Future](Base16.decode(key).toRight(AppError.validation("validation.sharing.invalid-key")))
+        session    =  SharingSession(user, sharing, decodedKey)
 
-          // TODO guess from the file and/or chunks
-          val transformation =
-            Flow[ByteString]
-              .via(AESCipher.decrypt(privateKey, salt))
-              .via(Compression.gunzip())
-
-          downloadFile(storageEngine, file, transformation, forceDownload.getOrElse(false))
-        }.left.map(toApiError).merge
-
-      case Left(e) =>
-        toApiError(e)
+        // Download the file
+        result <- EitherT.fromEither[Future]{
+          implicit val sharingSession = session
+          downloadFile(storageEngine, file, forceDownload.getOrElse(false))
+        }
+      } yield result
     }
   }
 

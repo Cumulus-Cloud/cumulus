@@ -14,6 +14,16 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 /**
+  * Common trait for both user session and sharing session
+  */
+trait Session {
+
+  def user: User
+  def privateKeyAndSalt: (ByteString, ByteString)
+
+}
+
+/**
   * Session of the user. The private key is also used for decrypt and encrypt files, and thus should be present when
   * crypting and decrypting files.
   *
@@ -23,7 +33,7 @@ import play.api.libs.json._
 case class UserSession(
   user: User,
   password: String
-) {
+) extends Session {
 
   def privateKeyAndSalt: (ByteString, ByteString) =
     (user.security.privateKey(password), user.security.privateKeySalt)
@@ -37,6 +47,17 @@ object UserSession {
 
   implicit def format: Format[UserSession] =
     Json.format[UserSession]
+
+}
+
+case class SharingSession(
+  user: User,
+  sharing: Sharing,
+  key: ByteString
+) extends Session {
+
+  def privateKeyAndSalt: (ByteString, ByteString) =
+    (sharing.security.privateKey(key), sharing.security.privateKeySalt)
 
 }
 

@@ -3,8 +3,8 @@ package io.cumulus.controllers
 import scala.concurrent.{ExecutionContext, Future}
 
 import akka.stream.Materializer
-import akka.stream.scaladsl.{Compression, Flow}
-import akka.util.ByteString
+import cats.data.EitherT
+import cats.implicits._
 import io.cumulus.controllers.payloads.fs._
 import io.cumulus.controllers.utils.FileDownloaderUtils
 import io.cumulus.core.Settings
@@ -12,11 +12,11 @@ import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.controllers.utils.bodyParser.{BodyParserJson, BodyParserStream}
 import io.cumulus.core.stream.storage.StorageReferenceWriter
-import io.cumulus.core.stream.utils.AESCipher
 import io.cumulus.models.fs.Directory
 import io.cumulus.models.{Path, Sharing, UserSession}
 import io.cumulus.persistence.services.{FsNodeService, SharingService}
 import io.cumulus.persistence.storage.StorageEngine
+import io.cumulus.stages.{Ciphers, Compressions}
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}
 
@@ -25,10 +25,12 @@ class FileSystemController(
   fsNodeService: FsNodeService,
   sharingService: SharingService,
   storageEngine: StorageEngine
-)(
-  implicit ec: ExecutionContext,
+)(implicit
+  ec: ExecutionContext,
   materializer: Materializer,
-  settings: Settings
+  settings: Settings,
+  ciphers: Ciphers,
+  compressions: Compressions
 ) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with FileDownloaderUtils with BodyParserJson with BodyParserStream {
 
   def get(path: Path) = AuthenticatedAction.async { implicit request =>
@@ -38,81 +40,55 @@ class FileSystemController(
   }
 
   def stream(path: Path) = AuthenticatedAction.async { implicit request =>
-    fsNodeService.findFile(path).map {
-      case Right(file) =>
-
-        headerRange(request, file).map { range =>
-          val (privateKey, salt) = request.user.privateKeyAndSalt
-
-          // TODO guess from the file and/or chunks
-          val transformation =
-            Flow[ByteString]
-              .via(AESCipher.decrypt(privateKey, salt))
-              .via(Compression.gunzip())
-
-          streamFile(storageEngine, file, transformation, range)
-
-        }.left.map(toApiError).merge
-
-      case Left(e) =>
-        toApiError(e)
+    ApiResponse.result {
+      for {
+        file   <- EitherT(fsNodeService.findFile(path))
+        range  <- EitherT.fromEither[Future](headerRange(request, file))
+        result <- EitherT.fromEither[Future](
+          streamFile(storageEngine, file, range)
+        )
+      } yield result
     }
   }
 
   def download(path: Path, forceDownload: Option[Boolean]) = AuthenticatedAction.async { implicit request =>
-    fsNodeService.findFile(path).map {
-      case Right(file) =>
-
-        val (privateKey, salt) = request.user.privateKeyAndSalt
-
-        // TODO guess from the file and/or chunks
-        val transformation =
-          Flow[ByteString]
-            .via(AESCipher.decrypt(privateKey, salt))
-            .via(Compression.gunzip())
-
-        downloadFile(storageEngine, file, transformation, forceDownload.getOrElse(false))
-
-      case Left(e) =>
-        toApiError(e)
+    ApiResponse.result {
+      for {
+        file   <- EitherT(fsNodeService.findFile(path))
+        result <- EitherT.fromEither[Future](
+          downloadFile(storageEngine, file, forceDownload.getOrElse(false))
+        )
+      } yield result
     }
   }
 
- def upload(path: Path) = AuthenticatedAction.async(streamBody) { implicit request =>
+ def upload(path: Path, cipherName: Option[String], compressionName: Option[String]) = AuthenticatedAction.async(streamBody) { implicit request =>
    ApiResponse {
-     // Check that the file can be uploaded
-     fsNodeService.checkForNewNode(path).flatMap {
-       case Right(_) =>
+     for {
+       // Check that the file can be uploaded
+       _ <- EitherT(fsNodeService.checkForNewNode(path))
 
-         val (privateKey, salt) = request.user.privateKeyAndSalt
+       // Get the cipher and compression from the request
+       cipher      <- EitherT.fromEither[Future](ciphers.get(cipherName))
+       compression <- EitherT.fromEither[Future](compressions.get(compressionName))
 
-         // TODO get from conf and/or file
-         val transformation =
-           Flow[ByteString]
-             .via(Compression.gzip)
-             .via(AESCipher.encrypt(privateKey, salt))
+       // Define the file writer from this information
+       fileWriter = {
+         StorageReferenceWriter(
+           storageEngine,
+           cipher,
+           compression,
+           path
+         )
+       }
 
-         val fileWriter =
-           StorageReferenceWriter(
-             storageEngine,
-             transformation,
-             path
-           )
+       // Store the file
+       uploadedFile <- EitherT.liftF(request.body.runWith(fileWriter))
 
-         request
-           .body
-           .runWith(fileWriter)
-           .flatMap { uploadedFile =>
-             // Once uploaded, insert the created file
-             // TODO should delete stored objects on failure (or at least mark them as deletable)
-             fsNodeService
-               .createFile(uploadedFile)
-           }
+       // Create an entry in the database for the file
+       file <- EitherT(fsNodeService.createFile(uploadedFile))
 
-       case Left(e) =>
-         Future.successful(Left(e))
-     }
-
+     } yield file
    }
  }
 

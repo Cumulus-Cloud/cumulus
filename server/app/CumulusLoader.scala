@@ -1,4 +1,5 @@
 import scala.concurrent.ExecutionContextExecutor
+
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.typesafe.config.Config
 import controllers.AssetsComponents
@@ -11,6 +12,7 @@ import io.cumulus.core.persistence.query.QueryBuilder
 import io.cumulus.persistence.services.{FsNodeService, SharingService, UserService}
 import io.cumulus.persistence.storage.{LocalStorageEngine, StorageEngine}
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore, UserStore}
+import io.cumulus.stages._
 import jsmessages.JsMessagesFactory
 import play.api._
 import play.api.db.evolutions.EvolutionsComponents
@@ -20,6 +22,7 @@ import play.api.libs.mailer.MailerComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
+
 import router.Routes
 
 class CumulusLoader extends ApplicationLoader {
@@ -43,6 +46,15 @@ class CumulusComponents(
   with HikariCPComponents
   with MailerComponents
   with EvolutionsComponents {
+
+  implicit val ciphers = Ciphers(Map(
+    AESCipherStage.name -> AESCipherStage
+  ))
+
+  implicit val compressors = Compressions(Map(
+    GzipStage.name    -> GzipStage,
+    DeflateStage.name -> DeflateStage
+  ))
 
   lazy val router: Router = new Routes(
     httpErrorHandler,

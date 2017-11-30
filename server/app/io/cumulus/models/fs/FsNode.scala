@@ -214,7 +214,9 @@ object File {
     (JsPath \ "size").write[Long] and
     (JsPath \ "humanReadableSize").write[String] and
     (JsPath \ "hash").write[String] and
-    (JsPath \ "mimeType").write[String]
+    (JsPath \ "mimeType").write[String]and
+    (JsPath \ "cipher").writeNullable[String] and
+    (JsPath \ "compression").writeNullable[String]
   ){ file =>
     (
       file.id,
@@ -228,7 +230,9 @@ object File {
       file.size,
       JsonFormat.humanReadable(file.size),
       file.hash,
-      file.mimeType
+      file.mimeType,
+      file.storageReference.cipher,
+      file.storageReference.compression
     )
   }
 
