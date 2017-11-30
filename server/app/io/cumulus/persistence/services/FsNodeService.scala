@@ -5,13 +5,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import io.cumulus.core.Logging
 import io.cumulus.core.persistence.CumulusDB
-import io.cumulus.core.persistence.anorm.AnormSupport._
 import io.cumulus.core.persistence.query.{QueryBuilder, QueryE}
 import io.cumulus.core.validation.AppError
 import io.cumulus.models._
 import io.cumulus.models.fs._
-import io.cumulus.persistence.stores.FsNodeStore._
-import io.cumulus.persistence.stores.{FsNodeStore, SharingStore}
+import io.cumulus.persistence.stores.{FsNodeFilter, FsNodeStore, SharingStore}
 import play.api.libs.json.__
 
 class FsNodeService(
@@ -102,17 +100,21 @@ class FsNodeService(
   }
 
   /**
-    * Return all the file system
+    * Search a node by name
+    * @param parent The node parent
+    * @param name The node's partial name
+    * @param nodeType The optional node type
     * @param user The user performing the operation
     */
-  def tree(implicit user: User): Future[Either[AppError, Seq[FsNode]]] = {
-
-    for {
-      directories       <- QueryE.lift(fsNodeStore.listBy(ownerField, user.id))
-      sortedDirectories =  directories.toList.sortBy(_.path.toString)
-    } yield sortedDirectories
-
-  }.commit()
+  def searchNodes(
+    parent: Path,
+    name: String,
+    nodeType: Option[FsNodeType],
+    mimeType: Option[String]
+  )(implicit user: User): Future[Either[AppError, Seq[FsNode]]] = {
+    val filter = FsNodeFilter(name, parent, nodeType, mimeType, user)
+    fsNodeStore.findAll(filter).commit().map(Right.apply)
+  }
 
   /**
     * Check that a new node can be created. Used to non-atomically check for a new file that the uploaded file can be

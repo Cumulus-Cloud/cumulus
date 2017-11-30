@@ -1,51 +1,56 @@
 package io.cumulus.persistence.stores
 
-import io.cumulus.core.persistence.anorm.AnormSupport._
+import anorm.NamedParameter
 import io.cumulus.core.persistence.query.{ParameterizedSqlFilter, QueryFilter}
 import io.cumulus.models.{Path, User}
+import io.cumulus.models.fs.FsNodeType
 import io.cumulus.persistence.stores.FsNodeStore._
 
 case class FsNodeFilter(
-  owner: User,
-  path: Option[Path],
-  parentPath: Option[Path]
+  likeName: String,
+  parent: Path,
+  nodeType: Option[FsNodeType],
+  mimeType: Option[String],
+  owner: User
 ) extends QueryFilter {
 
-  override def filters = Seq(
-    ownerToFilter,
-    pathToFilter,
-    parentPathToFilter
+  lazy val filters = Seq(
+    parentToFilter,
+    nodeTypeToFilter,
+    mimeTypeToFilter,
+    nameToFilter
   ).flatten
 
-  private lazy val ownerToFilter: Option[ParameterizedSqlFilter] = Some(
+  private lazy val nameToFilter: Option[ParameterizedSqlFilter] = Some(
+    ParameterizedSqlFilter(s"""
+      (
+        dmetaphone($nameField) = dmetaphone({_name}) OR
+        levenshtein($nameField, {_name}) < 3 OR
+        name LIKE {_nameLike}
+      )
+    """.stripMargin, Seq(NamedParameter("_name", likeName), NamedParameter("_nameLike", s"%$likeName%")))
+  )
+
+  private lazy val parentToFilter: Option[ParameterizedSqlFilter] = Some {
+    val regex = s"^${parent.toString}"
+    ParameterizedSqlFilter(s"$pathField ~ {_path}", "_path", regex)
+  }
+
+  private lazy val nodeTypeToFilter: Option[ParameterizedSqlFilter] = nodeType.map { t =>
+    ParameterizedSqlFilter(s"$nodeTypeField = {_nodeType}", "_nodeType", t)
+  }
+
+  private lazy val mimeTypeToFilter: Option[ParameterizedSqlFilter] = mimeType.map { t =>
+    val regex = s"^$t"
+    ParameterizedSqlFilter(s"$metadataField ->> 'mimeType' ~ {_mimeType}", "_mimeType", regex)
+  }
+
+  private lazy val ownerToFilter: Option[ParameterizedSqlFilter] = Some {
     ParameterizedSqlFilter(s"$ownerField = {_owner}", "_owner", owner.id)
-  )
-
-  private lazy val pathToFilter: Option[ParameterizedSqlFilter] = path.map( p =>
-    ParameterizedSqlFilter(s"$pathField = {_path}", "_path", p.toString)
-  )
-
-  private lazy val parentPathToFilter: Option[ParameterizedSqlFilter] = parentPath.map( p =>
-    // TODO (with regex)
-    ???
-  )
+  }
 
 }
 
 object FsNodeFilter {
-
-  def byLocation(path: Path)(implicit owner: User): FsNodeFilter =
-    FsNodeFilter(
-      owner = owner,
-      path = Some(path),
-      parentPath = None
-    )
-
-  def byParentPath(path: Path)(implicit owner: User): FsNodeFilter =
-    FsNodeFilter(
-      owner = owner,
-      path = None,
-      parentPath = Some(path)
-    )
 
 }
