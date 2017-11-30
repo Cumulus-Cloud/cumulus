@@ -12,6 +12,7 @@ export type UploadAction =
   OnUploadFile |
   OnUploadFileError |
   OnProgressUpload |
+  RemoveFileToUpload |
   SelectCipher |
   SelectCompression
 
@@ -21,6 +22,9 @@ export const onWantUpload = (): OnWantUpload => ({ type: "OnWantUpload" })
 export type OnAddFiles = { type: "OnAddFiles", filesToUpload: FileToUpload[] }
 export const onAddFiles = (filesToUpload: FileToUpload[]): OnAddFiles => ({ type: "OnAddFiles", filesToUpload })
 
+export type RemoveFileToUpload = { type: "RemoveFileToUpload", fileToUpload: FileToUpload }
+export const onRemoveFileToUpload = (fileToUpload: FileToUpload): RemoveFileToUpload => ({ type: "RemoveFileToUpload", fileToUpload })
+
 export type OnUploadFile = { type: "OnUploadFile", fileToUpload: FileToUpload }
 export function onUploadFile(path: string, fileToUpload: FileToUpload): ThunkAction<void, GlobalState, {}> {
   return (dispatch) => {
@@ -29,7 +33,7 @@ export function onUploadFile(path: string, fileToUpload: FileToUpload): ThunkAct
       const progress = Math.round(e.loaded * 100 / e.total)
       dispatch(onProgressUpload(progress, fileToUpload))
     }
-    Api.upload(path, fileToUpload.file, debounce(progress, 30))
+    Api.upload(path, fileToUpload, debounce(progress, 30))
       .then(fsNode => dispatch(onUploadFileSuccess(fsNode, fileToUpload)))
       .catch(error => dispatch(onUploadFileError(error, fileToUpload)))
   }

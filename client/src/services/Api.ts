@@ -2,8 +2,10 @@ import { history } from "store"
 import { User, userValidator } from "models/User"
 import { object, string } from "validation.ts"
 import { FsNode, FsNodeValidator, NodeType } from "models/FsNode"
+import { FileToUpload } from "models/FileToUpload"
 import { Promise } from "es6-shim"
 import { success } from "services/request"
+import querystring from "utils/querystring"
 
 export interface ApiError {
   key: string
@@ -85,21 +87,21 @@ export function me(): Promise<User> {
 }
 
 export function createFnNode(path: string, nodeType: NodeType): Promise<FsNode> {
-  return withAuth(`/api/fs${path}`, {
+  return withAuth(`/api/fs${encodeURI(path)}`, {
     method: "PUT",
     body: JSON.stringify({ nodeType })
   }).then(success(FsNodeValidator))
 }
 
 export function fetchDirectory(path: string): Promise<FsNode> {
-  return withAuth(`/api/fs${path}`, {
+  return withAuth(`/api/fs${encodeURI(path)}`, {
     method: "GET",
     headers: HEADERS,
   }).then(success(FsNodeValidator))
 }
 
 export function deleteFsNode(fsNode: FsNode): Promise<void> {
-  return withAuth(`/api/fs${fsNode.path}`, {
+  return withAuth(`/api/fs${encodeURI(fsNode.path)}`, {
     method: "DELETE",
     headers: HEADERS,
   }).then(success())
@@ -118,11 +120,15 @@ export function logout(): Promise<void> {
   })
 }
 
-export function upload(path: string, file: Blob, progression?: (e: ProgressEvent) => void): Promise<FsNode> {
+export function upload(path: string, fileToUpload: FileToUpload, progression?: (e: ProgressEvent) => void): Promise<FsNode> {
   return new Promise((resolve, reject) => {
     getAuthToken().then(token => {
       let xhr = new XMLHttpRequest()
-      xhr.open("POST", `/api/upload${path}`)
+      const qs = querystring({
+        cipher: fileToUpload.cipher,
+        compression: fileToUpload.compression,
+      })
+      xhr.open("POST", `/api/upload${encodeURI(path)}${qs}`)
       xhr.setRequestHeader("Authorization", token)
       xhr.addEventListener("load", event => {
         resolve(JSON.parse((event.target as any).response))
@@ -135,14 +141,14 @@ export function upload(path: string, file: Blob, progression?: (e: ProgressEvent
       if (progression) {
         xhr.upload.addEventListener("progress", progression)
       }
-      xhr.send(file)
+      xhr.send(fileToUpload.file as Blob)
     })
   })
 }
 
 export function getDownloadUrl(file: FsNode, cookie: boolean): string {
   if (cookie) {
-    return `/api/download${file.path}`
+    return `/api/download${encodeURI(file.path)}`
   } else {
     const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
     if (!token) {
