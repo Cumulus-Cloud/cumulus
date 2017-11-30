@@ -62,16 +62,21 @@ class FsNodeStore(
     * @param user The owner of the element
     */
   def moveFsNode(node: FsNode, to: Path, user: User): Query[CumulusDB, Int] = {
-    val regex = s"^${node.path.toString}"
+    val searchRegex = s"^${node.path.toString}(/.*|$$)"
+    val replaceRegex = s"^${node.path.toString}"
 
-    // For performance reasons we want to directly update any matching element, but
-    // since information are duplicated we also need to update the JSONb
+    // For performance reasons we want to directly update any matching element, but since information are duplicated
+    // we also need to update the JSONb.. we also need to update the field name of the moved node
     qb { implicit c =>
       SQL"""
         UPDATE #$table
-        SET #$pathField = regexp_replace(#$pathField, $regex, ${to.toString}),
-            #$metadataField = jsonb_set(#$metadataField, '{#$pathField}', to_jsonb(regexp_replace(#$pathField, $regex, ${to.toString})))
-        WHERE #$ownerField = ${user.id} AND #$pathField ~ $regex
+        SET #$pathField = regexp_replace(#$pathField, $replaceRegex, ${to.toString}),
+            #$metadataField = jsonb_set(#$metadataField, '{#$pathField}', to_jsonb(regexp_replace(#$pathField, $replaceRegex, ${to.toString})))
+        WHERE #$ownerField = ${user.id} AND #$pathField ~ $searchRegex;
+
+        UPDATE #$table
+        SET #$nameField = ${to.name}
+        WHERE #$pkField = ${node.id} AND #$ownerField = ${user.id};
       """
         .executeUpdate()
     }
@@ -94,6 +99,7 @@ class FsNodeStore(
     Seq(
       'id           -> updatedFsNode.id,
       'path         -> updatedFsNode.path.toString,
+      'name         -> updatedFsNode.path.name,
       'node_type    -> updatedFsNode.nodeType,
       'creation     -> updatedFsNode.creation,
       'modification -> updatedFsNode.modification,
@@ -112,6 +118,8 @@ object FsNodeStore {
   val pkField: String = "id"
   val ownerField: String = "user_id"
   val pathField: String = "path"
+  val nameField: String = "name"
+  val nodeTypeField: String = "node_type"
   val metadataField: String = "metadata"
 
 }

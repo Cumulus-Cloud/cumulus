@@ -22,6 +22,7 @@
   CREATE TABLE fs_node (
     id           UUID      PRIMARY KEY,
     path         TEXT      NOT NULL,
+    name         TEXT      NOT NULL,
     node_type    TEXT      NOT NULL,
     creation     TIMESTAMP NOT NULL,
     modification TIMESTAMP NOT NULL,

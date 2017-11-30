@@ -56,7 +56,7 @@ export const userApiResponse = object({
   token: string
 })
 export function login(login: string, password: string): Promise<User> {
-  return fetch(`/users/login`, {
+  return fetch(`/api/users/login`, {
     method: "POST",
     body: JSON.stringify({ login, password }),
     headers: HEADERS,
@@ -68,7 +68,7 @@ export function login(login: string, password: string): Promise<User> {
 }
 
 export function signup(login: string, email: string, password: string): Promise<User> {
-  return fetch(`/users/signup`, {
+  return fetch(`/api/users/signup`, {
     method: "POST",
     body: JSON.stringify({ login, email, password }),
     headers: HEADERS,
@@ -80,7 +80,7 @@ export function signup(login: string, email: string, password: string): Promise<
 }
 
 export function me(): Promise<User> {
-  return withAuth(`/accounts/me`, {
+  return withAuth(`/api/users/me`, {
     method: "GET",
     headers: HEADERS,
   }).then(success(userValidator))
@@ -110,7 +110,7 @@ export function deleteFsNode(fsNode: FsNode): Promise<void> {
 export function logout(): Promise<void> {
   localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
   sessionStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
-  return fetch("/users/logout", {
+  return fetch("/api/users/logout", {
     method: "POST",
     credentials: "same-origin",
   }).then(() => {
