@@ -17,7 +17,7 @@ import io.cumulus.models.{Path, Sharing, UserSession}
 import io.cumulus.persistence.services.{FsNodeService, SharingService}
 import io.cumulus.persistence.storage.StorageEngine
 import io.cumulus.stages.{Ciphers, Compressions}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsString, Json}
 import play.api.mvc.{AbstractController, ControllerComponents}
 
 class FileSystemController(
@@ -45,24 +45,18 @@ class FileSystemController(
     }
   }
 
-  def stream(path: Path) = AuthenticatedAction.async { implicit request =>
-    ApiResponse.result {
-      for {
-        file   <- EitherT(fsNodeService.findFile(path))
-        range  <- EitherT.fromEither[Future](headerRange(request, file))
-        result <- EitherT.fromEither[Future](
-          streamFile(storageEngine, file, range)
-        )
-      } yield result
-    }
-  }
-
   def download(path: Path, forceDownload: Option[Boolean]) = AuthenticatedAction.async { implicit request =>
     ApiResponse.result {
       for {
-        file   <- EitherT(fsNodeService.findFile(path))
-        result <- EitherT.fromEither[Future](
-          downloadFile(storageEngine, file, forceDownload.getOrElse(false))
+        file       <- EitherT(fsNodeService.findFile(path))
+        maybeRange <- EitherT.fromEither[Future](headerRange(request, file))
+        result     <- EitherT.fromEither[Future](
+          maybeRange match {
+            case Some(range) =>
+              streamFile(storageEngine, file, range)
+            case None =>
+              downloadFile(storageEngine, file, forceDownload.getOrElse(false))
+          }
         )
       } yield result
     }
@@ -116,7 +110,11 @@ class FileSystemController(
         ApiResponse {
           sharingService.shareNode(path, request.user.password, duration).map {
             case Right((sharing, secretCode)) =>
-              Right(Json.toJsObject(sharing)(Sharing.apiWrite) + ("key" -> Json.toJson(secretCode)))
+              Right(Json.toJsObject(sharing)(Sharing.apiWrite)
+                + ("key" -> Json.toJson(secretCode))
+                + ("download" -> JsString(routes.SharingController.downloadRoot(sharing.reference, path.name, secretCode, None).url))
+                + ("path" -> JsString(routes.SharingController.get("/", sharing.reference, secretCode).url))
+              )
             case Left(e) =>
               Left(e)
           }

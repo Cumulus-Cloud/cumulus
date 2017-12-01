@@ -36,32 +36,7 @@ class SharingController(
     }
   }
 
-  def streamRoot(reference: String, key: String) =
-    stream("/", reference, key)
-
-  def stream(path: Path, reference: String, key: String) = Action.async { implicit request =>
-    ApiResponse.result {
-      for {
-        // Get the sharing, the user and the file
-        res <- EitherT(sharingService.findSharedFile(reference, path, key))
-        (sharing, user, file) = res
-
-        range <- EitherT.fromEither[Future](headerRange(request, file))
-
-        // Decode the key & generate a session
-        decodedKey <- EitherT.fromEither[Future](Base16.decode(key).toRight(AppError.validation("validation.sharing.invalid-key")))
-        session = SharingSession(user, sharing, decodedKey)
-
-        // Stream the file
-        result <- EitherT.fromEither[Future] {
-          implicit val sharingSession = session
-          streamFile(storageEngine, file, range)
-        }
-      } yield result
-    }
-  }
-
-  def downloadRoot(reference: String, key: String, forceDownload: Option[Boolean]) =
+  def downloadRoot(reference: String, name: String, key: String, forceDownload: Option[Boolean]) =
     download("/", reference, key, forceDownload)
 
   def download(path: Path, reference: String, key: String, forceDownload: Option[Boolean]) = Action.async { implicit request =>
@@ -71,6 +46,9 @@ class SharingController(
         res <- EitherT(sharingService.findSharedFile(reference, path, key))
         (sharing, user, file) = res
 
+        // Get the range if a streaming is required
+        maybeRange <- EitherT.fromEither[Future](headerRange(request, file))
+
         // Decode the key & generate a session
         decodedKey <- EitherT.fromEither[Future](Base16.decode(key).toRight(AppError.validation("validation.sharing.invalid-key")))
         session    =  SharingSession(user, sharing, decodedKey)
@@ -78,7 +56,13 @@ class SharingController(
         // Download the file
         result <- EitherT.fromEither[Future]{
           implicit val sharingSession = session
-          downloadFile(storageEngine, file, forceDownload.getOrElse(false))
+
+          maybeRange match {
+            case Some(range) =>
+              streamFile(storageEngine, file, range)
+            case None =>
+              downloadFile(storageEngine, file, forceDownload.getOrElse(false))
+          }
         }
       } yield result
     }
