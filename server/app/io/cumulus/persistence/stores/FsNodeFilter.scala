@@ -1,9 +1,10 @@
 package io.cumulus.persistence.stores
 
 import anorm.NamedParameter
+import io.cumulus.core.persistence.anorm.AnormSupport._
 import io.cumulus.core.persistence.query.{ParameterizedSqlFilter, QueryFilter}
-import io.cumulus.models.{Path, User}
 import io.cumulus.models.fs.FsNodeType
+import io.cumulus.models.{Path, User}
 import io.cumulus.persistence.stores.FsNodeStore._
 
 case class FsNodeFilter(
@@ -15,6 +16,7 @@ case class FsNodeFilter(
 ) extends QueryFilter {
 
   lazy val filters = Seq(
+    ownerToFilter,
     parentToFilter,
     nodeTypeToFilter,
     mimeTypeToFilter,
