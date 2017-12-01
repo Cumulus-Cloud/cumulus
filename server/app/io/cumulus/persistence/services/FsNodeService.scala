@@ -5,7 +5,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import io.cumulus.core.Logging
 import io.cumulus.core.persistence.CumulusDB
-import io.cumulus.core.persistence.query.{QueryBuilder, QueryE}
+import io.cumulus.core.persistence.query.{QueryBuilder, QueryE, QueryPagination}
 import io.cumulus.core.validation.AppError
 import io.cumulus.models._
 import io.cumulus.models.fs._
@@ -113,7 +113,11 @@ class FsNodeService(
     mimeType: Option[String]
   )(implicit user: User): Future[Either[AppError, Seq[FsNode]]] = {
     val filter = FsNodeFilter(name, parent, nodeType, mimeType, user)
-    fsNodeStore.findAll(filter).commit().map(Right.apply)
+
+    fsNodeStore
+      .findAll(filter, QueryPagination(51, None))
+      .commit()
+      .map(nodes => Right(nodes.filterNot(_.path.isRoot))) // Ignore the root folder
   }
 
   /**
