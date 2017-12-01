@@ -114,15 +114,13 @@ class DirectoriesContainer extends React.PureComponent<Props> {
   renderShareModal = (share: Share, sharedFsNode: FsNode) => {
     const { onCloseShare } = this.props
     const qs = querystring({
-      reference: share.reference,
       key: share.key,
-      download: "true"
     })
     return (
       <Modal onClose={onCloseShare}>
         <ModalHeader title={Messages("ui.share")} />
         <ModalContent>
-          {encodeURI(`${document.location.origin}/api/shared/download${sharedFsNode.path}${qs}`)}
+          {encodeURI(`${document.location.origin}/shared/download/${share.reference}${qs}`)}
         </ModalContent>
         <ModalActions>
           <FlatButton label={Messages("ui.cancel")} onClick={onCloseShare} />
