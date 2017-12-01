@@ -18,6 +18,7 @@ import { Share } from "models/Share"
 import Empty from "components/directory/Empty"
 import Loader from "components/directory/Loader"
 import Modal from "components/modals/Modal"
+import { SearchResult } from "models/Search"
 import ModalActions from "components/modals/ModalActions"
 import ModalHeader from "components/modals/ModalHeader"
 import ModalContent from "components/modals/ModalContent"
@@ -31,11 +32,12 @@ interface DispatchProps {
   onCloseShare: () => void
 }
 
-interface Params {
+interface PropsState extends DirectoriesState {
+  searchResult?: SearchResult
   path?: string
 }
 
-type Props = DirectoriesState & DispatchProps & Params
+type Props = PropsState & DispatchProps
 
 class DirectoriesContainer extends React.PureComponent<Props> {
 
@@ -65,7 +67,7 @@ class DirectoriesContainer extends React.PureComponent<Props> {
         </div>
         <div className={styles.content}>
           <div className={styles.directories}>
-            {!!directory ? this.renderDirectories(directory) : <Loader />}
+            {this.renderResult()}
           </div>
           <PreviewContainer />
           {!!share && !!sharedFsNode ? this.renderShareModal(share, sharedFsNode) : null}
@@ -74,14 +76,29 @@ class DirectoriesContainer extends React.PureComponent<Props> {
     )
   }
 
+  renderResult = () => {
+    const { directory, searchResult } = this.props
+    if (!!searchResult) {
+      return this.renderFsNodeList(searchResult.items)
+    } else if (!!directory) {
+      return this.renderDirectories(directory)
+    } else {
+      return <Loader />
+    }
+  }
+
+  renderFsNodeList = (fsNode: FsNode[]) => {
+    if (fsNode.length > 0) {
+      return fsNode.map(this.renderFsNode)
+    } else {
+      return <Empty />
+    }
+  }
+
   renderDirectories = (fsNode: FsNode) => {
     if (isDirectory(fsNode)) {
       const content = fsNode.content || []
-      if (content.length > 0) {
-        return content.map(this.renderFsNode)
-      } else {
-        return <Empty />
-      }
+      return this.renderFsNodeList(content)
     } else {
       return <Empty />
     }
@@ -132,9 +149,10 @@ class DirectoriesContainer extends React.PureComponent<Props> {
 
 }
 
-const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string[]> }): DirectoriesState & Params => {
+const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string[]> }): PropsState => {
   return {
     ...state.directories,
+    searchResult: state.search.searchResult,
     path: props.match && props.match.params[0]
   }
 }
