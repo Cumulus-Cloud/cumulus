@@ -7,6 +7,8 @@ export const ShareValidator = object({
   owner: string,
   fsNode: string,
   key: string,
+  download: string,
+  path: string
 })
 
 export type Share = typeof ShareValidator.T

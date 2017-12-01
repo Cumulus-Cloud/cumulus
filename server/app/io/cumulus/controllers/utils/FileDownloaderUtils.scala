@@ -15,26 +15,28 @@ import play.api.mvc.{Request, Result}
 
 trait FileDownloaderUtils {
 
-  protected def headerRange(request: Request[_], file: File): Either[AppError, Range] = {
+  protected def headerRange(request: Request[_], file: File): Either[AppError, Option[Range]] = {
 
-    val range = request.headers.get("Range").getOrElse("bytes=0-").split('=').toList match {
-      case "bytes" :: r :: Nil => r.split('-').map(_.toLong).toList match {
-        case from :: to :: Nil => Range(from, to)
-        case from :: Nil => Range(from, file.size - 1)
+    val range = request.headers.get("Range").map { rangeHeader =>
+      rangeHeader.split('=').toList match {
+        case "bytes" :: r :: Nil => r.split('-').map(_.toLong).toList match {
+          case from :: to :: Nil => Range(from, to)
+          case from :: Nil => Range(from, file.size - 1)
+          case _ => Range(0, file.size - 1)
+        }
         case _ => Range(0, file.size - 1)
       }
-      case _ => Range(0, file.size - 1)
     }
 
     range match {
-      case Range(_, to) if to > (file.size - 1) =>
+      case Some(Range(_, to)) if to > (file.size - 1) =>
         AppError.notAcceptable("validation.range.range-outside-end")
-      case Range(from, _) if from < 0 =>
+      case Some(Range(from, _)) if from < 0 =>
         AppError.notAcceptable("validation.range.range-outside-start")
-      case Range(from, to) if to < from =>
+      case Some(Range(from, to)) if to < from =>
         AppError.notAcceptable("validation.range.range-negative")
-      case validRange =>
-        Right(validRange)
+      case maybeValidRange =>
+        Right(maybeValidRange)
     }
   }
 

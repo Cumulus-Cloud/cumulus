@@ -3,7 +3,7 @@ package io.cumulus.core.persistence.anorm
 import anorm._
 import io.cumulus.core.Logging
 import io.cumulus.core.persistence.Database
-import io.cumulus.core.persistence.query.{Query, QueryFilter}
+import io.cumulus.core.persistence.query.{Query, QueryFilter, QueryPagination}
 
 /**
  * Abstract class that provides operations based on the private key of the table
@@ -46,6 +46,13 @@ abstract class AnormPKOperations[T, DB <: Database, PK](
   def findAll[Filter <: QueryFilter](filter: Filter): Query[DB, List[T]] =
     qb { implicit c =>
       SQL(s"SELECT * FROM $table ${filter.toWHERE}")
+        .on(filter.namedParameters: _*)
+        .as(rowParser.*)
+    }
+
+  def findAll[Filter <: QueryFilter](filter: Filter, pagination: QueryPagination): Query[DB, List[T]] =
+    qb { implicit c =>
+      SQL(s"SELECT * FROM $table ${filter.toWHERE} ${pagination.toLIMIT}")
         .on(filter.namedParameters: _*)
         .as(rowParser.*)
     }

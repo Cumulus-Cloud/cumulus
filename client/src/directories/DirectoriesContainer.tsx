@@ -17,7 +17,6 @@ import { FsNode, FsFile as FsFileModel , isDirectory } from "models/FsNode"
 import { Share } from "models/Share"
 import Empty from "components/directory/Empty"
 import Loader from "components/directory/Loader"
-import querystring from "utils/querystring"
 import Modal from "components/modals/Modal"
 import ModalActions from "components/modals/ModalActions"
 import ModalHeader from "components/modals/ModalHeader"
@@ -113,14 +112,12 @@ class DirectoriesContainer extends React.PureComponent<Props> {
 
   renderShareModal = (share: Share, sharedFsNode: FsNode) => {
     const { onCloseShare } = this.props
-    const qs = querystring({
-      key: share.key,
-    })
+
     return (
       <Modal onClose={onCloseShare}>
         <ModalHeader title={Messages("ui.share")} />
         <ModalContent>
-          {encodeURI(`${document.location.origin}/shared/download/${share.reference}${qs}`)}
+          {encodeURI(`${document.location.origin}${share.download}`)}
         </ModalContent>
         <ModalActions>
           <FlatButton label={Messages("ui.cancel")} onClick={onCloseShare} />
@@ -128,8 +125,11 @@ class DirectoriesContainer extends React.PureComponent<Props> {
       </Modal>
     )
   }
+
   handleDirectoryOnClick = (fsNode: FsNode) => history.push(`/fs${fsNode.path}`)
+
   handleOnPathClick = (path: string) => history.push(path)
+
 }
 
 const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string[]> }): DirectoriesState & Params => {
