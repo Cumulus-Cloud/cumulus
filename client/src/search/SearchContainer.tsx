@@ -31,7 +31,7 @@ class SearchContainer extends React.PureComponent<Props> {
 
   handleOnSubbmit = debounce((query: string) => {
     this.props.onFsNodeSearch(query)
-  }, 3000)
+  }, 300)
 }
 
 const mapStateToProps = (state: GlobalState): PropsState => {
