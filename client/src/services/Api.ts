@@ -1,9 +1,10 @@
 import { history } from "store"
 import { User, userValidator } from "models/User"
 import { object, string } from "validation.ts"
-import { FsNode, FsNodeValidator, NodeType } from "models/FsNode"
+import { FsNode, FsDirectory, FsNodeValidator, NodeType } from "models/FsNode"
 import { FileToUpload } from "models/FileToUpload"
 import { Share, ShareValidator } from "models/Share"
+import { SearchResult, SearchResultValidator } from "models/Search"
 import { Promise } from "es6-shim"
 import { success } from "services/request"
 import querystring from "utils/querystring"
@@ -114,6 +115,18 @@ export function share(fsNode: FsNode): Promise<Share> {
     headers: HEADERS,
     body: JSON.stringify({ operation: "SHARE_LINK" })
   }).then(success(ShareValidator))
+}
+
+export function search(query: string, current?: FsDirectory, nodeType?: NodeType, type?: string): Promise<SearchResult> {
+  const qs = querystring({
+    name: query,
+    nodeType,
+    type
+  })
+  return withAuth(`/api/search${current ? current.path : "/"}${qs}`, {
+    method: "GET",
+    headers: HEADERS,
+  }).then(success(SearchResultValidator))
 }
 
 export function logout(): Promise<void> {

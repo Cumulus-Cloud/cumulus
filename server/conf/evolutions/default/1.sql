@@ -51,6 +51,8 @@
 
   CREATE UNIQUE INDEX sharing_reference_unique ON sharing (reference);
 
+  CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
+
 # --- !Downs
 
   DROP INDEX IF EXISTS user_mail_unique;
@@ -61,3 +63,5 @@
   DROP TABLE IF EXISTS sharing;
   DROP TABLE IF EXISTS fs_node;
   DROP TABLE IF EXISTS cumulus_user;
+
+  DROP EXTENSION IF EXISTS fuzzystrmatch;

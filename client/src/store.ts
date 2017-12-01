@@ -10,6 +10,7 @@ import { SignupState, SignupReducer } from "auth/signup/SignupReducer"
 import { DirectoriesState, DirectoriesReducer } from "directories/DirectoriesReducer"
 import { NewFolderState, NewFolderReducer } from "newFolder/NewFolderReducer"
 import { UploadState, UploadReducer } from "upload/UploadReducer"
+import { SearchState, SearchReducer } from "search/SearchReducer"
 
 export interface GlobalState {
   login: LoginState
@@ -17,6 +18,7 @@ export interface GlobalState {
   newFolder: NewFolderState
   upload: UploadState
   directories: DirectoriesState
+  search: SearchState
   router: Reducer<RouterState>
 }
 
@@ -29,6 +31,7 @@ const reducers = combineReducers({
   newFolder: NewFolderReducer,
   upload: UploadReducer,
   directories: DirectoriesReducer as any,
+  search: SearchReducer as any,
   router: routerReducer,
 })
 const enhancer = composeWithDevTools(
