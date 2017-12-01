@@ -2,6 +2,7 @@ import { AnyAction } from "redux"
 import { ThunkAction } from "redux-thunk"
 import { GlobalState } from "store"
 import { FsNode, FsFile } from "models/FsNode"
+import { Share } from "models/Share"
 import * as Api from "services/Api"
 import { OnCreateNewFolderSuccess } from "newFolder/NewFolderActions"
 import { OnUploadFileSuccess } from "upload/UploadActions"
@@ -15,7 +16,30 @@ export type DirectoriesAction =
   OnDeleteFsNodeSuccess |
   OnDeleteFsNodeError |
   OnUploadFileSuccess |
-  ShowPreview
+  ShowPreview |
+  Sharing |
+  SharingSuccess |
+  SharingError |
+  CloseShare
+
+export type Sharing = { type: "Sharing", fsNode?: FsNode }
+export function onSharing(fsNode: FsNode): ThunkAction<void, GlobalState, {}> {
+  return (dispatch) => {
+    dispatch({ type: "Sharing", fsNode })
+    Api.share(fsNode)
+      .then(share => dispatch(onSharingSuccess(share, fsNode)))
+      .catch(error => dispatch(onSharingError(error)))
+  }
+}
+
+export type SharingSuccess = { type: "SharingSuccess", share: Share, fsNode: FsNode }
+export const onSharingSuccess = (share: Share, fsNode: FsNode): SharingSuccess => ({ type: "SharingSuccess", share, fsNode })
+
+export type SharingError = { type: "SharingError", error: Api.ApiError }
+export const onSharingError = (error: Api.ApiError): SharingError => ({ type: "SharingError", error })
+
+export type CloseShare = { type: "CloseShare" }
+export const onCloseShare = (): CloseShare => ({ type: "CloseShare" })
 
 export interface OnFetchDirectory extends AnyAction {
   type: "OnFetchDirectory"

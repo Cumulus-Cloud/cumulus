@@ -100,13 +100,21 @@ class NewFolderContainer extends React.PureComponent<Props> {
 
   handleOnChange = (fileList: FileList) => {
     const { idCounter } = this.props
-    this.props.onAddFiles([{
-      id: idCounter,
-      progress: 0,
-      loading: false,
-      file: fileList[0],
-      done: false,
-    }])
+    let files: File[] = []
+    for (let i = 0; i < fileList.length; i++) {
+      files.push(fileList[i])
+    }
+    if (files.length > 0) {
+      this.props.onAddFiles(files.map((file, i) => {
+        return {
+          id: idCounter + i,
+          progress: 0,
+          loading: false,
+          file,
+          done: false,
+        }
+      }))
+    }
   }
 }
 

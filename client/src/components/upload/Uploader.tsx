@@ -39,6 +39,7 @@ export default class Uploader extends React.Component<Props, State> {
         <input
           id="uploader-input"
           type="file"
+          multiple
           className={inputClasses}
           onChange={this.handleOnChange}
           onDragEnter={this.handleOnDragEnter}
