@@ -5,7 +5,7 @@
   align-items: center;
   background-color: var(--darkPrimary);
   border-radius: 2px;
-  padding: 5px 20px;
+  padding: 15px 30px;
   cursor: pointer;
   min-height: 40px;
 }

@@ -17,12 +17,8 @@ import { FsNode, FsFile as FsFileModel , isDirectory } from "models/FsNode"
 import { Share } from "models/Share"
 import Empty from "components/directory/Empty"
 import Loader from "components/directory/Loader"
-import Modal from "components/modals/Modal"
 import { SearchResult } from "models/Search"
-import ModalActions from "components/modals/ModalActions"
-import ModalHeader from "components/modals/ModalHeader"
-import ModalContent from "components/modals/ModalContent"
-import FlatButton from "components/buttons/FlatButton"
+import ShareModal from "components/ShareModal"
 
 interface DispatchProps {
   onFetchDirectory: (path: string) => void
@@ -129,18 +125,7 @@ class DirectoriesContainer extends React.PureComponent<Props> {
 
   renderShareModal = (share: Share, sharedFsNode: FsNode) => {
     const { onCloseShare } = this.props
-
-    return (
-      <Modal onClose={onCloseShare}>
-        <ModalHeader title={Messages("ui.share")} />
-        <ModalContent>
-          {encodeURI(`${document.location.origin}${share.download}`)}
-        </ModalContent>
-        <ModalActions>
-          <FlatButton label={Messages("ui.cancel")} onClick={onCloseShare} />
-        </ModalActions>
-      </Modal>
-    )
+    return <ShareModal share={share} sharedFsNode={sharedFsNode} onClose={onCloseShare} />
   }
 
   handleDirectoryOnClick = (fsNode: FsNode) => history.push(`/fs${fsNode.path}`)

@@ -30,8 +30,8 @@ const reducers = combineReducers({
   signup: SignupReducer as any,
   newFolder: NewFolderReducer,
   upload: UploadReducer,
-  directories: DirectoriesReducer as any,
-  search: SearchReducer as any,
+  directories: DirectoriesReducer,
+  search: SearchReducer,
   router: routerReducer,
 })
 const enhancer = composeWithDevTools(

@@ -1,9 +1,8 @@
 
 .signupForm {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  width: 100%;
-  padding: 15px;
 }
 
 .action {
@@ -15,10 +14,4 @@
   margin-top: 10px;
   font-size: .9rem;
   color: var(--error);
-}
-
-@media screen and (min-width: 400px) {
-  .signupForm {
-    width: 400px;
-  }
 }
