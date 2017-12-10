@@ -16,7 +16,7 @@ import io.cumulus.models.fs.{Directory, FsNodeType}
 import io.cumulus.models.{Path, Sharing, UserSession}
 import io.cumulus.persistence.services.{FsNodeService, SharingService}
 import io.cumulus.persistence.storage.StorageEngine
-import io.cumulus.stages.{Ciphers, Compressions, MetadataExtractors}
+import io.cumulus.stages._
 import play.api.libs.json.{JsString, Json}
 import play.api.mvc.{AbstractController, ControllerComponents}
 
@@ -31,7 +31,8 @@ class FileSystemController(
   settings: Settings,
   ciphers: Ciphers,
   compressions: Compressions,
-  metadataExtractors: MetadataExtractors
+  metadataExtractors: MetadataExtractors,
+  thumbnailGenerators: ThumbnailGenerators
 ) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with FileDownloaderUtils with BodyParserJson with BodyParserStream {
 
   def get(path: Path) = AuthenticatedAction.async { implicit request =>
@@ -93,6 +94,14 @@ class FileSystemController(
 
        // Create an entry in the database for the file
        file <- EitherT(fsNodeService.createFile(fileWithMetadata))
+
+       // Create a thumbnail if possible for the file
+       thumbnailGenerator = thumbnailGenerators.get(uploadedFile.mimeType)
+       _ <- thumbnailGenerator.map { generator =>
+         EitherT(generator.generate(file, storageEngine)).flatMap { thumbnail =>
+           EitherT(fsNodeService.createFile(thumbnail)).map(_ => ())
+         }
+       }.getOrElse(EitherT.fromEither[Future](Right(())))
 
      } yield file
    }

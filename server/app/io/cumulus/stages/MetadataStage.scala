@@ -1,7 +1,7 @@
 package io.cumulus.stages
 
-import java.time.{LocalDateTime, ZoneId}
 import java.time.format.DateTimeFormatter
+import java.time.{LocalDateTime, ZoneId}
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
 import scala.util.Try
@@ -10,7 +10,6 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.StreamConverters
 import com.sksamuel.scrimage
 import io.cumulus.core.stream.storage.StorageReferenceReader
-import io.cumulus.core.utils.Range
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.Session
 import io.cumulus.models.fs._
@@ -30,6 +29,8 @@ trait MetadataExtractor {
     compressions: Compressions,
     session: Session
   ): Either[AppError, FileMetadata]
+
+  def maxSize: Long = 1048576 // 10Mo
 
   def applyOn: Seq[String]
 
@@ -68,8 +69,7 @@ object ImageMetadataExtractor extends MetadataExtractor {
   ): Either[AppError, ImageMetadata] = {
     StorageReferenceReader(
       storageEngine,
-      file,
-      Range(0, Long.MaxValue)
+      file
     ).map { source =>
 
       val fileInputStream = source.runWith(StreamConverters.asInputStream())
@@ -148,8 +148,7 @@ object PDFDocumentMetadataExtractor extends MetadataExtractor {
   ): Either[AppError, PDFDocumentMetadata] = {
     StorageReferenceReader(
       storageEngine,
-      file,
-      Range(0, Long.MaxValue)
+      file
     ).map { source =>
 
       val fileInputStream = source.runWith(StreamConverters.asInputStream())

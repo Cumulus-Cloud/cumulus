@@ -2,6 +2,7 @@ package io.cumulus.models
 
 import scala.language.implicitConversions
 
+import org.apache.commons.io.FilenameUtils
 import play.api.libs.json._
 import play.api.mvc.PathBindable
 
@@ -19,6 +20,9 @@ case class Path(value: Seq[String]) {
 
   def name: String =
     value.lastOption.getOrElse("")
+
+  def nameWithoutExtension: String =
+    FilenameUtils.getBaseName(name)
 
   def parent: Path =
     Path(value.dropRight(1))

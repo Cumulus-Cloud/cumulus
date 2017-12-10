@@ -61,6 +61,10 @@ class CumulusComponents(
     PDFDocumentMetadataExtractor
   ))
 
+  implicit val thumbnailGenerators = ThumbnailGenerators(Seq(
+    ImageThumbnailGenerator
+  ))
+
   lazy val router: Router = new Routes(
     httpErrorHandler,
     homeController,
