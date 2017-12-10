@@ -60,6 +60,8 @@ lazy val cumulusServer = project
       // Thumbnails generation
       Dependencies.scrimage.core,
       Dependencies.scrimage.ioExtra,
+      // PDF handling
+      Dependencies.pdfbox.core,
       // Crypto
       Dependencies.bouncyCastle.core,
       // Test dependencies

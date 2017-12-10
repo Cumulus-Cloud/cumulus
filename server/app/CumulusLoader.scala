@@ -56,6 +56,11 @@ class CumulusComponents(
     DeflateStage.name -> DeflateStage
   ))
 
+  implicit val metadataExtractors = MetadataExtractors(Seq(
+    ImageMetadataExtractor,
+    PDFDocumentMetadataExtractor
+  ))
+
   lazy val router: Router = new Routes(
     httpErrorHandler,
     homeController,

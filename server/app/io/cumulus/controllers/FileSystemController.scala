@@ -16,7 +16,7 @@ import io.cumulus.models.fs.{Directory, FsNodeType}
 import io.cumulus.models.{Path, Sharing, UserSession}
 import io.cumulus.persistence.services.{FsNodeService, SharingService}
 import io.cumulus.persistence.storage.StorageEngine
-import io.cumulus.stages.{Ciphers, Compressions}
+import io.cumulus.stages.{Ciphers, Compressions, MetadataExtractors}
 import play.api.libs.json.{JsString, Json}
 import play.api.mvc.{AbstractController, ControllerComponents}
 
@@ -30,7 +30,8 @@ class FileSystemController(
   materializer: Materializer,
   settings: Settings,
   ciphers: Ciphers,
-  compressions: Compressions
+  compressions: Compressions,
+  metadataExtractors: MetadataExtractors
 ) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with FileDownloaderUtils with BodyParserJson with BodyParserStream {
 
   def get(path: Path) = AuthenticatedAction.async { implicit request =>
@@ -85,8 +86,13 @@ class FileSystemController(
        // Store the file
        uploadedFile <- EitherT.liftF(request.body.runWith(fileWriter))
 
+       // Extract metadata
+       metadataExtractor =  metadataExtractors.get(uploadedFile.mimeType)
+       metadata          <- EitherT.fromEither[Future](metadataExtractor.extract(uploadedFile, storageEngine))
+       fileWithMetadata  =  uploadedFile.copy(metadata = metadata)
+
        // Create an entry in the database for the file
-       file <- EitherT(fsNodeService.createFile(uploadedFile))
+       file <- EitherT(fsNodeService.createFile(fileWithMetadata))
 
      } yield file
    }

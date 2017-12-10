@@ -82,4 +82,10 @@ object Dependencies {
     val ioExtra = "com.sksamuel.scrimage" % "scrimage-io-extra_2.12" % version
   }
 
+  object pdfbox {
+    val version = "2.0.8"
+
+    val core = "org.apache.pdfbox" % "pdfbox" % version
+  }
+
 }

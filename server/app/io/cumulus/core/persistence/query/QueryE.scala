@@ -67,7 +67,7 @@ object QueryE {
   def lift[DB <: Database, A](query: Query[DB, A]): QueryE[DB, A] =
     QueryE(query.map(Right.apply))
 
-  def shouldBeFound[DB <: Database, A](query: Query[DB, Option[A]]): QueryE[DB, A] =
+  def get[DB <: Database, A](query: Query[DB, Option[A]]): QueryE[DB, A] =
     QueryE(query.map(_.toRight(AppError.technical("api-error.internal-server-error"))))
 
   def getOrNotFound[DB <: Database, A](query: Query[DB, Option[A]]): QueryE[DB, A] =
