@@ -6,9 +6,10 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Keep, StreamConverters}
 import com.sksamuel.scrimage.Image
 import com.sksamuel.scrimage.nio.JpegWriter
+import io.cumulus.core.Settings
 import io.cumulus.core.stream.storage.{StorageReferenceReader, StorageReferenceWriter}
 import io.cumulus.core.validation.AppError
-import io.cumulus.models.Session
+import io.cumulus.models.UserSession
 import io.cumulus.models.fs.File
 import io.cumulus.persistence.storage.StorageEngine
 
@@ -22,7 +23,8 @@ trait ThumbnailGenerator {
     materializer: Materializer,
     ciphers: Ciphers,
     compressions: Compressions,
-    session: Session
+    userSession: UserSession,
+    settings: Settings
   ): Future[Either[AppError, File]]
 
   def maxSize: Long = 1048576 // 10Mo
@@ -44,7 +46,8 @@ object ImageThumbnailGenerator extends ThumbnailGenerator {
     materializer: Materializer,
     ciphers: Ciphers,
     compressions: Compressions,
-    session: Session) = {
+    userSession: UserSession,
+    settings: Settings) = {
 
     val res = for {
       fileSource <- StorageReferenceReader(storageEngine, file)
@@ -57,6 +60,7 @@ object ImageThumbnailGenerator extends ThumbnailGenerator {
       val image = Image.fromStream(fileInputStream).fit(100, 100)
 
       // Write the image
+      // TODO also move that to a common location
       val thumbnailWriter =
         StorageReferenceWriter(
           storageEngine,
@@ -69,9 +73,9 @@ object ImageThumbnailGenerator extends ThumbnailGenerator {
     }
 
     // Run the upload & return the file
-    res match {
+    res match { // TODO move to a common location
       case Right(stream) =>
-        stream.run().map(Right.apply)
+        stream.run().map(file => Right(file.copy(hidden = true))) // Hide the file
       case Left(err) =>
         Future.successful(Left(err))
     }
