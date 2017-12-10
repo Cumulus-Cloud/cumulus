@@ -19,6 +19,7 @@ import Empty from "components/directory/Empty"
 import Loader from "components/directory/Loader"
 import { SearchResult } from "models/Search"
 import ShareModal from "components/ShareModal"
+import LeftPanel from "components/LeftPanel"
 
 interface DispatchProps {
   onFetchDirectory: (path: string) => void
@@ -53,20 +54,23 @@ class DirectoriesContainer extends React.PureComponent<Props> {
     const { directory, share, sharedFsNode } = this.props
     return (
       <div className={styles.directoriesContainer}>
-        <AppBar />
-        <div className={styles.actionBar}>
-          <Breadcrumb directory={directory} onPathClick={this.handleOnPathClick} />
-          <div className={styles.actions}>
-            <NewFolderContainer />
-            <UploadContainer />
+        <LeftPanel />
+        <div style={{ flex: 1 }}>
+          <AppBar />
+          <div className={styles.actionBar}>
+            <Breadcrumb directory={directory} onPathClick={this.handleOnPathClick} />
+            <div className={styles.actions}>
+              <NewFolderContainer />
+              <UploadContainer />
+            </div>
           </div>
-        </div>
-        <div className={styles.content}>
-          <div className={styles.directories}>
-            {this.renderResult()}
+          <div className={styles.content}>
+            <div className={styles.directories}>
+              {this.renderResult()}
+            </div>
+            <PreviewContainer />
+            {!!share && !!sharedFsNode ? this.renderShareModal(share, sharedFsNode) : null}
           </div>
-          <PreviewContainer />
-          {!!share && !!sharedFsNode ? this.renderShareModal(share, sharedFsNode) : null}
         </div>
       </div>
     )

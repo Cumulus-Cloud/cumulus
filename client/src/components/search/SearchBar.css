@@ -8,8 +8,7 @@
   min-width: 400px;
   border: none;
   font-size: 1.1rem;
-  background: transparent;
-  color: var(--text);
+  color: var(--primaryText);
   padding: 6px 2px 2px 2px;
   border-bottom: 1px solid var(--text);
 }

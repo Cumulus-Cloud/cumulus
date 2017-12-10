@@ -1,0 +1,33 @@
+
+.leftPanel  {
+  width: 240px;
+  min-height: 100vh;
+  background-color: var(--lightPrimary);
+
+  padding: 17px 40px;
+}
+
+.appTitle {
+  color: var(--darkPrimary);
+  font-size: 1.5rem;
+}
+
+.links {
+  margin-top: 55px;
+}
+
+.link {
+  font-size: .8rem;
+  padding: 14px 0;
+  color: var(--secondaryText);
+  cursor: pointer;
+}
+
+.link:hover {
+  color: var(--darkPrimary);
+  opacity: .7;
+}
+
+.active {
+  color: var(--darkPrimary);
+}

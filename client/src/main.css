@@ -11,12 +11,12 @@ body {
   --error: #E83E29;
 
   --darkPrimary: #3DC7BE;
-  --lightPrimary: #c5cae9;
+  --lightPrimary: #F2FBFA;
   --primary: #3f51b5;
 
   --text: #FFFFFF;
   --primaryText: #212121;
-  --secondaryText: #757575;
+  --secondaryText: #6F6F6F;
   --accent: #4caf50;
   --accentLight: rgba(76, 175, 79, 0.369);
   --divider: #BDBDBD;

@@ -23,9 +23,12 @@ class SearchContainer extends React.PureComponent<Props> {
   render() {
     const { query, onQueryChange, onCancelSearch } = this.props
     return (
-      <div>
-        <SearchBar query={query} onChange={onQueryChange} onSubmit={this.handleOnSubbmit} onCancel={onCancelSearch} />
-      </div>
+      <SearchBar
+        query={query}
+        onChange={onQueryChange}
+        onSubmit={this.handleOnSubbmit}
+        onCancel={onCancelSearch}
+      />
     )
   }
 
