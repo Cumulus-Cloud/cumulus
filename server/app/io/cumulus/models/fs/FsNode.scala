@@ -57,7 +57,6 @@ object FsNode {
       fileWriter.writes(file)
   }
 
-
   implicit val reads: Reads[FsNode]    = reads(File.reads, Directory.reads)
   implicit val writes: OWrites[FsNode] = writes(File.writes, Directory.writes)
   implicit val format: OFormat[FsNode] = OFormat(reads, writes)
@@ -66,6 +65,7 @@ object FsNode {
   val internalReads: Reads[FsNode]    = reads(File.internalReads, Directory.internalReads)
   val internalWrites: OWrites[FsNode] = writes(File.internalWrites, Directory.internalWrites)
   val internalFormat: OFormat[FsNode] = OFormat(internalReads, internalWrites)
+
 }
 
 case class Directory(
@@ -122,7 +122,7 @@ object Directory {
     (JsPath \ "hidden").write[Boolean] and
     (JsPath \ "owner").write[UUID] and
     (JsPath \ "content").lazyWrite[Seq[FsNode]] { content =>
-      Writes.traversableWrites[FsNode](FsNode.writes).writes(content)
+      Writes.traversableWrites[FsNode](FsNode.format).writes(content)
     }
   ){ directory =>
     (
@@ -142,9 +142,9 @@ object Directory {
     OFormat(reads, writes)
 
   // We want different non-implicit writers en readers for the database
-  val internalReads: Reads[Directory]    = reads
-  val internalWrites: OWrites[Directory] = Json.writes[Directory]
-  val internalFormat: OFormat[Directory] = OFormat(internalReads, internalWrites)
+  lazy val internalReads: Reads[Directory]    = reads
+  lazy val internalWrites: OWrites[Directory] = Json.writes[Directory]
+  lazy val internalFormat: OFormat[Directory] = OFormat(internalReads, internalWrites)
 
 }
 
@@ -192,7 +192,7 @@ object File {
       hidden = false,
       owner = owner,
       permissions = Seq.empty,
-      metadata = FileMetadata.default,
+      metadata = DefaultMetadata.empty,
       size = storage.size,
       hash = storage.hash,
       mimeType = mimeType,
@@ -216,7 +216,8 @@ object File {
     (JsPath \ "hash").write[String] and
     (JsPath \ "mimeType").write[String]and
     (JsPath \ "cipher").writeNullable[String] and
-    (JsPath \ "compression").writeNullable[String]
+    (JsPath \ "compression").writeNullable[String] and
+    (JsPath \ "metadata").write[FileMetadata]
   ){ file =>
     (
       file.id,
@@ -232,7 +233,8 @@ object File {
       file.hash,
       file.mimeType,
       file.storageReference.cipher,
-      file.storageReference.compression
+      file.storageReference.compression,
+      file.metadata
     )
   }
 

@@ -61,7 +61,6 @@ class StorageObjectWriter(storageEngine: StorageEngine)(implicit ec: ExecutionCo
             size = state.written,
             storageHash = hash, // By default, assume that the object is written directly
             storageSize = state.written
-            // TODO add cipher and/or compression
           )
         )
 
@@ -126,8 +125,7 @@ object StorageObjectWriter {
         creation = LocalDateTime.now
       )
 
-      // TODO handle failure
-      // TODO add cipher and/or compression
+      // TODO handle failure ?
       val output =  storageEngine.writeObject(storageObject.id)
 
       ObjectWriterState(0, output, storageObject, MessageDigest.getInstance("SHA1"))

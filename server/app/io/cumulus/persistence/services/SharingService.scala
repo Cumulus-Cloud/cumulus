@@ -169,10 +169,10 @@ class SharingService(
       }
 
       // Find the user
-      sharingUser <- QueryE.shouldBeFound(userStore.find(sharing.owner))
+      sharingUser <- QueryE.get(userStore.find(sharing.owner))
 
       // Find the base node shared
-      sharedNode <- QueryE.shouldBeFound(fsNodeStore.find(sharing.fsNode))
+      sharedNode <- QueryE.get(fsNodeStore.find(sharing.fsNode))
 
       // Find the element shared
       node <- {
