@@ -8,8 +8,6 @@ import { DirectoriesState } from "directories/DirectoriesReducer"
 import AppBar from "components/AppBar"
 import Breadcrumb from "components/directory/Breadcrumb"
 import { history } from "store"
-import NewFolderContainer from "newFolder/NewFolderContainer"
-import UploadContainer from "upload/UploadContainer"
 import PreviewContainer from "./PreviewContainer"
 import FsDirectory from "components/directory/FsDirectory"
 import FsFile from "components/directory/FsFile"
@@ -20,6 +18,7 @@ import Loader from "components/directory/Loader"
 import { SearchResult } from "models/Search"
 import ShareModal from "components/ShareModal"
 import LeftPanel from "components/LeftPanel"
+import RightPanel from "components/RightPanel"
 
 interface DispatchProps {
   onFetchDirectory: (path: string) => void
@@ -55,21 +54,18 @@ class DirectoriesContainer extends React.PureComponent<Props> {
     return (
       <div className={styles.directoriesContainer}>
         <LeftPanel />
-        <div style={{ flex: 1 }}>
+        <div className={styles.mainContainer}>
           <AppBar />
-          <div className={styles.actionBar}>
-            <Breadcrumb directory={directory} onPathClick={this.handleOnPathClick} />
-            <div className={styles.actions}>
-              <NewFolderContainer />
-              <UploadContainer />
+          <div className={styles.filesContainer}>
+            <div className={styles.content}>
+              <Breadcrumb directory={directory} onPathClick={this.handleOnPathClick} />
+              <div className={styles.directories}>
+                {this.renderResult()}
+              </div>
+              <PreviewContainer />
+              {!!share && !!sharedFsNode ? this.renderShareModal(share, sharedFsNode) : null}
             </div>
-          </div>
-          <div className={styles.content}>
-            <div className={styles.directories}>
-              {this.renderResult()}
-            </div>
-            <PreviewContainer />
-            {!!share && !!sharedFsNode ? this.renderShareModal(share, sharedFsNode) : null}
+            <RightPanel />
           </div>
         </div>
       </div>

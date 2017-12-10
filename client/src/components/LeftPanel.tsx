@@ -1,6 +1,6 @@
 import * as React from "react"
 import * as styles from "./LeftPanel.css"
-import classNames from "../utils/ClassNames"
+import classNames from "utils/ClassNames"
 
 export default class LeftPanel extends React.PureComponent<{}> {
   render() {
