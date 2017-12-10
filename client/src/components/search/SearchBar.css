@@ -1,14 +1,19 @@
 .searchBar {
+  height: 48px;
   display: flex;
   flex-direction: row;
   align-items: center;
+  border: 1px solid var(--divider);
+  border-radius: 6px;
+  padding: 14px 24px;
 }
 
 .input {
-  min-width: 400px;
+  width: 100%;
+  margin-left: 24px;
+  min-width: 500px;
   border: none;
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: var(--primaryText);
-  padding: 6px 2px 2px 2px;
-  border-bottom: 1px solid var(--text);
+  padding: 6px 0;
 }
