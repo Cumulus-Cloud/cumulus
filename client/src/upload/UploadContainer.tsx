@@ -9,6 +9,7 @@ import ModalHeader from "components/modals/ModalHeader"
 import ModalContent from "components/modals/ModalContent"
 import ModalActions from "components/modals/ModalActions"
 import FlatButton from "components/buttons/FlatButton"
+import Button from "components/buttons/Button"
 import Uploader from "components/upload/Uploader"
 import UploadFile from "components/upload/UploadFile"
 import { FileToUpload } from "models/FileToUpload"
@@ -33,7 +34,7 @@ class NewFolderContainer extends React.PureComponent<Props> {
     const { wantUpload, onWantUpload } = this.props
     return (
       <div>
-        <FlatButton label={Messages("ui.upload")} onClick={onWantUpload} />
+        <Button label={Messages("ui.upload")} onClick={onWantUpload} />
         {wantUpload ? this.renderModal() : null}
       </div>
     )

@@ -7,8 +7,8 @@ export default class RightPanel extends React.PureComponent<{}> {
   render() {
     return (
       <div className={styles.rightPanel}>
-        <NewFolderContainer />
         <UploadContainer />
+        <NewFolderContainer />
       </div>
     )
   }

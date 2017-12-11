@@ -1,6 +1,7 @@
 
 .rightPanel {
   width: 300px;
-  min-height: 100vh;
+  height: 100%;
+  padding: 24px;
   background-color: var(--secondaryBg);
 }
