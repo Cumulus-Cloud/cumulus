@@ -1,7 +1,7 @@
 # Cumulus Cloud
 [![Build Status](https://travis-ci.org/Cumulus-Cloud/cumulus.svg?branch=master)](https://travis-ci.org/Cumulus-Cloud/cumulus)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/3faffc97b343404bacff1902e1e78012)](https://www.codacy.com/app/Cumulus/cumulus?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Cumulus-Cloud/cumulus&amp;utm_campaign=Badge_Grade)
-
+[![Docker Badge](https://img.shields.io/badge/docker-up_to_date-blue.svg)](https://hub.docker.com/r/wadjetz/cumulus/)
 
 ## Deploy and use Cumulus
 
