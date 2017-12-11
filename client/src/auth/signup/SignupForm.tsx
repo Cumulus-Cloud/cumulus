@@ -55,7 +55,7 @@ export default class SignupForm extends React.PureComponent<Props> {
           onChange={this.handleChange("password")}
         />
         <div className={styles.action}>
-          <Button label={Messages("ui.auth.signup")} loading={loading} onClick={this.handleSubmit} />
+          <Button label={Messages("ui.auth.signup")} loading={loading} onClick={this.handleSubmit} large />
           <div className={styles.formError}>
             {formErrors && formErrors.message ? formErrors.message : null}
           </div>
