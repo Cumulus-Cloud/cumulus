@@ -12,11 +12,12 @@ import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.controllers.utils.bodyParser.{BodyParserJson, BodyParserStream}
 import io.cumulus.core.stream.storage.StorageReferenceWriter
-import io.cumulus.models.fs.{Directory, FsNodeType}
+import io.cumulus.core.validation.AppError
+import io.cumulus.models.fs.{Directory, File, FileMetadata, FsNodeType}
 import io.cumulus.models.{Path, Sharing, UserSession}
 import io.cumulus.persistence.services.{FsNodeService, SharingService}
 import io.cumulus.persistence.storage.StorageEngine
-import io.cumulus.stages.{Ciphers, Compressions, MetadataExtractors}
+import io.cumulus.stages._
 import play.api.libs.json.{JsString, Json}
 import play.api.mvc.{AbstractController, ControllerComponents}
 
@@ -31,7 +32,8 @@ class FileSystemController(
   settings: Settings,
   ciphers: Ciphers,
   compressions: Compressions,
-  metadataExtractors: MetadataExtractors
+  metadataExtractors: MetadataExtractors,
+  thumbnailGenerators: ThumbnailGenerators
 ) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with FileDownloaderUtils with BodyParserJson with BodyParserStream {
 
   def get(path: Path) = AuthenticatedAction.async { implicit request =>
@@ -83,20 +85,38 @@ class FileSystemController(
          )
        }
 
-       // Store the file
+       // Store the file's content
        uploadedFile <- EitherT.liftF(request.body.runWith(fileWriter))
 
        // Extract metadata
-       metadataExtractor =  metadataExtractors.get(uploadedFile.mimeType)
-       metadata          <- EitherT.fromEither[Future](metadataExtractor.extract(uploadedFile, storageEngine))
+       metadata          <- EitherT.fromEither[Future](extractMetadata(uploadedFile))
        fileWithMetadata  =  uploadedFile.copy(metadata = metadata)
 
        // Create an entry in the database for the file
        file <- EitherT(fsNodeService.createFile(fileWithMetadata))
 
+       // Create a thumbnail (if possible) for the file
+       thumbnail <- EitherT(generateThumbnail(file))
+
      } yield file
    }
  }
+
+  private def extractMetadata(file: File)(implicit request: AuthenticatedRequest[_]): Either[AppError, FileMetadata] = {
+    val metadataExtractor =  metadataExtractors.get(file.mimeType)
+
+    metadataExtractor.extract(file, storageEngine)
+  }
+
+  private def generateThumbnail(file: File)(implicit request: AuthenticatedRequest[_]): Future[Either[AppError, Option[File]]] = {
+    val thumbnailGenerator = thumbnailGenerators.get(file.mimeType)
+
+    thumbnailGenerator.map { generator =>
+      EitherT(generator.generate(file, storageEngine)).flatMap { thumbnail =>
+        EitherT(fsNodeService.createFile(thumbnail)).map(Some(_))
+      }
+    }.getOrElse(EitherT.fromEither[Future](Right(None))).value
+  }
 
   def create(path: Path) = AuthenticatedAction.async { implicit request =>
     ApiResponse {
