@@ -15,6 +15,15 @@ case class Path(value: Seq[String]) {
 
   import Path._
 
+  def ++(next: String): Path =
+    Path(value ++ convertStringToPath(next).value)
+
+  def ++(next: Seq[String]): Path =
+    Path(value ++ next)
+
+  def ++(next: Path): Path =
+    Path(value ++ next.value)
+
   def isRoot: Boolean =
     value.isEmpty
 

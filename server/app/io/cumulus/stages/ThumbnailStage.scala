@@ -37,7 +37,7 @@ trait ThumbnailGenerator {
 
 }
 
-object PDFDocumentMetadataExtractor extends ThumbnailGenerator {
+object PDFDocumentThumbnailGenerator extends ThumbnailGenerator {
 
   override def generate(
     file: File,
@@ -122,7 +122,7 @@ object ImageThumbnailGenerator extends ThumbnailGenerator {
 
       // Generate the image
       val fileInputStream = fileSource.runWith(StreamConverters.asInputStream())
-      val image = Image.fromStream(fileInputStream).fit(100, 100)
+      val image = Image.fromAwt(ImageIO.read(fileInputStream)).fit(200, 200)
 
       // Write the image
       // TODO also move that to a common location

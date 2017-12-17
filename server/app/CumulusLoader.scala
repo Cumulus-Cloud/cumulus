@@ -62,7 +62,8 @@ class CumulusComponents(
   ))
 
   implicit val thumbnailGenerators = ThumbnailGenerators(Seq(
-    ImageThumbnailGenerator
+    ImageThumbnailGenerator,
+    PDFDocumentThumbnailGenerator
   ))
 
   lazy val router: Router = new Routes(
