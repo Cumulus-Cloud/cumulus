@@ -96,6 +96,7 @@ class FileSystemController(
        file <- EitherT(fsNodeService.createFile(fileWithMetadata))
 
        // Create a thumbnail if possible for the file
+       // TODO handle failure ?
        thumbnailGenerator = thumbnailGenerators.get(uploadedFile.mimeType)
        _ <- thumbnailGenerator.map { generator =>
          EitherT(generator.generate(file, storageEngine)).flatMap { thumbnail =>

@@ -1,5 +1,7 @@
 package io.cumulus.stages
 
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+import javax.imageio.ImageIO
 import scala.concurrent.{ExecutionContext, Future}
 
 import akka.stream.Materializer
@@ -12,6 +14,8 @@ import io.cumulus.core.validation.AppError
 import io.cumulus.models.UserSession
 import io.cumulus.models.fs.File
 import io.cumulus.persistence.storage.StorageEngine
+import org.apache.pdfbox.pdmodel.PDDocument
+import org.apache.pdfbox.rendering.{ImageType, PDFRenderer}
 
 trait ThumbnailGenerator {
 
@@ -33,6 +37,67 @@ trait ThumbnailGenerator {
 
 }
 
+object PDFDocumentMetadataExtractor extends ThumbnailGenerator {
+
+  override def generate(
+    file: File,
+    storageEngine: StorageEngine
+  )(implicit
+    ec: ExecutionContext,
+    materializer: Materializer,
+    ciphers: Ciphers,
+    compressions: Compressions,
+    userSession: UserSession,
+    settings: Settings) = {
+
+
+    val res = for {
+      fileSource  <- StorageReferenceReader(storageEngine, file)
+      cipher      <- ciphers.get(file.storageReference.cipher)
+      compression <- compressions.get(file.storageReference.compression)
+    } yield {
+
+      // Get the PDF document
+      val fileInputStream = fileSource.runWith(StreamConverters.asInputStream())
+      val document = PDDocument.load(fileInputStream)
+      val pdfRenderer = new PDFRenderer(document)
+
+      // Generate a preview of the first page
+      val preview = pdfRenderer.renderImageWithDPI(0, 300, ImageType.RGB)
+
+      // Write the image and get a stream
+      val os = new ByteArrayOutputStream()
+      ImageIO.write(preview, "png", os)
+      val is = new ByteArrayInputStream(os.toByteArray)
+
+      // Write the image
+      // TODO also move that to a common location
+      val thumbnailWriter =
+      StorageReferenceWriter(
+        storageEngine,
+        cipher,
+        compression,
+        file.path.parent ++ "/" ++ ".thumbnail_" + file.path.nameWithoutExtension + ".png"
+      )
+
+      StreamConverters.fromInputStream(() => is).toMat(thumbnailWriter)(Keep.right)
+    }
+
+    // Run the upload & return the file
+    res match { // TODO move to a common location
+      case Right(stream) =>
+        stream.run().map(file => Right(file.copy(hidden = true))) // Hide the file
+      case Left(err) =>
+        Future.successful(Left(err))
+    }
+  }
+
+  override def applyOn = Seq(
+    "application/pdf"
+  )
+
+}
+
 object ImageThumbnailGenerator extends ThumbnailGenerator {
 
   /** JPEG writer at 50% quality */
@@ -47,11 +112,11 @@ object ImageThumbnailGenerator extends ThumbnailGenerator {
     ciphers: Ciphers,
     compressions: Compressions,
     userSession: UserSession,
-    settings: Settings) = {
+    settings: Settings): Future[Either[AppError, File]] = {
 
     val res = for {
-      fileSource <- StorageReferenceReader(storageEngine, file)
-      cipher <- ciphers.get(file.storageReference.cipher)
+      fileSource  <- StorageReferenceReader(storageEngine, file)
+      cipher      <- ciphers.get(file.storageReference.cipher)
       compression <- compressions.get(file.storageReference.compression)
     } yield {
 
