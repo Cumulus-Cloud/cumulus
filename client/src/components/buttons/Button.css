@@ -2,9 +2,8 @@
 .button {
   background-color: var(--darkPrimary);
   border-radius: 2px;
-  padding: 15px 30px;
   cursor: pointer;
-  min-height: 40px;
+  min-height: 32px;
   min-width: 170px;
 }
 
