@@ -7,8 +7,8 @@
   position: absolute;
   top: 0;
   margin: 0;
+  border-radius: 6px;
   background-color: var(--secondaryBg);
-  border-radius: 2px;
   box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.2);
   z-index: 10;
   transform-origin: 0 0;
@@ -29,13 +29,15 @@
   align-items: center;
   cursor: pointer;
   margin-right: 10px;
+  border-bottom: 1px solid var(--divider);
 }
 
 .item:hover {
-  background-color: var(--primaryBg);
+  background-color: var(--lightPrimary);
 }
 
 .label {
+  font-size: 0.8rem;
   color: var(--primaryText);
   margin-left: 10px;
   white-space: nowrap;
