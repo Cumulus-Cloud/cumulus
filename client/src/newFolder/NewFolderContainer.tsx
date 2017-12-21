@@ -27,10 +27,10 @@ class NewFolderContainer extends React.PureComponent<Props> {
   render() {
     const { wantCreateNewFolder, onWantCreateNewFolder } = this.props
     return (
-      <div>
+      <>
         <FlatButton label={Messages("ui.newFolder")} onClick={onWantCreateNewFolder} />
         {wantCreateNewFolder ? this.renderModal() : null}
-      </div>
+      </>
     )
   }
 

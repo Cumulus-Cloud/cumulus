@@ -1,7 +1,10 @@
 
 .button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background-color: var(--darkPrimary);
-  border-radius: 2px;
+  border-radius: 6px;
   cursor: pointer;
   min-height: 32px;
   min-width: 170px;
