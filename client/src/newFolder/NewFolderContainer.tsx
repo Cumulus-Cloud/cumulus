@@ -4,12 +4,8 @@ import * as NewFolderActions from "newFolder/NewFolderActions"
 import { NewFolderState } from "newFolder/NewFolderReducer"
 import { GlobalState } from "store"
 import { FsNode } from "models/FsNode"
-import NewFolderFrom from "newFolder/NewFolderFrom"
-import Modal from "components/modals/Modal"
-import ModalActions from "components/modals/ModalActions"
-import ModalHeader from "components/modals/ModalHeader"
-import ModalContent from "components/modals/ModalContent"
 import FlatButton from "components/buttons/FlatButton"
+import NewFolderModal from "newFolder/NewFolderModal"
 
 interface DispatchProps {
   onNewFolderNameChange: (newFolderName: string) => void
@@ -28,8 +24,8 @@ class NewFolderContainer extends React.PureComponent<Props> {
     const { wantCreateNewFolder, onWantCreateNewFolder } = this.props
     return (
       <>
-        <FlatButton label={Messages("ui.newFolder")} onClick={onWantCreateNewFolder} />
-        {wantCreateNewFolder ? this.renderModal() : null}
+      <FlatButton label={Messages("ui.newFolder")} onClick={onWantCreateNewFolder} />
+      {wantCreateNewFolder ? this.renderModal() : null}
       </>
     )
   }
@@ -37,21 +33,13 @@ class NewFolderContainer extends React.PureComponent<Props> {
   renderModal = () => {
     const { error, newFolderName, onNewFolderNameChange, onWantCreateNewFolder } = this.props
     return (
-      <Modal onClose={onWantCreateNewFolder}>
-        <ModalHeader title={Messages("ui.createNewFolder")} />
-        <ModalContent>
-          <NewFolderFrom
-            name={newFolderName}
-            error={error}
-            onChange={onNewFolderNameChange}
-            onSubmit={this.handleOnSubmit}
-          />
-        </ModalContent>
-        <ModalActions>
-          <FlatButton label={Messages("ui.cancel")} onClick={onWantCreateNewFolder} />
-          <FlatButton label={Messages("ui.create")} onClick={this.handleOnSubmit} />
-        </ModalActions>
-      </Modal>
+      <NewFolderModal
+        error={error}
+        newFolderName={newFolderName}
+        onWantCreateNewFolder={onWantCreateNewFolder}
+        onNewFolderNameChange={onNewFolderNameChange}
+        onNewFolderSubmit={this.handleOnSubmit}
+      />
     )
   }
 
