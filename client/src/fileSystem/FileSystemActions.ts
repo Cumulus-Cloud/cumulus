@@ -7,7 +7,7 @@ import * as Api from "services/Api"
 import { OnCreateNewFolderSuccess } from "newFolder/NewFolderActions"
 import { OnUploadFileSuccess } from "upload/UploadActions"
 
-export type DirectoriesAction =
+export type FileSystemAction =
   OnFetchDirectory |
   OnFetchDirectorySuccess |
   OnFetchDirectoryError |

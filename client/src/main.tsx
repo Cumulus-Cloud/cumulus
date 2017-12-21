@@ -9,15 +9,15 @@ import { Provider } from "react-redux"
 import { ConnectedRouter } from "react-router-redux"
 import LoginContainer from "auth/login/LoginContainer"
 import SignupContainer from "auth/signup/SignupContainer"
-import DirectoriesContainer from "directories/DirectoriesContainer"
+import FileSystemContainer from "fileSystem/FileSystemContainer"
 import { store, history } from "store"
 
 ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
       <div>
-        <Route exact path="/" component={DirectoriesContainer} />
-        <Route exact path="/fs/*" component={DirectoriesContainer} />
+        <Route exact path="/" component={FileSystemContainer} />
+        <Route exact path="/fs/*" component={FileSystemContainer} />
         <Route exact path="/login" component={LoginContainer} />
         <Route exact path="/signup" component={SignupContainer} />
       </div>

@@ -64,7 +64,7 @@ class NewFolderContainer extends React.PureComponent<Props> {
 const mapStateToProps = (state: GlobalState): PropsState => {
   return {
     ...state.newFolder,
-    directory: state.directories.directory!
+    directory: state.fileSystem.directory!
   }
 }
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {

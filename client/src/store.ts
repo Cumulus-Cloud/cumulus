@@ -7,7 +7,7 @@ import { routerReducer, routerMiddleware } from "react-router-redux"
 import thunkMiddleware from "redux-thunk"
 import { LoginState, LoginReducer } from "auth/login/LoginReducer"
 import { SignupState, SignupReducer } from "auth/signup/SignupReducer"
-import { DirectoriesState, DirectoriesReducer } from "directories/DirectoriesReducer"
+import { FileSystemState, FileSystemReducer } from "fileSystem/FileSystemReducer"
 import { NewFolderState, NewFolderReducer } from "newFolder/NewFolderReducer"
 import { UploadState, UploadReducer } from "upload/UploadReducer"
 import { SearchState, SearchReducer } from "search/SearchReducer"
@@ -17,7 +17,7 @@ export interface GlobalState {
   signup: SignupState
   newFolder: NewFolderState
   upload: UploadState
-  directories: DirectoriesState
+  fileSystem: FileSystemState
   search: SearchState
   router: Reducer<RouterState>
 }
@@ -30,7 +30,7 @@ const reducers = combineReducers({
   signup: SignupReducer as any,
   newFolder: NewFolderReducer,
   upload: UploadReducer,
-  directories: DirectoriesReducer,
+  fileSystem: FileSystemReducer,
   search: SearchReducer,
   router: routerReducer,
 })

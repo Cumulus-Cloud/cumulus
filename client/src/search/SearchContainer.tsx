@@ -40,7 +40,7 @@ class SearchContainer extends React.PureComponent<Props> {
 const mapStateToProps = (state: GlobalState): PropsState => {
   return {
     ...state.search,
-    directory: state.directories.directory!,
+    directory: state.fileSystem.directory!,
   }
 }
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {

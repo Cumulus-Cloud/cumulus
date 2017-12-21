@@ -1,9 +1,9 @@
-import { DirectoriesAction } from "directories/DirectoriesActions"
+import { FileSystemAction } from "./FileSystemActions"
 import { FsNode, FsFile, isDirectory } from "models/FsNode"
 import { Share } from "models/Share"
 import { ApiError } from "services/Api"
 
-export interface DirectoriesState {
+export interface FileSystemState {
   directory?: FsNode
   loading: boolean
   deleteLoading?: string
@@ -14,13 +14,13 @@ export interface DirectoriesState {
   sharingLoader: boolean
 }
 
-const initState: DirectoriesState = {
+const initState: FileSystemState = {
   loading: false,
   sharingLoader: false,
   error: undefined,
 }
 
-export const DirectoriesReducer = (state: DirectoriesState = initState, action: DirectoriesAction) => {
+export const FileSystemReducer = (state: FileSystemState = initState, action: FileSystemAction) => {
   switch (action.type) {
     case "OnFetchDirectory": return { ...state, loading: true }
     case "OnFetchDirectorySuccess": return { ...state, directory: action.directory, loading: false }

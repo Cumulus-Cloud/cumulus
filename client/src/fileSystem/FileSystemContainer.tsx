@@ -1,10 +1,10 @@
 import * as React from "react"
-import * as styles from "./DirectoriesContainer.css"
+import * as styles from "./FileSystemContainer.css"
 import { connect, Dispatch } from "react-redux"
 import { match as RouterMatch } from "react-router"
-import * as DirectoriesActions from "directories/DirectoriesActions"
+import * as FileSystemActions from "./FileSystemActions"
 import { GlobalState } from "store"
-import { DirectoriesState } from "directories/DirectoriesReducer"
+import { FileSystemState } from "./FileSystemReducer"
 import AppBar from "components/AppBar"
 import Breadcrumb from "components/directory/Breadcrumb"
 import { history } from "store"
@@ -28,14 +28,14 @@ interface DispatchProps {
   onCloseShare: () => void
 }
 
-interface PropsState extends DirectoriesState {
+interface PropsState extends FileSystemState {
   searchResult?: SearchResult
   path?: string
 }
 
 type Props = PropsState & DispatchProps
 
-class DirectoriesContainer extends React.PureComponent<Props> {
+class FileSystemContainer extends React.PureComponent<Props> {
 
   componentWillMount() {
     const { path, onFetchDirectory } = this.props
@@ -52,7 +52,7 @@ class DirectoriesContainer extends React.PureComponent<Props> {
   render() {
     const { directory, share, sharedFsNode } = this.props
     return (
-      <div className={styles.directoriesContainer}>
+      <div className={styles.fileSystemContainer}>
         <LeftPanel />
         <div className={styles.mainContainer}>
           <AppBar />
@@ -136,7 +136,7 @@ class DirectoriesContainer extends React.PureComponent<Props> {
 
 const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string[]> }): PropsState => {
   return {
-    ...state.directories,
+    ...state.fileSystem,
     searchResult: state.search.searchResult,
     path: props.match && props.match.params[0]
   }
@@ -144,12 +144,12 @@ const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string
 
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onFetchDirectory: path => dispatch(DirectoriesActions.onFetchDirectory(path)),
-    onDeleteFsNode: fsNode => dispatch(DirectoriesActions.onDeleteFsNode(fsNode)),
-    onShowPreview: fsFile => dispatch(DirectoriesActions.onShowPreview(fsFile)),
-    onSharing: fsNode => dispatch(DirectoriesActions.onSharing(fsNode)),
-    onCloseShare: () => dispatch(DirectoriesActions.onCloseShare()),
+    onFetchDirectory: path => dispatch(FileSystemActions.onFetchDirectory(path)),
+    onDeleteFsNode: fsNode => dispatch(FileSystemActions.onDeleteFsNode(fsNode)),
+    onShowPreview: fsFile => dispatch(FileSystemActions.onShowPreview(fsFile)),
+    onSharing: fsNode => dispatch(FileSystemActions.onSharing(fsNode)),
+    onCloseShare: () => dispatch(FileSystemActions.onCloseShare()),
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(DirectoriesContainer)
+export default connect(mapStateToProps, mapDispatchToProps)(FileSystemContainer)
