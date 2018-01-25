@@ -16,6 +16,15 @@ import io.cumulus.stages.{CipherStage, CompressionStage}
 
 object StorageReferenceWriter {
 
+  /**
+    * Returns a sink allowing to write a stream of bytes into the provided storage engine. The sink will output a
+    * cumulus file containing the storage references.
+    *
+    * @param storageEngine The storage engine to use
+    * @param cipher The optional cipher used to crypt the byte steam
+    * @param compression The optional compression algorithm used to compress the byte steam
+    * @param path The path of the create file
+    */
   def apply(
     storageEngine: StorageEngine,
     cipher: Option[CipherStage],
@@ -60,8 +69,8 @@ object StorageReferenceWriter {
 
           // Create the file with the provided information
           File.create(
-            path = path,
             owner = user.id,
+            path = path,
             mimeType = MimeType.detect(path.name),
             storage = storageRef
           )
