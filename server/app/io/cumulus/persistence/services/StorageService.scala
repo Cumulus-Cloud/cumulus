@@ -12,7 +12,7 @@ import io.cumulus.core.utils.Range
 import io.cumulus.core.validation.AppError
 import io.cumulus.core.{Logging, Settings}
 import io.cumulus.models.fs.{File, FileMetadata}
-import io.cumulus.models.{Path, UserSession}
+import io.cumulus.models.{Path, Session, UserSession}
 import io.cumulus.persistence.storage.StorageEngine
 import io.cumulus.stages._
 
@@ -88,7 +88,7 @@ class StorageService(
     * @param path The path of the file
     * @param session The session performing the operation
     */
-  def downloadFile(path: Path, maybeRange: Option[Range])(implicit session: UserSession): Future[Either[AppError, Source[ByteString, _]]] = {
+  def downloadFile(path: Path, maybeRange: Option[Range])(implicit session: Session): Future[Either[AppError, Source[ByteString, _]]] = {
     implicit val user = session.user
 
     for {

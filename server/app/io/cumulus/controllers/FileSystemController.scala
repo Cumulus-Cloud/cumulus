@@ -51,7 +51,7 @@ class FileSystemController(
         content    <- EitherT(storageService.downloadFile(path, maybeRange))
 
         // Create the response
-        result     <- EitherT.pure[Future, AppError](
+        result <- EitherT.pure[Future, AppError](
           maybeRange match {
             case Some(range) =>
               streamFile(file, content, range)

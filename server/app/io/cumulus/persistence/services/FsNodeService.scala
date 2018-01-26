@@ -186,6 +186,8 @@ class FsNodeService(
       // Check that the destination's parent exists and is a directory
       movedParentNode <- getParentWithLock(to)
 
+      // TODO also move the thumbnail
+
       // Move the directory and update the parent last modification
       now = LocalDateTime.now
       _ <- QueryE.lift(fsNodeStore.update(movedParentNode.modified(now)))
@@ -224,6 +226,7 @@ class FsNodeService(
       })
 
       // TODO Check that the node is not shared
+      // TODO delete also the thumbnail
 
       // Delete the element
       _ <- QueryE.lift(fsNodeStore.delete(node.id))
