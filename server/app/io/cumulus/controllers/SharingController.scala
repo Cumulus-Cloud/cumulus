@@ -9,7 +9,7 @@ import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.utils.Base16
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.{Path, SharingSession}
-import io.cumulus.persistence.services.SharingService
+import io.cumulus.persistence.services.{SharingService, StorageService}
 import io.cumulus.persistence.storage.StorageEngine
 import io.cumulus.stages.{Ciphers, Compressions}
 import play.api.mvc.{AbstractController, ControllerComponents}
@@ -17,6 +17,7 @@ import play.api.mvc.{AbstractController, ControllerComponents}
 class SharingController(
   cc: ControllerComponents,
   sharingService: SharingService,
+  storageService: StorageService,
   storageEngine: StorageEngine
 )(implicit
   ec: ExecutionContext,
@@ -46,24 +47,23 @@ class SharingController(
         res <- EitherT(sharingService.findSharedFile(reference, path, key))
         (sharing, user, file) = res
 
-        // Get the range if a streaming is required
-        maybeRange <- EitherT.fromEither[Future](headerRange(request, file))
-
         // Decode the key & generate a session
         decodedKey <- EitherT.fromEither[Future](Base16.decode(key).toRight(AppError.validation("validation.sharing.invalid-key")))
         session    =  SharingSession(user, sharing, decodedKey)
 
-        // Download the file
-        result <- EitherT.fromEither[Future]{
-          implicit val sharingSession = session
+        // Get the file's content
+        maybeRange <- EitherT.fromEither[Future](headerRange(request, file))
+        content    <- EitherT(storageService.downloadFile(file.path, maybeRange)(session))
 
+        // Create the response
+        result <- EitherT.pure[Future, AppError](
           maybeRange match {
             case Some(range) =>
-              streamFile(storageEngine, file, range)
+              streamFile(file, content, range)
             case None =>
-              downloadFile(storageEngine, file, forceDownload.getOrElse(false))
+              downloadFile(file, content, forceDownload.getOrElse(false))
           }
-        }
+        )
       } yield result
     }
   }

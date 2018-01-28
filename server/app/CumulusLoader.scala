@@ -9,7 +9,7 @@ import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.HttpErrorHandler
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.QueryBuilder
-import io.cumulus.persistence.services.{FsNodeService, SharingService, UserService}
+import io.cumulus.persistence.services.{FsNodeService, SharingService, StorageService, UserService}
 import io.cumulus.persistence.storage.{LocalStorageEngine, StorageEngine}
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore, UserStore}
 import io.cumulus.stages._
@@ -47,20 +47,24 @@ class CumulusComponents(
   with MailerComponents
   with EvolutionsComponents {
 
+  // List of supported ciphers
   implicit val ciphers = Ciphers(Map(
     AESCipherStage.name -> AESCipherStage
   ))
 
+  // List of supported compressors
   implicit val compressors = Compressions(Map(
     GzipStage.name    -> GzipStage,
     DeflateStage.name -> DeflateStage
   ))
 
+  // List of metadata extractors available
   implicit val metadataExtractors = MetadataExtractors(Seq(
     ImageMetadataExtractor,
     PDFDocumentMetadataExtractor
   ))
 
+  // List of thumbnail generator available
   implicit val thumbnailGenerators = ThumbnailGenerators(Seq(
     ImageThumbnailGenerator,
     PDFDocumentThumbnailGenerator
@@ -107,6 +111,7 @@ class CumulusComponents(
   // Services
   lazy val userService: UserService       = new UserService(userStore, fsNodeStore)
   lazy val fsNodeService: FsNodeService   = new FsNodeService(fsNodeStore, sharingStore)
+  lazy val storageService: StorageService = new StorageService(fsNodeService, storageEngine)
   lazy val sharingService: SharingService = new SharingService(userStore, fsNodeStore, sharingStore)
 
   // Storage engine
@@ -116,8 +121,8 @@ class CumulusComponents(
   // Controllers
   lazy val homeController: HomeController       = new HomeController(controllerComponents)
   lazy val userController: UserController       = new UserController(controllerComponents, userService)
-  lazy val fsController: FileSystemController   = new FileSystemController(controllerComponents, fsNodeService, sharingService, storageEngine)
-  lazy val sharingController: SharingController = new SharingController(controllerComponents, sharingService, storageEngine)
+  lazy val fsController: FileSystemController   = new FileSystemController(controllerComponents, fsNodeService, storageService, sharingService)
+  lazy val sharingController: SharingController = new SharingController(controllerComponents, sharingService, storageService, storageEngine)
   lazy val assetController: Assets              = new Assets(context.environment, assetsMetadata, httpErrorHandler, jsMessageFactory.all, controllerComponents)
 
 }

@@ -15,24 +15,53 @@ case class Path(value: Seq[String]) {
 
   import Path._
 
+  /**
+    * Concat a path with another string. The provided string will be converted to a path before the conversion.
+    * @param next The path to append
+    * @return The new path
+    */
   def ++(next: String): Path =
     Path(value ++ convertStringToPath(next).value)
 
+  /**
+    * Concat a path with a sequence of strings. The provided strings will be converted to paths before the conversion.
+    * @param next The path to append
+    * @return The new path
+    */
   def ++(next: Seq[String]): Path =
-    Path(value ++ next)
+    Path(value ++ next.flatMap(convertStringToPath(_).value))
 
+  /**
+    * Concat a path with another path
+    * @param next The path to append
+    * @return The new path
+    */
   def ++(next: Path): Path =
     Path(value ++ next.value)
 
+  /**
+    * Return if the path is the root path (or `/` ) or not.
+    */
   def isRoot: Boolean =
     value.isEmpty
 
+  /**
+    * Return the name of the node, aka the last part of the path.
+    * @return The name of the element designed by the path.
+    */
   def name: String =
     value.lastOption.getOrElse("")
 
+  /**
+    * Return the name of the node, aka the last part of the path, without its extension.
+    * @return The name of the element designed by the path (without its extension).
+    */
   def nameWithoutExtension: String =
     FilenameUtils.getBaseName(name)
 
+  /**
+    * Return the parent of the node.
+    */
   def parent: Path =
     Path(value.dropRight(1))
 
@@ -56,12 +85,17 @@ object Path {
     Path(path.filterNot(_.isEmpty))
 
   /**
-    * Clean the location to remove duplicated '/' or trailing '/'
-    * @param path Path to clean
-    * @return The sanitized path
+    * Trim the location to remove duplicated '/' or trailing '/'
+    * @param path Path to trim
+    * @return The trimmed path
     */
   def trim(path: String): String = convertStringToPath(path).toString.trim
 
+  /**
+    * Clean the location using `java.net.URLDecoder` and [[io.cumulus.models.Path#trim(java.lang.String)]]
+    * @param path Path to sanitize
+    * @return The sanitized path
+    */
   def sanitize(path: String): String = trim(java.net.URLDecoder.decode(path, "UTF-8"))
 
   implicit val format: Format[Path] =

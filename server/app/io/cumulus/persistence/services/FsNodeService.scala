@@ -160,36 +160,6 @@ class FsNodeService(
     createNode(file).map(_.map(_ => file))
 
   /**
-    * Creates a node into the filesystem. The path of the node should be unique and its parent should exists.
-    * @param node The node to create
-    * @param user The user performing the operation
-    */
-  def createNode(node: FsNode)(implicit user: User): Future[Either[AppError, FsNode]] = {
-
-    for {
-      // Check is the user is the owner
-      _ <- QueryE.pure {
-        if(node.owner != user.id)
-          Left(AppError.validation(__ \ "owner", "validation.fs-node.creator-diff"))
-        else
-          Right(())
-      }
-
-      // Check if something with the same path already exists for the current user
-      _ <- doesntAlreadyExists(node.path)
-
-      // Check that the parent exists and is a directory
-      nodeParent <- getParentWithLock(node.path)
-
-      // Update the last modified of the parent & create the directory
-      _ <- QueryE.lift(fsNodeStore.update(nodeParent.modified(node.creation)))
-      _ <- QueryE.lift(fsNodeStore.create(node))
-
-    } yield node
-
-  }.commit()
-
-  /**
     * Moves a node to the provided path. The destination should not already exists and a directory parent.
     * @param path The node to move
     * @param to The new path of the node
@@ -215,6 +185,8 @@ class FsNodeService(
 
       // Check that the destination's parent exists and is a directory
       movedParentNode <- getParentWithLock(to)
+
+      // TODO also move the thumbnail
 
       // Move the directory and update the parent last modification
       now = LocalDateTime.now
@@ -254,6 +226,7 @@ class FsNodeService(
       })
 
       // TODO Check that the node is not shared
+      // TODO delete also the thumbnail
 
       // Delete the element
       _ <- QueryE.lift(fsNodeStore.delete(node.id))
@@ -263,6 +236,36 @@ class FsNodeService(
       _          <- QueryE.lift(fsNodeStore.update(nodeParent.modified(LocalDateTime.now)))
 
     } yield ()
+
+  }.commit()
+
+  /**
+    * Creates a node into the filesystem. The path of the node should be unique and its parent should exists.
+    * @param node The node to create
+    * @param user The user performing the operation
+    */
+  private def createNode(node: FsNode)(implicit user: User): Future[Either[AppError, FsNode]] = {
+
+    for {
+      // Check is the user is the owner
+      _ <- QueryE.pure {
+        if(node.owner != user.id)
+          Left(AppError.validation(__ \ "owner", "validation.fs-node.creator-diff"))
+        else
+          Right(())
+      }
+
+      // Check if something with the same path already exists for the current user
+      _ <- doesntAlreadyExists(node.path)
+
+      // Check that the parent exists and is a directory
+      nodeParent <- getParentWithLock(node.path)
+
+      // Update the last modified of the parent & create the directory
+      _ <- QueryE.lift(fsNodeStore.update(nodeParent.modified(node.creation)))
+      _ <- QueryE.lift(fsNodeStore.create(node))
+
+    } yield node
 
   }.commit()
 

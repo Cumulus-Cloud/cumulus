@@ -176,8 +176,8 @@ object File {
 
   /** Default newly created file */
   def create(
-    path: Path,
     owner: UUID,
+    path: Path,
     mimeType: String,
     storage: StorageReference
   ): File = {
