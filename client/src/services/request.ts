@@ -13,12 +13,12 @@ function validate<T>(value: T, validator: Validator<T>) {
 }
 
 export function success<T>(validator?: Validator<T>) {
-  return function (response: Response) {
+  return function(response: Response) {
     if (response.status === 204) {
       return
     } else if (response.status >= 200 && response.status < 300) {
       if (!!validator) {
-        return response.json().then(response => validate(response, validator))
+        return response.json().then(res => validate(res, validator))
       } else {
         return response.json()
       }

@@ -1,5 +1,5 @@
 import * as React from "react"
-import * as styles from"components/inputs/Input.css"
+import * as styles from "components/inputs/Input.css"
 
 type InputType = "text" | "email" | "password"
 
@@ -8,7 +8,7 @@ interface Props {
   value: string
   error?: string
   type?: InputType
-  onChange: (value: string) => void
+  onChange(value: string): void
 }
 
 export default class Input extends React.PureComponent<Props> {

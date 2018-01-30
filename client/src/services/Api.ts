@@ -57,7 +57,7 @@ export const userApiResponse = object({
   user: userValidator,
   token: string
 })
-export function login(login: string, password: string): Promise<User> {
+export function authenticate(login: string, password: string): Promise<User> {
   return fetch(`/api/users/login`, {
     method: "POST",
     body: JSON.stringify({ login, password }),
@@ -145,7 +145,7 @@ export function logout(): Promise<void> {
 export function upload(path: string, fileToUpload: FileToUpload, progression?: (e: ProgressEvent) => void): Promise<FsNode> {
   return new Promise((resolve, reject) => {
     getAuthToken().then(token => {
-      let xhr = new XMLHttpRequest()
+      const xhr = new XMLHttpRequest()
       const qs = querystring({
         cipher: fileToUpload.cipher,
         compression: fileToUpload.compression,

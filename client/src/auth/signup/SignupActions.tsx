@@ -1,7 +1,6 @@
 import { ThunkAction } from "redux-thunk"
-import { GlobalState } from "store"
+import { GlobalState, history } from "store"
 import * as Api from "services/Api"
-import { history } from "store"
 import { User } from "models/User"
 
 export type SignupAction =

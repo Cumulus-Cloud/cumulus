@@ -1,5 +1,5 @@
 import * as React from "react"
-import * as styles from  "./Button.css"
+import * as styles from "./Button.css"
 import LoaderIcon from "icons/LoaderIcon"
 import classNames from "utils/ClassNames"
 
@@ -7,7 +7,7 @@ interface Props {
   label: string
   disable?: boolean
   loading?: boolean
-  onClick: () => void
+  onClick(): void
 }
 
 export default class Button extends React.PureComponent<Props> {

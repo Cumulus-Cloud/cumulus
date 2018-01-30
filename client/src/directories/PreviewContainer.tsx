@@ -12,7 +12,7 @@ import ImagePreview from "components/preview/ImagePreview"
 import * as Api from "services/Api"
 
 interface DispatchProps {
-  onShowPreview: (fsNode?: FsFile) => void
+  onShowPreview(fsNode?: FsFile): void
 }
 
 interface PropsState {

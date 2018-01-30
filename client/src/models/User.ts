@@ -9,4 +9,5 @@ export const userValidator = object({
   creation: string,
   roles: array(role)
 })
+
 export type User = typeof userValidator.T

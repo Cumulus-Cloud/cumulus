@@ -8,8 +8,8 @@ import { SignupState } from "auth/signup/SignupReducer"
 import LinkButton from "components/buttons/LinkButton"
 
 interface DispatchProps {
-  onChange: (field: string, value: string) => void
-  onSubmit: (login: string, email: string, password: string) => void
+  onChange(field: string, value: string): void
+  onSubmit(login: string, email: string, password: string): void
 }
 
 type Props = SignupState & DispatchProps
@@ -35,9 +35,7 @@ class SignupContainer extends React.PureComponent<Props> {
   }
 }
 
-const mapStateToProps = (state: GlobalState): SignupState => {
-  return state.signup
-}
+const mapStateToProps = (state: GlobalState): SignupState => state.signup
 
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {

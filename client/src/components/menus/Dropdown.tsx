@@ -4,7 +4,7 @@ import classNames from "utils/ClassNames"
 
 interface Props {
   right?: boolean
-  renderAction: () => JSX.Element
+  renderAction(): JSX.Element
 }
 
 interface State {
@@ -59,7 +59,7 @@ export default class Dropdown extends React.Component<Props, State> {
 interface DropdownItemProps {
   name: string,
   icon?: JSX.Element
-  onClick?: () => void
+  onClick?(): void
 }
 
 export function DropdownItem(props: DropdownItemProps) {
