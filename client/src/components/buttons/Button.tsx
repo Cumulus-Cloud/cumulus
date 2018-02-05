@@ -8,9 +8,9 @@ interface Props {
   label: string
   disable?: boolean
   loading?: boolean
-  onClick(): void
   className?: string
   large?: boolean
+  onClick(): void
 }
 
 export default function Button({ label, onClick, disable = false, loading = false, large = false }: Props): JSX.Element {
