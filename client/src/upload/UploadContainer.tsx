@@ -15,12 +15,12 @@ import UploadFile from "components/upload/UploadFile"
 import { FileToUpload } from "models/FileToUpload"
 
 interface DispatchProps {
-  onWantUpload: () => void
-  onAddFiles: (filesToUpload: FileToUpload[]) => void
-  onRemoveFileToUpload: (fileToUpload: FileToUpload) => void
-  onUploadFile: (path: string, fileToUpload: FileToUpload) => void
-  onSelectCipher: (fileToUpload: FileToUpload, cipher?: Cipher) => void
-  onSelectCompression: (fileToUpload: FileToUpload, compression?: Compression) => void
+  onWantUpload(): void
+  onAddFiles(filesToUpload: FileToUpload[]): void
+  onRemoveFileToUpload(fileToUpload: FileToUpload): void
+  onUploadFile(path: string, fileToUpload: FileToUpload): void
+  onSelectCipher(fileToUpload: FileToUpload, cipher?: Cipher): void
+  onSelectCompression(fileToUpload: FileToUpload, compression?: Compression): void
 }
 
 interface PropsState extends UploadState {
@@ -101,7 +101,8 @@ class NewFolderContainer extends React.PureComponent<Props> {
 
   handleOnChange = (fileList: FileList) => {
     const { idCounter } = this.props
-    let files: File[] = []
+    const files: File[] = []
+    // tslint:disable-next-line:prefer-for-of
     for (let i = 0; i < fileList.length; i++) {
       files.push(fileList[i])
     }

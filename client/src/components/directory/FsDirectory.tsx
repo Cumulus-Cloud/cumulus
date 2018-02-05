@@ -9,8 +9,8 @@ import DeleteIcon from "icons/DeleteIcon"
 
 interface Props {
   fsDirectory: FsDirectoryModel
-  onClick: (fsNode: FsDirectoryModel) => void
-  onDelete: (fsDirectory: FsDirectoryModel) => void
+  onClick(fsNode: FsDirectoryModel): void
+  onDelete(fsDirectory: FsDirectoryModel): void
 }
 
 export default class FsDirectory extends React.PureComponent<Props> {

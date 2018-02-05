@@ -63,9 +63,9 @@ object StorageReferenceReader {
       transformation <- transformationForFile(file)
       source         =  {
 
-        // We need to compute the storage object that are within the range and that we need to read. We also need the real
-        // range of byte taking into account the dropped storage objects. In order to achieve this we fold keeping 3
-        // information: the number of bytes read, the start of the range, the end of the range and the list of storage
+        // We need to compute the storage object that are within the range and that we need to read. We also need the
+        // real range of byte taking into account the dropped storage objects. In order to achieve this we fold keeping
+        // 4 information: the number of bytes read, the start of the range, the end of the range and the list of storage
         // objects to read
         val (_, realFrom, realTo, storageObjectsInRange) =
         file

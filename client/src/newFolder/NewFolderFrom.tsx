@@ -6,8 +6,8 @@ import { ApiError } from "services/Api"
 interface Props {
   name: string
   error?: ApiError
-  onChange: (value: string) => void
-  onSubmit: () => void
+  onChange(value: string): void
+  onSubmit(): void
 }
 
 export default class NewFolderFrom extends React.PureComponent<Props> {

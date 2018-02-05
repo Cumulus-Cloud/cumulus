@@ -8,9 +8,9 @@ import FlatButton from "components/buttons/FlatButton"
 import NewFolderModal from "newFolder/NewFolderModal"
 
 interface DispatchProps {
-  onNewFolderNameChange: (newFolderName: string) => void
-  onWantCreateNewFolder: () => void
-  onCreateNewFolder: (directory: FsNode, newFolderName: string) => void
+  onNewFolderNameChange(newFolderName: string): void
+  onWantCreateNewFolder(): void
+  onCreateNewFolder(directory: FsNode, newFolderName: string): void
 }
 
 interface PropsState extends NewFolderState {

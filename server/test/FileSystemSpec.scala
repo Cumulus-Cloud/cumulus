@@ -9,6 +9,8 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 import cats.instances.future._
+import io.cumulus.models.fs.{Directory, File}
+import io.cumulus.persistence.storage.StorageReference
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.time.Span._
 
@@ -59,6 +61,44 @@ class FileSystemSpec extends PlaySpec
         case Left(e) =>
           fail(s"User could not be created: $e")
       }
+    }
+
+    "create multiple directories, subdirectories and files" in {
+
+      implicit val fsNodeService = cumulusComponents.fsNodeService
+
+      //
+      // Create the following directory structure (root is already created) :
+      //
+      //    "/"
+      //   /   \
+      // "b"   "a"_____________
+      //       /         \     \
+      //     "a1"_____  "b1"  "f1"
+      //     /  \     \    \
+      //   "a2" "b2" "f2"   "a3"
+      val a  = Directory.create(user.id, "/a")
+      val f1 = File.create(user.id, "/a/f1", "application/octet-stream", StorageReference())
+      val b  = Directory.create(user.id, "/b")
+      val a1 = Directory.create(user.id, "/a/a1")
+      val b1 = Directory.create(user.id, "/a/b1")
+      val f2 = File.create(user.id, "/a/a1/f2")
+      val a2 = Directory(user.id, "/a/a1/a2")
+      val b2 = Directory(user.id, "/a/a1/b2")
+      val a3 = Directory(user.id, "/a/b1/a3")
+
+      (for {
+        _ <- EitherT(fsNodeService.createDirectory(a))
+        _ <- EitherT(fsNodeService.createFile(f1))
+        _ <- EitherT(fsNodeService.createDirectory(b))
+        _ <- EitherT(fsNodeService.createDirectory(a1))
+        _ <- EitherT(fsNodeService.createDirectory(b1))
+        _ <- EitherT(fsNodeService.createFile(f2))
+        _ <- EitherT(fsNodeService.createDirectory(a2))
+        _ <- EitherT(fsNodeService.createDirectory(b2))
+        _ <- EitherT(fsNodeService.createDirectory(a3))
+      } yield ())
+
     }
 
     /*

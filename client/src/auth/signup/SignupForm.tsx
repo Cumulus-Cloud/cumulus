@@ -10,8 +10,8 @@ interface Props {
   password: string
   loading: boolean
   formErrors?: ApiError
-  onChange: (field: string, value: string) => void
-  onSubmit: (login: string, email: string, password: string) => void
+  onChange(field: string, value: string): void
+  onSubmit(login: string, email: string, password: string): void
 }
 
 export default class SignupForm extends React.PureComponent<Props> {

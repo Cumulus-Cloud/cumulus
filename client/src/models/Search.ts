@@ -7,4 +7,3 @@ export const SearchResultValidator = object({
 })
 
 export type SearchResult = typeof SearchResultValidator.T
-

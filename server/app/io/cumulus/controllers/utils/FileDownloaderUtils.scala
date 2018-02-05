@@ -1,14 +1,10 @@
 package io.cumulus.controllers.utils
 
-import scala.concurrent.ExecutionContext
-
-import io.cumulus.core.stream.storage.StorageReferenceReader
+import akka.stream.scaladsl.Source
+import akka.util.ByteString
 import io.cumulus.core.utils.Range
 import io.cumulus.core.validation.AppError
-import io.cumulus.models.Session
 import io.cumulus.models.fs.File
-import io.cumulus.persistence.storage.StorageEngine
-import io.cumulus.stages.{Ciphers, Compressions}
 import play.api.http.HttpEntity
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
@@ -41,69 +37,47 @@ trait FileDownloaderUtils {
   }
 
   protected def downloadFile(
-    storageEngine: StorageEngine,
     file: File,
+    content: Source[ByteString, _],
     forceDownload: Boolean
-  )(implicit
-    session: Session,
-    ciphers: Ciphers,
-    compressions: Compressions,
-    ec: ExecutionContext
-  ): Either[AppError, Result] = {
+  ): Result = {
 
-    StorageReferenceReader(
-      storageEngine,
-      file
-    ).map { source =>
-
-      Ok.sendEntity(
-        HttpEntity.Streamed(
-          source,
-          Some(file.size),
-          Some(file.mimeType)
-        )
+    Ok.sendEntity(
+      HttpEntity.Streamed(
+        content,
+        Some(file.size),
+        Some(file.mimeType)
       )
-      .withHeaders(
-        if(forceDownload)
-          "Content-Disposition" -> s"attachment; filename*=UTF-8''${file.name}"
-        else
-          "Content-Disposition" -> "inline"
-      )
-    }
+    )
+    .withHeaders(
+      if(forceDownload)
+        "Content-Disposition" -> s"attachment; filename*=UTF-8''${file.name}"
+      else
+        "Content-Disposition" -> "inline"
+    )
 
   }
 
   protected def streamFile(
-    storageEngine: StorageEngine,
     file: File,
+    content: Source[ByteString, _],
     range: Range
-  )(implicit
-    session: Session,
-    ciphers: Ciphers,
-    compressions: Compressions,
-    ec: ExecutionContext
-  ): Either[AppError, Result] = {
+  ): Result = {
 
-    StorageReferenceReader(
-      storageEngine,
-      file,
-      range
-    ).map { source =>
+    PartialContent
+      .sendEntity(
+        HttpEntity.Streamed(
+          content,
+          None,
+          Some(file.mimeType)
+        )
+      )
+      .withHeaders(
+        ("Content-Transfer-Encoding", "Binary"),
+        ("Content-Range", s"bytes ${range.start}-${range.end}/${file.size}"),
+        ("Accept-Ranges", "bytes")
+      )
 
-      PartialContent
-        .sendEntity(
-          HttpEntity.Streamed(
-            source,
-            None,
-            Some(file.mimeType)
-          )
-        )
-        .withHeaders(
-          ("Content-Transfer-Encoding", "Binary"),
-          ("Content-Range", s"bytes ${range.start}-${range.end}/${file.size}"),
-          ("Accept-Ranges", "bytes")
-        )
-    }
   }
 
 }

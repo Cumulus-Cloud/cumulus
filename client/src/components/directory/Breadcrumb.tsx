@@ -7,7 +7,7 @@ import IconButton from "components/buttons/IconButton"
 
 interface Props {
   directory?: FsNode
-  onPathClick: (path: string) => void
+  onPathClick(path: string): void
 }
 
 export default class Breadcrumb extends React.PureComponent<Props> {

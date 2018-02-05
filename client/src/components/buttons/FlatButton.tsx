@@ -10,7 +10,7 @@ interface Props {
   label: string
   loading?: boolean
   disable?: boolean
-  onClick?: () => void
+  onClick?(): void
 }
 
 export default class FlatButton extends React.PureComponent<Props> {

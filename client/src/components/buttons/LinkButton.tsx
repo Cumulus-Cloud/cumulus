@@ -3,7 +3,7 @@ import * as styles from "./LinkButton.css"
 
 interface Props {
   href?: string
-  onClick?: () => void
+  onClick?(): void
 }
 
 export default class LinkButton extends React.PureComponent<Props> {

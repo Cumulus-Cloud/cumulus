@@ -8,8 +8,8 @@ import AuthLayout from "auth/AuthLayout"
 import LinkButton from "components/buttons/LinkButton"
 
 interface DispatchProps {
-  onChange: (field: string, value: string) => void
-  onSubmit: (login: string, password: string) => void
+  onChange(field: string, value: string): void
+  onSubmit(login: string, password: string): void
 }
 
 type Props = LoginState & DispatchProps
@@ -33,9 +33,7 @@ class LoginContainer extends React.PureComponent<Props> {
   }
 }
 
-const mapStateToProps = (state: GlobalState): LoginState => {
-  return state.login
-}
+const mapStateToProps = (state: GlobalState): LoginState => state.login
 
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {

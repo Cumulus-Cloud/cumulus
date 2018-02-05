@@ -8,9 +8,9 @@ import debounce from "utils/debounce"
 import SearchBar from "components/search/SearchBar"
 
 interface DispatchProps {
-  onQueryChange: (query: string) => void
-  onFsNodeSearch: (query: string) => void
-  onCancelSearch: () => void
+  onQueryChange(query: string): void
+  onFsNodeSearch(query: string): void
+  onCancelSearch(): void
 }
 
 interface PropsState extends SearchState {

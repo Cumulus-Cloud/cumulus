@@ -12,9 +12,9 @@ import MoreHorizIcon from "icons/MoreHorizIcon"
 
 interface Props {
   fsFile: FsFileModel
-  onDelete: (fsNode: FsFileModel) => void
-  onShowPreview: (fsNode: FsFileModel) => void
-  onSharing: (fsNode: FsFileModel) => void
+  onDelete(fsNode: FsFileModel): void
+  onShowPreview(fsNode: FsFileModel): void
+  onSharing(fsNode: FsFileModel): void
 }
 
 export default class FsFile extends React.PureComponent<Props> {

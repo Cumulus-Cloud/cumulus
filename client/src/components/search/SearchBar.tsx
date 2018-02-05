@@ -4,9 +4,9 @@ import SearchIcon from "icons/SearchIcon"
 
 interface Props {
   query: string
-  onChange: (query: string) => void
-  onSubmit: (query: string) => void
-  onCancel: () => void
+  onChange(query: string): void
+  onSubmit(query: string): void
+  onCancel(): void
 }
 
 export default class SearchBar extends React.PureComponent<Props> {

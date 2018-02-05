@@ -116,7 +116,11 @@ object ImageMetadataExtractor extends MetadataExtractor {
         datetime = datetime,
         height = height,
         width = width,
-        values = Map(metadata.tags.map(t => t.name -> t.value):_*),
+        values = Map(
+          metadata.tags
+            .filter(_.value != null) // Filter out null values
+            .map(t => t.name -> t.value):_*
+        ),
         tags = Seq.empty
       )
     }

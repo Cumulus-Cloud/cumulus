@@ -18,10 +18,10 @@ import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
   * Transforms a flow of storage object into a flow of `ByteString`, reading the content of each object from the
   * provided storage engine.<br/>
   * <br/>
-  * If used with a cipher and/or compression, the flow should be used with the splitted helper to allow individual
+  * If used with a cipher and/or compression, the flow should be used with the splitting helper to allow individual
   * processing on each object.
   *
-  * @param storageEngine The storage engine use (not that it should technically be retrieved directly from the objects)
+  * @param storageEngine The storage engine use (note that it should technically be retrieved directly from the objects)
   * @param bufferSize The buffer size to use, defaulted to 8096
   */
 class StorageObjectReader(
@@ -73,6 +73,10 @@ class StorageObjectReader(
       }
     })
 
+    /**
+      * Update the state to the provided storage object.
+      * @param storageObject The storage object to be read
+      */
     private def read(storageObject: StorageObject): Unit = {
       state = ObjectReaderState(storageObject)
 
