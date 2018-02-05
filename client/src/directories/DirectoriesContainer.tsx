@@ -3,11 +3,10 @@ import * as styles from "./DirectoriesContainer.css"
 import { connect, Dispatch } from "react-redux"
 import { match as RouterMatch } from "react-router"
 import * as DirectoriesActions from "directories/DirectoriesActions"
-import { GlobalState } from "store"
+import { GlobalState, history } from "store"
 import { DirectoriesState } from "directories/DirectoriesReducer"
 import AppBar from "components/AppBar"
 import Breadcrumb from "components/directory/Breadcrumb"
-import { history } from "store"
 import NewFolderContainer from "newFolder/NewFolderContainer"
 import UploadContainer from "upload/UploadContainer"
 import PreviewContainer from "./PreviewContainer"
@@ -25,11 +24,11 @@ import ModalContent from "components/modals/ModalContent"
 import FlatButton from "components/buttons/FlatButton"
 
 interface DispatchProps {
-  onFetchDirectory: (path: string) => void
-  onDeleteFsNode: (fsNode: FsNode) => void
-  onShowPreview: (fsNode?: FsFileModel) => void
-  onSharing: (fsNode: FsNode) => void
-  onCloseShare: () => void
+  onFetchDirectory(path: string): void
+  onDeleteFsNode(fsNode: FsNode): void
+  onShowPreview(fsNode?: FsFileModel): void
+  onSharing(fsNode: FsNode): void
+  onCloseShare(): void
 }
 
 interface PropsState extends DirectoriesState {

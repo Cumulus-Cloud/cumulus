@@ -5,7 +5,7 @@ import classNames from "utils/ClassNames"
 
 interface Props {
   loading?: boolean
-  onClick?: () => void
+  onClick?(): void
   className?: string
 }
 

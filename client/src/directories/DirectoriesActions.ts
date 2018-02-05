@@ -108,4 +108,3 @@ export const onShowPreview = (fsFile?: FsFile): ShowPreview => ({
   type: "ShowPreview",
   fsFile,
 })
-

@@ -9,9 +9,9 @@ import { Compression, Cipher } from "models/FsNode"
 
 interface Props {
   fileToUpload: FileToUpload
-  onDelete: (fileToUpload: FileToUpload) => void
-  onSelectCipher: (fileToUpload: FileToUpload, cipher?: Cipher) => void
-  onSelectCompression: (fileToUpload: FileToUpload, compression?: Compression) => void
+  onDelete(fileToUpload: FileToUpload): void
+  onSelectCipher(fileToUpload: FileToUpload, cipher?: Cipher): void
+  onSelectCompression(fileToUpload: FileToUpload, compression?: Compression): void
 }
 export default class UploadFile extends React.PureComponent<Props> {
   render() {

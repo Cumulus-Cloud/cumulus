@@ -3,7 +3,7 @@ import * as React from "react"
 import classNames from "utils/ClassNames"
 
 interface Props {
-  onChange: (file: FileList) => void
+  onChange(file: FileList): void
 }
 
 interface State {

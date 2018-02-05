@@ -9,7 +9,6 @@ export interface SignupState {
   formErrors?: ApiError
 }
 
-
 const initState: SignupState = {
   login: "",
   email: "",

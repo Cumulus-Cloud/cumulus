@@ -30,8 +30,8 @@ export function onUploadFile(path: string, fileToUpload: FileToUpload): ThunkAct
   return (dispatch) => {
     dispatch({ type: "OnUploadFile", fileToUpload })
     const progress = (e: ProgressEvent) => {
-      const progress = Math.round(e.loaded * 100 / e.total)
-      dispatch(onProgressUpload(progress, fileToUpload))
+      const progressed = Math.round(e.loaded * 100 / e.total)
+      dispatch(onProgressUpload(progressed, fileToUpload))
     }
     Api.upload(path, fileToUpload, debounce(progress, 30))
       .then(fsNode => dispatch(onUploadFileSuccess(fsNode, fileToUpload)))
@@ -45,7 +45,7 @@ export function onUploadFileSuccess(fsNode: FsNode, fileToUpload: FileToUpload):
 }
 
 export type OnUploadFileError = { type: "OnUploadFileError", error: Api.ApiError, fileToUpload: FileToUpload  }
-export function onUploadFileError(error: Api.ApiError, fileToUpload: FileToUpload ): OnUploadFileError {
+export function onUploadFileError(error: Api.ApiError, fileToUpload: FileToUpload): OnUploadFileError {
   return { type: "OnUploadFileError", error, fileToUpload }
 }
 
