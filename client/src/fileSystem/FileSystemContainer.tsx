@@ -3,11 +3,10 @@ import * as styles from "./FileSystemContainer.css"
 import { connect, Dispatch } from "react-redux"
 import { match as RouterMatch } from "react-router"
 import * as FileSystemActions from "./FileSystemActions"
-import { GlobalState } from "store"
+import { GlobalState, history } from "store"
 import { FileSystemState } from "./FileSystemReducer"
 import AppBar from "components/AppBar"
-import Breadcrumb from "components/directory/Breadcrumb"
-import { history } from "store"
+import Breadcrumb from "components/breadcrumb/Breadcrumb"
 import PreviewContainer from "./PreviewContainer"
 import FsDirectory from "components/directory/FsDirectory"
 import FsFile from "components/directory/FsFile"
@@ -21,11 +20,11 @@ import LeftPanel from "components/LeftPanel"
 import RightPanel from "components/RightPanel"
 
 interface DispatchProps {
-  onFetchDirectory: (path: string) => void
-  onDeleteFsNode: (fsNode: FsNode) => void
-  onShowPreview: (fsNode?: FsFileModel) => void
-  onSharing: (fsNode: FsNode) => void
-  onCloseShare: () => void
+  onFetchDirectory(path: string): void
+  onDeleteFsNode(fsNode: FsNode): void
+  onShowPreview(fsNode?: FsFileModel): void
+  onSharing(fsNode: FsNode): void
+  onCloseShare(): void
 }
 
 interface PropsState extends FileSystemState {
