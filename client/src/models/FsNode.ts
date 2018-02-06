@@ -63,6 +63,10 @@ export function isDirectory(fsNode: FsNode): fsNode is FsDirectory {
   return (fsNode as FsDirectory).nodeType === "DIRECTORY"
 }
 
+export function getExtention(name: string): string {
+  return name.split(".").pop() || ""
+}
+
 export const videosPreviewAvailable = [
   ".mp4",
   ".mkv"

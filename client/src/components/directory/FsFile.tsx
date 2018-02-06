@@ -1,6 +1,6 @@
 import * as styles from "./FsFile.css"
 import * as React from "react"
-import { FsFile as FsFileModel, videosPreviewAvailable, imagesPreviewAvailable } from "models/FsNode"
+import { FsFile as FsFileModel, videosPreviewAvailable, imagesPreviewAvailable, getExtention } from "models/FsNode"
 import * as Api from "services/Api"
 import FileIcon from "icons/FileIcon"
 import IconButton from "components/buttons/IconButton"
@@ -22,7 +22,7 @@ export default class FsFile extends React.PureComponent<Props> {
     const { fsFile } = this.props
     return (
       <div className={styles.fsFile}>
-        <FileIcon />
+        <FileIcon extention={getExtention(fsFile.name).toUpperCase()} />
         <div className={styles.fsFileInfos}>
           {this.isPreviewAvailable(fsFile)
             ? <div className={styles.name} onClick={this.handleOnClick}>{fsFile.name}</div>
@@ -30,19 +30,25 @@ export default class FsFile extends React.PureComponent<Props> {
           }
         </div>
         <div className={styles.actions}>
-          <Dropdown right renderAction={() => <IconButton><MoreHorizIcon /></IconButton>}>
+          <Dropdown right renderAction={this.renderAction}>
             <DropdownLink
               href={Api.getDownloadUrl(fsFile, true)}
               name={Messages("ui.download")}
-              icon={<FileDownloadIcon />}
+              icon={this.fileDownloadIcon}
             />
-            <DropdownItem name={Messages("ui.delete")} icon={<DeleteIcon />} onClick={this.handleOnDelete} />
-            <DropdownItem name={Messages("ui.share")} icon={<ShareIcon />} onClick={this.handleOnSharing} />
+            <DropdownItem name={Messages("ui.delete")} icon={this.deleteIcon} onClick={this.handleOnDelete} />
+            <DropdownItem name={Messages("ui.share")} icon={this.shareIcon} onClick={this.handleOnSharing} />
           </Dropdown>
         </div>
       </div>
     )
   }
+
+  deleteIcon = <DeleteIcon />
+  shareIcon = <ShareIcon />
+  fileDownloadIcon = <FileDownloadIcon />
+
+  renderAction = () => <IconButton><MoreHorizIcon /></IconButton>
 
   isPreviewAvailable = (fsFile: FsFileModel) => {
     return videosPreviewAvailable.concat(imagesPreviewAvailable).filter(a => fsFile.name.toLowerCase().endsWith(a)).length > 0

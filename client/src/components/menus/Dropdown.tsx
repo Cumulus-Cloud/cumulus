@@ -43,7 +43,7 @@ export default class Dropdown extends React.Component<Props, State> {
       [styles.itemsLeft]: !right,
     })
     return (
-      <div className={styles.dropdown} ref={ref => this.itemsRef = ref}>
+      <div className={styles.dropdown} ref={this.handleRef}>
         <div onClick={this.onOpen}>
           {renderAction()}
         </div>
@@ -51,6 +51,8 @@ export default class Dropdown extends React.Component<Props, State> {
       </div>
     )
   }
+
+  handleRef = (ref: HTMLDivElement | null) => this.itemsRef = ref
 
   onOpen = () => this.setState({ open: true })
   onClose = () => this.setState({ open: false })

@@ -18,6 +18,7 @@
 
 .title {
   color: var(--primaryText);
+  font-size: 0.9rem;
 }
 
 .actions {

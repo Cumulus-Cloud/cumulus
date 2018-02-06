@@ -29,6 +29,7 @@ export default class Breadcrumb extends React.PureComponent<Props> {
   renderBreadcrumbPath = (paths: string[], length: number, path: string, i: number) => {
     return (
       <BreadcrumbItem
+        key={path}
         title={path === "/fs" ? this.props.homeTitle : path}
         active={!(i !== (length - 1))}
         showArrow={i !== (length - 1)}
