@@ -26,9 +26,9 @@ const initState: FileSystemState = {
 
 export const FileSystemReducer = (state: FileSystemState = initState, action: FileSystemAction) => {
   switch (action.type) {
-    case "OnFetchDirectory": return { ...state, loading: true }
-    case "OnFetchDirectorySuccess": return { ...state, directory: action.directory, loading: false }
-    case "OnFetchDirectoryError": return { ...state, error: action.error, loading: false }
+    case "FetchDirectory": return { ...state, loading: true }
+    case "FetchDirectorySuccess": return { ...state, directory: action.directory, loading: false }
+    case "FetchDirectoryError": return { ...state, error: action.error, loading: false }
     case "OnCreateNewFolderSuccess": return onCreateNewFolderSuccessReduce(state, action)
     case "OnDeleteFsNode": return { ...state, deleteLoading: action.fsNode.id }
     case "OnDeleteFsNodeSuccess": return onDeleteFsNodeSuccessReducer(state, action)

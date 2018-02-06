@@ -1,4 +1,3 @@
-import { AnyAction } from "redux"
 import { ThunkAction } from "redux-thunk"
 import { GlobalState } from "store"
 import { FsNode, FsFile } from "models/FsNode"
@@ -8,9 +7,9 @@ import { OnCreateNewFolderSuccess } from "newFolder/NewFolderActions"
 import { OnUploadFileSuccess } from "upload/UploadActions"
 
 export type FileSystemAction =
-  OnFetchDirectory |
-  OnFetchDirectorySuccess |
-  OnFetchDirectoryError |
+  FetchDirectory |
+  FetchDirectorySuccess |
+  FetchDirectoryError |
   OnCreateNewFolderSuccess |
   OnDeleteFsNode |
   OnDeleteFsNodeSuccess |
@@ -49,34 +48,31 @@ export const onSharingError = (error: Api.ApiError): SharingError => ({ type: "S
 export type CloseShare = { type: "CloseShare" }
 export const onCloseShare = (): CloseShare => ({ type: "CloseShare" })
 
-export interface OnFetchDirectory extends AnyAction {
-  type: "OnFetchDirectory"
-  path: string
-}
-export function onFetchDirectory(path: string): ThunkAction<void, GlobalState, {}> {
+export type FetchDirectory = { type: "FetchDirectory", path: string }
+export function fetchDirectory(path: string): ThunkAction<void, GlobalState, {}> {
   return (dispatch) => {
-    dispatch({ type: "OnFetchDirectory", path })
+    dispatch({ type: "FetchDirectory", path })
     Api.fetchDirectory(path)
-      .then(directory => dispatch(onFetchDirectorySuccess(directory)))
-      .catch(error => dispatch(onFetchDirectoryError(error)))
+      .then(directory => dispatch(fetchDirectorySuccess(directory)))
+      .catch(error => dispatch(fetchDirectoryError(error)))
   }
 }
 
-export type OnFetchDirectorySuccess = {
-  type: "OnFetchDirectorySuccess"
+export type FetchDirectorySuccess = {
+  type: "FetchDirectorySuccess"
   directory: FsNode
 }
-export const onFetchDirectorySuccess = (directory: FsNode): OnFetchDirectorySuccess => ({
-  type: "OnFetchDirectorySuccess",
+export const fetchDirectorySuccess = (directory: FsNode): FetchDirectorySuccess => ({
+  type: "FetchDirectorySuccess",
   directory
 })
 
-export type OnFetchDirectoryError = {
-  type: "OnFetchDirectoryError"
+export type FetchDirectoryError = {
+  type: "FetchDirectoryError"
   error: Api.ApiError
 }
-export const onFetchDirectoryError = (error: Api.ApiError): OnFetchDirectoryError => ({
-  type: "OnFetchDirectoryError",
+export const fetchDirectoryError = (error: Api.ApiError): FetchDirectoryError => ({
+  type: "FetchDirectoryError",
   error
 })
 

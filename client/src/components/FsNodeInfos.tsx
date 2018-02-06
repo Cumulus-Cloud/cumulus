@@ -11,6 +11,7 @@ interface Props {
 
 export default class FsNodeInfo extends React.PureComponent<Props> {
   render() {
+    const { selectedFsNode } = this.props
     return (
       <div className={styles.fsNodeInfo}>
         <div className={styles.header}>
@@ -18,6 +19,8 @@ export default class FsNodeInfo extends React.PureComponent<Props> {
           <IconButton onClick={this.handleOnDeselectFsNode}><CloseIcon /></IconButton>
         </div>
         <div>
+          <h3>{selectedFsNode.name}</h3>
+          <div>{selectedFsNode.path}</div>
         </div>
       </div>
     )
