@@ -57,7 +57,7 @@ class FileSystemContainer extends React.PureComponent<Props> {
           <AppBar />
           <div className={styles.filesContainer}>
             <div className={styles.content}>
-              <Breadcrumb directory={directory} onPathClick={this.handleOnPathClick} />
+              <Breadcrumb homeTitle="Cumulus" directory={directory} onPathClick={this.handleOnPathClick} />
               <div className={styles.directories}>
                 {this.renderResult()}
               </div>

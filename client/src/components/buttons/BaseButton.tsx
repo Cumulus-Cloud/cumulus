@@ -6,9 +6,9 @@ interface Props {
   disable?: boolean
   loading?: boolean
   className?: string
-  onClick?: () => void
+  onClick?(): void
   href?: string
-  renderLoader: () => JSX.Element
+  renderLoader(): JSX.Element
 }
 
 export default class BaseButton extends React.PureComponent<Props> {

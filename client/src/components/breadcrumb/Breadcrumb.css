@@ -6,34 +6,34 @@
   padding: 9px;
 }
 
-.breadcrumbPathItemRoot {
-  padding: 1px;
-}
-
-.breadcrumbPath {
+.breadcrumbItem {
   display: flex;
   flex-direction: row;
   align-items: center;
 }
 
-.breadcrumbPathItem {
-  max-width: 260px;
-  color: var(--darkPrimary);
+.breadcrumbTitle {
+  color: var(--secondaryText);
+  font-size: 1.3rem;
   padding: 5px;
-  cursor: pointer;
-  border: 1px solid transparent;
-  hyphens: auto;
+  max-width: 270px;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-@media screen and (min-width: 500px) {
-  .breadcrumbPathItem {
-    max-width: 500px;
-  }
+.enabled {
+  cursor: pointer;
 }
 
-.breadcrumbPathItem:hover {
-  border: 1px solid #eee;
-  border-radius: 2px;
+.enabled:hover {
+  opacity: .7;
+}
+
+.active {
+  color: var(--darkPrimary);
+}
+
+.active:hover {
+  opacity: .7;
 }
