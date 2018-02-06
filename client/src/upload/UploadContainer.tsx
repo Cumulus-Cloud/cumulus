@@ -33,10 +33,10 @@ class NewFolderContainer extends React.PureComponent<Props> {
   render() {
     const { wantUpload, onWantUpload } = this.props
     return (
-      <div>
+      <>
         <Button label={Messages("ui.upload")} onClick={onWantUpload} />
         {wantUpload ? this.renderModal() : null}
-      </div>
+      </>
     )
   }
 

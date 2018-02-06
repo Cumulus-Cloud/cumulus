@@ -12,6 +12,7 @@ import MoreHorizIcon from "icons/MoreHorizIcon"
 
 interface Props {
   fsFile: FsFileModel
+  onSelect(fsFile: FsFileModel): void
   onDelete(fsNode: FsFileModel): void
   onShowPreview(fsNode: FsFileModel): void
   onSharing(fsNode: FsFileModel): void
@@ -37,6 +38,7 @@ export default class FsFile extends React.PureComponent<Props> {
               icon={this.fileDownloadIcon}
             />
             <DropdownItem name={Messages("ui.delete")} icon={this.deleteIcon} onClick={this.handleOnDelete} />
+            <DropdownItem name={Messages("ui.informations")} onClick={this.handleOnSelect} />
             <DropdownItem name={Messages("ui.share")} icon={this.shareIcon} onClick={this.handleOnSharing} />
           </Dropdown>
         </div>
@@ -57,4 +59,5 @@ export default class FsFile extends React.PureComponent<Props> {
   handleOnClick = () => this.props.onShowPreview(this.props.fsFile)
   handleOnSharing = () => this.props.onSharing(this.props.fsFile)
   handleOnDelete = () => this.props.onDelete(this.props.fsFile)
+  handleOnSelect = () => this.props.onSelect(this.props.fsFile)
 }

@@ -1,0 +1,19 @@
+.fsNodeInfo {
+  width: 300px;
+  height: 100vh;
+  padding: 24px;
+  background-color: var(--secondaryBg);
+  box-shadow: -3px 0 15px 0 rgba(0,0,0,0.07);
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  color: var(--secondaryText);
+  font-size: 1.5rem;
+}
