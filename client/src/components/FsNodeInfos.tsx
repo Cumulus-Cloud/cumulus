@@ -6,7 +6,7 @@ import IconButton from "components/buttons/IconButton"
 
 interface Props {
   selectedFsNode: FsNode
-  onDeselectFsNode(fsNode: FsNode): void
+  onHideFsNodeInfos(fsNode: FsNode): void
 }
 
 export default class FsNodeInfo extends React.PureComponent<Props> {
@@ -16,7 +16,7 @@ export default class FsNodeInfo extends React.PureComponent<Props> {
       <div className={styles.fsNodeInfo}>
         <div className={styles.header}>
           <h2 className={styles.title}>{Messages("ui.informations")}</h2>
-          <IconButton onClick={this.handleOnDeselectFsNode}><CloseIcon /></IconButton>
+          <IconButton onClick={this.handleOnHideFsNodeInfos}><CloseIcon /></IconButton>
         </div>
         <div>
           <h3>{selectedFsNode.name}</h3>
@@ -26,5 +26,5 @@ export default class FsNodeInfo extends React.PureComponent<Props> {
     )
   }
 
-  handleOnDeselectFsNode = () => this.props.onDeselectFsNode(this.props.selectedFsNode)
+  handleOnHideFsNodeInfos = () => this.props.onHideFsNodeInfos(this.props.selectedFsNode)
 }

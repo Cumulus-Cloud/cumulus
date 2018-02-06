@@ -20,8 +20,8 @@ export type FileSystemAction =
   SharingSuccess |
   SharingError |
   CloseShare |
-  SelectFsNode |
-  DeselectFsNode
+  ShowFsNodeInfos |
+  HideFsNodeInfos
 
 export type Sharing = { type: "Sharing", fsNode?: FsNode }
 export function onSharing(fsNode: FsNode): ThunkAction<void, GlobalState, {}> {
@@ -36,11 +36,11 @@ export function onSharing(fsNode: FsNode): ThunkAction<void, GlobalState, {}> {
 export type SharingSuccess = { type: "SharingSuccess", share: Share, fsNode: FsNode }
 export const onSharingSuccess = (share: Share, fsNode: FsNode): SharingSuccess => ({ type: "SharingSuccess", share, fsNode })
 
-export type SelectFsNode = { type: "SelectFsNode", fsNode: FsNode }
-export const onSelectFsNode = (fsNode: FsNode): SelectFsNode => ({ type: "SelectFsNode", fsNode })
+export type ShowFsNodeInfos = { type: "ShowFsNodeInfos", fsNode: FsNode }
+export const showFsNodeInfos = (fsNode: FsNode): ShowFsNodeInfos => ({ type: "ShowFsNodeInfos", fsNode })
 
-export type DeselectFsNode = { type: "DeselectFsNode", fsNode: FsNode }
-export const onDeselectFsNode = (fsNode: FsNode): DeselectFsNode => ({ type: "DeselectFsNode", fsNode })
+export type HideFsNodeInfos = { type: "HideFsNodeInfos", fsNode: FsNode }
+export const hideFsNodeInfos = (fsNode: FsNode): HideFsNodeInfos => ({ type: "HideFsNodeInfos", fsNode })
 
 export type SharingError = { type: "SharingError", error: Api.ApiError }
 export const onSharingError = (error: Api.ApiError): SharingError => ({ type: "SharingError", error })

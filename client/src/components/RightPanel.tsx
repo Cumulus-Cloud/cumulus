@@ -14,7 +14,7 @@ interface StateProps {
 }
 
 interface DispatchProps {
-  onDeselectFsNode(fsNode: FsNode): void
+  onHideFsNodeInfos(fsNode: FsNode): void
 }
 
 type Props = StateProps & DispatchProps
@@ -30,9 +30,9 @@ export class RightPanel extends React.PureComponent<Props> {
   }
 
   renderPanels = () => {
-    const { selectedFsNodes, onDeselectFsNode } = this.props
+    const { selectedFsNodes, onHideFsNodeInfos } = this.props
     if (selectedFsNodes.length === 1) {
-      return <FsNodeInfos selectedFsNode={selectedFsNodes[0]} onDeselectFsNode={onDeselectFsNode} />
+      return <FsNodeInfos selectedFsNode={selectedFsNodes[0]} onHideFsNodeInfos={onHideFsNodeInfos} />
     } else {
       return (
         <>
@@ -52,7 +52,7 @@ const mapStateToProps = (state: GlobalState): StateProps => {
 }
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onDeselectFsNode: fsNode => dispatch(FileSystemActions.onDeselectFsNode(fsNode))
+    onHideFsNodeInfos: fsNode => dispatch(FileSystemActions.hideFsNodeInfos(fsNode))
   }
 }
 

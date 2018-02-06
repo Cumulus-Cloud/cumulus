@@ -22,7 +22,7 @@ import RightPanel from "components/RightPanel"
 interface DispatchProps {
   onFetchDirectory(path: string): void
   onDeleteFsNode(fsNode: FsNode): void
-  onSelectFsNode(fsNode: FsNode): void
+  onShowFsNodeInfos(fsNode: FsNode): void
   onShowPreview(fsNode?: FsFileModel): void
   onSharing(fsNode: FsNode): void
   onCloseShare(): void
@@ -118,7 +118,7 @@ class FileSystemContainer extends React.PureComponent<Props> {
           onDelete={this.props.onDeleteFsNode}
           onShowPreview={this.props.onShowPreview}
           onSharing={this.props.onSharing}
-          onSelect={this.props.onSelectFsNode}
+          onShowFsNodeInfos={this.props.onShowFsNodeInfos}
         />
       )
     }
@@ -150,7 +150,7 @@ const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
     onShowPreview: fsFile => dispatch(FileSystemActions.onShowPreview(fsFile)),
     onSharing: fsNode => dispatch(FileSystemActions.onSharing(fsNode)),
     onCloseShare: () => dispatch(FileSystemActions.onCloseShare()),
-    onSelectFsNode: fsNode => dispatch(FileSystemActions.onSelectFsNode(fsNode))
+    onShowFsNodeInfos: fsNode => dispatch(FileSystemActions.showFsNodeInfos(fsNode))
   }
 }
 
