@@ -63,6 +63,36 @@ class FileSystemController(
     }
   }
 
+  def downloadThumbnail(path: Path, forceDownload: Option[Boolean]) = AuthenticatedAction.async { implicit request =>
+    ApiResponse.result {
+      for {
+        // Get the file
+        file    <- EitherT(fsNodeService.findFile(path))
+
+        // Get the file thumbnail's content
+        content <- EitherT(storageService.downloadThumbnail(path))
+
+        // Create the response
+        result  <- EitherT.pure[Future, AppError]{
+          file.thumbnailStorageReference match {
+            case Some(thumbnailStorageReference) =>
+              downloadFile(
+                s"thumbnail_${file.name}",
+                thumbnailStorageReference.size,
+                ThumbnailGenerator.thumbnailMimeType,
+                content,
+                forceDownload.getOrElse(false)
+              )
+            case _ =>
+              // Should never happen
+              toApiError(AppError.notFound("validation.fs-node.no-thumbnail", file.name))
+          }
+        }
+
+      } yield result
+    }
+  }
+
  def upload(path: Path, cipherName: Option[String], compressionName: Option[String]) = AuthenticatedAction.async(streamBody) { implicit request =>
    ApiResponse {
      for {

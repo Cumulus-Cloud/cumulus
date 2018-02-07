@@ -25,7 +25,7 @@ object StorageReferenceWriter {
     * @param compression The optional compression algorithm used to compress the byte steam
     * @param path The path of the create file
     */
-  def apply(
+  def writes(
     storageEngine: StorageEngine,
     cipher: Option[CipherStage],
     compression: Option[CompressionStage],

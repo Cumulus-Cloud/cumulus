@@ -13,7 +13,7 @@ import io.cumulus.core.validation.AppError
 import io.cumulus.core.{Logging, Settings}
 import io.cumulus.models.fs.{File, FileMetadata}
 import io.cumulus.models.{Path, Session, UserSession}
-import io.cumulus.persistence.storage.StorageEngine
+import io.cumulus.persistence.storage.{StorageEngine, StorageReference}
 import io.cumulus.stages._
 
 class StorageService(
@@ -29,7 +29,6 @@ class StorageService(
   thumbnailGenerators: ThumbnailGenerators,
   ec: ExecutionContext
 ) extends Logging {
-
 
   /**
     * Upload the provided file (with its content), uploading the data using the implicit storage engine and creating
@@ -58,7 +57,7 @@ class StorageService(
 
       // Define the file writer from this information
       fileWriter = {
-        StorageReferenceWriter(
+        StorageReferenceWriter.writes(
           storageEngine,
           cipher,
           compression,
@@ -73,15 +72,16 @@ class StorageService(
       metadata          <- EitherT.fromEither[Future](extractMetadata(uploadedFile))
       fileWithMetadata  =  uploadedFile.copy(metadata = metadata)
 
-      // Create an entry in the database for the file
-      file <- EitherT(fsNodeService.createFile(fileWithMetadata))
+      // Generate a thumbnail (if possible)
+      maybeThumbnail    <- EitherT(generateThumbnail(fileWithMetadata))
+      fileWithThumbnail =  fileWithMetadata.copy(thumbnailStorageReference = maybeThumbnail)
 
-      // Create a thumbnail (if possible) for the file
-      _    <- EitherT(generateThumbnail(file))
+      // Create an entry in the database for the file
+      file <- EitherT(fsNodeService.createFile(fileWithThumbnail))
 
     } yield file
-  }.value
 
+  }.value
 
   /**
     * Finds a file content by its path and owner. Will fail if the element does not exist or is not a file.
@@ -97,20 +97,41 @@ class StorageService(
         maybeRange match {
           // Range provided, only return a chunk of the file
           case Some(range) =>
-            StorageReferenceReader(
+            StorageReferenceReader.read(
               storageEngine,
               file,
               range
             )
           // No range provided, return the content from the start
           case _ =>
-            StorageReferenceReader(
+            StorageReferenceReader.read(
               storageEngine,
               file
             )
         }
       }
     } yield content
+
+  }.value
+
+  /**
+    * Finds a file content by its path and owner. Will fail if the element does not exist or is not a file.
+    * @param path The path of the file
+    * @param session The session performing the operation
+    */
+  def downloadThumbnail(path: Path)(implicit session: Session): Future[Either[AppError, Source[ByteString, _]]] = {
+    implicit val user = session.user
+
+    for {
+      file    <- EitherT(fsNodeService.findFile(path))
+      content <- EitherT.fromEither[Future]{
+        StorageReferenceReader.readThumbnail(
+          storageEngine,
+          file
+        )
+      }
+    } yield content
+
   }.value
 
   /** Extract the metadata of the provided file */
@@ -121,15 +142,13 @@ class StorageService(
   }
 
   /** Generate a thumbnail of the provided file */
-  private def generateThumbnail(file: File)(implicit session: UserSession): Future[Either[AppError, Option[File]]] = {
+  private def generateThumbnail(file: File)(implicit session: UserSession): Future[Either[AppError, Option[StorageReference]]] = {
     val thumbnailGenerator = thumbnailGenerators.get(file.mimeType)
     implicit val user = session.user
 
     thumbnailGenerator.map { generator =>
-      EitherT(generator.generate(file, storageEngine)).flatMap { thumbnail =>
-        EitherT(fsNodeService.createFile(thumbnail)).map(Some(_))
-      }
-    }.getOrElse(EitherT.fromEither[Future](Right(None))).value
+      generator.generate(file, storageEngine).map(_.map(Some(_)))
+    }.getOrElse(Future.successful(Right(None)))
   }
 
 

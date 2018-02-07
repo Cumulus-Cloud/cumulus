@@ -28,7 +28,7 @@
     modification TIMESTAMP NOT NULL,
     hidden       BOOLEAN   NOT NULL,
     user_id      UUID      REFERENCES cumulus_user(id), -- Owner
-    metadata     JSONB     NOT NULL -- Contains metadata about the node and its content
+    metadata     JSONB     NOT NULL                     -- Contains metadata about the node and its content
   );
 
   -- Each fs node should be unique for each user
@@ -40,7 +40,7 @@
     reference           VARCHAR(64)   NOT NULL,
     expiration          TIMESTAMP             ,
     user_id             UUID          REFERENCES cumulus_user(id), -- Owner
-    fsNode_id           UUID          REFERENCES fs_node(id),       -- Node shared
+    fsNode_id           UUID          REFERENCES fs_node(id),      -- Node shared
     encryptedPrivateKey VARCHAR(64)   NOT NULL,
     privateKeySalt      VARCHAR(64)   NOT NULL,
     salt1               VARCHAR(64)   NOT NULL,

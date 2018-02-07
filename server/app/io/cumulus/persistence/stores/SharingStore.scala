@@ -6,9 +6,10 @@ import java.util.UUID
 import akka.util.ByteString
 import anorm._
 import io.cumulus.core.persistence.CumulusDB
-import io.cumulus.core.persistence.anorm.{AnormPKOperations, AnormRepository}
 import io.cumulus.core.persistence.anorm.AnormSupport._
-import io.cumulus.core.persistence.query.QueryBuilder
+import io.cumulus.core.persistence.anorm.{AnormPKOperations, AnormRepository}
+import io.cumulus.core.persistence.query.{Query, QueryBuilder}
+import io.cumulus.models.fs.FsNode
 import io.cumulus.models.{Sharing, SharingSecurity}
 
 class SharingStore(
@@ -17,6 +18,36 @@ class SharingStore(
 
   val table: String   = SharingStore.table
   val pkField: String = SharingStore.pkField
+
+  /**
+    * Find the sharing for a provided node.
+    * @param fsNode The shared node
+    */
+  def findAndLockByNode(fsNode: FsNode): Query[CumulusDB, List[Sharing]] =
+    qb { implicit c =>
+
+      val idField = s"${FsNodeStore.table}.${FsNodeStore.pkField}"
+
+      SQL"""
+          SELECT
+            #$table.#$pkField,
+            #$table.reference,
+            #$table.expiration,
+            #$table.user_id,
+            #$table.fsNode_id,
+            #$table.encryptedPrivateKey,
+            #$table.privateKeySalt,
+            #$table.salt1,
+            #$table.iv,
+            #$table.secretCodeHash,
+            #$table.salt2
+            FROM #$table
+          INNER JOIN #${FsNodeStore.table}
+          ON #$table.fsNode_id = #${FsNodeStore.table}.id
+          WHERE #$idField = ${fsNode.id}
+          FOR UPDATE
+        """.as(rowParser.*)
+    }
 
   def rowParser: RowParser[Sharing] = {
     (
