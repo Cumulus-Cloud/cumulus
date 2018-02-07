@@ -186,8 +186,6 @@ class FsNodeService(
       // Check that the destination's parent exists and is a directory
       movedParentNode <- getParentWithLock(to)
 
-      // TODO also move the thumbnail
-
       // Move the directory and update the parent last modification
       now = LocalDateTime.now
       _ <- QueryE.lift(fsNodeStore.update(movedParentNode.modified(now)))
@@ -217,6 +215,9 @@ class FsNodeService(
       // Search the node by path and owner
       node <- getNodeWithLock(path)
 
+      // Find the sharings of the node in question
+      sharings <- QueryE.lift(sharingStore.findAndLockByNode(node))
+
       // Check that no children element exists
       _ <- QueryE(fsNodeStore.findContainedByPathAndUser(path, user).map {
         case contained if contained.nonEmpty =>
@@ -225,8 +226,10 @@ class FsNodeService(
           Right(())
       })
 
-      // TODO Check that the node is not shared
-      // TODO delete also the thumbnail
+      // Delete the node's sharings
+      a <- QueryE.seq {
+        sharings.map(sharing => sharingStore.delete(sharing.id).map(Right(_)))
+      }
 
       // Delete the element
       _ <- QueryE.lift(fsNodeStore.delete(node.id))
