@@ -85,7 +85,7 @@ class FileSystemController(
               )
             case _ =>
               // Should never happen
-              toApiError(AppError.notFound("validation.fs-node.no-thumbnail"))
+              toApiError(AppError.notFound("validation.fs-node.no-thumbnail", file.name))
           }
         }
 
