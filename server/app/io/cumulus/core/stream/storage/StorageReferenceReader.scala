@@ -92,52 +92,63 @@ object StorageReferenceReader {
     for {
       transformation <- transformationForFile(file)
       source         =  {
-
-        // We need to compute the storage object that are within the range and that we need to read. We also need the
-        // real range of byte taking into account the dropped storage objects. In order to achieve this we fold keeping
-        // 4 information: the number of bytes read, the start of the range, the end of the range and the list of storage
-        // objects to read
-        val (_, realFrom, realTo, storageObjectsInRange) =
-        file
-          .storageReference
-          .storage
-          .foldLeft((0l, 0l, 0l, Seq.empty[StorageObject])) {
-            case ((cursor, from, to, storageObjects), storageObject) =>
-              if (range.start > cursor + storageObject.size) {
-                // Skip the object (before range start)
-                (cursor + storageObject.size, from, to, storageObjects)
-              } else if (range.end < cursor) {
-                // Skip the object (after range end)
-                (cursor + storageObject.size, from, to, storageObjects)
-              } else {
-                // Object within the start and the end of the range
-
-                val objectFrom = if (range.start > cursor)
-                  range.start - cursor
-                else
-                  0
-
-                val objectTo = if (range.end < (cursor + storageObject.size))
-                  range.end - cursor
-                else
-                  storageObject.size
-
-                (
-                  cursor + storageObject.size,
-                  if (objectFrom != 0) objectFrom else from,
-                  to + objectTo,
-                  storageObjects :+ storageObject
-                )
-              }
-          }
+        // Compute the objects within the range and the real byte range to read
+        val (from, to, storageObjectsInRange) = dropStorageObjects(range, file)
 
         Source(storageObjectsInRange.toList) // Only use objects in range
           .splitWhen(_ => true)
           .via(StorageObjectReader(storageEngine, transformation))
           .mergeSubstreams
-          .via(ByteRange(realFrom, realTo)) // Don't forget to 'trim' the stream of bytes outside the offsets
+          .via(ByteRange(from, to)) // Don't forget to 'trim' the stream of bytes outside the offsets
       }
     } yield source
+
+  /**
+    * Drop the storage objects outside of the requested range, and returns the real range and the list of the objects
+    * within the interval provided by the range. The real range is where the read cursor should be positioned within
+    * the returned storage objects.
+    */
+  private def dropStorageObjects(range: Range, file: File): (Long, Long, Seq[StorageObject]) = {
+
+    // We need to compute the storage object that are within the range and that we need to read. We also need the
+    // real range of byte taking into account the dropped storage objects. In order to achieve this we fold keeping
+    // 4 information: the number of bytes read, the start of the range, the end of the range and the list of storage
+    // objects to read
+    val (_, realFrom, realTo, storageObjectsInRange) =
+      file
+        .storageReference
+        .storage
+        .foldLeft((0l, 0l, 0l, Seq.empty[StorageObject])) {
+          case ((cursor, from, to, storageObjects), storageObject) =>
+            if (range.start > cursor + storageObject.size) {
+              // Skip the object (before range start)
+              (cursor + storageObject.size, from, to, storageObjects)
+            } else if (range.end < cursor) {
+              // Skip the object (after range end)
+              (cursor + storageObject.size, from, to, storageObjects)
+            } else {
+              // Object within the start and the end of the range
+
+              val objectFrom = if (range.start > cursor)
+                range.start - cursor
+              else
+                0
+
+              val objectTo = if (range.end < (cursor + storageObject.size))
+                range.end - cursor
+              else
+                storageObject.size
+
+              (
+                cursor + storageObject.size,
+                if (objectFrom != 0) objectFrom else from,
+                to + objectTo,
+                storageObjects :+ storageObject
+              )
+            }
+        }
+    (realFrom, realTo, storageObjectsInRange)
+  }
 
   /** Generate the transformations for a given file */
   private def transformationForFile(file: File)(implicit session: Session, ciphers: Ciphers, compressions: Compressions) =
