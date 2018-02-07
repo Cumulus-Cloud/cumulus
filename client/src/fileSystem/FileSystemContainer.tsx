@@ -10,13 +10,13 @@ import Breadcrumb from "components/breadcrumb/Breadcrumb"
 import PreviewContainer from "./PreviewContainer"
 import { FsNode, FsFile, isDirectory, isFile } from "models/FsNode"
 import { Share } from "models/Share"
-import Empty from "components/directory/Empty"
-import Loader from "components/directory/Loader"
+import Empty from "components/Empty"
+import Loader from "components/Loader"
 import { SearchResult } from "models/Search"
 import ShareModal from "components/ShareModal"
 import LeftPanel from "components/LeftPanel"
 import RightPanel from "components/RightPanel"
-import FsNodeComponent from "components/directory/FsNodeComponent"
+import FsNodeComponent from "components/FsNodeComponent"
 
 interface DispatchProps {
   onFetchDirectory(path: string): void
