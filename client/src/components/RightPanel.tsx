@@ -7,14 +7,17 @@ import { Dispatch, connect } from "react-redux"
 import { FsNode } from "models/FsNode"
 import FsNodeInfos from "components/FsNodeInfos"
 import * as FileSystemActions from "fileSystem/FileSystemActions"
+import MultFsNodesPanel from "components/MultFsNodesPanel"
 
 interface StateProps {
   directory: FsNode
   fsNodeInfosToShow?: FsNode
+  selectedFsNodes: FsNode[]
 }
 
 interface DispatchProps {
-  onHideFsNodeInfos(fsNode: FsNode): void
+  onHideFsNodeInfos(): void
+  onCanselSelectionOfFsNode(): void
 }
 
 type Props = StateProps & DispatchProps
@@ -30,15 +33,21 @@ export class RightPanel extends React.PureComponent<Props> {
   }
 
   renderPanels = () => {
-    const { fsNodeInfosToShow, onHideFsNodeInfos } = this.props
-    if (!!fsNodeInfosToShow) {
-      return <FsNodeInfos fsNode={fsNodeInfosToShow} onHideFsNodeInfos={onHideFsNodeInfos} />
+    const { selectedFsNodes, fsNodeInfosToShow, onHideFsNodeInfos, onCanselSelectionOfFsNode } = this.props
+    if (selectedFsNodes.length > 1) {
+      return <MultFsNodesPanel selectedFsNodes={selectedFsNodes} onCanselSelectionOfFsNode={onCanselSelectionOfFsNode} />
+    } else if (!!fsNodeInfosToShow || selectedFsNodes.length === 1) {
+      return <FsNodeInfos fsNode={fsNodeInfosToShow || selectedFsNodes[0]} onHideFsNodeInfos={onHideFsNodeInfos} />
     } else {
       return (
-        <>
-          <UploadContainer />
-          <NewFolderContainer />
-        </>
+        <div className={styles.actions}>
+          <div className={styles.action}>
+            <UploadContainer />
+          </div>
+          <div className={styles.action}>
+            <NewFolderContainer />
+          </div>
+        </div>
       )
     }
   }
@@ -47,12 +56,14 @@ export class RightPanel extends React.PureComponent<Props> {
 const mapStateToProps = (state: GlobalState): StateProps => {
   return {
     directory: state.fileSystem.directory!,
-    fsNodeInfosToShow: state.fileSystem.fsNodeInfosToShow,
+    selectedFsNodes: state.fileSystem.selectedFsNodes,
+    fsNodeInfosToShow: state.fileSystem.fsNodeInfosToShow
   }
 }
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onHideFsNodeInfos: fsNode => dispatch(FileSystemActions.hideFsNodeInfos(fsNode))
+    onHideFsNodeInfos: () => dispatch(FileSystemActions.hideFsNodeInfos()),
+    onCanselSelectionOfFsNode: () => dispatch(FileSystemActions.canselSelectionOfFsNode())
   }
 }
 

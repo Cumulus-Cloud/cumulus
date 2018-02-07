@@ -17,3 +17,7 @@
   flex: 1;
   padding: 10px
 }
+
+.directories {
+  border-top: 1px solid #EEE;
+}

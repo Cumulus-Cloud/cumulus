@@ -1,7 +1,7 @@
 import { history } from "store"
 import { User, userValidator } from "models/User"
 import { object, string } from "validation.ts"
-import { FsNode, FsDirectory, FsNodeValidator, NodeType } from "models/FsNode"
+import { FsNode, FsDirectory, FsNodeValidator, NodeType, FsFile } from "models/FsNode"
 import { FileToUpload } from "models/FileToUpload"
 import { Share, ShareValidator } from "models/Share"
 import { SearchResult, SearchResultValidator } from "models/Search"
@@ -168,7 +168,7 @@ export function upload(path: string, fileToUpload: FileToUpload, progression?: (
   })
 }
 
-export function getDownloadUrl(file: FsNode, cookie: boolean): string {
+export function getDownloadUrl(file: FsNode, cookie: boolean = true): string {
   if (cookie) {
     return `/api/download${encodeURI(file.path)}`
   } else {
@@ -177,7 +177,21 @@ export function getDownloadUrl(file: FsNode, cookie: boolean): string {
       history.push("/login")
       return `/login`
     } else {
-      return `/api/download${file.path}?token=${token}`
+      return `/api/download${encodeURI(file.path)}?token=${token}`
+    }
+  }
+}
+
+export function getThumbnail(file: FsFile, cookie: boolean = true): string {
+  if (cookie) {
+    return `/api/thumbnail${encodeURI(file.path)}`
+  } else {
+    const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
+    if (!token) {
+      history.push("/login")
+      return `/login`
+    } else {
+      return `/api/thumbnail${encodeURI(file.path)}?token=${token}`
     }
   }
 }

@@ -41,14 +41,20 @@ export const FileSystemReducer = (state: FileSystemState = initState, action: Fi
     case "SharingError": return { ...state, sharingLoader: false, error: action.error, sharedFsNode: undefined, share: undefined }
     case "CloseShare": return { ...state, sharedFsNode: undefined, share: undefined }
     case "ShowFsNodeInfos": return showFsNodeInfosReducer(state, action)
-    case "HideFsNodeInfos": return { ...state, fsNodeInfosToShow: undefined }
+    case "HideFsNodeInfos": return { ...state, fsNodeInfosToShow: undefined, selectedFsNodes: [] }
     case "SelectFsNode": return selectFsNodeReducer(state, action)
+    case "DeselectFsNode": return { ...state, selectedFsNodes: state.selectedFsNodes.filter(n => n.id !== action.fsNode.id) }
+    case "CanselSelectionOfFsNode": return { ...state, selectedFsNodes: [], fsNodeInfosToShow: undefined }
     default: return state
   }
 }
 
 function selectFsNodeReducer(state: FileSystemState, action: SelectFsNode): FileSystemState {
-  return state
+  if (state.selectedFsNodes.find(n => n.id === action.fsNode.id) === undefined) {
+    return { ...state, selectedFsNodes: [...state.selectedFsNodes, action.fsNode] }
+  } else {
+    return { ...state, selectedFsNodes: state.selectedFsNodes.filter(n => n.id !== action.fsNode.id) }
+  }
 }
 
 function showFsNodeInfosReducer(state: FileSystemState, action: ShowFsNodeInfos): FileSystemState {

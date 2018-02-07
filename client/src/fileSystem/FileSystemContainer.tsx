@@ -8,9 +8,7 @@ import { FileSystemState } from "./FileSystemReducer"
 import AppBar from "components/AppBar"
 import Breadcrumb from "components/breadcrumb/Breadcrumb"
 import PreviewContainer from "./PreviewContainer"
-import FsDirectory from "components/directory/FsDirectory"
-import FsFile from "components/directory/FsFile"
-import { FsNode, FsFile as FsFileModel , isDirectory } from "models/FsNode"
+import { FsNode, FsFile, isDirectory, isFile } from "models/FsNode"
 import { Share } from "models/Share"
 import Empty from "components/directory/Empty"
 import Loader from "components/directory/Loader"
@@ -18,12 +16,14 @@ import { SearchResult } from "models/Search"
 import ShareModal from "components/ShareModal"
 import LeftPanel from "components/LeftPanel"
 import RightPanel from "components/RightPanel"
+import FsNodeComponent from "components/directory/FsNodeComponent"
 
 interface DispatchProps {
   onFetchDirectory(path: string): void
   onDeleteFsNode(fsNode: FsNode): void
   onShowFsNodeInfos(fsNode: FsNode): void
-  onShowPreview(fsNode?: FsFileModel): void
+  onSelectFsNode(fsNode: FsNode): void
+  onShowPreview(fsNode?: FsFile): void
   onSharing(fsNode: FsNode): void
   onCloseShare(): void
 }
@@ -101,27 +101,19 @@ class FileSystemContainer extends React.PureComponent<Props> {
   }
 
   renderFsNode = (fsNode: FsNode) => {
-    if (isDirectory(fsNode)) {
-      return (
-        <FsDirectory
-          key={fsNode.id}
-          fsDirectory={fsNode}
-          onClick={this.handleDirectoryOnClick}
-          onDelete={this.props.onDeleteFsNode}
-        />
-      )
-    } else {
-      return (
-        <FsFile
-          key={fsNode.id}
-          fsFile={fsNode}
-          onDelete={this.props.onDeleteFsNode}
-          onShowPreview={this.props.onShowPreview}
-          onSharing={this.props.onSharing}
-          onShowFsNodeInfos={this.props.onShowFsNodeInfos}
-        />
-      )
-    }
+    const { onSelectFsNode, onDeleteFsNode, onSharing, onShowFsNodeInfos, selectedFsNodes } = this.props
+    return (
+      <FsNodeComponent
+        key={fsNode.id}
+        selected={!!selectedFsNodes.find(n => n.id === fsNode.id)}
+        fsNode={fsNode}
+        onSelect={onSelectFsNode}
+        onOpen={this.handleOnOpenFsNode}
+        onDelete={onDeleteFsNode}
+        onSharing={onSharing}
+        onShowInfo={onShowFsNodeInfos}
+      />
+    )
   }
 
   renderShareModal = (share: Share, sharedFsNode: FsNode) => {
@@ -129,7 +121,13 @@ class FileSystemContainer extends React.PureComponent<Props> {
     return <ShareModal share={share} sharedFsNode={sharedFsNode} onClose={onCloseShare} />
   }
 
-  handleDirectoryOnClick = (fsNode: FsNode) => history.push(`/fs${fsNode.path}`)
+  handleOnOpenFsNode = (fsNode: FsNode) => {
+    if (isFile(fsNode)) {
+      this.props.onShowPreview(fsNode)
+    } else {
+      history.push(`/fs${fsNode.path}`)
+    }
+  }
 
   handleOnPathClick = (path: string) => history.push(path)
 
@@ -150,7 +148,8 @@ const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
     onShowPreview: fsFile => dispatch(FileSystemActions.onShowPreview(fsFile)),
     onSharing: fsNode => dispatch(FileSystemActions.onSharing(fsNode)),
     onCloseShare: () => dispatch(FileSystemActions.onCloseShare()),
-    onShowFsNodeInfos: fsNode => dispatch(FileSystemActions.showFsNodeInfos(fsNode))
+    onShowFsNodeInfos: fsNode => dispatch(FileSystemActions.showFsNodeInfos(fsNode)),
+    onSelectFsNode: fsNode => dispatch(FileSystemActions.selectFsNode(fsNode))
   }
 }
 

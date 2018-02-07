@@ -1,6 +1,14 @@
 
 .rightPanel {
   width: 300px;
-  height: 100%;
+  min-height: 100vh;
   background-color: var(--secondaryBg);
+}
+
+.actions {
+  padding: 24px;
+}
+
+.action {
+  margin-bottom: 15px;
 }

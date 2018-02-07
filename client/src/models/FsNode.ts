@@ -22,8 +22,9 @@ export const FsFileValidator = object({
   humanReadableSize: string,
   hash: string,
   mimeType: string,
-  cipher: CipherValidator,
-  compression: CompressionValidator,
+  cipher: optional(CipherValidator),
+  compression: optional(CompressionValidator),
+  hasThumbnail: boolean,
 })
 export type FsFile = typeof FsFileValidator.T
 
@@ -65,6 +66,10 @@ export function isDirectory(fsNode: FsNode): fsNode is FsDirectory {
 
 export function getExtention(name: string): string {
   return name.split(".").pop() || ""
+}
+
+export function isPreviewAvailable(fsFile: FsFile): boolean {
+  return videosPreviewAvailable.concat(imagesPreviewAvailable).filter(a => fsFile.name.toLowerCase().endsWith(a)).length > 0
 }
 
 export const videosPreviewAvailable = [

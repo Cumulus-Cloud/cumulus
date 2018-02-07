@@ -1,7 +1,5 @@
 .fsNodeInfo {
   width: 300px;
-  height: 100vh;
-  padding: 24px;
   background-color: var(--secondaryBg);
   box-shadow: -3px 0 15px 0 rgba(0,0,0,0.07);
 }
@@ -11,9 +9,28 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  padding: 24px;
 }
 
 .title {
   color: var(--secondaryText);
   font-size: 1.5rem;
+}
+
+.name {
+  color: var(--primaryText);
+  font-size: 1.5rem;
+  margin: 16px 24px 15px 24px;
+}
+
+.infos {
+  padding: 24px;
+}
+
+.info {
+  margin: 10px 0;
+}
+
+.preview {
+  width: 100%;
 }
