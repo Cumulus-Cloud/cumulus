@@ -161,7 +161,8 @@ case class File(
   size: Long,
   hash: String,
   mimeType: String,
-  storageReference: StorageReference
+  storageReference: StorageReference,
+  thumbnailStorageReference: Option[StorageReference]
 ) extends FsNode {
 
   def modified(now: LocalDateTime): File =
@@ -196,7 +197,8 @@ object File {
       size = storage.size,
       hash = storage.hash,
       mimeType = mimeType,
-      storageReference = storage
+      storageReference = storage,
+      thumbnailStorageReference = None
     )
   }
 
@@ -217,7 +219,8 @@ object File {
     (JsPath \ "mimeType").write[String]and
     (JsPath \ "cipher").writeNullable[String] and
     (JsPath \ "compression").writeNullable[String] and
-    (JsPath \ "metadata").write[FileMetadata]
+    (JsPath \ "metadata").write[FileMetadata] and
+    (JsPath \ "hasThumbnail").write[Boolean]
   ){ file =>
     (
       file.id,
@@ -234,7 +237,8 @@ object File {
       file.mimeType,
       file.storageReference.cipher,
       file.storageReference.compression,
-      file.metadata
+      file.metadata,
+      file.thumbnailStorageReference.isDefined
     )
   }
 

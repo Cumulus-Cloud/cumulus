@@ -20,6 +20,7 @@ GET     /api/search*path              io.cumulus.controllers.FileSystemControlle
 # API - Upload and download routes
 POST    /api/upload*path              io.cumulus.controllers.FileSystemController.upload(path: Path, cipher: Option[String], compression: Option[String])
 GET     /api/download*path            io.cumulus.controllers.FileSystemController.download(path: Path, download: Option[Boolean])
+GET     /api/thumbnail*path           io.cumulus.controllers.FileSystemController.downloadThumbnail(path: Path, download: Option[Boolean])
 
 # API - Shared
 GET     /api/shared/fs*path           io.cumulus.controllers.SharingController.get(path: Path, reference, key)
