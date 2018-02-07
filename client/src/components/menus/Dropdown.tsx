@@ -13,7 +13,7 @@ interface State {
 
 export default class Dropdown extends React.Component<Props, State> {
 
-  itemsRef: HTMLDivElement | null
+  itemsRef: HTMLDivElement | null = null
 
   constructor(props: Props) {
     super(props)
