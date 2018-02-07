@@ -35,7 +35,7 @@ export default class FsNodeComponent extends React.PureComponent<Props> {
         <div className={styles.icon} onClick={this.handleOnSelect}>
           {this.renderIcon()}
         </div>
-        <div className={styles.infos} onClick={this.handleOnOpen}>
+        <div className={styles.infos} onClick={this.handleOnOpen} onDoubleClickCapture={this.handleOnShowInfo}>
           <h2 className={styles.name}>{fsNode.name}</h2>
         </div>
         <div className={styles.actions}>
@@ -67,7 +67,7 @@ export default class FsNodeComponent extends React.PureComponent<Props> {
     return (
       <Dropdown right renderAction={ActionButton}>
         <DropdownLink
-          href={Api.getDownloadUrl(fsFile, true)}
+          href={Api.getDownloadUrl(fsFile)}
           name={Messages("ui.download")}
           icon={<FileDownloadIcon />}
         />
