@@ -1,5 +1,6 @@
 .fsNodeInfo {
   width: 300px;
+  min-height: 100vh;
   background-color: var(--secondaryBg);
   box-shadow: -3px 0 15px 0 rgba(0,0,0,0.07);
 }
