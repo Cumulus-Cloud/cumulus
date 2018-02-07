@@ -23,7 +23,6 @@ export type OnCreateNewFolder = { type: "OnCreateNewFolder", newFolderName: stri
 export function onCreateNewFolder(currentDirectory: FsNode, newFolderName: string): ThunkAction<void, GlobalState, {}> {
   return (dispatch) => {
     dispatch({ type: "OnCreateNewFolder", newFolderName })
-    // TODO with current folder path
     Api.createFnNode(`${currentDirectory.path}/${newFolderName}`, "DIRECTORY").then(fsNode => {
       dispatch(onCreateNewFolderSuccess(fsNode))
     }).catch(error => {

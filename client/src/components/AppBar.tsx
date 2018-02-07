@@ -11,10 +11,9 @@ export default class AppBar extends React.PureComponent<{}> {
   render() {
     return (
       <div className={styles.appBar}>
-        <div className={styles.appTitle}>{Messages("ui.appName")}</div>
         <SearchContainer />
         <div className={styles.actions}>
-          <Dropdown right renderAction={() => <IconButton><MoreVertiIcon color="#FFFFFF" /></IconButton>}>
+          <Dropdown right renderAction={() => <IconButton><MoreVertiIcon /></IconButton>}>
             <DropdownItem name={Messages("ui.auth.logout")} icon={<LogoutIcon />} onClick={this.handleOnLogout} />
           </Dropdown>
         </div>

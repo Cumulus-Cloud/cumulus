@@ -1,0 +1,10 @@
+
+.baseButton {
+  padding: 0;
+  margin: 0;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
+  -webkit-appearance: none;
+}

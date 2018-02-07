@@ -1,10 +1,10 @@
 import * as React from "react"
-import * as styles from "auth/login/LoginContainer.css"
 import { connect, Dispatch } from "react-redux"
 import * as LoginActions from "./LoginActions"
 import { GlobalState } from "store"
 import LoginForm from "./LoginForm"
 import { LoginState } from "./LoginReducer"
+import AuthLayout from "auth/AuthLayout"
 import LinkButton from "components/buttons/LinkButton"
 
 interface DispatchProps {
@@ -18,8 +18,7 @@ class LoginContainer extends React.PureComponent<Props> {
   render() {
     const { login, password, formErrors, loading, onChange, onSubmit } = this.props
     return (
-      <div className={styles.loginContainer}>
-        <h2 className={styles.title}>{Messages("ui.appName")}</h2>
+      <AuthLayout>
         <LoginForm
           login={login}
           password={password}
@@ -29,7 +28,7 @@ class LoginContainer extends React.PureComponent<Props> {
           onSubmit={onSubmit}
         />
         <LinkButton href="#/signup">{Messages("ui.auth.signup")}</LinkButton>
-      </div>
+      </AuthLayout>
     )
   }
 }

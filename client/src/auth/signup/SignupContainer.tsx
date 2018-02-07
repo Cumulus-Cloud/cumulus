@@ -1,11 +1,11 @@
 import * as React from "react"
-import * as styles from "./SignupContainer.css"
 import { connect, Dispatch } from "react-redux"
 import * as SignupActions from "auth/signup/SignupActions"
 import { GlobalState } from "store"
 import SignupForm from "auth/signup/SignupForm"
 import { SignupState } from "auth/signup/SignupReducer"
 import LinkButton from "components/buttons/LinkButton"
+import AuthLayout from "auth/AuthLayout"
 
 interface DispatchProps {
   onChange(field: string, value: string): void
@@ -18,8 +18,7 @@ class SignupContainer extends React.PureComponent<Props> {
   render() {
     const { login, email, password, formErrors, loading, onChange, onSubmit } = this.props
     return (
-      <div className={styles.signupContainer}>
-        <h2 className={styles.title}>{Messages("ui.appName")}</h2>
+      <AuthLayout>
         <SignupForm
           login={login}
           email={email}
@@ -30,7 +29,7 @@ class SignupContainer extends React.PureComponent<Props> {
           onSubmit={onSubmit}
         />
         <LinkButton href="#/login">{Messages("ui.auth.login")}</LinkButton>
-      </div>
+      </AuthLayout>
     )
   }
 }

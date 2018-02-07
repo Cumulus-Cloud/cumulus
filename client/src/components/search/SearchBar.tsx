@@ -14,7 +14,7 @@ export default class SearchBar extends React.PureComponent<Props> {
     const { query } = this.props
     return (
       <div className={styles.searchBar}>
-        <SearchIcon color="#FFFFFF" />
+        <SearchIcon color="#6F6F6F" />
         <input
           className={styles.input}
           type="search"

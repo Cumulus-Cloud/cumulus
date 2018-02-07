@@ -5,7 +5,7 @@ import FileIcon from "icons/FileIcon"
 import IconButton from "components/buttons/IconButton"
 import CancelIcon from "icons/CancelIcon"
 import { FileToUpload } from "models/FileToUpload"
-import { Compression, Cipher } from "models/FsNode"
+import { Compression, Cipher, getExtention } from "models/FsNode"
 
 interface Props {
   fileToUpload: FileToUpload
@@ -18,7 +18,7 @@ export default class UploadFile extends React.PureComponent<Props> {
     const { fileToUpload } = this.props
     return (
       <div className={styles.uploadFile}>
-        <FileIcon />
+        <FileIcon extention={getExtention(fileToUpload.file.name)} />
         <div className={styles.infos}>
           <div className={styles.name}>{fileToUpload.file.name}</div>
           <div className={styles.parametres}>

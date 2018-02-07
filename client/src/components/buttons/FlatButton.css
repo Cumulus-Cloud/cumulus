@@ -9,7 +9,6 @@
   border-radius: 2px;
   text-transform: uppercase;
 
-  border: 0;
   cursor: pointer;
   display: inline-flex;
   outline: none;
@@ -17,11 +16,7 @@
   align-items: center;
   justify-content: center;
 
-  text-decoration: none;
-
   background-color: transparent;
-
-  -webkit-appearance: none;
 }
 
 .flatButton:hover {

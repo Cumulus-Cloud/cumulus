@@ -1,7 +1,7 @@
 import * as React from "react"
 import * as styles from "./PreviewContainer.css"
 import { connect, Dispatch } from "react-redux"
-import * as DirectoriesActions from "./DirectoriesActions"
+import * as FileSystemActions from "./FileSystemActions"
 import { GlobalState } from "store"
 import { FsFile, videosPreviewAvailable, imagesPreviewAvailable } from "models/FsNode"
 import Modal from "components/modals/Modal"
@@ -52,12 +52,12 @@ class PreviewContainer extends React.PureComponent<Props> {
 
 const mapStateToProps = (state: GlobalState): PropsState => {
   return {
-    fsFile: state.directories.previewFsFile
+    fsFile: state.fileSystem.previewFsFile
   }
 }
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onShowPreview: fsNode => dispatch(DirectoriesActions.onShowPreview(fsNode)),
+    onShowPreview: fsNode => dispatch(FileSystemActions.onShowPreview(fsNode)),
   }
 }
 

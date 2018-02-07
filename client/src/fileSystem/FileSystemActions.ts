@@ -1,4 +1,3 @@
-import { AnyAction } from "redux"
 import { ThunkAction } from "redux-thunk"
 import { GlobalState } from "store"
 import { FsNode, FsFile } from "models/FsNode"
@@ -7,10 +6,10 @@ import * as Api from "services/Api"
 import { OnCreateNewFolderSuccess } from "newFolder/NewFolderActions"
 import { OnUploadFileSuccess } from "upload/UploadActions"
 
-export type DirectoriesAction =
-  OnFetchDirectory |
-  OnFetchDirectorySuccess |
-  OnFetchDirectoryError |
+export type FileSystemAction =
+  FetchDirectory |
+  FetchDirectorySuccess |
+  FetchDirectoryError |
   OnCreateNewFolderSuccess |
   OnDeleteFsNode |
   OnDeleteFsNodeSuccess |
@@ -20,7 +19,12 @@ export type DirectoriesAction =
   Sharing |
   SharingSuccess |
   SharingError |
-  CloseShare
+  CloseShare |
+  ShowFsNodeInfos |
+  HideFsNodeInfos |
+  SelectFsNode |
+  DeselectFsNode |
+  CanselSelectionOfFsNode
 
 export type Sharing = { type: "Sharing", fsNode?: FsNode }
 export function onSharing(fsNode: FsNode): ThunkAction<void, GlobalState, {}> {
@@ -35,40 +39,52 @@ export function onSharing(fsNode: FsNode): ThunkAction<void, GlobalState, {}> {
 export type SharingSuccess = { type: "SharingSuccess", share: Share, fsNode: FsNode }
 export const onSharingSuccess = (share: Share, fsNode: FsNode): SharingSuccess => ({ type: "SharingSuccess", share, fsNode })
 
+export type ShowFsNodeInfos = { type: "ShowFsNodeInfos", fsNode: FsNode }
+export const showFsNodeInfos = (fsNode: FsNode): ShowFsNodeInfos => ({ type: "ShowFsNodeInfos", fsNode })
+
+export type HideFsNodeInfos = { type: "HideFsNodeInfos" }
+export const hideFsNodeInfos = (): HideFsNodeInfos => ({ type: "HideFsNodeInfos" })
+
+export type SelectFsNode = { type: "SelectFsNode", fsNode: FsNode }
+export const selectFsNode = (fsNode: FsNode): SelectFsNode => ({ type: "SelectFsNode", fsNode })
+
+export type DeselectFsNode = { type: "DeselectFsNode", fsNode: FsNode }
+export const deselectFsNode = (fsNode: FsNode): DeselectFsNode => ({ type: "DeselectFsNode", fsNode })
+
+export type CanselSelectionOfFsNode = { type: "CanselSelectionOfFsNode" }
+export const canselSelectionOfFsNode = (): CanselSelectionOfFsNode => ({ type: "CanselSelectionOfFsNode" })
+
 export type SharingError = { type: "SharingError", error: Api.ApiError }
 export const onSharingError = (error: Api.ApiError): SharingError => ({ type: "SharingError", error })
 
 export type CloseShare = { type: "CloseShare" }
 export const onCloseShare = (): CloseShare => ({ type: "CloseShare" })
 
-export interface OnFetchDirectory extends AnyAction {
-  type: "OnFetchDirectory"
-  path: string
-}
-export function onFetchDirectory(path: string): ThunkAction<void, GlobalState, {}> {
+export type FetchDirectory = { type: "FetchDirectory", path: string }
+export function fetchDirectory(path: string): ThunkAction<void, GlobalState, {}> {
   return (dispatch) => {
-    dispatch({ type: "OnFetchDirectory", path })
+    dispatch({ type: "FetchDirectory", path })
     Api.fetchDirectory(path)
-      .then(directory => dispatch(onFetchDirectorySuccess(directory)))
-      .catch(error => dispatch(onFetchDirectoryError(error)))
+      .then(directory => dispatch(fetchDirectorySuccess(directory)))
+      .catch(error => dispatch(fetchDirectoryError(error)))
   }
 }
 
-export type OnFetchDirectorySuccess = {
-  type: "OnFetchDirectorySuccess"
+export type FetchDirectorySuccess = {
+  type: "FetchDirectorySuccess"
   directory: FsNode
 }
-export const onFetchDirectorySuccess = (directory: FsNode): OnFetchDirectorySuccess => ({
-  type: "OnFetchDirectorySuccess",
+export const fetchDirectorySuccess = (directory: FsNode): FetchDirectorySuccess => ({
+  type: "FetchDirectorySuccess",
   directory
 })
 
-export type OnFetchDirectoryError = {
-  type: "OnFetchDirectoryError"
+export type FetchDirectoryError = {
+  type: "FetchDirectoryError"
   error: Api.ApiError
 }
-export const onFetchDirectoryError = (error: Api.ApiError): OnFetchDirectoryError => ({
-  type: "OnFetchDirectoryError",
+export const fetchDirectoryError = (error: Api.ApiError): FetchDirectoryError => ({
+  type: "FetchDirectoryError",
   error
 })
 

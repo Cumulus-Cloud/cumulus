@@ -2,35 +2,32 @@ import * as React from "react"
 import * as styles from "./Button.css"
 import LoaderIcon from "icons/LoaderIcon"
 import classNames from "utils/ClassNames"
+import BaseButton from "components/buttons/BaseButton"
 
 interface Props {
   label: string
   disable?: boolean
   loading?: boolean
+  className?: string
+  large?: boolean
   onClick(): void
 }
 
-export default class Button extends React.PureComponent<Props> {
-  render() {
-    const { label, disable = false, loading = false } = this.props
-    const inputClasses = classNames({
-      [styles.button]: true,
-      [styles.disable]: disable
-    })
-    return (
-      <div className={inputClasses} onClick={this.handleOnClick}>
-        {loading
-          ? <LoaderIcon color="#FFFFFF" />
-          : <label className={styles.label}>{label}</label>
-        }
-      </div>
-    )
-  }
-
-  handleOnClick = () => {
-    const { onClick, disable = false, loading = false } = this.props
-    if (!disable && !loading) {
-      onClick()
-    }
-  }
+export default function Button({ label, onClick, disable = false, loading = false, large = false }: Props): JSX.Element {
+  const inputClasses = classNames({
+    [styles.button]: true,
+    [styles.disable]: disable,
+    [styles.large]: large,
+  })
+  return (
+    <BaseButton
+      className={inputClasses}
+      onClick={onClick}
+      disable={disable}
+      loading={loading}
+      renderLoader={() => <LoaderIcon color="#FFFFFF" />}
+    >
+      <label className={styles.label}>{label}</label>
+    </BaseButton>
+  )
 }

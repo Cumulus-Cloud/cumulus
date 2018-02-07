@@ -1,6 +1,7 @@
 import * as React from "react"
 import * as styles from "./FlatButton.css"
 import LoaderIcon from "icons/LoaderIcon"
+import BaseButton from "components/buttons/BaseButton"
 
 export type FlatButtonType = "default" | "primary" | "accent" | "link"
 
@@ -9,25 +10,16 @@ interface Props {
   label: string
   loading?: boolean
   onClick?(): void
+  disable?: boolean
 }
 
 export default class FlatButton extends React.PureComponent<Props> {
   render() {
-    const { label, loading = false } = this.props
+    const { label, onClick, loading = false, disable = false } = this.props
     return (
-      <button className={styles.flatButton} onClick={this.handleOnClick}>
-        {loading
-          ? <LoaderIcon />
-          : <div>{label}</div>
-        }
-      </button>
+      <BaseButton className={styles.flatButton} disable={disable} loading={loading} renderLoader={() => <LoaderIcon />} onClick={onClick}>
+        <div className={styles.label}>{label}</div>
+      </BaseButton>
     )
-  }
-
-  handleOnClick = () => {
-    const { onClick, loading } = this.props
-    if (onClick && loading !== true) {
-      onClick()
-    }
   }
 }

@@ -6,7 +6,7 @@ interface Props {
   height?: number
 }
 
-export default function DirectoryIcon({ color = "rgba(17, 22, 48, .9)", width = 30, height = 30 }: Props) {
+export default function DirectoryIcon({ color = "#32A8A1", width = 30, height = 30 }: Props) {
   return (
     <svg width={width} height={height} viewBox="0 0 80 80" version="1.1">
       <g id="directory-icon" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
