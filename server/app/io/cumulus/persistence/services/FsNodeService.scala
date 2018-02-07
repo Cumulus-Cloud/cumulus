@@ -227,7 +227,7 @@ class FsNodeService(
       })
 
       // Delete the node's sharings
-      a <- QueryE.seq {
+      _ <- QueryE.seq {
         sharings.map(sharing => sharingStore.delete(sharing.id).map(Right(_)))
       }
 
