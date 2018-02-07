@@ -1,4 +1,4 @@
-import { FileSystemAction, OnDeleteFsNodeSuccess } from "./FileSystemActions"
+import { FileSystemAction, OnDeleteFsNodeSuccess, ShowFsNodeInfos, SelectFsNode } from "./FileSystemActions"
 import { FsNode, FsFile, isDirectory } from "models/FsNode"
 import { Share } from "models/Share"
 import { ApiError } from "services/Api"
@@ -14,6 +14,7 @@ export interface FileSystemState {
   sharedFsNode?: FsNode
   share?: Share
   sharingLoader: boolean
+  fsNodeInfosToShow?: FsNode
   selectedFsNodes: FsNode[]
 }
 
@@ -21,7 +22,7 @@ const initState: FileSystemState = {
   loading: false,
   sharingLoader: false,
   error: undefined,
-  selectedFsNodes: []
+  selectedFsNodes: [],
 }
 
 export const FileSystemReducer = (state: FileSystemState = initState, action: FileSystemAction) => {
@@ -39,9 +40,22 @@ export const FileSystemReducer = (state: FileSystemState = initState, action: Fi
     case "SharingSuccess": return { ...state, sharingLoader: false, sharedFsNode: action.fsNode, share: action.share }
     case "SharingError": return { ...state, sharingLoader: false, error: action.error, sharedFsNode: undefined, share: undefined }
     case "CloseShare": return { ...state, sharedFsNode: undefined, share: undefined }
-    case "ShowFsNodeInfos": return { ...state, selectedFsNodes: [...state.selectedFsNodes, action.fsNode] }
-    case "HideFsNodeInfos": return { ...state, selectedFsNodes: state.selectedFsNodes.filter(fs => fs.id !== action.fsNode.id) }
+    case "ShowFsNodeInfos": return showFsNodeInfosReducer(state, action)
+    case "HideFsNodeInfos": return { ...state, fsNodeInfosToShow: undefined }
+    case "SelectFsNode": return selectFsNodeReducer(state, action)
     default: return state
+  }
+}
+
+function selectFsNodeReducer(state: FileSystemState, action: SelectFsNode): FileSystemState {
+  return state
+}
+
+function showFsNodeInfosReducer(state: FileSystemState, action: ShowFsNodeInfos): FileSystemState {
+  if (state.fsNodeInfosToShow && state.fsNodeInfosToShow.id === action.fsNode.id) {
+    return { ...state, fsNodeInfosToShow: undefined }
+  } else {
+    return { ...state, fsNodeInfosToShow: action.fsNode }
   }
 }
 

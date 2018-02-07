@@ -9,18 +9,15 @@ interface Props {
   onHideFsNodeInfos(fsNode: FsNode): void
 }
 
-export default class FsNodeInfo extends React.PureComponent<Props> {
+export default class MultFsNodesPanel extends React.PureComponent<Props> {
   render() {
-    const { fsNode } = this.props
     return (
       <div className={styles.fsNodeInfo}>
         <div className={styles.header}>
-          <h2 className={styles.title}>{Messages("ui.informations")}</h2>
+          <h2 className={styles.title}>Selected</h2>
           <IconButton onClick={this.handleOnHideFsNodeInfos}><CloseIcon /></IconButton>
         </div>
         <div>
-          <h3>{fsNode.name}</h3>
-          <div>{fsNode.path}</div>
         </div>
       </div>
     )

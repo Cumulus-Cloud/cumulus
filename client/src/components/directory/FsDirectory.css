@@ -1,11 +1,23 @@
-
 .fsDirectory {
   display: flex;
   align-items: center;
-  padding: 10px;
   cursor: pointer;
   border-bottom: 1px solid #EEE;
   background-color: var(--secondaryBg);
+  border-left: 3px solid transparent;
+}
+
+.fsDirectory:hover {
+  border-left-color: var(--darkPrimary);
+}
+
+.icon {
+  padding: 18px;
+  cursor: pointer;
+}
+
+.icon:hover {
+  background-color: var(--lightPrimary);
 }
 
 .fsDirectoryInfos {

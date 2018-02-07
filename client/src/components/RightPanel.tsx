@@ -10,7 +10,7 @@ import * as FileSystemActions from "fileSystem/FileSystemActions"
 
 interface StateProps {
   directory: FsNode
-  selectedFsNodes: FsNode[]
+  fsNodeInfosToShow?: FsNode
 }
 
 interface DispatchProps {
@@ -30,9 +30,9 @@ export class RightPanel extends React.PureComponent<Props> {
   }
 
   renderPanels = () => {
-    const { selectedFsNodes, onHideFsNodeInfos } = this.props
-    if (selectedFsNodes.length === 1) {
-      return <FsNodeInfos selectedFsNode={selectedFsNodes[0]} onHideFsNodeInfos={onHideFsNodeInfos} />
+    const { fsNodeInfosToShow, onHideFsNodeInfos } = this.props
+    if (!!fsNodeInfosToShow) {
+      return <FsNodeInfos fsNode={fsNodeInfosToShow} onHideFsNodeInfos={onHideFsNodeInfos} />
     } else {
       return (
         <>
@@ -47,7 +47,7 @@ export class RightPanel extends React.PureComponent<Props> {
 const mapStateToProps = (state: GlobalState): StateProps => {
   return {
     directory: state.fileSystem.directory!,
-    selectedFsNodes: state.fileSystem.selectedFsNodes,
+    fsNodeInfosToShow: state.fileSystem.fsNodeInfosToShow,
   }
 }
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {

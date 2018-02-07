@@ -18,7 +18,9 @@ export default class FsDirectory extends React.PureComponent<Props> {
     const { fsDirectory } = this.props
     return (
       <div className={styles.fsDirectory}>
-        <DirectoryIcon />
+        <div className={styles.icon}>
+          <DirectoryIcon width={30} height={30} />
+        </div>
         <div className={styles.fsDirectoryInfos} onClick={this.handleOnClick}>
           <h1 className={styles.title}>
             {fsDirectory.name}

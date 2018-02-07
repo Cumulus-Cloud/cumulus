@@ -23,12 +23,11 @@ export default class FsFile extends React.PureComponent<Props> {
     const { fsFile } = this.props
     return (
       <div className={styles.fsFile}>
-        <FileIcon extention={getExtention(fsFile.name).toUpperCase()} />
-        <div className={styles.fsFileInfos}>
-          {this.isPreviewAvailable(fsFile)
-            ? <div className={styles.name} onClick={this.handleOnClick}>{fsFile.name}</div>
-            : <a className={styles.name} href={Api.getDownloadUrl(fsFile, true)}>{fsFile.name}</a>
-          }
+        <div className={styles.icon} onClick={this.isPreviewAvailable(fsFile) ? this.handleOnClick : undefined}>
+          <FileIcon extention={getExtention(fsFile.name).toUpperCase()} />
+        </div>
+        <div className={styles.fsFileInfos} onClick={this.handleOnShowFsNodeInfos}>
+          <h2 className={styles.name}>{fsFile.name}</h2>
         </div>
         <div className={styles.actions}>
           <Dropdown right renderAction={this.renderAction}>
@@ -38,7 +37,6 @@ export default class FsFile extends React.PureComponent<Props> {
               icon={this.fileDownloadIcon}
             />
             <DropdownItem name={Messages("ui.delete")} icon={this.deleteIcon} onClick={this.handleOnDelete} />
-            <DropdownItem name={Messages("ui.informations")} onClick={this.handleOnShowFsNodeInfos} />
             <DropdownItem name={Messages("ui.share")} icon={this.shareIcon} onClick={this.handleOnSharing} />
           </Dropdown>
         </div>
