@@ -40,26 +40,43 @@ trait FileDownloaderUtils {
     file: File,
     content: Source[ByteString, _],
     forceDownload: Boolean
+  ): Result =
+    downloadFile(file.name, file.size, file.mimeType, content, forceDownload)
+
+  protected def downloadFile(
+    fileName: String,
+    size: Long,
+    mimeType: String,
+    content: Source[ByteString, _],
+    forceDownload: Boolean
   ): Result = {
 
     Ok.sendEntity(
       HttpEntity.Streamed(
         content,
-        Some(file.size),
-        Some(file.mimeType)
+        Some(size),
+        Some(mimeType)
       )
     )
-    .withHeaders(
-      if(forceDownload)
-        "Content-Disposition" -> s"attachment; filename*=UTF-8''${file.name}"
-      else
-        "Content-Disposition" -> "inline"
-    )
+      .withHeaders(
+        if(forceDownload)
+          "Content-Disposition" -> s"attachment; filename*=UTF-8''$fileName"
+        else
+          "Content-Disposition" -> "inline"
+      )
 
   }
 
   protected def streamFile(
     file: File,
+    content: Source[ByteString, _],
+    range: Range
+  ): Result =
+    streamFile(file.size, file.mimeType, content, range)
+
+  protected def streamFile(
+    size: Long,
+    mimeType: String,
     content: Source[ByteString, _],
     range: Range
   ): Result = {
@@ -69,12 +86,12 @@ trait FileDownloaderUtils {
         HttpEntity.Streamed(
           content,
           None,
-          Some(file.mimeType)
+          Some(mimeType)
         )
       )
       .withHeaders(
         ("Content-Transfer-Encoding", "Binary"),
-        ("Content-Range", s"bytes ${range.start}-${range.end}/${file.size}"),
+        ("Content-Range", s"bytes ${range.start}-${range.end}/$size"),
         ("Accept-Ranges", "bytes")
       )
 

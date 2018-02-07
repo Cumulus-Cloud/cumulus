@@ -16,13 +16,43 @@ import io.cumulus.stages.{Ciphers, Compressions}
 object StorageReferenceReader {
 
   /**
+    * Reads the thumbnail of a file. If the thumbnail does not exists, an error will be return.
+    *
+    * @param storageEngine The storage engine to use
+    * @param file The file containing the thumbnail to stream
+    */
+  def readThumbnail(
+    storageEngine: StorageEngine,
+    file: File
+  )(implicit
+    session: Session,
+    ciphers: Ciphers,
+    compressions: Compressions,
+    ec: ExecutionContext
+  ): Either[AppError, Source[ByteString, NotUsed]] =
+    for {
+      transformation <- transformationForFile(file)
+      source         <- file.thumbnailStorageReference match {
+        case Some(thumbnailStorageReference) =>
+          Right(
+            Source(thumbnailStorageReference.storage.toList)
+              .splitWhen(_ => true)
+              .via(StorageObjectReader(storageEngine, transformation))
+              .mergeSubstreams
+          )
+        case _ =>
+          Left(AppError.notFound("validation.fs-node.no-thumbnail"))
+      }
+    } yield source
+
+  /**
     * Reads a file in its wholeness, and output a stream of its byte after applying the provided transformation
     * to each storage object.
     *
-    * @param storageEngine The storage engine to use.
+    * @param storageEngine The storage engine to use
     * @param file The file to stream
     */
-  def apply(
+  def read(
     storageEngine: StorageEngine,
     file: File
   )(implicit
@@ -45,11 +75,11 @@ object StorageReferenceReader {
     * Reads partially a file, from the starts of the range to end of the range. The reader will drop and ignore every
     * storage object outside of the range, and trim bytes still outside of the wanted range.
     *
-    * @param storageEngine The storage engine to use.
+    * @param storageEngine The storage engine to use
     * @param file The file to stream
     * @param range The range of byte to output
     */
-  def apply(
+  def read(
     storageEngine: StorageEngine,
     file: File,
     range: Range

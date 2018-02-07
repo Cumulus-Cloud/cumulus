@@ -12,7 +12,7 @@ import io.cumulus.core.stream.storage.{StorageReferenceReader, StorageReferenceW
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.UserSession
 import io.cumulus.models.fs.File
-import io.cumulus.persistence.storage.StorageEngine
+import io.cumulus.persistence.storage.{StorageEngine, StorageReference}
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.{ImageType, PDFRenderer}
 
@@ -45,7 +45,7 @@ trait ThumbnailGenerator extends Logging {
     compressions: Compressions,
     userSession: UserSession,
     settings: Settings
-  ): Future[Either[AppError, File]] = {
+  ): Future[Either[AppError, StorageReference]] = {
 
     val res = for {
       preview     <- generatePreview(file, storageEngine)
@@ -57,13 +57,12 @@ trait ThumbnailGenerator extends Logging {
       val image = Image.fromAwt(preview).fit(200, 200)
 
       // Write the image
-      val thumbnailName = file.path.parent ++ "/" ++ ".thumbnail_" + file.path.nameWithoutExtension + ".jpg"
       val thumbnailWriter =
-        StorageReferenceWriter(
+        StorageReferenceWriter.writes(
           storageEngine,
           cipher,
           compression,
-          thumbnailName
+          "/not-used" // We need a name, but will just retrieve the storage information
         )
 
       StreamConverters.fromInputStream(() => image.stream).toMat(thumbnailWriter)(Keep.right)
@@ -73,7 +72,7 @@ trait ThumbnailGenerator extends Logging {
     res match {
       case Right(stream) =>
         logger.debug(s"Creating thumbnail of file ${file.path}")
-        stream.run().map(file => Right(file.copy(hidden = true))) // Hide the file
+        stream.run().map(file => Right(file.storageReference)) // Get the storage reference
       case Left(err) =>
         logger.warn(s"Thumbnail creation of file ${file.path} failed")
         Future.successful(Left(err))
@@ -84,6 +83,12 @@ trait ThumbnailGenerator extends Logging {
   def maxSize: Long = 1048576 // 10Mo
 
   def applyOn: Seq[String]
+
+}
+
+object ThumbnailGenerator {
+
+  val thumbnailMimeType: String = "image/jpg"
 
 }
 
@@ -100,7 +105,7 @@ object PDFDocumentThumbnailGenerator extends ThumbnailGenerator {
     userSession: UserSession,
     settings: Settings): Either[AppError, java.awt.Image] = {
 
-    StorageReferenceReader(storageEngine, file).map { fileSource =>
+    StorageReferenceReader.read(storageEngine, file).map { fileSource =>
       // Get the PDF document
       val fileInputStream = fileSource.runWith(StreamConverters.asInputStream())
       val document = PDDocument.load(fileInputStream)
@@ -130,7 +135,7 @@ object ImageThumbnailGenerator extends ThumbnailGenerator {
     userSession: UserSession,
     settings: Settings): Either[AppError, java.awt.Image] = {
 
-    StorageReferenceReader(storageEngine, file).map { fileSource =>
+    StorageReferenceReader.read(storageEngine, file).map { fileSource =>
       // Read the image
       val fileInputStream = fileSource.runWith(StreamConverters.asInputStream())
       ImageIO.read(fileInputStream)
@@ -160,4 +165,3 @@ case class ThumbnailGenerators(generators: Seq[ThumbnailGenerator]) {
     name.flatMap(get)
 
 }
-
