@@ -16,7 +16,7 @@ import io.cumulus.stages.{Ciphers, Compressions}
 object StorageReferenceReader {
 
   /**
-    * Reads the thumbnail of a file. If the thumbnail does not exists, an error will be return.
+    * Reads the thumbnail of a file. If the thumbnail does not exists, an error will be returned.
     *
     * @param storageEngine The storage engine to use
     * @param file The file containing the thumbnail to stream

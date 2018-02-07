@@ -58,12 +58,12 @@ trait FileDownloaderUtils {
         Some(mimeType)
       )
     )
-      .withHeaders(
-        if(forceDownload)
-          "Content-Disposition" -> s"attachment; filename*=UTF-8''$fileName"
-        else
-          "Content-Disposition" -> "inline"
-      )
+    .withHeaders(
+      if(forceDownload)
+        "Content-Disposition" -> s"attachment; filename*=UTF-8''$fileName"
+      else
+        "Content-Disposition" -> "inline"
+    )
 
   }
 

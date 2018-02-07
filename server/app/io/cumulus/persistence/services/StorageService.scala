@@ -30,7 +30,6 @@ class StorageService(
   ec: ExecutionContext
 ) extends Logging {
 
-
   /**
     * Upload the provided file (with its content), uploading the data using the implicit storage engine and creating
     * the metadata related object in the database.<br/>
@@ -84,7 +83,6 @@ class StorageService(
 
   }.value
 
-
   /**
     * Finds a file content by its path and owner. Will fail if the element does not exist or is not a file.
     * @param path The path of the file
@@ -113,8 +111,8 @@ class StorageService(
         }
       }
     } yield content
-  }.value
 
+  }.value
 
   /**
     * Finds a file content by its path and owner. Will fail if the element does not exist or is not a file.
@@ -133,6 +131,7 @@ class StorageService(
         )
       }
     } yield content
+
   }.value
 
   /** Extract the metadata of the provided file */
