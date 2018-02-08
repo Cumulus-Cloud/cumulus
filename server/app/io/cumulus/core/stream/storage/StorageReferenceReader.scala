@@ -5,6 +5,7 @@ import scala.concurrent.ExecutionContext
 import akka.NotUsed
 import akka.stream.scaladsl.{Flow, Source}
 import akka.util.ByteString
+import io.cumulus.core.Logging
 import io.cumulus.core.stream.utils.ByteRange
 import io.cumulus.core.utils.Range
 import io.cumulus.core.validation.AppError
@@ -13,7 +14,7 @@ import io.cumulus.models.fs.File
 import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
 import io.cumulus.stages.{Ciphers, Compressions}
 
-object StorageReferenceReader {
+object StorageReferenceReader extends Logging {
 
   /**
     * Reads the thumbnail of a file. If the thumbnail does not exists, an error will be returned.
@@ -68,6 +69,7 @@ object StorageReferenceReader {
           .splitWhen(_ => true)
           .via(StorageObjectReader(storageEngine, transformation))
           .mergeSubstreams
+          .recover(errorHandler(file))
       }
     } yield source
 
@@ -100,6 +102,7 @@ object StorageReferenceReader {
           .via(StorageObjectReader(storageEngine, transformation))
           .mergeSubstreams
           .via(ByteRange(from, to)) // Don't forget to 'trim' the stream of bytes outside the offsets
+          .recover(errorHandler(file))
       }
     } yield source
 
@@ -162,5 +165,19 @@ object StorageReferenceReader {
         .via(cipher.map(_.decrypt(privateKey, salt)).getOrElse(Flow[ByteString]))
         .via(compression.map(_.uncompress).getOrElse(Flow[ByteString]))
     }
+
+  private def errorHandler(file: File): PartialFunction[Throwable, ByteString] = {
+    case e: Exception =>
+      val engineUsed =
+        file
+          .storageReference
+          .storage
+          .headOption
+          .map(v => v.storageEngine + " v" + v.storageEngineVersion)
+          .getOrElse("Nothing")
+
+      logger.error(s"Error while reading file ${file.id} using $engineUsed", e)
+      ByteString.empty
+  }
 
 }

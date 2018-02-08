@@ -19,10 +19,9 @@ class LocalStorageEngine(implicit settings: Settings) extends StorageEngine {
 
   override def version: String = "0.1"
 
-
   def writeObject(id: UUID)(implicit e: ExecutionContext): OutputStream = {
     val objectPath = Paths.get(storage, id.toString)
-    val storagePath = Paths.get(storage)
+    val storagePath = objectPath.getParent
 
     // TODO move
     storagePath.toFile.mkdirs()
@@ -34,25 +33,6 @@ class LocalStorageEngine(implicit settings: Settings) extends StorageEngine {
     val objectPath = Paths.get(storage, id.toString)
 
     new FileInputStream(objectPath.toFile)
-  }
-
-
-  def getObject(id: UUID)(implicit e: ExecutionContext): Future[Either[AppError, Source[ByteString, Future[IOResult]]]] = {
-    val objectPath = Paths.get(storage, id.toString)
-
-    Future.successful(Right(FileIO.fromPath(objectPath)))
-
-    /*
-    FileIO.fromPath(objectPath)
-      .mapMaterializedValue[Future[StorageEngineResult]] { mat =>
-        mat.map { r =>
-          r.status
-            .toEither
-            .left.map(e => StorageEngineFailed(e.getMessage, Some(e)))
-            .map(_ => StorageEngineSuccessful())
-            .merge
-        }
-      }*/
   }
 
   def deleteObject(id: UUID)(implicit e: ExecutionContext): Future[Right[AppError, Unit]] = {
