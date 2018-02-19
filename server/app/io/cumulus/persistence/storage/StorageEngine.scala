@@ -21,6 +21,4 @@ trait StorageEngine {
 
   def readObject(id: UUID)(implicit e: ExecutionContext): InputStream
 
-  def getObject(id: UUID)(implicit e: ExecutionContext): Future[Either[AppError, Source[ByteString, Future[IOResult]]]]
-
 }
