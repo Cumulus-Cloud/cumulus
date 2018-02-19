@@ -144,7 +144,6 @@ class StorageService(
   /** Generate a thumbnail of the provided file */
   private def generateThumbnail(file: File)(implicit session: UserSession): Future[Either[AppError, Option[StorageReference]]] = {
     val thumbnailGenerator = thumbnailGenerators.get(file.mimeType)
-    implicit val user = session.user
 
     thumbnailGenerator.map { generator =>
       generator.generate(file, storageEngine).map(_.map(Some(_)))

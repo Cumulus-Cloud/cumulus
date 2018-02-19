@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
 
   object postgresql {
-    val version = "42.1.4"
+    val version = "42.2.1"
 
     val core = "org.postgresql" % "postgresql" % version
   }
@@ -28,7 +28,7 @@ object Dependencies {
   }
 
   object cats {
-    val version = "1.0.0-RC1"
+    val version = "1.0.1"
 
     val core = "org.typelevel" %% "cats-core" % version
   }
@@ -37,12 +37,6 @@ object Dependencies {
     val version = "1.0.1"
 
     val core = "com.github.marcospereira" %% "play-hocon-i18n" % version
-  }
-
-  object jsonDerivedCodecs {
-    val version = "4.0.0"
-
-    val core = "org.julienrf" %% "play-json-derived-codecs" % version
   }
 
   object commonsIO {
@@ -70,7 +64,7 @@ object Dependencies {
   }
 
   object bouncyCastle {
-    val version = "1.58"
+    val version = "1.59"
 
     val core = "org.bouncycastle" % "bcprov-jdk15on" % version
   }
