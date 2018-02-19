@@ -39,12 +39,6 @@ object Dependencies {
     val core = "com.github.marcospereira" %% "play-hocon-i18n" % version
   }
 
-  object jsonDerivedCodecs {
-    val version = "4.0.0"
-
-    val core = "org.julienrf" %% "play-json-derived-codecs" % version
-  }
-
   object commonsIO {
     val version = "2.6"
 

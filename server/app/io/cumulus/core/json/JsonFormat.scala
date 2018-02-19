@@ -6,25 +6,9 @@ import scala.util.Try
 import akka.util.ByteString
 import cats.data.NonEmptyList
 import io.cumulus.core.utils.Base64
-import julienrf.json.derived
 import play.api.libs.json._
 
 object JsonFormat {
-
-  def derivedReads[A](implicit derivedReads: derived.DerivedReads[A]): Reads[A] =
-    derived.flat.reads[A]((__ \ "__type").format[String])
-
-  def derivedWrites[A](implicit derivedOWrites: derived.DerivedOWrites[A]): OWrites[A] =
-    derived.flat.owrites[A]((__ \ "__type").format[String])
-
-  // Utility function to derive formats
-  def derivedFormat[A](
-    implicit
-    derivedReads: derived.DerivedReads[A],
-    derivedOWrites: derived.DerivedOWrites[A]
-  ): OFormat[A] =
-    derived.flat.oformat[A]((__ \ "__type").format[String])
-
 
   implicit def UUIDFormat: Format[UUID] = new Format[UUID] {
 

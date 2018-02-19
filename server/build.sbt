@@ -53,8 +53,6 @@ lazy val cumulusServer = project
       Dependencies.cats.core,
       // JWT
       Dependencies.jwtPlay.core,
-      // json derived format
-      Dependencies.jsonDerivedCodecs.core,
       // Emails
       Dependencies.playMailer.core,
       // Thumbnails generation
