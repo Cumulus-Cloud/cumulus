@@ -4,8 +4,8 @@ import { GlobalState } from "store"
 import { NewFolderState } from "newFolder/NewFolderReducer"
 import * as NewFolderActions from "newFolder/NewFolderActions"
 import { FsNode } from "models/FsNode"
-import FlatButton from "components/buttons/FlatButton"
 import NewFolderModal from "newFolder/NewFolderModal"
+import GhostButton from "components/buttons/GhostButton"
 
 interface DispatchProps {
   onNewFolderNameChange(newFolderName: string): void
@@ -24,7 +24,7 @@ class NewFolderContainer extends React.PureComponent<Props> {
     const { wantCreateNewFolder, onWantCreateNewFolder } = this.props
     return (
       <>
-      <FlatButton label={Messages("ui.newFolder")} onClick={onWantCreateNewFolder} />
+      <GhostButton label={Messages("ui.newFolder")} onClick={onWantCreateNewFolder} matchParent />
       {wantCreateNewFolder ? this.renderModal() : null}
       </>
     )

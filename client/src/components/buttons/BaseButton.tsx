@@ -6,6 +6,7 @@ interface Props {
   disable?: boolean
   loading?: boolean
   className?: string
+  matchParent?: boolean
   onClick?(): void
   href?: string
   renderLoader(): JSX.Element
@@ -13,9 +14,10 @@ interface Props {
 
 export default class BaseButton extends React.PureComponent<Props> {
   render() {
-    const { className, href } = this.props
+    const { className, href, matchParent = false } = this.props
     const classes = classNames({
       [styles.baseButton]: true,
+      [styles.matchParent]: matchParent,
       [className || ""]: !!className,
     })
     if (href) {
