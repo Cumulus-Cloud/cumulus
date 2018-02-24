@@ -1,12 +1,12 @@
-
 .modalHeader {
   display: flex;
   align-items: center;
-  padding: 24px 24px 10px 24px;
-  background-color: var(--secondaryBg);
+  padding: 15px 30px;
+  background-color: var(--lightPrimary);
+  border-bottom: 1px solid var(--divider);
 }
 
 .title {
-  font-size: 1.4rem;
-  color: var(--primaryText);
+  font-size: 1rem;
+  color: var(--darkPrimary);
 }
