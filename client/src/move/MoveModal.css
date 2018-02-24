@@ -1,3 +1,9 @@
+.content {
+  min-height: 500px;
+  max-height: 500px;
+  overflow: auto;
+}
+
 .targetDirectories {
   border-top: 1px solid var(--divider);
   border-left: 1px solid var(--divider);

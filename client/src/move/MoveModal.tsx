@@ -35,10 +35,12 @@ export class MoveModal extends React.PureComponent<Props> {
       <Modal onClose={onCancelMove}>
         <ModalHeader title={Messages("ui.move")} />
         <ModalContent>
+          <div className={styles.content}>
             {target.content.length !== 0
               ? this.renderTargetDirectories()
               : <div>Vide</div>
             }
+          </div>
         </ModalContent>
         <ModalActions>
           <FlatButton label={Messages("ui.cancel")} onClick={onCancelMove} />
