@@ -95,7 +95,7 @@ export function createFnNode(path: string, nodeType: NodeType): Promise<FsNode> 
   }).then(success(FsNodeValidator))
 }
 
-export function fetchDirectory(path: string): Promise<FsNode> {
+export function fetchDirectory(path: string): Promise<FsDirectory> {
   return withAuth(`/api/fs${encodeURI(path)}`, {
     method: "GET",
     headers: HEADERS,
