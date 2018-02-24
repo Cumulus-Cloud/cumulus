@@ -1,11 +1,11 @@
 import { MoveAction } from "move/MoveActions"
 import { ApiError } from "services/Api"
-import { FsNode } from "models/FsNode"
+import { FsNode, FsDirectory } from "models/FsNode"
 
 export interface MoveState {
   wantMove: boolean
   fsNodes: FsNode[]
-  targetFsNode?: FsNode
+  target?: FsDirectory
   loading: false
   error?: ApiError
 }
@@ -18,8 +18,9 @@ const initState: MoveState = {
 
 export const MoveReducer = (state: MoveState = initState, action: MoveAction) => {
   switch (action.type) {
-    case "WantMove": return { wantMove: true, fsNodes: action.fsNodes, targetFsNode: action.targetFsNode }
-    case "CancelMove": return { wantMove: false, fsNodes: [], targetFsNode: undefined }
+    case "WantMove": return { ...state, wantMove: true, fsNodes: action.fsNodes, target: action.target }
+    case "CancelMove": return { ...state, wantMove: false, fsNodes: [], target: undefined }
+    case "ChangeMoveTarget": return { ...state, target: action.target }
     default: return state
   }
 }

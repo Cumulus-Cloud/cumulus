@@ -9,7 +9,7 @@ import { FileSystemState } from "./FileSystemReducer"
 import AppBar from "components/AppBar"
 import Breadcrumb from "components/breadcrumb/Breadcrumb"
 import PreviewContainer from "./PreviewContainer"
-import { FsNode, FsFile, isDirectory, isFile } from "models/FsNode"
+import { FsNode, FsFile, isDirectory, isFile, FsDirectory } from "models/FsNode"
 import { Share } from "models/Share"
 import Empty from "components/Empty"
 import Loader from "components/Loader"
@@ -27,7 +27,7 @@ interface DispatchProps {
   onSelectFsNode(fsNode: FsNode): void
   onShowPreview(fsNode?: FsFile): void
   onSharing(fsNode: FsNode): void
-  onWantMove(fsNodes: FsNode[], targetFsNode: FsNode): void
+  onWantMove(fsNodes: FsNode[], target: FsDirectory): void
   onCloseShare(): void
 }
 
@@ -136,7 +136,7 @@ class FileSystemContainer extends React.PureComponent<Props> {
   }
 
   handleOnPathClick = (path: string) => history.push(path)
-  handleOnWantMove = (targetFsNode: FsNode) => (fsNode: FsNode) => this.props.onWantMove([fsNode], targetFsNode)
+  handleOnWantMove = (target: FsDirectory) => (fsNode: FsNode) => this.props.onWantMove([fsNode], target)
 }
 
 const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string[]> }): PropsState => {
@@ -157,7 +157,7 @@ const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
     onCloseShare: () => dispatch(FileSystemActions.onCloseShare()),
     onShowFsNodeInfos: fsNode => dispatch(FileSystemActions.showFsNodeInfos(fsNode)),
     onSelectFsNode: fsNode => dispatch(FileSystemActions.selectFsNode(fsNode)),
-    onWantMove: (fsNodes, targetFsNode) => dispatch(MoveActions.wantMove(fsNodes, targetFsNode)),
+    onWantMove: (fsNodes, target) => dispatch(MoveActions.wantMove(fsNodes, target)),
   }
 }
 

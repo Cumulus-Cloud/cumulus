@@ -1,12 +1,12 @@
 import { FileSystemAction, OnDeleteFsNodeSuccess, ShowFsNodeInfos, SelectFsNode } from "./FileSystemActions"
-import { FsNode, FsFile, isDirectory } from "models/FsNode"
+import { FsNode, FsFile, isDirectory, FsDirectory } from "models/FsNode"
 import { Share } from "models/Share"
 import { ApiError } from "services/Api"
 import { OnCreateNewFolderSuccess } from "newFolder/NewFolderActions"
 import { OnUploadFileSuccess } from "upload/UploadActions"
 
 export interface FileSystemState {
-  directory?: FsNode
+  directory?: FsDirectory
   loading: boolean
   deleteLoading?: string
   error?: ApiError
