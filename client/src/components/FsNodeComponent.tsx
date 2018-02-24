@@ -6,6 +6,7 @@ import FileIcon from "icons/FileIcon"
 import IconButton from "components/buttons/IconButton"
 import DeleteIcon from "icons/DeleteIcon"
 import ShareIcon from "icons/ShareIcon"
+import MoveIcon from "icons/MoveIcon"
 import FileDownloadIcon from "icons/FileDownloadIcon"
 import Dropdown, { DropdownItem, DropdownLink } from "components/menus/Dropdown"
 import MoreHorizIcon from "icons/MoreHorizIcon"
@@ -20,6 +21,7 @@ interface Props {
   onShowInfo(fsNode: FsNode): void
   onDelete(fsNode: FsNode): void
   onSharing(fsNode: FsNode): void
+  onWantMove(fsNode: FsNode): void
 
 }
 
@@ -71,8 +73,9 @@ export default class FsNodeComponent extends React.PureComponent<Props> {
           name={Messages("ui.download")}
           icon={<FileDownloadIcon />}
         />
-        <DropdownItem name={Messages("ui.delete")} icon={<DeleteIcon />} onClick={this.handleOnDelete} />
         <DropdownItem name={Messages("ui.share")} icon={<ShareIcon />} onClick={this.handleOnSharing} />
+        <DropdownItem name={Messages("ui.move")} icon={<MoveIcon />} onClick={this.handleOnWantMove} />
+        <DropdownItem name={Messages("ui.delete")} icon={<DeleteIcon />} onClick={this.handleOnDelete} />
       </Dropdown>
     )
   }
@@ -80,6 +83,7 @@ export default class FsNodeComponent extends React.PureComponent<Props> {
   renderDirectoryActions = (fsDirectory: FsDirectory) => {
     return (
       <Dropdown right renderAction={ActionButton}>
+        <DropdownItem name={Messages("ui.move")} icon={<MoveIcon />} onClick={this.handleOnWantMove} />
         <DropdownItem name={Messages("ui.delete")} icon={<DeleteIcon />} onClick={this.handleOnDelete} />
       </Dropdown>
     )
@@ -90,6 +94,7 @@ export default class FsNodeComponent extends React.PureComponent<Props> {
   handleOnShowInfo = () => this.props.onShowInfo(this.props.fsNode)
   handleOnDelete = () => this.props.onDelete(this.props.fsNode)
   handleOnSharing = () => this.props.onSharing(this.props.fsNode)
+  handleOnWantMove = () => this.props.onWantMove(this.props.fsNode)
 }
 
 function ActionButton() {

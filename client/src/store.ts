@@ -9,6 +9,7 @@ import { FileSystemState, FileSystemReducer } from "fileSystem/FileSystemReducer
 import { NewFolderState, NewFolderReducer } from "newFolder/NewFolderReducer"
 import { UploadState, UploadReducer } from "upload/UploadReducer"
 import { SearchState, SearchReducer } from "search/SearchReducer"
+import { MoveState, MoveReducer } from "move/MoveReducer"
 
 export interface GlobalState {
   login: LoginState
@@ -17,6 +18,7 @@ export interface GlobalState {
   upload: UploadState
   fileSystem: FileSystemState
   search: SearchState
+  move: MoveState
   router: Reducer<RouterState>
 }
 
@@ -30,6 +32,7 @@ const reducers = combineReducers({
   upload: UploadReducer,
   fileSystem: FileSystemReducer,
   search: SearchReducer,
+  move: MoveReducer as any,
   router: routerReducer,
 })
 const enhancer = composeWithDevTools(
