@@ -1,0 +1,12 @@
+.fsNodeName {
+  color: var(--primaryText);
+  font-size: 1rem;
+}
+
+.input {
+  color: var(--primaryText);
+  font-size: 1rem;
+  padding: 3px;
+  border: 1px solid var(--divider);
+  border-radius: 3px;
+} 
