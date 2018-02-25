@@ -20,10 +20,10 @@ export type Move = { type: "Move" }
 export const move = (): Move => ({ type: "Move" })
 
 export type ChangeMoveTarget = { type: "ChangeMoveTarget" }
-export function changeMoveTarget(target: FsDirectory): ThunkAction<void, GlobalState, {}> {
+export function changeMoveTarget(path: string): ThunkAction<void, GlobalState, {}> {
   return (dispatch) => {
-    dispatch({ type: "ChangeMoveTarget", target })
-    Api.fetchDirectory(target.path).then(fetchedTarget => {
+    dispatch({ type: "ChangeMoveTarget" })
+    Api.fetchDirectory(path).then(fetchedTarget => {
       dispatch(changeMoveTargetSuccess(fetchedTarget))
     }).catch(error => {
       dispatch(changeMoveTargetSuccessError(error))

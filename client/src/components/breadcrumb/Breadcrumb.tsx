@@ -38,7 +38,7 @@ export default class Breadcrumb extends React.PureComponent<Props> {
     )
   }
 
-  handlePathOnClick = (path: string) => () => this.props.onPathClick(`/fs/${path}`)
+  handlePathOnClick = (path: string) => () => this.props.onPathClick(path)
 }
 
 interface BreadcrumbItemProps {

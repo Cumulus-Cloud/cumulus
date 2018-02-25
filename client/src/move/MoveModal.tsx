@@ -12,6 +12,7 @@ import FlatButton from "components/buttons/FlatButton"
 import { FsNode, FsDirectory, isDirectory } from "models/FsNode"
 import { ApiError } from "services/Api"
 import TargetDirectory from "move/TargetDirectory"
+import Breadcrumb from "components/breadcrumb/Breadcrumb"
 
 interface PropsState {
   fsNodes: FsNode[]
@@ -23,7 +24,7 @@ interface PropsState {
 interface DispatchProps {
   onCancelMove(): void
   onMove(): void
-  onChangeTarget(target: FsDirectory): void
+  onChangeTarget(path: string): void
 }
 
 type Props = PropsState & DispatchProps
@@ -35,12 +36,11 @@ export class MoveModal extends React.PureComponent<Props> {
       <Modal onClose={onCancelMove}>
         <ModalHeader title={Messages("ui.move")} />
         <ModalContent>
-          <div className={styles.content}>
-            {target.content.length !== 0
-              ? this.renderTargetDirectories()
-              : <div>Vide</div>
-            }
-          </div>
+          <Breadcrumb directory={target} homeTitle={Messages("ui.appName")} onPathClick={this.handleOnChangeTarget}  />
+          {target.content.length !== 0
+            ? this.renderTargetDirectories()
+            : <div>Vide</div>
+          }
         </ModalContent>
         <ModalActions>
           <FlatButton label={Messages("ui.cancel")} onClick={onCancelMove} />
@@ -50,11 +50,16 @@ export class MoveModal extends React.PureComponent<Props> {
     )
   }
 
+  handleOnChangeTarget = (path: string) => {
+    console.log("handleOnChangeTarget", path)
+    this.props.onChangeTarget(path === "" ? "/" : path)
+  }
+
   renderTargetDirectories = () => {
     const { target, onChangeTarget } = this.props
     return (
       <div className={styles.targetDirectories}>
-        {target.content.filter(isDirectory).map(d => <TargetDirectory key={d.id} target={d} onClick={() => onChangeTarget(d) } />)}
+        {target.content.filter(isDirectory).map(d => <TargetDirectory key={d.id} target={d} onClick={() => onChangeTarget(d.path) } />)}
       </div>
     )
   }
@@ -72,7 +77,7 @@ const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
     onCancelMove: () => dispatch(MoveActions.cancelMove()),
     onMove: () => dispatch(MoveActions.move()),
-    onChangeTarget: target => dispatch(MoveActions.changeMoveTarget(target))
+    onChangeTarget: path => dispatch(MoveActions.changeMoveTarget(path))
   }
 }
 

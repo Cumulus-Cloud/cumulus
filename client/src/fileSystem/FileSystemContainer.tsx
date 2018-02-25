@@ -135,7 +135,7 @@ class FileSystemContainer extends React.PureComponent<Props> {
     }
   }
 
-  handleOnPathClick = (path: string) => history.push(path)
+  handleOnPathClick = (path: string) => history.push(`/fs/${path}`)
   handleOnWantMove = (target: FsDirectory) => (fsNode: FsNode) => this.props.onWantMove([fsNode], target)
 }
 
