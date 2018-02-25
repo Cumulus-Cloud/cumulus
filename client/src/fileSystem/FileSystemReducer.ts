@@ -4,7 +4,7 @@ import { Share } from "models/Share"
 import { ApiError } from "services/Api"
 import { OnCreateNewFolderSuccess } from "newFolder/NewFolderActions"
 import { OnUploadFileSuccess } from "upload/UploadActions"
-import { MoveSuccess } from "move/MoveActions";
+import { MoveSuccess } from "move/MoveActions"
 
 export interface FileSystemState {
   directory?: FsDirectory

@@ -26,13 +26,15 @@ export const history = createHashHistory()
 const middleware = routerMiddleware(history)
 
 const reducers = combineReducers({
+  // tslint:disable-next-line:no-any
   login: LoginReducer as any,
+  // tslint:disable-next-line:no-any
   signup: SignupReducer as any,
   newFolder: NewFolderReducer,
   upload: UploadReducer,
   fileSystem: FileSystemReducer,
   search: SearchReducer,
-  move: MoveReducer as any,
+  move: MoveReducer,
   router: routerReducer,
 })
 const enhancer = composeWithDevTools(

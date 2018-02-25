@@ -161,10 +161,12 @@ export function upload(path: string, fileToUpload: FileToUpload, progression?: (
       xhr.open("POST", `/api/upload${encodeURI(path)}${qs}`)
       xhr.setRequestHeader("Authorization", token)
       xhr.addEventListener("load", event => {
+        // tslint:disable-next-line:no-any
         resolve(JSON.parse((event.target as any).response))
       })
       xhr.onerror = e => {
         reject({
+          // tslint:disable-next-line:no-any
           message: (e.target as any).responseText
         })
       }
