@@ -24,7 +24,10 @@ export const MoveReducer = (state: MoveState = initState, action: MoveAction) =>
     case "CancelMove": return initState
     case "ChangeMoveTarget": return { ...state, targetLoading: true }
     case "ChangeMoveTargetSuccess": return { ...state, target: action.target, targetLoading: false }
-    case "ChangeMoveTargetSuccessError": return { ...state, targetLoading: false }
+    case "ChangeMoveTargetError": return { ...state, targetLoading: false }
+    case "Move": return { ...state, loading: true }
+    case "MoveSuccess": return { ...state, loading: false, wantMove: false }
+    case "MoveError": return { ...state, error: action.error, loading: false }
     default: return state
   }
 }

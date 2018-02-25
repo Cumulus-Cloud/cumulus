@@ -31,7 +31,7 @@ type Props = PropsState & DispatchProps
 
 export class MoveModal extends React.PureComponent<Props> {
   render() {
-    const { target, onCancelMove, onMove } = this.props
+    const { target, loading, onCancelMove, onMove } = this.props
     return (
       <Modal onClose={onCancelMove}>
         <ModalHeader title={Messages("ui.move")} />
@@ -44,7 +44,7 @@ export class MoveModal extends React.PureComponent<Props> {
         </ModalContent>
         <ModalActions>
           <FlatButton label={Messages("ui.cancel")} onClick={onCancelMove} />
-          <FlatButton label={Messages("ui.create")} onClick={onMove} />
+          <FlatButton label={Messages("ui.move")} onClick={onMove} loading={loading} />
         </ModalActions>
       </Modal>
     )

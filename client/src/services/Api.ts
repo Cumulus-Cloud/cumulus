@@ -102,6 +102,14 @@ export function fetchDirectory(path: string): Promise<FsDirectory> {
   }).then(success(FsNodeValidator))
 }
 
+export function move(fsNode: FsNode, target: FsDirectory): Promise<FsNode> {
+  return withAuth(`/api/fs${encodeURI(fsNode.path)}`, {
+    method: "POST",
+    headers: HEADERS,
+    body: JSON.stringify({ operation: "MOVE", to: `${target.path}/${fsNode.name}` })
+  }).then(success(FsNodeValidator))
+}
+
 export function deleteFsNode(fsNode: FsNode): Promise<void> {
   return withAuth(`/api/fs${encodeURI(fsNode.path)}`, {
     method: "DELETE",
