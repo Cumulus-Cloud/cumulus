@@ -1,7 +1,7 @@
 version: '3'
 services:
 
-  db:
+  cumulus_db:
     image: postgres:10-alpine
     environment:
       POSTGRES_DB: cumulus
@@ -12,9 +12,13 @@ services:
     ports:
       - 5432:5432
 
-  smtp:
+  cumulus_mailcatcher:
     image: jeanberu/mailcatcher
     ports:
       - 1026:1025 # SMTP
       - 1081:1080 # Web interface
 
+  cumulus_adminer:
+    image: adminer
+    ports:
+        - 5555:8080
