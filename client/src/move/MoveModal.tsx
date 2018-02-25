@@ -37,7 +37,11 @@ export class MoveModal extends React.PureComponent<Props> {
       <Modal onClose={onCancelMove}>
         <ModalHeader title={Messages("ui.move")} />
         <ModalContent>
-          <Breadcrumb directory={target} homeTitle={Messages("ui.appName")} onPathClick={this.handleOnChangeTarget}  />
+          <Breadcrumb
+            directory={target}
+            homeTitle={Messages("ui.appName")}
+            onPathClick={this.handleOnChangeTargetBreadcrumb}
+          />
           {directories.length !== 0
             ? this.renderTargetDirectories(directories)
             : <div className={styles.empty}>{Messages("ui.empty")}</div>
@@ -51,19 +55,30 @@ export class MoveModal extends React.PureComponent<Props> {
     )
   }
 
-  handleOnChangeTarget = (path: string) => {
+  handleOnChangeTargetBreadcrumb = (path: string) => {
     console.log("handleOnChangeTarget", path)
     this.props.onChangeTarget(path === "" ? "/" : path)
   }
 
   renderTargetDirectories = (directories: FsDirectory[]) => {
-    const { onChangeTarget } = this.props
     return (
       <div className={styles.targetDirectories}>
-        {directories.map(d => <TargetDirectory key={d.id} target={d} onClick={() => onChangeTarget(d.path) } />)}
+        {directories.map(this.renderDirectory)}
       </div>
     )
   }
+
+  renderDirectory = (directory: FsDirectory) => {
+    return (
+      <TargetDirectory
+        key={directory.id}
+        target={directory}
+        onClick={this.handleOnChangeTarget(directory)}
+      />
+    )
+  }
+
+  handleOnChangeTarget = (directory: FsDirectory) => () => this.props.onChangeTarget(directory.path)
 }
 
 const mapStateToProps = (state: GlobalState): PropsState => {
