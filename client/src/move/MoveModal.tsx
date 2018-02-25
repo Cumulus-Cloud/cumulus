@@ -32,14 +32,15 @@ type Props = PropsState & DispatchProps
 export class MoveModal extends React.PureComponent<Props> {
   render() {
     const { target, loading, onCancelMove, onMove } = this.props
+    const directories = target.content.filter(isDirectory)
     return (
       <Modal onClose={onCancelMove}>
         <ModalHeader title={Messages("ui.move")} />
         <ModalContent>
           <Breadcrumb directory={target} homeTitle={Messages("ui.appName")} onPathClick={this.handleOnChangeTarget}  />
-          {target.content.length !== 0
-            ? this.renderTargetDirectories()
-            : <div>Vide</div>
+          {directories.length !== 0
+            ? this.renderTargetDirectories(directories)
+            : <div className={styles.empty}>{Messages("ui.empty")}</div>
           }
         </ModalContent>
         <ModalActions>
@@ -55,11 +56,11 @@ export class MoveModal extends React.PureComponent<Props> {
     this.props.onChangeTarget(path === "" ? "/" : path)
   }
 
-  renderTargetDirectories = () => {
-    const { target, onChangeTarget } = this.props
+  renderTargetDirectories = (directories: FsDirectory[]) => {
+    const { onChangeTarget } = this.props
     return (
       <div className={styles.targetDirectories}>
-        {target.content.filter(isDirectory).map(d => <TargetDirectory key={d.id} target={d} onClick={() => onChangeTarget(d.path) } />)}
+        {directories.map(d => <TargetDirectory key={d.id} target={d} onClick={() => onChangeTarget(d.path) } />)}
       </div>
     )
   }
