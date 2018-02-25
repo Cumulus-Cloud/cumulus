@@ -8,14 +8,16 @@ interface Props {
   loading?: boolean
   disable?: boolean
   matchParent?: boolean
+  href?: string
   onClick?(): void
 }
 
 export default class GhostButton extends React.PureComponent<Props> {
   render() {
-    const { label, onClick, matchParent, loading = false, disable = false } = this.props
+    const { label, href, onClick, matchParent, loading = false, disable = false } = this.props
     return (
       <BaseButton
+        href={href}
         className={styles.ghostButton}
         disable={disable}
         loading={loading}
