@@ -5,7 +5,8 @@ import { GlobalState } from "store"
 import { FsNode } from "models/FsNode"
 import * as RenameActions from "rename/RenameActions"
 import IconButton from "components/buttons/IconButton"
-import AddIcon from "icons/AddIcon"
+import DoneIcon from "icons/DoneIcon"
+import CloseIcon from "icons/CloseIcon"
 
 interface StateProps {
   newName: string
@@ -19,6 +20,7 @@ interface OwnProps {
 interface DispatchProps {
   onNameChange(name: string): void
   onRename(newName: string, fsNode: FsNode): void
+  onCancelRename(): void
 }
 
 type Props = StateProps & OwnProps & DispatchProps
@@ -43,7 +45,7 @@ export class FsNodeName extends React.PureComponent<Props> {
   renderRenameMode = (fsNodeToRename: FsNode) => {
     const { newName } = this.props
     return (
-      <div>
+      <div className={styles.rename}>
         <input
           ref={this.handleInputRef}
           className={styles.input}
@@ -52,7 +54,10 @@ export class FsNodeName extends React.PureComponent<Props> {
           onChange={this.handleOnChange}
         />
         <IconButton onClick={this.handleOnRename(newName, fsNodeToRename)}>
-          <AddIcon />
+          <DoneIcon />
+        </IconButton>
+        <IconButton onClick={this.handleOnRename(newName, fsNodeToRename)}>
+          <CloseIcon width={15} height={15} />
         </IconButton>
       </div>
     )
@@ -77,6 +82,7 @@ const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
     onNameChange: name => dispatch(RenameActions.changeName(name)),
     onRename: (newName, fsNode) => dispatch(RenameActions.rename(newName, fsNode)),
+    onCancelRename: () => dispatch(RenameActions.cancelRename()),
   }
 }
 

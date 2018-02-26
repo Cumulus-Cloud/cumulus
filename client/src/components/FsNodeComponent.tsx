@@ -13,6 +13,7 @@ import MoreHorizIcon from "icons/MoreHorizIcon"
 import DirectoryIcon from "icons/DirectoryIcon"
 import classNames from "utils/ClassNames"
 import FsNodeName from "rename/FsNodeName"
+import EditIcon from "icons/EditIcon"
 
 interface Props {
   fsNode: FsNode
@@ -76,7 +77,7 @@ export default class FsNodeComponent extends React.PureComponent<Props> {
           icon={<FileDownloadIcon />}
         />
         <DropdownItem name={Messages("ui.share")} icon={<ShareIcon />} onClick={this.handleOnSharing} />
-        <DropdownItem name={Messages("ui.rename")} icon={<MoveIcon />} onClick={this.handleOnWantRename} />
+        <DropdownItem name={Messages("ui.rename")} icon={<EditIcon />} onClick={this.handleOnWantRename} />
         <DropdownItem name={Messages("ui.move")} icon={<MoveIcon />} onClick={this.handleOnWantMove} />
         <DropdownItem name={Messages("ui.delete")} icon={<DeleteIcon />} onClick={this.handleOnDelete} />
       </Dropdown>
@@ -86,7 +87,7 @@ export default class FsNodeComponent extends React.PureComponent<Props> {
   renderDirectoryActions = (fsDirectory: FsDirectory) => {
     return (
       <Dropdown right renderAction={ActionButton}>
-        <DropdownItem name={Messages("ui.rename")} icon={<MoveIcon />} onClick={this.handleOnWantRename} />
+        <DropdownItem name={Messages("ui.rename")} icon={<EditIcon />} onClick={this.handleOnWantRename} />
         <DropdownItem name={Messages("ui.move")} icon={<MoveIcon />} onClick={this.handleOnWantMove} />
         <DropdownItem name={Messages("ui.delete")} icon={<DeleteIcon />} onClick={this.handleOnDelete} />
       </Dropdown>

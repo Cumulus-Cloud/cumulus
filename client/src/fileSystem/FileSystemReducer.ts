@@ -62,19 +62,15 @@ function moveSuccessReducer(state: FileSystemState, action: MoveSuccess): FileSy
   }
 }
 
-
 function renameSuccessReducer(state: FileSystemState, action: RenameSuccess): FileSystemState {
-  const newDirectory = { ...state.directory!, content: state.directory!.content.map(n => {
+  const directory = { ...state.directory!, content: state.directory!.content.map(n => {
     if (n.id === action.fsNode.id) {
       return action.fsNode
     } else {
       return n
     }
   }) }
-  return {
-    ...state,
-    directory: newDirectory
-  }
+  return { ...state, directory }
 }
 
 function selectFsNodeReducer(state: FileSystemState, action: SelectFsNode): FileSystemState {

@@ -1,6 +1,5 @@
 import * as React from "react"
 import * as styles from "./GhostButton.css"
-import LoaderIcon from "icons/LoaderIcon"
 import BaseButton from "components/buttons/BaseButton"
 
 interface Props {
@@ -21,7 +20,6 @@ export default class GhostButton extends React.PureComponent<Props> {
         className={styles.ghostButton}
         disable={disable}
         loading={loading}
-        renderLoader={() => <LoaderIcon />}
         onClick={onClick}
         matchParent={matchParent}
       >

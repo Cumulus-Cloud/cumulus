@@ -24,11 +24,15 @@ export type Rename = { type: "Rename" }
 export function rename(newName: string, fsNode: FsNode): ThunkAction<void, GlobalState, {}> {
   return (dispatch, getState) => {
     dispatch({ type: "Rename" })
-    Api.rename(fsNode, `${fsNode.path.replace(fsNode.name, "")}${newName}`).then(renamedFsNode => {
-      dispatch(renameSuccess(renamedFsNode))
-    }).catch(error => {
-      dispatch(renameError(error))
-    })
+    if (fsNode.name !== newName) {
+      Api.rename(fsNode, `${fsNode.path.replace(fsNode.name, "")}${newName}`).then(renamedFsNode => {
+        dispatch(renameSuccess(renamedFsNode))
+      }).catch(error => {
+        dispatch(renameError(error))
+      })
+    } else {
+      dispatch(cancelRename())
+    }
   }
 }
 

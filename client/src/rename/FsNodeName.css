@@ -3,6 +3,12 @@
   font-size: 1rem;
 }
 
+.rename {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
 .input {
   color: var(--primaryText);
   font-size: 1rem;
