@@ -7,7 +7,7 @@ import * as RenameActions from "rename/RenameActions"
 import IconButton from "components/buttons/IconButton"
 import DoneIcon from "icons/DoneIcon"
 import CloseIcon from "icons/CloseIcon"
-import KeyDownAction from "components/KeyDownAction";
+import KeyDownAction from "components/KeyDownAction"
 
 interface StateProps {
   newName: string

@@ -12,15 +12,19 @@
   font-size: 1.5rem;
 }
 
-.links {
+.menu {
   margin-top: 55px;
+}
+
+.menuitem {
+  padding: 14px 0;
+  cursor: pointer;
 }
 
 .link {
   font-size: .8rem;
-  padding: 14px 0;
   color: var(--secondaryText);
-  cursor: pointer;
+  text-decoration: none;
 }
 
 .link:hover {
