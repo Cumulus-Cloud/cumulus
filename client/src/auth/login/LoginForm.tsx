@@ -3,6 +3,7 @@ import * as styles from "./LoginForm.css"
 import Input from "components/inputs/Input"
 import Button from "components/buttons/Button"
 import { ApiError } from "services/Api"
+import KeyDownAction from "components/KeyDownAction"
 
 interface Props {
   login: string
@@ -14,46 +15,40 @@ interface Props {
 }
 
 export default class LoginForm extends React.PureComponent<Props> {
-  componentWillMount() {
-    document.addEventListener("keydown", this.onKeyPressHandler, false)
-  }
-
-  componentWillUnmount() {
-    document.removeEventListener("keydown", this.onKeyPressHandler, false)
+  render() {
+    const { login, password, formErrors, loading } = this.props
+    return (
+      <KeyDownAction onKeyDown={this.onKeyPressHandler}>
+        <div className={styles.loginForm}>
+          <Input
+            type="text"
+            label={Messages("ui.auth.login")}
+            value={login}
+            error={formErrors && formErrors.errors && formErrors.errors.login && formErrors.errors.login.map(e => e.message).join(", ")}
+            onChange={this.handleChange("login")}
+          />
+          <Input
+            type="password"
+            label={Messages("ui.auth.password")}
+            value={password}
+            error={formErrors && formErrors.errors && formErrors.errors.password && formErrors.errors.password.map(e => e.message).join(", ")}
+            onChange={this.handleChange("password")}
+          />
+          <div className={styles.action}>
+            <Button label={Messages("ui.auth.loginAction")} loading={loading} onClick={this.handleSubmit} large matchParent />
+            <div className={styles.formError}>
+              {formErrors && formErrors.message ? formErrors.message : null}
+            </div>
+          </div>
+        </div>
+      </KeyDownAction>
+    )
   }
 
   onKeyPressHandler = (e: KeyboardEvent) => {
     if (e.code === "Enter") {
       this.handleSubmit()
     }
-  }
-
-  render() {
-    const { login, password, formErrors, loading } = this.props
-    return (
-      <div className={styles.loginForm}>
-        <Input
-          type="text"
-          label={Messages("ui.auth.login")}
-          value={login}
-          error={formErrors && formErrors.errors && formErrors.errors.login && formErrors.errors.login.map(e => e.message).join(", ")}
-          onChange={this.handleChange("login")}
-        />
-        <Input
-          type="password"
-          label={Messages("ui.auth.password")}
-          value={password}
-          error={formErrors && formErrors.errors && formErrors.errors.password && formErrors.errors.password.map(e => e.message).join(", ")}
-          onChange={this.handleChange("password")}
-        />
-        <div className={styles.action}>
-          <Button label={Messages("ui.auth.loginAction")} loading={loading} onClick={this.handleSubmit} large matchParent />
-          <div className={styles.formError}>
-            {formErrors && formErrors.message ? formErrors.message : null}
-          </div>
-        </div>
-      </div>
-    )
   }
 
   handleChange = (field: string) => (value: string) => this.props.onChange(field, value)

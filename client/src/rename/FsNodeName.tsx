@@ -7,6 +7,7 @@ import * as RenameActions from "rename/RenameActions"
 import IconButton from "components/buttons/IconButton"
 import DoneIcon from "icons/DoneIcon"
 import CloseIcon from "icons/CloseIcon"
+import KeyDownAction from "components/KeyDownAction";
 
 interface StateProps {
   newName: string
@@ -45,22 +46,31 @@ export class FsNodeName extends React.PureComponent<Props> {
   renderRenameMode = (fsNodeToRename: FsNode) => {
     const { newName } = this.props
     return (
-      <div className={styles.rename}>
-        <input
-          ref={this.handleInputRef}
-          className={styles.input}
-          type="text"
-          value={newName}
-          onChange={this.handleOnChange}
-        />
-        <IconButton onClick={this.handleOnRename(newName, fsNodeToRename)}>
-          <DoneIcon />
-        </IconButton>
-        <IconButton onClick={this.handleOnRename(newName, fsNodeToRename)}>
-          <CloseIcon width={15} height={15} />
-        </IconButton>
-      </div>
+      <KeyDownAction onKeyDown={this.handleOnKeydown}>
+        <div className={styles.rename}>
+          <input
+            ref={this.handleInputRef}
+            className={styles.input}
+            type="text"
+            value={newName}
+            onChange={this.handleOnChange}
+          />
+          <IconButton onClick={this.handleOnRename(newName, fsNodeToRename)}>
+            <DoneIcon />
+          </IconButton>
+          <IconButton onClick={this.handleOnRename(newName, fsNodeToRename)}>
+            <CloseIcon width={15} height={15} />
+          </IconButton>
+        </div>
+      </KeyDownAction>
     )
+  }
+
+  handleOnKeydown = (e: KeyboardEvent) => {
+    const { newName, fsNodeToRename, onRename } = this.props
+    if (e.code === "Enter") {
+      onRename(newName, fsNodeToRename!)
+    }
   }
 
   handleOnRename = (newName: string, fsNodeToRename: FsNode) => () => this.props.onRename(newName, fsNodeToRename)
