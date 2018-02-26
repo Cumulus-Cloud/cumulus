@@ -3,12 +3,13 @@ import * as styles from "./FileSystemContainer.css"
 import { connect, Dispatch } from "react-redux"
 import { match as RouterMatch } from "react-router"
 import * as FileSystemActions from "./FileSystemActions"
+import * as MoveActions from "move/MoveActions"
 import { GlobalState, history } from "store"
 import { FileSystemState } from "./FileSystemReducer"
 import AppBar from "components/AppBar"
 import Breadcrumb from "components/breadcrumb/Breadcrumb"
 import PreviewContainer from "./PreviewContainer"
-import { FsNode, FsFile, isDirectory, isFile } from "models/FsNode"
+import { FsNode, FsFile, isDirectory, isFile, FsDirectory } from "models/FsNode"
 import { Share } from "models/Share"
 import Empty from "components/Empty"
 import Loader from "components/Loader"
@@ -17,6 +18,7 @@ import ShareModal from "components/ShareModal"
 import LeftPanel from "components/LeftPanel"
 import RightPanel from "components/RightPanel"
 import FsNodeComponent from "components/FsNodeComponent"
+import MoveModal from "move/MoveModal"
 
 interface DispatchProps {
   onFetchDirectory(path: string): void
@@ -25,12 +27,14 @@ interface DispatchProps {
   onSelectFsNode(fsNode: FsNode): void
   onShowPreview(fsNode?: FsFile): void
   onSharing(fsNode: FsNode): void
+  onWantMove(fsNodes: FsNode[], target: FsDirectory): void
   onCloseShare(): void
 }
 
 interface PropsState extends FileSystemState {
   searchResult?: SearchResult
   path?: string
+  wantMove: boolean
 }
 
 type Props = PropsState & DispatchProps
@@ -50,7 +54,7 @@ class FileSystemContainer extends React.PureComponent<Props> {
   }
 
   render() {
-    const { directory, share, sharedFsNode } = this.props
+    const { directory, share, wantMove, sharedFsNode } = this.props
     return (
       <div className={styles.fileSystemContainer}>
         <LeftPanel />
@@ -64,6 +68,7 @@ class FileSystemContainer extends React.PureComponent<Props> {
               </div>
               <PreviewContainer />
               {!!share && !!sharedFsNode ? this.renderShareModal(share, sharedFsNode) : null}
+              {wantMove ? <MoveModal /> : null }
             </div>
             <RightPanel />
           </div>
@@ -101,7 +106,7 @@ class FileSystemContainer extends React.PureComponent<Props> {
   }
 
   renderFsNode = (fsNode: FsNode) => {
-    const { onSelectFsNode, onDeleteFsNode, onSharing, onShowFsNodeInfos, selectedFsNodes } = this.props
+    const { onSelectFsNode, onDeleteFsNode, onSharing, onShowFsNodeInfos, selectedFsNodes, directory } = this.props
     return (
       <FsNodeComponent
         key={fsNode.id}
@@ -112,6 +117,7 @@ class FileSystemContainer extends React.PureComponent<Props> {
         onDelete={onDeleteFsNode}
         onSharing={onSharing}
         onShowInfo={onShowFsNodeInfos}
+        onWantMove={this.handleOnWantMove(directory!)}
       />
     )
   }
@@ -129,15 +135,16 @@ class FileSystemContainer extends React.PureComponent<Props> {
     }
   }
 
-  handleOnPathClick = (path: string) => history.push(path)
-
+  handleOnPathClick = (path: string) => history.push(`/fs/${path}`)
+  handleOnWantMove = (target: FsDirectory) => (fsNode: FsNode) => this.props.onWantMove([fsNode], target)
 }
 
 const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string[]> }): PropsState => {
   return {
     ...state.fileSystem,
     searchResult: state.search.searchResult,
-    path: props.match && props.match.params[0]
+    path: props.match && props.match.params[0],
+    wantMove: state.move.wantMove,
   }
 }
 
@@ -149,7 +156,8 @@ const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
     onSharing: fsNode => dispatch(FileSystemActions.onSharing(fsNode)),
     onCloseShare: () => dispatch(FileSystemActions.onCloseShare()),
     onShowFsNodeInfos: fsNode => dispatch(FileSystemActions.showFsNodeInfos(fsNode)),
-    onSelectFsNode: fsNode => dispatch(FileSystemActions.selectFsNode(fsNode))
+    onSelectFsNode: fsNode => dispatch(FileSystemActions.selectFsNode(fsNode)),
+    onWantMove: (fsNodes, target) => dispatch(MoveActions.wantMove(fsNodes, target)),
   }
 }
 

@@ -10,10 +10,11 @@ interface Props {
   loading?: boolean
   className?: string
   large?: boolean
+  matchParent?: boolean
   onClick(): void
 }
 
-export default function Button({ label, onClick, disable = false, loading = false, large = false }: Props): JSX.Element {
+export default function Button({ label, matchParent, onClick, disable = false, loading = false, large = false }: Props): JSX.Element {
   const inputClasses = classNames({
     [styles.button]: true,
     [styles.disable]: disable,
@@ -25,6 +26,7 @@ export default function Button({ label, onClick, disable = false, loading = fals
       onClick={onClick}
       disable={disable}
       loading={loading}
+      matchParent={matchParent}
       renderLoader={() => <LoaderIcon color="#FFFFFF" />}
     >
       <label className={styles.label}>{label}</label>

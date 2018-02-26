@@ -10,9 +10,9 @@ import { ApiError } from "services/Api"
 interface Props {
   error?: ApiError
   newFolderName: string
-  onWantCreateNewFolder: () => void
-  onNewFolderNameChange: (newFolderName: string) => void
-  onNewFolderSubmit: () => void
+  onWantCreateNewFolder(): void
+  onNewFolderNameChange(newFolderName: string): void
+  onNewFolderSubmit(): void
 }
 
 export default function NewFolderModal({ error, newFolderName, onWantCreateNewFolder, onNewFolderNameChange, onNewFolderSubmit }: Props) {

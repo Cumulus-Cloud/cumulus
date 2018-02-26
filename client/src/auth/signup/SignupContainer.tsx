@@ -4,8 +4,8 @@ import * as SignupActions from "auth/signup/SignupActions"
 import { GlobalState } from "store"
 import SignupForm from "auth/signup/SignupForm"
 import { SignupState } from "auth/signup/SignupReducer"
-import LinkButton from "components/buttons/LinkButton"
 import AuthLayout from "auth/AuthLayout"
+import GhostButton from "components/buttons/GhostButton"
 
 interface DispatchProps {
   onChange(field: string, value: string): void
@@ -28,7 +28,7 @@ class SignupContainer extends React.PureComponent<Props> {
           onChange={onChange}
           onSubmit={onSubmit}
         />
-        <LinkButton href="#/login">{Messages("ui.auth.login")}</LinkButton>
+        <GhostButton label={Messages("ui.auth.login")} href="#/login" matchParent />
       </AuthLayout>
     )
   }

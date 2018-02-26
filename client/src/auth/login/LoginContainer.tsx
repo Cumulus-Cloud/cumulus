@@ -5,7 +5,7 @@ import { GlobalState } from "store"
 import LoginForm from "./LoginForm"
 import { LoginState } from "./LoginReducer"
 import AuthLayout from "auth/AuthLayout"
-import LinkButton from "components/buttons/LinkButton"
+import GhostButton from "components/buttons/GhostButton"
 
 interface DispatchProps {
   onChange(field: string, value: string): void
@@ -27,7 +27,7 @@ class LoginContainer extends React.PureComponent<Props> {
           onChange={onChange}
           onSubmit={onSubmit}
         />
-        <LinkButton href="#/signup">{Messages("ui.auth.signup")}</LinkButton>
+        <GhostButton label={Messages("ui.auth.signup")} href="#/signup" matchParent />
       </AuthLayout>
     )
   }

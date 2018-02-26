@@ -1,12 +1,13 @@
 import { FileSystemAction, OnDeleteFsNodeSuccess, ShowFsNodeInfos, SelectFsNode } from "./FileSystemActions"
-import { FsNode, FsFile, isDirectory } from "models/FsNode"
+import { FsNode, FsFile, isDirectory, FsDirectory } from "models/FsNode"
 import { Share } from "models/Share"
 import { ApiError } from "services/Api"
 import { OnCreateNewFolderSuccess } from "newFolder/NewFolderActions"
 import { OnUploadFileSuccess } from "upload/UploadActions"
+import { MoveSuccess } from "move/MoveActions"
 
 export interface FileSystemState {
-  directory?: FsNode
+  directory?: FsDirectory
   loading: boolean
   deleteLoading?: string
   error?: ApiError
@@ -45,7 +46,16 @@ export const FileSystemReducer = (state: FileSystemState = initState, action: Fi
     case "SelectFsNode": return selectFsNodeReducer(state, action)
     case "DeselectFsNode": return { ...state, selectedFsNodes: state.selectedFsNodes.filter(n => n.id !== action.fsNode.id) }
     case "CanselSelectionOfFsNode": return { ...state, selectedFsNodes: [], fsNodeInfosToShow: undefined }
+    case "MoveSuccess": return moveSuccessReducer(state, action)
     default: return state
+  }
+}
+
+function moveSuccessReducer(state: FileSystemState, action: MoveSuccess): FileSystemState {
+  const newDirectory = { ...state.directory!, content: state.directory!.content.filter(n => n.id !== action.movedFsNode.id) }
+  return {
+    ...state,
+    directory: newDirectory
   }
 }
 

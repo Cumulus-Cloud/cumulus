@@ -95,10 +95,18 @@ export function createFnNode(path: string, nodeType: NodeType): Promise<FsNode> 
   }).then(success(FsNodeValidator))
 }
 
-export function fetchDirectory(path: string): Promise<FsNode> {
+export function fetchDirectory(path: string): Promise<FsDirectory> {
   return withAuth(`/api/fs${encodeURI(path)}`, {
     method: "GET",
     headers: HEADERS,
+  }).then(success(FsNodeValidator))
+}
+
+export function move(fsNode: FsNode, target: FsDirectory): Promise<FsNode> {
+  return withAuth(`/api/fs${encodeURI(fsNode.path)}`, {
+    method: "POST",
+    headers: HEADERS,
+    body: JSON.stringify({ operation: "MOVE", to: `${target.path}/${fsNode.name}` })
   }).then(success(FsNodeValidator))
 }
 
@@ -153,10 +161,12 @@ export function upload(path: string, fileToUpload: FileToUpload, progression?: (
       xhr.open("POST", `/api/upload${encodeURI(path)}${qs}`)
       xhr.setRequestHeader("Authorization", token)
       xhr.addEventListener("load", event => {
+        // tslint:disable-next-line:no-any
         resolve(JSON.parse((event.target as any).response))
       })
       xhr.onerror = e => {
         reject({
+          // tslint:disable-next-line:no-any
           message: (e.target as any).responseText
         })
       }

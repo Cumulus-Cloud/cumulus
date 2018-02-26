@@ -4,6 +4,7 @@ import * as Api from "services/Api"
 import { FsNode, isFile } from "models/FsNode"
 import CloseIcon from "icons/CloseIcon"
 import IconButton from "components/buttons/IconButton"
+import FsMetadata from "components/FsMetadata";
 
 interface Props {
   fsNode: FsNode
@@ -38,10 +39,10 @@ export default class FsNodeInfo extends React.PureComponent<Props> {
     if (isFile(fsNode)) {
       return (
         <>
-          <p className={styles.info}>Size: {fsNode.humanReadableSize}</p>
-          <p className={styles.info}>hash: {fsNode.hash}</p>
-          {!!fsNode.compression ? <p className={styles.info}>Compression: {fsNode.compression}</p> : null}
-          {!!fsNode.cipher ? <p className={styles.info}>Cipher: {fsNode.cipher}</p> : null}
+          <FsMetadata label={Messages("ui.metadata.size")} value={fsNode.humanReadableSize} />
+          {!!fsNode.compression ? <FsMetadata label={Messages("ui.metadata.compression")} value={fsNode.compression} /> : null}
+          {!!fsNode.cipher ? <FsMetadata label={Messages("ui.metadata.cipher")} value={fsNode.cipher} /> : null}
+          <FsMetadata label={Messages("ui.metadata.hash")} value={fsNode.hash} />
         </>
       )
     } else {

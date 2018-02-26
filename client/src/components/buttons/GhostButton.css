@@ -1,0 +1,17 @@
+
+.ghostButton {
+  padding: 8px 25px;
+  border: 1px solid var(--darkPrimary);
+  border-radius: 3px;
+  background: transparent;
+  text-align: center;
+}
+
+.ghostButton:hover {
+  background-color: var(--lightPrimary);
+}
+
+.label {
+  color: var(--darkPrimary);
+  font-size: 0.9rem;
+}

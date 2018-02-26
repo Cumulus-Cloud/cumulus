@@ -24,7 +24,6 @@ type Props = StateProps & DispatchProps
 
 export class RightPanel extends React.PureComponent<Props> {
   render() {
-    console.log("RightPanel.render", this.props)
     return (
       <div className={styles.rightPanel}>
         {this.renderPanels()}
