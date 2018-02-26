@@ -6,6 +6,7 @@ import * as Api from "services/Api"
 import { OnCreateNewFolderSuccess } from "newFolder/NewFolderActions"
 import { OnUploadFileSuccess } from "upload/UploadActions"
 import { MoveSuccess } from "move/MoveActions"
+import { RenameSuccess } from "rename/RenameActions"
 
 export type FileSystemAction =
   FetchDirectory |
@@ -26,7 +27,8 @@ export type FileSystemAction =
   SelectFsNode |
   DeselectFsNode |
   CanselSelectionOfFsNode |
-  MoveSuccess
+  MoveSuccess |
+  RenameSuccess
 
 export type Sharing = { type: "Sharing", fsNode?: FsNode }
 export function onSharing(fsNode: FsNode): ThunkAction<void, GlobalState, {}> {

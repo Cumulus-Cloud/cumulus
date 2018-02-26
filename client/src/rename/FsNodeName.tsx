@@ -4,6 +4,8 @@ import { Dispatch, connect } from "react-redux"
 import { GlobalState } from "store"
 import { FsNode } from "models/FsNode"
 import * as RenameActions from "rename/RenameActions"
+import IconButton from "components/buttons/IconButton"
+import AddIcon from "icons/AddIcon"
 
 interface StateProps {
   newName: string
@@ -16,6 +18,7 @@ interface OwnProps {
 
 interface DispatchProps {
   onNameChange(name: string): void
+  onRename(newName: string, fsNode: FsNode): void
 }
 
 type Props = StateProps & OwnProps & DispatchProps
@@ -24,7 +27,7 @@ export class FsNodeName extends React.PureComponent<Props> {
   render() {
     const { fsNode, fsNodeToRename } = this.props
     if (fsNodeToRename && fsNodeToRename.id === fsNode.id) {
-      return this.renderRenameMode()
+      return this.renderRenameMode(fsNodeToRename)
     } else {
       return this.renderName()
     }
@@ -37,7 +40,7 @@ export class FsNodeName extends React.PureComponent<Props> {
     )
   }
 
-  renderRenameMode = () => {
+  renderRenameMode = (fsNodeToRename: FsNode) => {
     const { newName } = this.props
     return (
       <div>
@@ -48,9 +51,14 @@ export class FsNodeName extends React.PureComponent<Props> {
           value={newName}
           onChange={this.handleOnChange}
         />
+        <IconButton onClick={this.handleOnRename(newName, fsNodeToRename)}>
+          <AddIcon />
+        </IconButton>
       </div>
     )
   }
+
+  handleOnRename = (newName: string, fsNodeToRename: FsNode) => () => this.props.onRename(newName, fsNodeToRename)
 
   handleInputRef = (ref: HTMLInputElement | null) => ref && ref.focus()
 
@@ -67,7 +75,8 @@ const mapStateToProps = (state: GlobalState, props: OwnProps): OwnProps & StateP
 
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onNameChange: name => dispatch(RenameActions.changeName(name))
+    onNameChange: name => dispatch(RenameActions.changeName(name)),
+    onRename: (newName, fsNode) => dispatch(RenameActions.rename(newName, fsNode)),
   }
 }
 

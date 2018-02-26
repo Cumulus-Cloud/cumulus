@@ -5,6 +5,7 @@ import { ApiError } from "services/Api"
 import { OnCreateNewFolderSuccess } from "newFolder/NewFolderActions"
 import { OnUploadFileSuccess } from "upload/UploadActions"
 import { MoveSuccess } from "move/MoveActions"
+import { RenameSuccess } from "rename/RenameActions"
 
 export interface FileSystemState {
   directory?: FsDirectory
@@ -26,6 +27,7 @@ const initState: FileSystemState = {
   selectedFsNodes: [],
 }
 
+// tslint:disable-next-line:cyclomatic-complexity
 export const FileSystemReducer = (state: FileSystemState = initState, action: FileSystemAction) => {
   switch (action.type) {
     case "FetchDirectory": return { ...state, loading: true }
@@ -47,12 +49,28 @@ export const FileSystemReducer = (state: FileSystemState = initState, action: Fi
     case "DeselectFsNode": return { ...state, selectedFsNodes: state.selectedFsNodes.filter(n => n.id !== action.fsNode.id) }
     case "CanselSelectionOfFsNode": return { ...state, selectedFsNodes: [], fsNodeInfosToShow: undefined }
     case "MoveSuccess": return moveSuccessReducer(state, action)
+    case "RenameSuccess": return renameSuccessReducer(state, action)
     default: return state
   }
 }
 
 function moveSuccessReducer(state: FileSystemState, action: MoveSuccess): FileSystemState {
   const newDirectory = { ...state.directory!, content: state.directory!.content.filter(n => n.id !== action.movedFsNode.id) }
+  return {
+    ...state,
+    directory: newDirectory
+  }
+}
+
+
+function renameSuccessReducer(state: FileSystemState, action: RenameSuccess): FileSystemState {
+  const newDirectory = { ...state.directory!, content: state.directory!.content.map(n => {
+    if (n.id === action.fsNode.id) {
+      return action.fsNode
+    } else {
+      return n
+    }
+  }) }
   return {
     ...state,
     directory: newDirectory
