@@ -183,6 +183,14 @@ class FsNodeService(
       // Search the target node
       _ <- doesntAlreadyExists(to)
 
+      // Check that the moved node is not moved inside itself
+      _ <- QueryE.pure {
+        if(node.nodeType == FsNodeType.DIRECTORY && to.isChildOf(path))
+          Left(AppError.validation("validation.fs-node.inside-move", path))
+        else
+          Right(())
+      }
+
       // Check that the destination's parent exists and is a directory
       movedParentNode <- getParentWithLock(to)
 

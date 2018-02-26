@@ -65,6 +65,28 @@ case class Path(value: Seq[String]) {
   def parent: Path =
     Path(value.dropRight(1))
 
+  /**
+    * Check if the current path starts with the provided path.
+    * {{{
+    *   Path("/a/b").isChildrenOf(Path("/a/b/c")) == true
+    * }}}
+    * @param path The path to test
+    * @return True if the provided path is a child of the current path
+    */
+  def isChildOf(path: Path): Boolean =
+    this.value.startsWith(path.value)
+
+  /**
+    * Check if the provided path starts with the current path.
+    * {{{
+    *   Path("/a/b/c").isParentOf(Path("/a/b")) == true
+    * }}}
+    * @param path The path to test
+    * @return True if the provided path is a child of the current path
+    */
+  def isParentOf(path: Path): Boolean =
+    path.value.startsWith(this.value)
+
   override def toString: String =
     convertPathToStr(this)
 
