@@ -4,6 +4,7 @@ import { connect, Dispatch } from "react-redux"
 import { match as RouterMatch } from "react-router"
 import * as FileSystemActions from "./FileSystemActions"
 import * as MoveActions from "move/MoveActions"
+import * as RenameActions from "rename/RenameActions"
 import { GlobalState, history } from "store"
 import { FileSystemState } from "./FileSystemReducer"
 import AppBar from "components/AppBar"
@@ -28,6 +29,7 @@ interface DispatchProps {
   onShowPreview(fsNode?: FsFile): void
   onSharing(fsNode: FsNode): void
   onWantMove(fsNodes: FsNode[], target: FsDirectory): void
+  onWantRename(fsNode: FsNode): void
   onCloseShare(): void
 }
 
@@ -35,6 +37,7 @@ interface PropsState extends FileSystemState {
   searchResult?: SearchResult
   path?: string
   wantMove: boolean
+  fsNodeToRename?: FsNode
 }
 
 type Props = PropsState & DispatchProps
@@ -106,10 +109,22 @@ class FileSystemContainer extends React.PureComponent<Props> {
   }
 
   renderFsNode = (fsNode: FsNode) => {
-    const { onSelectFsNode, onDeleteFsNode, onSharing, onShowFsNodeInfos, selectedFsNodes, directory } = this.props
+    const {
+      onSelectFsNode,
+      onDeleteFsNode,
+      onWantRename,
+      onSharing,
+      onShowFsNodeInfos,
+      selectedFsNodes,
+      directory,
+      fsNodeToRename,
+    } = this.props
+    const renameMode = !!fsNodeToRename && fsNodeToRename.id === fsNode.id
+
     return (
       <FsNodeComponent
         key={fsNode.id}
+        renameMode={renameMode}
         selected={!!selectedFsNodes.find(n => n.id === fsNode.id)}
         fsNode={fsNode}
         onSelect={onSelectFsNode}
@@ -118,6 +133,7 @@ class FileSystemContainer extends React.PureComponent<Props> {
         onSharing={onSharing}
         onShowInfo={onShowFsNodeInfos}
         onWantMove={this.handleOnWantMove(directory!)}
+        onWantRename={onWantRename}
       />
     )
   }
@@ -145,6 +161,7 @@ const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string
     searchResult: state.search.searchResult,
     path: props.match && props.match.params[0],
     wantMove: state.move.wantMove,
+    fsNodeToRename: state.rename.fsNodeToRename,
   }
 }
 
@@ -158,6 +175,7 @@ const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
     onShowFsNodeInfos: fsNode => dispatch(FileSystemActions.showFsNodeInfos(fsNode)),
     onSelectFsNode: fsNode => dispatch(FileSystemActions.selectFsNode(fsNode)),
     onWantMove: (fsNodes, target) => dispatch(MoveActions.wantMove(fsNodes, target)),
+    onWantRename: fsNode => dispatch(RenameActions.wantRename(fsNode)),
   }
 }
 

@@ -43,8 +43,3 @@
   overflow-wrap: break-word;
   cursor: pointer;
 }
-
-.name {
-  color: var(--primaryText);
-  font-size: 1rem;
-}

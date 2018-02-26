@@ -12,17 +12,20 @@ import Dropdown, { DropdownItem, DropdownLink } from "components/menus/Dropdown"
 import MoreHorizIcon from "icons/MoreHorizIcon"
 import DirectoryIcon from "icons/DirectoryIcon"
 import classNames from "utils/ClassNames"
+import FsNodeName from "rename/FsNodeName"
+import EditIcon from "icons/EditIcon"
 
 interface Props {
   fsNode: FsNode
   selected: boolean
+  renameMode: boolean
   onSelect(fsNode: FsNode): void
   onOpen(fsNode: FsNode): void
   onShowInfo(fsNode: FsNode): void
   onDelete(fsNode: FsNode): void
   onSharing(fsNode: FsNode): void
   onWantMove(fsNode: FsNode): void
-
+  onWantRename(fsNode: FsNode): void
 }
 
 export default class FsNodeComponent extends React.PureComponent<Props> {
@@ -38,7 +41,7 @@ export default class FsNodeComponent extends React.PureComponent<Props> {
           {this.renderIcon()}
         </div>
         <div className={styles.infos} onClick={this.handleOnOpen} onDoubleClickCapture={this.handleOnShowInfo}>
-          <h2 className={styles.name}>{fsNode.name}</h2>
+          <FsNodeName fsNode={fsNode} />
         </div>
         <div className={styles.actions}>
           {this.renderActions()}
@@ -74,6 +77,7 @@ export default class FsNodeComponent extends React.PureComponent<Props> {
           icon={<FileDownloadIcon />}
         />
         <DropdownItem name={Messages("ui.share")} icon={<ShareIcon />} onClick={this.handleOnSharing} />
+        <DropdownItem name={Messages("ui.rename")} icon={<EditIcon />} onClick={this.handleOnWantRename} />
         <DropdownItem name={Messages("ui.move")} icon={<MoveIcon />} onClick={this.handleOnWantMove} />
         <DropdownItem name={Messages("ui.delete")} icon={<DeleteIcon />} onClick={this.handleOnDelete} />
       </Dropdown>
@@ -83,18 +87,26 @@ export default class FsNodeComponent extends React.PureComponent<Props> {
   renderDirectoryActions = (fsDirectory: FsDirectory) => {
     return (
       <Dropdown right renderAction={ActionButton}>
+        <DropdownItem name={Messages("ui.rename")} icon={<EditIcon />} onClick={this.handleOnWantRename} />
         <DropdownItem name={Messages("ui.move")} icon={<MoveIcon />} onClick={this.handleOnWantMove} />
         <DropdownItem name={Messages("ui.delete")} icon={<DeleteIcon />} onClick={this.handleOnDelete} />
       </Dropdown>
     )
   }
 
-  handleOnSelect = () => this.props.onSelect(this.props.fsNode)
-  handleOnOpen = () => this.props.onOpen(this.props.fsNode)
+  withNotRenameMode = (callback: () => void) => {
+    if (!this.props.renameMode) {
+      callback()
+    }
+  }
+
+  handleOnSelect = () => this.withNotRenameMode(() => this.props.onSelect(this.props.fsNode))
+  handleOnOpen = () => this.withNotRenameMode(() => this.props.onOpen(this.props.fsNode))
   handleOnShowInfo = () => this.props.onShowInfo(this.props.fsNode)
   handleOnDelete = () => this.props.onDelete(this.props.fsNode)
   handleOnSharing = () => this.props.onSharing(this.props.fsNode)
   handleOnWantMove = () => this.props.onWantMove(this.props.fsNode)
+  handleOnWantRename = () => this.props.onWantRename(this.props.fsNode)
 }
 
 function ActionButton() {

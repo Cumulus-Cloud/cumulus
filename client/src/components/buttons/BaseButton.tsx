@@ -1,6 +1,7 @@
 import * as React from "react"
 import * as styles from "./BaseButton.css"
 import classNames from "utils/ClassNames"
+import LoaderIcon from "icons/LoaderIcon"
 
 interface Props {
   disable?: boolean
@@ -9,7 +10,7 @@ interface Props {
   matchParent?: boolean
   onClick?(): void
   href?: string
-  renderLoader(): JSX.Element
+  renderLoader?(): JSX.Element
 }
 
 export default class BaseButton extends React.PureComponent<Props> {
@@ -29,12 +30,16 @@ export default class BaseButton extends React.PureComponent<Props> {
 
   renderContent = () => {
     const { children, renderLoader, loading = false } = this.props
-    if (loading) {
+    if (loading && !!renderLoader) {
       return renderLoader()
+    } else if (loading) {
+      return this.renderDefaultLoader()
     } else {
       return children
     }
   }
+
+  renderDefaultLoader = () => <LoaderIcon />
 
   handleOnClick = () => {
     const { onClick, disable = false, loading = false } = this.props

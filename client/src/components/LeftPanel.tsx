@@ -13,13 +13,15 @@ export default class LeftPanel extends React.PureComponent<{}> {
         <div className={styles.appTitle}>
           {Messages("ui.appName")}
         </div>
-        <ul className={styles.links}>
-          <li className={activeStyle}>My Server</li>
-          <li className={styles.link}>Other Servers</li>
-          <li className={styles.link}>Shared with me</li>
-          <li className={styles.link}>Recent</li>
-          <li className={styles.link}>Favorites</li>
-          <li className={styles.link}>Trashed</li>
+        <ul className={styles.menu}>
+          <li className={styles.menuitem}>
+            <a className={activeStyle} href="#/fs/">{Messages("ui.myserver")}</a>
+          </li>
+          {/* <li className={styles.menuitem}><a className={styles.link}>Other Servers</a></li>
+          <li className={styles.menuitem}><a className={styles.link}>Shared with me</a></li>
+          <li className={styles.menuitem}><a className={styles.link}>Recent</a></li>
+          <li className={styles.menuitem}><a className={styles.link}>Favorites</a></li>
+          <li className={styles.menuitem}><a className={styles.link}>Trashed</a></li> */}
         </ul>
       </div>
     )

@@ -4,7 +4,9 @@ import * as Api from "services/Api"
 import { FsNode, isFile } from "models/FsNode"
 import CloseIcon from "icons/CloseIcon"
 import IconButton from "components/buttons/IconButton"
-import FsMetadata from "components/FsMetadata";
+import FsMetadata from "components/FsMetadata"
+import * as parse from "date-fns/parse"
+import * as distanceInWordsToNow from "date-fns/distance_in_words_to_now"
 
 interface Props {
   fsNode: FsNode
@@ -43,10 +45,17 @@ export default class FsNodeInfo extends React.PureComponent<Props> {
           {!!fsNode.compression ? <FsMetadata label={Messages("ui.metadata.compression")} value={fsNode.compression} /> : null}
           {!!fsNode.cipher ? <FsMetadata label={Messages("ui.metadata.cipher")} value={fsNode.cipher} /> : null}
           <FsMetadata label={Messages("ui.metadata.hash")} value={fsNode.hash} />
+          <FsMetadata label={Messages("ui.metadata.creation")} value={distanceInWordsToNow(parse(fsNode.creation))} />
+          <FsMetadata label={Messages("ui.metadata.modification")} value={distanceInWordsToNow(parse(fsNode.modification))} />
         </>
       )
     } else {
-      return null
+      return (
+        <>
+          <FsMetadata label={Messages("ui.metadata.creation")} value={distanceInWordsToNow(parse(fsNode.creation))} />
+          <FsMetadata label={Messages("ui.metadata.modification")} value={distanceInWordsToNow(parse(fsNode.modification))} />
+        </>
+      )
     }
   }
 
