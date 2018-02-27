@@ -1,6 +1,6 @@
 import * as styles from "./FsNodeComponent.css"
 import * as React from "react"
-import { FsFile, getExtention, FsNode, isFile, FsDirectory } from "models/FsNode"
+import { FsFile, getExtention, FsNode, isFile, FsDirectory, isPreviewAvailable } from "models/FsNode"
 import * as Api from "services/Api"
 import FileIcon from "icons/FileIcon"
 import IconButton from "components/buttons/IconButton"
@@ -30,7 +30,7 @@ interface Props {
 
 export default class FsNodeComponent extends React.PureComponent<Props> {
   render() {
-    const { fsNode, selected } = this.props
+    const { selected } = this.props
     const clesses = classNames({
       [styles.fsNode]: true,
       [styles.selected]: selected
@@ -40,14 +40,29 @@ export default class FsNodeComponent extends React.PureComponent<Props> {
         <div className={styles.icon} onClick={this.handleOnSelect}>
           {this.renderIcon()}
         </div>
-        <div className={styles.infos} onClick={this.handleOnOpen} onDoubleClickCapture={this.handleOnShowInfo}>
-          <FsNodeName fsNode={fsNode} />
-        </div>
+        {this.renderName()}
         <div className={styles.actions}>
           {this.renderActions()}
         </div>
       </div>
     )
+  }
+
+  renderName = () => {
+    const { fsNode } = this.props
+    if (isFile(fsNode) && !isPreviewAvailable(fsNode)) {
+      return (
+        <a className={styles.infos} href={Api.getDownloadUrl(fsNode)}>
+          <FsNodeName fsNode={fsNode} />
+        </a>
+      )
+    } else {
+      return (
+        <div className={styles.infos} onClick={this.handleOnOpen}>
+          <FsNodeName fsNode={fsNode} />
+        </div>
+      )
+    }
   }
 
   renderIcon = () => {
