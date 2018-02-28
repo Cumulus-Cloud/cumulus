@@ -1,10 +1,9 @@
-import { Epic } from "redux-observable"
+import { Epic, combineEpics } from "redux-observable"
 import { GlobalState } from "store"
-import * as InAppNotifActions from "inAppNotif/InAppNotifActions"
-import * as LoginActions from "auth/login/LoginActions"
 import { Observable } from "rxjs/Observable"
+import { InAppNotifAction, hideInAppNotif } from "inAppNotif/InAppNotifActions"
 
-export const apiErrorEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("LOGIN_ON_SUBMIT_ERROR")
-    .mergeMap((action: LoginActions.LOGIN_ON_SUBMIT_ERROR) =>
-      Observable.of(InAppNotifActions.showInAppNotif({ type: "error", message: action.errors.message }))
-    )
+export const hideInAppNotifEpic: Epic<InAppNotifAction, GlobalState> = (action$, state) => action$.ofType("ShowInAppNotif")
+  .switchMap(() => Observable.of(hideInAppNotif()).delay(3000))
+
+export const hideInAppNotifEpics = combineEpics(hideInAppNotifEpic)
