@@ -13,6 +13,7 @@ GET     /api/fs*path                  io.cumulus.controllers.FileSystemControlle
 PUT     /api/fs*path                  io.cumulus.controllers.FileSystemController.create(path: Path)
 POST    /api/fs*path                  io.cumulus.controllers.FileSystemController.update(path: Path)
 DELETE  /api/fs*path                  io.cumulus.controllers.FileSystemController.delete(path: Path)
+GET     /api/sharings/fs*path         io.cumulus.controllers.SharingController.list(path: Path)
 
 # API- Search
 GET     /api/search*path              io.cumulus.controllers.FileSystemController.search(path: Path, name: String, nodeType: Option[FsNodeType], `type`: Option[String])

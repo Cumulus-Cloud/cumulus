@@ -223,9 +223,6 @@ class FsNodeService(
       // Search the node by path and owner
       node <- getNodeWithLock(path)
 
-      // Find the sharings of the node in question
-      sharings <- QueryE.lift(sharingStore.findAndLockByNode(node))
-
       // Check that no children element exists
       _ <- QueryE(fsNodeStore.findContainedByPathAndUser(path, user).map {
         case contained if contained.nonEmpty =>
@@ -234,10 +231,9 @@ class FsNodeService(
           Right(())
       })
 
-      // Delete the node's sharings
-      _ <- QueryE.seq {
-        sharings.map(sharing => sharingStore.delete(sharing.id).map(Right(_)))
-      }
+      // Find the sharings of the node in question & delete them all
+      sharings <- QueryE.lift(sharingStore.findAndLockByNode(node))
+      _        <- QueryE.seq(sharings.map(sharing => sharingStore.delete(sharing.id).map(Right(_))))
 
       // Delete the element
       _ <- QueryE.lift(fsNodeStore.delete(node.id))

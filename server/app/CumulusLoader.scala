@@ -122,7 +122,7 @@ class CumulusComponents(
   lazy val homeController: HomeController       = new HomeController(controllerComponents)
   lazy val userController: UserController       = new UserController(controllerComponents, userService)
   lazy val fsController: FileSystemController   = new FileSystemController(controllerComponents, fsNodeService, storageService, sharingService)
-  lazy val sharingController: SharingController = new SharingController(controllerComponents, sharingService, storageService, storageEngine)
+  lazy val sharingController: SharingController = new SharingController(controllerComponents, sharingService, storageService)
   lazy val assetController: Assets              = new Assets(context.environment, assetsMetadata, httpErrorHandler, jsMessageFactory.all, controllerComponents)
 
 }

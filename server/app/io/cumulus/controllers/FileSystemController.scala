@@ -134,6 +134,8 @@ class FileSystemController(
               Left(e)
           }
         }
+      case FsOperationShareDelete(reference) =>
+        ApiResponse(sharingService.deleteSharing(reference))
       case FsOperationDelete(_) =>
         ApiResponse(fsNodeService.deleteNode(path))
     }

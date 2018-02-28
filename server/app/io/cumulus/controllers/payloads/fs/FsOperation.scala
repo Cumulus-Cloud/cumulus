@@ -21,6 +21,8 @@ object FsOperation {
           FsOperationMove.format.reads(jsObject)
         case Some(FsOperationType.SHARE_LINK) =>
           FsOperationShareLink.format.reads(jsObject)
+        case Some(FsOperationType.SHARE_DELETE) =>
+          FsOperationShareDelete.format.reads(jsObject)
         case Some(FsOperationType.DELETE) =>
           FsOperationDelete.format.reads(jsObject)
         case other =>
@@ -37,6 +39,8 @@ object FsOperation {
       FsOperationMove.format.writes(fsOperationMove)
     case fsOperationShareLink: FsOperationShareLink =>
       FsOperationShareLink.format.writes(fsOperationShareLink)
+    case fsOperationShareLink: FsOperationShareDelete =>
+      FsOperationShareDelete.format.writes(fsOperationShareLink)
     case fsOperationDelete: FsOperationDelete =>
       FsOperationDelete.format.writes(fsOperationDelete)
   }
@@ -82,6 +86,19 @@ object FsOperationShareLink {
 
   implicit val format: OFormat[FsOperationShareLink] =
     Json.format[FsOperationShareLink]
+
+}
+
+case class FsOperationShareDelete(
+  reference: String
+) extends FsOperation {
+  def operationType: FsOperationType = FsOperationType.SHARE_DELETE
+}
+
+object FsOperationShareDelete {
+
+  implicit val format: OFormat[FsOperationShareDelete] =
+    Json.format[FsOperationShareDelete]
 
 }
 
