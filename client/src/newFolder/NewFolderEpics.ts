@@ -2,7 +2,7 @@ import { Epic, combineEpics } from "redux-observable"
 import { GlobalState } from "store"
 import * as Api from "services/Api"
 import * as NewFolderActions from "newFolder/NewFolderActions"
-import { showErrorNotif } from "inAppNotif/InAppNotifActions"
+import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 
 export const createNewFolderEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("OnCreateNewFolder")
     .mergeMap(action =>
@@ -12,7 +12,7 @@ export const createNewFolderEpic: Epic<any, GlobalState> = (action$, state) => a
     )
 
 export const createNewFolderErrorEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("OnCreateNewFolderError")
-    .map((action: NewFolderActions.OnCreateNewFolderError) => showErrorNotif(action.error.message))
+    .map((action: NewFolderActions.OnCreateNewFolderError) => showApiErrorNotif(action.error))
 
 export const createNewFolderEpics = combineEpics(
   createNewFolderEpic, createNewFolderErrorEpic,

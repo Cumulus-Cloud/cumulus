@@ -58,7 +58,7 @@ export class FsNodeName extends React.PureComponent<Props> {
           <IconButton onClick={this.handleOnRename(newName, fsNodeToRename)}>
             <DoneIcon />
           </IconButton>
-          <IconButton onClick={this.handleOnRename(newName, fsNodeToRename)}>
+          <IconButton onClick={this.props.onCancelRename}>
             <CloseIcon width={15} height={15} />
           </IconButton>
         </div>

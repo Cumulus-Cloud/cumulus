@@ -2,7 +2,7 @@ import { Epic, combineEpics } from "redux-observable"
 import { GlobalState } from "store"
 import * as Api from "services/Api"
 import { Rename, RenameError, renameSuccess, renameError } from "rename/RenameActions"
-import { showErrorNotif } from "inAppNotif/InAppNotifActions"
+import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 
 export const renameEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("Rename")
     .mergeMap((action: Rename) =>
@@ -12,7 +12,7 @@ export const renameEpic: Epic<any, GlobalState> = (action$, state) => action$.of
     )
 
 export const renameErrorEpic: Epic<any, GlobalState> = (action$) => action$.ofType("RenameError")
-    .map((action: RenameError) => showErrorNotif(action.error.message))
+    .map((action: RenameError) => showApiErrorNotif(action.error))
 
 export const renameEpics = combineEpics(
   renameEpic, renameErrorEpic,

@@ -2,7 +2,7 @@ import { Epic, combineEpics } from "redux-observable"
 import { GlobalState } from "store"
 import * as Api from "services/Api"
 import * as FileSystemActions from "fileSystem/FileSystemActions"
-import { showErrorNotif } from "inAppNotif/InAppNotifActions"
+import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 
 // tslint:disable-next-line:no-any
 export const fetchDirectoryEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("FetchDirectory")
@@ -14,7 +14,7 @@ export const fetchDirectoryEpic: Epic<any, GlobalState> = (action$, state) => ac
 
 // tslint:disable-next-line:no-any
 export const fetchDirectoryErrorEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("FetchDirectoryError")
-    .map((action: FileSystemActions.FetchDirectoryError) => showErrorNotif(action.error.message))
+    .map((action: FileSystemActions.FetchDirectoryError) => showApiErrorNotif(action.error))
 
 // tslint:disable-next-line:no-any
 export const onDeleteFsNodeEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("OnDeleteFsNode")
@@ -26,7 +26,7 @@ export const onDeleteFsNodeEpic: Epic<any, GlobalState> = (action$, state) => ac
 
 // tslint:disable-next-line:no-any
 export const onDeleteFsNodeErrorEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("OnDeleteFsNodeError")
-    .map((action: FileSystemActions.OnDeleteFsNodeError) => showErrorNotif(action.error.message))
+    .map((action: FileSystemActions.OnDeleteFsNodeError) => showApiErrorNotif(action.error))
 
 // tslint:disable-next-line:no-any
 export const sharingEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("Sharing")
@@ -38,7 +38,7 @@ export const sharingEpic: Epic<any, GlobalState> = (action$, state) => action$.o
 
 // tslint:disable-next-line:no-any
 export const sharingErrorEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("SharingError")
-    .map((action: FileSystemActions.SharingError) => showErrorNotif(action.error.message))
+    .map((action: FileSystemActions.SharingError) => showApiErrorNotif(action.error))
 
 export const fileSystemEpics = combineEpics(
   fetchDirectoryEpic, fetchDirectoryErrorEpic,

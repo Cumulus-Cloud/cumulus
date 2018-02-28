@@ -2,7 +2,7 @@ import { Epic, combineEpics } from "redux-observable"
 import { GlobalState } from "store"
 import * as Api from "services/Api"
 import * as MoveActions from "move/MoveActions"
-import { showErrorNotif } from "inAppNotif/InAppNotifActions"
+import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 
 // tslint:disable-next-line:no-any
 export const moveEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("Move")
@@ -16,7 +16,7 @@ export const moveEpic: Epic<any, GlobalState> = (action$, state) => action$.ofTy
 
 // tslint:disable-next-line:no-any
 export const moveErrorEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("MoveError")
-    .map((action: MoveActions.MoveError) => showErrorNotif(action.error.message))
+    .map((action: MoveActions.MoveError) => showApiErrorNotif(action.error))
 
 // tslint:disable-next-line:no-any
 export const changeMoveTargetEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("ChangeMoveTarget")
@@ -28,7 +28,7 @@ export const changeMoveTargetEpic: Epic<any, GlobalState> = (action$, state) => 
 
 // tslint:disable-next-line:no-any
 export const changeMoveTargetErrorEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("ChangeMoveTargetError")
-    .map((action: MoveActions.ChangeMoveTargetError) => showErrorNotif(action.error.message))
+    .map((action: MoveActions.ChangeMoveTargetError) => showApiErrorNotif(action.error))
 
 export const moveEpics = combineEpics(
   moveEpic, moveErrorEpic,
