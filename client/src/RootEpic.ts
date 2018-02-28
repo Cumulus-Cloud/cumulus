@@ -4,12 +4,14 @@ import { hideInAppNotifEpics } from "inAppNotif/InAppNotifEpics"
 import { signupEpics } from "auth/signup/SignupEpics"
 import { fileSystemEpics } from "fileSystem/FileSystemEpics"
 import { moveEpics } from "move/MoveEpics"
+import { createNewFolderEpics } from "newFolder/NewFolderEpics"
 
 const RootEpic = combineEpics(
   loginEpics,
   signupEpics,
   fileSystemEpics,
   moveEpics,
+  createNewFolderEpics,
   hideInAppNotifEpics,
 )
 
