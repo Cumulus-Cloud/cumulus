@@ -7,6 +7,7 @@ import { moveEpics } from "move/MoveEpics"
 import { createNewFolderEpics } from "newFolder/NewFolderEpics"
 import { renameEpics } from "rename/RenameEpics"
 import { searchEpics } from "search/SearchEpics"
+import { uploadEpics } from "upload/UploadEpics"
 
 const RootEpic = combineEpics(
   loginEpics,
@@ -16,6 +17,7 @@ const RootEpic = combineEpics(
   createNewFolderEpics,
   renameEpics,
   searchEpics,
+  uploadEpics,
   hideInAppNotifEpics,
 )
 
