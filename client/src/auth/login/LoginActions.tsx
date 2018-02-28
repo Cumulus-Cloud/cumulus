@@ -1,5 +1,3 @@
-import { ThunkAction } from "redux-thunk"
-import { GlobalState, history } from "store"
 import { User } from "models/User"
 import * as Api from "services/Api"
 
@@ -23,15 +21,7 @@ export type LOGIN_ON_SUBMIT = {
   login: string
   password: string
 }
-export function loginOnSubmit(login: string, password: string): ThunkAction<void, GlobalState, {}> {
-  return (dispatch) => {
-    dispatch({ type: "LOGIN_ON_SUBMIT", login, password })
-    Api.authenticate(login, password).then(result => {
-      dispatch(loginOnSubmitSuccess(result))
-      history.replace("/fs/")
-    }).catch((error: Api.ApiError) => dispatch(loginOnSubmitError(error)))
-  }
-}
+export const loginOnSubmit = (login: string, password: string): LOGIN_ON_SUBMIT => ({ type: "LOGIN_ON_SUBMIT", login, password })
 
 export type LOGIN_ON_SUBMIT_SUCCESS = {
   type: "LOGIN_ON_SUBMIT_SUCCESS",

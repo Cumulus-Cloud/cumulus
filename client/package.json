@@ -56,8 +56,10 @@
     "react-router-redux": "5.0.0-alpha.8",
     "redux": "3.7.2",
     "redux-devtools-extension": "2.13.2",
+    "redux-observable": "0.18.0",
     "redux-thunk": "2.2.0",
     "reset-css": "2.2.1",
+    "rxjs": "5.5.6",
     "validation.ts": "0.0.17"
   }
 }
