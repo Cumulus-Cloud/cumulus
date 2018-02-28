@@ -76,7 +76,14 @@ export class FsNodeName extends React.PureComponent<Props> {
     }
   }
 
-  handleOnRename = (newName: string, fsNodeToRename: FsNode) => () => this.props.onRename(newName, fsNodeToRename)
+  handleOnRename = (newName: string, fsNodeToRename: FsNode) => () => {
+    const { onRename, onCancelRename } = this.props
+    if (fsNodeToRename.name !== newName) {
+      onRename(newName, fsNodeToRename)
+    } else {
+      onCancelRename()
+    }
+  }
 
   handleInputRef = (ref: HTMLInputElement | null) => ref && ref.focus()
 

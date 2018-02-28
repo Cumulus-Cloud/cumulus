@@ -1,5 +1,3 @@
-import { ThunkAction } from "redux-thunk"
-import { GlobalState } from "store"
 import * as Api from "services/Api"
 import { FsNode } from "models/FsNode"
 
@@ -20,20 +18,9 @@ export const cancelRename = (): CancelRename => ({ type: "CancelRename" })
 export type ChangeName = { type: "ChangeName", name: string }
 export const changeName = (name: string): ChangeName => ({ type: "ChangeName", name })
 
-export type Rename = { type: "Rename" }
-export function rename(newName: string, fsNode: FsNode): ThunkAction<void, GlobalState, {}> {
-  return (dispatch, getState) => {
-    dispatch({ type: "Rename" })
-    if (fsNode.name !== newName) {
-      Api.rename(fsNode, `${fsNode.path.replace(fsNode.name, "")}${newName}`).then(renamedFsNode => {
-        dispatch(renameSuccess(renamedFsNode))
-      }).catch(error => {
-        dispatch(renameError(error))
-      })
-    } else {
-      dispatch(cancelRename())
-    }
-  }
+export type Rename = { type: "Rename", newName: string, fsNode: FsNode }
+export function rename(newName: string, fsNode: FsNode): Rename {
+  return { type: "Rename", newName, fsNode }
 }
 
 export type RenameSuccess = { type: "RenameSuccess", fsNode: FsNode }

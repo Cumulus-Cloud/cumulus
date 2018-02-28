@@ -5,6 +5,7 @@ import { signupEpics } from "auth/signup/SignupEpics"
 import { fileSystemEpics } from "fileSystem/FileSystemEpics"
 import { moveEpics } from "move/MoveEpics"
 import { createNewFolderEpics } from "newFolder/NewFolderEpics"
+import { renameEpics } from "rename/RenameEpics"
 
 const RootEpic = combineEpics(
   loginEpics,
@@ -12,6 +13,7 @@ const RootEpic = combineEpics(
   fileSystemEpics,
   moveEpics,
   createNewFolderEpics,
+  renameEpics,
   hideInAppNotifEpics,
 )
 
