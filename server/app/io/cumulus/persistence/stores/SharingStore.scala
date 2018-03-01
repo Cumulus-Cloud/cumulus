@@ -20,7 +20,36 @@ class SharingStore(
   val pkField: String = SharingStore.pkField
 
   /**
-    * Find the sharing for a provided node.
+    * Find the sharings for a provided node.
+    * @param fsNode The shared node
+    */
+  def findByNode(fsNode: FsNode): Query[CumulusDB, List[Sharing]] =
+    qb { implicit c =>
+
+      val idField = s"${FsNodeStore.table}.${FsNodeStore.pkField}"
+
+      SQL"""
+          SELECT
+            #$table.#$pkField,
+            #$table.reference,
+            #$table.expiration,
+            #$table.user_id,
+            #$table.fsNode_id,
+            #$table.encryptedPrivateKey,
+            #$table.privateKeySalt,
+            #$table.salt1,
+            #$table.iv,
+            #$table.secretCodeHash,
+            #$table.salt2
+            FROM #$table
+          INNER JOIN #${FsNodeStore.table}
+          ON #$table.fsNode_id = #${FsNodeStore.table}.id
+          WHERE #$idField = ${fsNode.id}
+        """.as(rowParser.*)
+    }
+
+  /**
+    * Find and lock the sharings for a provided node.
     * @param fsNode The shared node
     */
   def findAndLockByNode(fsNode: FsNode): Query[CumulusDB, List[Sharing]] =

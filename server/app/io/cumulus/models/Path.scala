@@ -87,6 +87,18 @@ case class Path(value: Seq[String]) {
   def isParentOf(path: Path): Boolean =
     path.value.startsWith(this.value)
 
+  /**
+    * /a/b/c /a/b
+    * @param path
+    * @return
+    */
+  def relativeTo(path: Path): Path = {
+    if(path.isParentOf(this))
+      Path(this.value.drop(path.value.size))
+    else
+      this
+  }
+
   override def toString: String =
     convertPathToStr(this)
 

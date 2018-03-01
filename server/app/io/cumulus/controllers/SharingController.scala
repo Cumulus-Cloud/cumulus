@@ -1,39 +1,40 @@
 package io.cumulus.controllers
 
-import scala.concurrent.{ExecutionContext, Future}
-
 import cats.data.EitherT
 import cats.implicits._
 import io.cumulus.controllers.utils.FileDownloaderUtils
 import io.cumulus.core.controllers.utils.api.ApiUtils
+import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.utils.Base16
 import io.cumulus.core.validation.AppError
-import io.cumulus.models.{Path, SharingSession}
+import io.cumulus.models.{Path, SharingSession, UserSession}
 import io.cumulus.persistence.services.{SharingService, StorageService}
-import io.cumulus.persistence.storage.StorageEngine
-import io.cumulus.stages.{Ciphers, Compressions}
 import play.api.mvc.{AbstractController, ControllerComponents}
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class SharingController(
   cc: ControllerComponents,
   sharingService: SharingService,
-  storageService: StorageService,
-  storageEngine: StorageEngine
+  storageService: StorageService
 )(implicit
-  ec: ExecutionContext,
-  ciphers: Ciphers,
-  compressions: Compressions
-) extends AbstractController(cc) with ApiUtils with FileDownloaderUtils {
+  ec: ExecutionContext
+) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with FileDownloaderUtils {
 
   def get(path: Path, reference: String, key: String) = Action.async { implicit request =>
     ApiResponse {
       sharingService.findSharedNode(reference, path, key).map {
         case Right((_, _, node)) =>
-          // TODO change the path to not return the node real path
           Right(node)
         case Left(e) =>
           Left(e)
       }
+    }
+  }
+
+  def list(path: Path) = AuthenticatedAction.async { implicit request =>
+    ApiResponse {
+      sharingService.list(path)
     }
   }
 
