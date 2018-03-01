@@ -1,9 +1,6 @@
-import { ThunkAction } from "redux-thunk"
-import { GlobalState } from "store"
 import { FsNode, Compression, Cipher } from "models/FsNode"
 import { FileToUpload } from "models/FileToUpload"
 import * as Api from "services/Api"
-import debounce from "utils/debounce"
 
 export type UploadAction =
   OnWantUpload |
@@ -25,18 +22,9 @@ export const onAddFiles = (filesToUpload: FileToUpload[]): OnAddFiles => ({ type
 export type RemoveFileToUpload = { type: "RemoveFileToUpload", fileToUpload: FileToUpload }
 export const onRemoveFileToUpload = (fileToUpload: FileToUpload): RemoveFileToUpload => ({ type: "RemoveFileToUpload", fileToUpload })
 
-export type OnUploadFile = { type: "OnUploadFile", fileToUpload: FileToUpload }
-export function onUploadFile(path: string, fileToUpload: FileToUpload): ThunkAction<void, GlobalState, {}> {
-  return (dispatch) => {
-    dispatch({ type: "OnUploadFile", fileToUpload })
-    const progress = (e: ProgressEvent) => {
-      const progressed = Math.round(e.loaded * 100 / e.total)
-      dispatch(onProgressUpload(progressed, fileToUpload))
-    }
-    Api.upload(path, fileToUpload, debounce(progress, 30))
-      .then(fsNode => dispatch(onUploadFileSuccess(fsNode, fileToUpload)))
-      .catch(error => dispatch(onUploadFileError(error, fileToUpload)))
-  }
+export type OnUploadFile = { type: "OnUploadFile", path: string, fileToUpload: FileToUpload }
+export function onUploadFile(path: string, fileToUpload: FileToUpload): OnUploadFile {
+  return { type: "OnUploadFile", path, fileToUpload }
 }
 
 export type OnUploadFileSuccess = { type: "OnUploadFileSuccess", fsNode: FsNode, fileToUpload: FileToUpload }

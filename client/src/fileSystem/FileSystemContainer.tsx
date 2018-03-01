@@ -20,6 +20,7 @@ import LeftPanel from "components/LeftPanel"
 import RightPanel from "components/RightPanel"
 import FsNodeComponent from "components/FsNodeComponent"
 import MoveModal from "move/MoveModal"
+import InAppNotifContainer from "inAppNotif/InAppNotifContainer"
 
 interface DispatchProps {
   onFetchDirectory(path: string): void
@@ -63,6 +64,7 @@ class FileSystemContainer extends React.PureComponent<Props> {
         <LeftPanel />
         <div className={styles.mainContainer}>
           <AppBar />
+          <InAppNotifContainer />
           <div className={styles.filesContainer}>
             <div className={styles.content}>
               <Breadcrumb homeTitle={Messages("ui.appName")} directory={directory} onPathClick={this.handleOnPathClick} />

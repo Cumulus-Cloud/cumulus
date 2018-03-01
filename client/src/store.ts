@@ -2,7 +2,7 @@ import { Reducer, createStore, combineReducers, applyMiddleware } from "redux"
 import { composeWithDevTools } from "redux-devtools-extension"
 import createHashHistory from "history/createHashHistory"
 import { RouterState, routerReducer, routerMiddleware } from "react-router-redux"
-import thunkMiddleware from "redux-thunk"
+import { createEpicMiddleware } from "redux-observable"
 import { LoginState, LoginReducer } from "auth/login/LoginReducer"
 import { SignupState, SignupReducer } from "auth/signup/SignupReducer"
 import { FileSystemState, FileSystemReducer } from "fileSystem/FileSystemReducer"
@@ -11,6 +11,8 @@ import { UploadState, UploadReducer } from "upload/UploadReducer"
 import { SearchState, SearchReducer } from "search/SearchReducer"
 import { MoveState, MoveReducer } from "move/MoveReducer"
 import { RenameState, RenameReducer } from "rename/RenameReducer"
+import { InAppNotifState, InAppNotifReducer } from "inAppNotif/InAppNotifReducer"
+import RootEpic from "RootEpic"
 
 export interface GlobalState {
   login: LoginState
@@ -21,11 +23,13 @@ export interface GlobalState {
   search: SearchState
   move: MoveState
   rename: RenameState
+  inAppNotif: InAppNotifState
   router: Reducer<RouterState>
 }
 
 export const history = createHashHistory()
 const middleware = routerMiddleware(history)
+const epicMiddleware = createEpicMiddleware(RootEpic)
 
 const reducers = combineReducers({
   // tslint:disable-next-line:no-any
@@ -38,10 +42,11 @@ const reducers = combineReducers({
   search: SearchReducer,
   move: MoveReducer,
   rename: RenameReducer,
+  inAppNotif: InAppNotifReducer,
   router: routerReducer,
 })
 const enhancer = composeWithDevTools(
-  applyMiddleware(thunkMiddleware),
+  applyMiddleware(epicMiddleware),
   applyMiddleware(middleware),
 )
 export const store = createStore(reducers, enhancer)

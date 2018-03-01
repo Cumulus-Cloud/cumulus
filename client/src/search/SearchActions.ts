@@ -1,5 +1,3 @@
-import { ThunkAction } from "redux-thunk"
-import { GlobalState } from "store"
 import * as Api from "services/Api"
 import { SearchResult } from "models/Search"
 
@@ -14,13 +12,8 @@ export type QueryChange = { type: "QueryChange", query: string }
 export const onQueryChange = (query: string): QueryChange => ({ type: "QueryChange", query })
 
 export type FsNodeSearch = { type: "FsNodeSearch", query: string }
-export function onFsNodeSearch(query: string): ThunkAction<void, GlobalState, {}> {
-  return (dispatch) => {
-    dispatch({ type: "FsNodeSearch", query })
-    Api.search(query)
-      .then(searchResult => dispatch(onSearchSuccess(searchResult)))
-      .catch(error => dispatch(onSearchError(error)))
-  }
+export function onFsNodeSearch(query: string): FsNodeSearch {
+  return { type: "FsNodeSearch", query }
 }
 
 export type SearchSuccess = { type: "SearchSuccess", searchResult: SearchResult }

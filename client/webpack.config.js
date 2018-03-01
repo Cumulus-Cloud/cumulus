@@ -43,12 +43,12 @@ if (!development) {
         "NODE_ENV": JSON.stringify("production")
       }
     })
-  ),
-    config.plugins.push(new webpack.optimize.UglifyJsPlugin({
-      compressor: { screw_ie8: true, keep_fnames: false, warnings: false },
-      sourceMap: true,
-      mangle: { screw_ie8: true, keep_fnames: false }
-    }));
+  );
+  config.plugins.push(new webpack.optimize.UglifyJsPlugin({
+    compressor: { screw_ie8: true, keep_fnames: false, warnings: false },
+    sourceMap: true,
+    mangle: { screw_ie8: true, keep_fnames: false }
+  }));
 }
 
 module.exports = config

@@ -1,5 +1,3 @@
-import { ThunkAction } from "redux-thunk"
-import { GlobalState } from "store"
 import { FsNode } from "models/FsNode"
 import * as Api from "services/Api"
 
@@ -19,16 +17,9 @@ export const onNewFolderNameChange = (newFolderName: string): OnNewFolderNameCha
 export type OnWantCreateNewFolder = { type: "OnWantCreateNewFolder" }
 export const onWantCreateNewFolder = (): OnWantCreateNewFolder => ({ type: "OnWantCreateNewFolder" })
 
-export type OnCreateNewFolder = { type: "OnCreateNewFolder", newFolderName: string }
-export function onCreateNewFolder(currentDirectory: FsNode, newFolderName: string): ThunkAction<void, GlobalState, {}> {
-  return (dispatch) => {
-    dispatch({ type: "OnCreateNewFolder", newFolderName })
-    Api.createFnNode(`${currentDirectory.path}/${newFolderName}`, "DIRECTORY").then(fsNode => {
-      dispatch(onCreateNewFolderSuccess(fsNode))
-    }).catch(error => {
-      dispatch(onCreateNewFolderError(error))
-    })
-  }
+export type OnCreateNewFolder = { type: "OnCreateNewFolder", currentDirectory: FsNode, newFolderName: string }
+export function onCreateNewFolder(currentDirectory: FsNode, newFolderName: string): OnCreateNewFolder {
+  return { type: "OnCreateNewFolder", currentDirectory, newFolderName }
 }
 
 export type OnCreateNewFolderSuccess = { type: "OnCreateNewFolderSuccess", newFolder: FsNode }

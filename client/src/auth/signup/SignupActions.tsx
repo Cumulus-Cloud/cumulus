@@ -1,6 +1,4 @@
-import { ThunkAction } from "redux-thunk"
-import { GlobalState, history } from "store"
-import * as Api from "services/Api"
+import { ApiError } from "services/Api"
 import { User } from "models/User"
 
 export type SignupAction =
@@ -24,14 +22,8 @@ export type SIGNUP_ON_SUBMIT = {
   email: string
   password: string
 }
-export function signupOnSubmit(login: string, email: string, password: string): ThunkAction<void, GlobalState, {}> {
-  return (dispatch) => {
-    dispatch({ type: "SIGNUP_ON_SUBMIT", login, email, password })
-    Api.signup(login, email, password).then(result => {
-      dispatch(signupOnSubmitSuccess(result))
-      history.replace("/fs/")
-    }).catch((error: Api.ApiError) => dispatch(signupOnSubmitError(error)))
-  }
+export function signupOnSubmit(login: string, email: string, password: string): SIGNUP_ON_SUBMIT {
+  return { type: "SIGNUP_ON_SUBMIT", login, email, password }
 }
 
 export type SIGNUP_ON_SUBMIT_SUCCESS = {
@@ -44,8 +36,8 @@ export function signupOnSubmitSuccess(user: User): SIGNUP_ON_SUBMIT_SUCCESS {
 
 export type SIGNUP_ON_SUBMIT_ERROR = {
   type: "SIGNUP_ON_SUBMIT_ERROR"
-  errors: Api.ApiError
+  errors: ApiError
 }
-export function signupOnSubmitError(errors: Api.ApiError): SIGNUP_ON_SUBMIT_ERROR {
+export function signupOnSubmitError(errors: ApiError): SIGNUP_ON_SUBMIT_ERROR {
   return { type: "SIGNUP_ON_SUBMIT_ERROR", errors }
 }

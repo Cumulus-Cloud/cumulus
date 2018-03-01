@@ -58,7 +58,7 @@ export class FsNodeName extends React.PureComponent<Props> {
           <IconButton onClick={this.handleOnRename(newName, fsNodeToRename)}>
             <DoneIcon />
           </IconButton>
-          <IconButton onClick={this.handleOnRename(newName, fsNodeToRename)}>
+          <IconButton onClick={this.props.onCancelRename}>
             <CloseIcon width={15} height={15} />
           </IconButton>
         </div>
@@ -76,7 +76,14 @@ export class FsNodeName extends React.PureComponent<Props> {
     }
   }
 
-  handleOnRename = (newName: string, fsNodeToRename: FsNode) => () => this.props.onRename(newName, fsNodeToRename)
+  handleOnRename = (newName: string, fsNodeToRename: FsNode) => () => {
+    const { onRename, onCancelRename } = this.props
+    if (fsNodeToRename.name !== newName) {
+      onRename(newName, fsNodeToRename)
+    } else {
+      onCancelRename()
+    }
+  }
 
   handleInputRef = (ref: HTMLInputElement | null) => ref && ref.focus()
 
