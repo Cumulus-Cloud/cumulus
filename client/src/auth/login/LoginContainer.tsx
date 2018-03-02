@@ -37,8 +37,8 @@ const mapStateToProps = (state: GlobalState): LoginState => state.login
 
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onChange: (field, value) => dispatch(LoginActions.loginOnChange(field, value)),
-    onSubmit: (login, password) => dispatch(LoginActions.loginOnSubmit(login, password))
+    onChange: (field, value) => dispatch(LoginActions.loginChange(field, value)),
+    onSubmit: (login, password) => dispatch(LoginActions.loginSubmit(login, password))
   }
 }
 

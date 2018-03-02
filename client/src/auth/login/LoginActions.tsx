@@ -1,40 +1,41 @@
 import { User } from "models/User"
-import * as Api from "services/Api"
+import { ApiError } from "services/Api"
+import { Action } from "redux"
 
 export type LoginAction =
-  LOGIN_ON_CHANGE |
-  LOGIN_ON_SUBMIT |
-  LOGIN_ON_SUBMIT_ERROR |
-  LOGIN_ON_SUBMIT_SUCCESS
+  LoginChange |
+  LoginSubmit |
+  LoginSubmitError |
+  LoginSubmitSuccess
 
-export type LOGIN_ON_CHANGE = {
-  type: "LOGIN_ON_CHANGE"
+export interface LoginChange extends Action {
+  type: "LoginChange"
   field: string
   value: string
 }
-export function loginOnChange(field: string, value: string): LOGIN_ON_CHANGE {
-  return { type: "LOGIN_ON_CHANGE", field, value }
+export function loginChange(field: string, value: string): LoginChange {
+  return { type: "LoginChange", field, value }
 }
 
-export type LOGIN_ON_SUBMIT = {
-  type: "LOGIN_ON_SUBMIT"
+export interface LoginSubmit extends Action {
+  type: "LoginSubmit"
   login: string
   password: string
 }
-export const loginOnSubmit = (login: string, password: string): LOGIN_ON_SUBMIT => ({ type: "LOGIN_ON_SUBMIT", login, password })
+export const loginSubmit = (login: string, password: string): LoginSubmit => ({ type: "LoginSubmit", login, password })
 
-export type LOGIN_ON_SUBMIT_SUCCESS = {
-  type: "LOGIN_ON_SUBMIT_SUCCESS",
+export interface LoginSubmitSuccess extends Action {
+  type: "LoginSubmitSuccess"
   user: User
 }
-export function loginOnSubmitSuccess(user: User): LOGIN_ON_SUBMIT_SUCCESS {
-  return { type: "LOGIN_ON_SUBMIT_SUCCESS", user }
+export function loginOnSubmitSuccess(user: User): LoginSubmitSuccess {
+  return { type: "LoginSubmitSuccess", user }
 }
 
-export type LOGIN_ON_SUBMIT_ERROR = {
-  type: "LOGIN_ON_SUBMIT_ERROR"
-  errors: Api.ApiError
+export interface LoginSubmitError extends Action {
+  type: "LoginSubmitError"
+  error: ApiError
 }
-export function loginOnSubmitError(errors: Api.ApiError): LOGIN_ON_SUBMIT_ERROR {
-  return { type: "LOGIN_ON_SUBMIT_ERROR", errors }
+export function loginSubmitError(error: ApiError): LoginSubmitError {
+  return { type: "LoginSubmitError", error }
 }
