@@ -3,7 +3,6 @@ package io.cumulus.models
 import java.security.Security
 import java.time.LocalDateTime
 import java.util.UUID
-import scala.language.implicitConversions
 
 import akka.util.ByteString
 import io.cumulus.core.json.JsonFormat._
@@ -12,6 +11,8 @@ import io.cumulus.core.utils.Crypto._
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+
+import scala.language.implicitConversions
 
 /**
   * Common trait for both user session and sharing session
@@ -45,8 +46,10 @@ object UserSession {
   implicit def userSessionToUser(userSession: UserSession): User =
     userSession.user
 
-  implicit def format: Format[UserSession] =
+  implicit def format: Format[UserSession] ={
+    implicit val userFormat = User.internalFormat
     Json.format[UserSession]
+  }
 
 }
 
@@ -93,7 +96,7 @@ case class User(
 
 object User {
 
-  def apply(email: String, login: String, password: String): User = {
+  def create(email: String, login: String, password: String): User = {
     User(
       UUID.randomUUID(),
       email,
@@ -104,7 +107,9 @@ object User {
     )
   }
 
-  val apiWrite: OWrites[User] =(
+  implicit val reads: Reads[User] = Json.reads[User]
+
+  implicit val writes: OWrites[User] =(
     (__ \ "id").write[String] and
     (__ \ "email").write[String] and
     (__ \ "login").write[String] and
@@ -120,8 +125,13 @@ object User {
     )
   )
 
-  implicit def format: Format[User] =
-    Json.format[User]
+  implicit val format: OFormat[User] =
+    OFormat(reads, writes)
+
+  // We want different non-implicit writers and readers for the session
+  lazy val internalReads: Reads[User]    = reads
+  lazy val internalWrites: OWrites[User] = Json.writes[User]
+  lazy val internalFormat: OFormat[User] = OFormat(internalReads, internalWrites)
 
 }
 

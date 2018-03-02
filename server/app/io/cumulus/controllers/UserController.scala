@@ -1,7 +1,6 @@
 package io.cumulus.controllers
 
 import scala.concurrent.ExecutionContext
-
 import io.cumulus.controllers.payloads.{LoginPayload, SignUpPayload}
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.authentication.Authentication
@@ -10,7 +9,7 @@ import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
 import io.cumulus.models.{User, UserSession}
 import io.cumulus.persistence.services.UserService
 import play.api.libs.json.Json
-import play.api.mvc.{AbstractController, ControllerComponents}
+import play.api.mvc.{AbstractController, ControllerComponents, Result}
 
 class UserController (
   cc: ControllerComponents,
@@ -21,16 +20,11 @@ class UserController (
 
   def signUp = Action.async(parseJson[SignUpPayload]) { implicit request =>
     val signInPayload = request.body
-    val user = User(signInPayload.email, signInPayload.login, signInPayload.password)
+    val user = User.create(signInPayload.email, signInPayload.login, signInPayload.password)
 
     userService.createUser(user).map {
       case Right(authenticatedUser) =>
-        val session = UserSession(authenticatedUser, signInPayload.password)
-        val token = createJwtSession(session)
-        Ok(Json.obj(
-          "token" -> token.refresh().serialize,
-          "user" -> Json.toJson(authenticatedUser)(User.apiWrite)
-        )).withAuthentication(token)
+        loginUser(authenticatedUser, signInPayload.password)
       case Left(error) =>
         toApiError(error)
     }
@@ -41,20 +35,25 @@ class UserController (
 
     userService.loginUser(loginPayload.login, loginPayload.password).map {
       case Right(authenticatedUser) =>
-        val session = UserSession(authenticatedUser, loginPayload.password)
-        val token = createJwtSession(session)
-        Ok(Json.obj(
-          "token" -> token.refresh().serialize,
-          "user" -> Json.toJson(authenticatedUser)(User.apiWrite)
-        )).withAuthentication(token)
+        loginUser(authenticatedUser, loginPayload.password)
       case Left(error) =>
         toApiError(error)
     }
+  }
 
+  private def loginUser(user: User, password: String): Result = {
+    val session = UserSession(user, password)
+    val token = createJwtSession(session)
+    Ok(Json.obj(
+      "token" -> token.refresh().serialize,
+      "user" -> Json.toJson(user)
+    )).withAuthentication(token)
   }
 
   def me = AuthenticatedAction { implicit request =>
-    Ok(Json.toJson(request.user.user)(User.apiWrite))
+    ApiResponse {
+      Right(request.user)
+    }
   }
 
   def logout = Action { implicit request =>
