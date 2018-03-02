@@ -141,7 +141,7 @@ object Directory {
   implicit val format: OFormat[Directory] =
     OFormat(reads, writes)
 
-  // We want different non-implicit writers en readers for the database
+  // We want different non-implicit writers and readers for the database
   lazy val internalReads: Reads[Directory]    = reads
   lazy val internalWrites: OWrites[Directory] = Json.writes[Directory]
   lazy val internalFormat: OFormat[Directory] = OFormat(internalReads, internalWrites)
@@ -245,7 +245,7 @@ object File {
   implicit val format: OFormat[File] =
     OFormat(reads, writes)
 
-  // We want different non-implicit writers en readers for the database
+  // We want different non-implicit writers and readers for the database
   val internalReads: Reads[File]    = reads
   val internalWrites: OWrites[File] = Json.writes[File]
   val internalFormat: OFormat[File] = OFormat(internalReads, internalWrites)
