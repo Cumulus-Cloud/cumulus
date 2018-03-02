@@ -1,5 +1,5 @@
 import { FsNode } from "models/FsNode"
-import * as Api from "services/Api"
+import { ApiError } from "services/Api"
 
 export type NewFolderAction =
   OnNewFolderNameChange |
@@ -28,8 +28,8 @@ export const onCreateNewFolderSuccess = (newFolder: FsNode): OnCreateNewFolderSu
   newFolder
 })
 
-export type OnCreateNewFolderError = { type: "OnCreateNewFolderError", error: Api.ApiError }
-export const onCreateNewFolderError = (error: Api.ApiError): OnCreateNewFolderError => ({
+export type OnCreateNewFolderError = { type: "OnCreateNewFolderError", error: ApiError }
+export const onCreateNewFolderError = (error: ApiError): OnCreateNewFolderError => ({
   type: "OnCreateNewFolderError",
   error
 })

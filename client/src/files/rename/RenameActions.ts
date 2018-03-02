@@ -1,4 +1,4 @@
-import * as Api from "services/Api"
+import { ApiError } from "services/Api"
 import { FsNode } from "models/FsNode"
 
 export type RenameAction =
@@ -26,8 +26,8 @@ export function rename(newName: string, fsNode: FsNode): Rename {
 export type RenameSuccess = { type: "RenameSuccess", fsNode: FsNode }
 export const renameSuccess = (fsNode: FsNode): RenameSuccess => ({ type: "RenameSuccess", fsNode })
 
-export type RenameError = { type: "RenameError", error: Api.ApiError }
-export const renameError = (error: Api.ApiError): RenameError => ({
+export type RenameError = { type: "RenameError", error: ApiError }
+export const renameError = (error: ApiError): RenameError => ({
   type: "RenameError",
   error
 })

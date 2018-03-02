@@ -5,7 +5,7 @@ import { SignupSubmit, signupSubmitSuccess, signupSubmitError, SignupSubmitError
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 
 export const signupEpic: Epic<any, GlobalState> = (action$: ActionsObservable<SignupSubmit>) => action$.ofType("SignupSubmit")
-    .mergeMap((action: SignupSubmit) =>
+    .mergeMap(action =>
       Api.signup(action.login, action.email, action.password)
       .then(user => {
         history.replace("/fs/")

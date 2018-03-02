@@ -1,6 +1,6 @@
 import { FsNode, Compression, Cipher } from "models/FsNode"
 import { FileToUpload } from "models/FileToUpload"
-import * as Api from "services/Api"
+import { ApiError } from "services/Api"
 
 export type UploadAction =
   OnWantUpload |
@@ -32,8 +32,8 @@ export function onUploadFileSuccess(fsNode: FsNode, fileToUpload: FileToUpload):
   return { type: "OnUploadFileSuccess", fsNode, fileToUpload }
 }
 
-export type OnUploadFileError = { type: "OnUploadFileError", error: Api.ApiError, fileToUpload: FileToUpload  }
-export function onUploadFileError(error: Api.ApiError, fileToUpload: FileToUpload): OnUploadFileError {
+export type OnUploadFileError = { type: "OnUploadFileError", error: ApiError, fileToUpload: FileToUpload  }
+export function onUploadFileError(error: ApiError, fileToUpload: FileToUpload): OnUploadFileError {
   return { type: "OnUploadFileError", error, fileToUpload }
 }
 

@@ -1,4 +1,4 @@
-import * as Api from "services/Api"
+import { ApiError } from "services/Api"
 import { FsNode, FsDirectory } from "models/FsNode"
 
 export type MoveAction =
@@ -25,8 +25,8 @@ export function move(): Move {
 export type MoveSuccess = { type: "MoveSuccess", movedFsNode: FsNode, newFsNode: FsNode }
 export const moveSuccess = (movedFsNode: FsNode, newFsNode: FsNode): MoveSuccess => ({ type: "MoveSuccess", movedFsNode, newFsNode })
 
-export type MoveError = { type: "MoveError", error: Api.ApiError }
-export const moveError = (error: Api.ApiError): MoveError => ({ type: "MoveError", error })
+export type MoveError = { type: "MoveError", error: ApiError }
+export const moveError = (error: ApiError): MoveError => ({ type: "MoveError", error })
 
 export type ChangeMoveTarget = { type: "ChangeMoveTarget", path: string }
 export function changeMoveTarget(path: string): ChangeMoveTarget {
@@ -35,5 +35,5 @@ export function changeMoveTarget(path: string): ChangeMoveTarget {
 export type ChangeMoveTargetSuccess = { type: "ChangeMoveTargetSuccess", target: FsDirectory }
 export const changeMoveTargetSuccess = (target: FsDirectory): ChangeMoveTargetSuccess => ({ type: "ChangeMoveTargetSuccess", target })
 
-export type ChangeMoveTargetError = { type: "ChangeMoveTargetError", error: Api.ApiError }
-export const changeMoveTargetError = (error: Api.ApiError): ChangeMoveTargetError => ({ type: "ChangeMoveTargetError", error })
+export type ChangeMoveTargetError = { type: "ChangeMoveTargetError", error: ApiError }
+export const changeMoveTargetError = (error: ApiError): ChangeMoveTargetError => ({ type: "ChangeMoveTargetError", error })
