@@ -34,8 +34,6 @@ services:
 
   cumulus_db:
     image: postgres:10-alpine
-    ports:
-      - 5432:5432
     environment:
       POSTGRES_DB: cumulus
       POSTGRES_USER: cumulus
