@@ -1,4 +1,4 @@
-import { UploadAction } from "upload/UploadActions"
+import { UploadAction } from "files/upload/UploadActions"
 import { FileToUpload } from "models/FileToUpload"
 
 export interface UploadState {

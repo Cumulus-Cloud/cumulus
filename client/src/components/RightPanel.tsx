@@ -1,7 +1,7 @@
 import * as React from "react"
 import * as styles from "./RightPanel.css"
 import NewFolderContainer from "files/newFolder/NewFolderContainer"
-import UploadContainer from "upload/UploadContainer"
+import UploadContainer from "files/upload/UploadContainer"
 import { GlobalState } from "store"
 import { Dispatch, connect } from "react-redux"
 import { FsNode } from "models/FsNode"

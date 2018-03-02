@@ -1,7 +1,7 @@
 import { Epic, combineEpics } from "redux-observable"
 import { GlobalState } from "store"
 import * as Api from "services/Api"
-import { UploadAction, OnUploadFile, OnUploadFileError, onUploadFileSuccess, onUploadFileError, onProgressUpload } from "upload/UploadActions"
+import { UploadAction, OnUploadFile, OnUploadFileError, onUploadFileSuccess, onUploadFileError, onProgressUpload } from "files/upload/UploadActions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 import { Observable } from "rxjs/Observable"
 import { Observer } from "rxjs/Observer"

@@ -2,7 +2,7 @@ import { FsNode, FsFile } from "models/FsNode"
 import { Share } from "models/Share"
 import * as Api from "services/Api"
 import { OnCreateNewFolderSuccess } from "files/newFolder/NewFolderActions"
-import { OnUploadFileSuccess } from "upload/UploadActions"
+import { OnUploadFileSuccess } from "files/upload/UploadActions"
 import { MoveSuccess } from "files/move/MoveActions"
 import { RenameSuccess } from "files/rename/RenameActions"
 
