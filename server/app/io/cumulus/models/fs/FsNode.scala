@@ -30,6 +30,7 @@ sealed trait FsNode {
 
   def moved(path: Path): FsNode
 
+
 }
 
 object FsNode {
@@ -110,9 +111,9 @@ object Directory {
     )
   }
 
-  implicit val reads: Reads[Directory] = Json.reads[Directory]
+  implicit lazy val reads: Reads[Directory] = Json.reads[Directory]
 
-  implicit val writes: OWrites[Directory] = (
+  implicit lazy val writes: OWrites[Directory] = (
     (JsPath \ "id").write[UUID] and
     (JsPath \ "path").write[Path] and
     (JsPath \ "name").write[String] and
@@ -138,7 +139,7 @@ object Directory {
     )
   }
 
-  implicit val format: OFormat[Directory] =
+  implicit lazy val format: OFormat[Directory] =
     OFormat(reads, writes)
 
   // We want different non-implicit writers en readers for the database
@@ -202,9 +203,9 @@ object File {
     )
   }
 
-  implicit val reads: Reads[File] = Json.reads[File]
+  implicit lazy val reads: Reads[File] = Json.reads[File]
 
-  implicit val writes: OWrites[File] = (
+  implicit lazy val writes: OWrites[File] = (
     (JsPath \ "id").write[UUID] and
     (JsPath \ "path").write[Path] and
     (JsPath \ "name").write[String] and
@@ -242,12 +243,12 @@ object File {
     )
   }
 
-  implicit val format: OFormat[File] =
+  implicit lazy val format: OFormat[File] =
     OFormat(reads, writes)
 
   // We want different non-implicit writers en readers for the database
-  val internalReads: Reads[File]    = reads
-  val internalWrites: OWrites[File] = Json.writes[File]
-  val internalFormat: OFormat[File] = OFormat(internalReads, internalWrites)
+  lazy val internalReads: Reads[File]    = reads
+  lazy val internalWrites: OWrites[File] = Json.writes[File]
+  lazy val internalFormat: OFormat[File] = OFormat(internalReads, internalWrites)
 
 }
