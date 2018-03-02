@@ -1,7 +1,7 @@
 import { Epic, combineEpics } from "redux-observable"
 import { GlobalState } from "store"
 import * as Api from "services/Api"
-import { FsNodeSearch, SearchError, onSearchSuccess, onSearchError } from "search/SearchActions"
+import { FsNodeSearch, SearchError, onSearchSuccess, onSearchError } from "files/search/SearchActions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 
 export const searchEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("FsNodeSearch")

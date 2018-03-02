@@ -2,12 +2,12 @@ import { combineEpics } from "redux-observable"
 import { loginEpics } from "auth/login/LoginEpics"
 import { hideInAppNotifEpics } from "inAppNotif/InAppNotifEpics"
 import { signupEpics } from "auth/signup/SignupEpics"
-import { fileSystemEpics } from "fileSystem/FileSystemEpics"
-import { moveEpics } from "move/MoveEpics"
-import { createNewFolderEpics } from "newFolder/NewFolderEpics"
-import { renameEpics } from "rename/RenameEpics"
-import { searchEpics } from "search/SearchEpics"
-import { uploadEpics } from "upload/UploadEpics"
+import { fileSystemEpics } from "files/fileSystem/FileSystemEpics"
+import { moveEpics } from "files/move/MoveEpics"
+import { createNewFolderEpics } from "files/newFolder/NewFolderEpics"
+import { renameEpics } from "files/rename/RenameEpics"
+import { searchEpics } from "files/search/SearchEpics"
+import { uploadEpics } from "files/upload/UploadEpics"
 
 const RootEpic = combineEpics(
   loginEpics,

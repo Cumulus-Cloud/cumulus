@@ -1,12 +1,12 @@
 import * as React from "react"
 import * as styles from "./RightPanel.css"
-import NewFolderContainer from "newFolder/NewFolderContainer"
-import UploadContainer from "upload/UploadContainer"
+import NewFolderContainer from "files/newFolder/NewFolderContainer"
+import UploadContainer from "files/upload/UploadContainer"
 import { GlobalState } from "store"
 import { Dispatch, connect } from "react-redux"
 import { FsNode } from "models/FsNode"
 import FsNodeInfos from "components/FsNodeInfos"
-import * as FileSystemActions from "fileSystem/FileSystemActions"
+import * as FileSystemActions from "files/fileSystem/FileSystemActions"
 import MultFsNodesPanel from "components/MultFsNodesPanel"
 
 interface StateProps {

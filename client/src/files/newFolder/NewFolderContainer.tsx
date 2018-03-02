@@ -1,10 +1,10 @@
 import * as React from "react"
 import { connect, Dispatch } from "react-redux"
 import { GlobalState } from "store"
-import { NewFolderState } from "newFolder/NewFolderReducer"
-import * as NewFolderActions from "newFolder/NewFolderActions"
+import { NewFolderState } from "files/newFolder/NewFolderReducer"
+import * as NewFolderActions from "files/newFolder/NewFolderActions"
 import { FsNode } from "models/FsNode"
-import NewFolderModal from "newFolder/NewFolderModal"
+import NewFolderModal from "files/newFolder/NewFolderModal"
 import GhostButton from "components/buttons/GhostButton"
 
 interface DispatchProps {

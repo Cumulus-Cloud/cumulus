@@ -1,4 +1,4 @@
-import { MoveAction } from "move/MoveActions"
+import { MoveAction } from "files/move/MoveActions"
 import { ApiError } from "services/Api"
 import { FsNode, FsDirectory } from "models/FsNode"
 

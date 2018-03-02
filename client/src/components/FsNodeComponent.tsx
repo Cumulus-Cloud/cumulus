@@ -12,7 +12,7 @@ import Dropdown, { DropdownItem, DropdownLink } from "components/menus/Dropdown"
 import MoreHorizIcon from "icons/MoreHorizIcon"
 import DirectoryIcon from "icons/DirectoryIcon"
 import classNames from "utils/ClassNames"
-import FsNodeName from "rename/FsNodeName"
+import FsNodeName from "files/rename/FsNodeName"
 import EditIcon from "icons/EditIcon"
 
 interface Props {
