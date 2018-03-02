@@ -22,10 +22,10 @@ branches:
 script:
   - cd client && npm install && npm run build && cd ../
   - cd server && sbt stage && cd ../
-  - docker build -f Dockerfile -t wadjetz/cumulus .
+  - docker build -f Dockerfile -t cumuluscloud/cumulus .
 
 after_success:
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
     docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-    docker push wadjetz/cumulus;
+    docker push cumuluscloud/cumulus;
     fi
