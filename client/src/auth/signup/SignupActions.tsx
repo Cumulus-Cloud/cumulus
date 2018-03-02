@@ -1,43 +1,44 @@
+import { Action } from "redux"
 import { ApiError } from "services/Api"
 import { User } from "models/User"
 
 export type SignupAction =
-  SIGNUP_ON_CHANGE |
-  SIGNUP_ON_SUBMIT |
-  SIGNUP_ON_SUBMIT_ERROR |
-  SIGNUP_ON_SUBMIT_SUCCESS
+  SignupChange |
+  SignupSubmit |
+  SignupSubmitSuccess |
+  SignupSubmitError
 
-export type SIGNUP_ON_CHANGE = {
-  type: "SIGNUP_ON_CHANGE"
+export interface SignupChange extends Action {
+  type: "SignupChange"
   field: string
   value: string
 }
-export function signupOnChange(field: string, value: string): SIGNUP_ON_CHANGE {
-  return { type: "SIGNUP_ON_CHANGE", field, value }
+export function signupChange(field: string, value: string): SignupChange {
+  return { type: "SignupChange", field, value }
 }
 
-export type SIGNUP_ON_SUBMIT = {
-  type: "SIGNUP_ON_SUBMIT"
+export interface SignupSubmit extends Action {
+  type: "SignupSubmit"
   login: string
   email: string
   password: string
 }
-export function signupOnSubmit(login: string, email: string, password: string): SIGNUP_ON_SUBMIT {
-  return { type: "SIGNUP_ON_SUBMIT", login, email, password }
+export function signupSubmit(login: string, email: string, password: string): SignupSubmit {
+  return { type: "SignupSubmit", login, email, password }
 }
 
-export type SIGNUP_ON_SUBMIT_SUCCESS = {
-  type: "SIGNUP_ON_SUBMIT_SUCCESS",
+export interface SignupSubmitSuccess extends Action {
+  type: "SignupSubmitSuccess"
   user: User
 }
-export function signupOnSubmitSuccess(user: User): SIGNUP_ON_SUBMIT_SUCCESS {
-  return { type: "SIGNUP_ON_SUBMIT_SUCCESS", user }
+export function signupSubmitSuccess(user: User): SignupSubmitSuccess {
+  return { type: "SignupSubmitSuccess", user }
 }
 
-export type SIGNUP_ON_SUBMIT_ERROR = {
-  type: "SIGNUP_ON_SUBMIT_ERROR"
-  errors: ApiError
+export interface SignupSubmitError extends Action {
+  type: "SignupSubmitError"
+  error: ApiError
 }
-export function signupOnSubmitError(errors: ApiError): SIGNUP_ON_SUBMIT_ERROR {
-  return { type: "SIGNUP_ON_SUBMIT_ERROR", errors }
+export function signupSubmitError(error: ApiError): SignupSubmitError {
+  return { type: "SignupSubmitError", error }
 }
