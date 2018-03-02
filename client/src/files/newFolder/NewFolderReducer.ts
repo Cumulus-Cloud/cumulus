@@ -1,4 +1,4 @@
-import { NewFolderAction } from "newFolder/NewFolderActions"
+import { NewFolderAction } from "files/newFolder/NewFolderActions"
 import { ApiError } from "services/Api"
 
 export interface NewFolderState {

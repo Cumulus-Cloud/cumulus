@@ -4,7 +4,7 @@ import ModalActions from "components/modals/ModalActions"
 import ModalHeader from "components/modals/ModalHeader"
 import ModalContent from "components/modals/ModalContent"
 import FlatButton from "components/buttons/FlatButton"
-import NewFolderFrom from "newFolder/NewFolderFrom"
+import NewFolderFrom from "files/newFolder/NewFolderFrom"
 import { ApiError } from "services/Api"
 
 interface Props {

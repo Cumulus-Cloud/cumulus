@@ -1,7 +1,7 @@
 import { Epic, combineEpics } from "redux-observable"
 import { GlobalState } from "store"
 import * as Api from "services/Api"
-import * as NewFolderActions from "newFolder/NewFolderActions"
+import * as NewFolderActions from "files/newFolder/NewFolderActions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 
 export const createNewFolderEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("OnCreateNewFolder")
