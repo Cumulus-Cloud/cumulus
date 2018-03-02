@@ -119,7 +119,7 @@ object ImageMetadataExtractor extends MetadataExtractor {
         values = Map(
           metadata.tags
             .filter(_.value != null) // Filter out null values
-            .map(t => t.name -> t.value):_*
+            .map(t => t.name -> t.value.replaceAll("""\u0000""", "")):_*
         ),
         tags = Seq.empty
       )
