@@ -5,7 +5,7 @@
 
 ## Deploy and use Cumulus
 
-We recommend using `docker` and `docker-compose` to easily manage and deploy the Cumulus app.
+We recommend using `docker` and `docker-compose` to easily manage and deploy the Cumulus app. [https://hub.docker.com/r/cumuluscloud/cumulus/](https://hub.docker.com/r/cumuluscloud/cumulus/)
 
 ### Using docker compose
 
@@ -16,13 +16,13 @@ version: '3.4'
 services:
 
   cumulus_app:
-    image: wadjetz/cumulus:latest
+    image: cumuluscloud/cumulus:latest
     ports:
       - 80:9000
     environment:
       DB_URL: "jdbc:postgresql://cumulus_db/cumulus"
       DB_USER: cumulus
-      DB_PASSWORD: cumulus
+      DB_PASSWORD: <Your password>
       APPLICATION_SECRET: <Your app secret>
     volumes:
       - ./cumulus-storage:/opt/cumulus/storage
@@ -39,9 +39,9 @@ services:
     environment:
       POSTGRES_DB: cumulus
       POSTGRES_USER: cumulus
-      POSTGRES_PASSWORD: cumulus
+      POSTGRES_PASSWORD: <Your password>
     volumes:
-      - ./db_data:/var/lib/postgresql/data
+      - ./cumulus-db:/var/lib/postgresql/data
 
 ```
 
