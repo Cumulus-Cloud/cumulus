@@ -1,3 +1,4 @@
+import { Action } from "redux"
 import { ApiError } from "services/Api"
 import { FsNode, FsDirectory } from "models/FsNode"
 
@@ -17,9 +18,13 @@ export const wantMove = (fsNodes: FsNode[], target: FsDirectory): WantMove => ({
 export type CancelMove = { type: "CancelMove" }
 export const cancelMove = (): CancelMove => ({ type: "CancelMove" })
 
-export type Move = { type: "Move" }
-export function move(): Move {
-  return { type: "Move" }
+export interface Move extends Action {
+  type: "Move"
+  fsNodeToMove: FsNode
+  target: FsDirectory
+}
+export function move(fsNodeToMove: FsNode, target: FsDirectory): Move {
+  return { type: "Move", fsNodeToMove, target }
 }
 
 export type MoveSuccess = { type: "MoveSuccess", movedFsNode: FsNode, newFsNode: FsNode }

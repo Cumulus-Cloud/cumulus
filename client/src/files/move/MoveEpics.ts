@@ -6,11 +6,11 @@ import {
   Move, MoveError, ChangeMoveTarget, moveSuccess, moveError, changeMoveTargetSuccess, changeMoveTargetError, ChangeMoveTargetError
 } from "files/move/MoveActions"
 
-export const moveEpic: Epic<any, GlobalState> = (action$: ActionsObservable<Move>, state) => action$.ofType("Move")
+export const moveEpic: Epic<any, GlobalState> = (action$: ActionsObservable<Move>) => action$.ofType("Move")
     .mergeMap(action => {
-      const fsNodeToMove = state.getState().move.fsNodes[0]
-      const target = state.getState().move.target!
-      return Api.move(fsNodeToMove.path, `${target.path === "/" ? "" : target.path}/${fsNodeToMove.name}`)
+      const { fsNodeToMove, target } = action
+      const to = `${target.path === "/" ? "" : target.path}/${fsNodeToMove.name}`
+      return Api.move(fsNodeToMove.path, to)
         .then(movedfsNode => moveSuccess(fsNodeToMove, movedfsNode))
         .catch(moveError)
     })
