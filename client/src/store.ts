@@ -9,7 +9,7 @@ import { FileSystemState, FileSystemReducer } from "files/fileSystem/FileSystemR
 import { NewFolderState, NewFolderReducer } from "newFolder/NewFolderReducer"
 import { UploadState, UploadReducer } from "upload/UploadReducer"
 import { SearchState, SearchReducer } from "search/SearchReducer"
-import { MoveState, MoveReducer } from "move/MoveReducer"
+import { MoveState, MoveReducer } from "files/move/MoveReducer"
 import { RenameState, RenameReducer } from "rename/RenameReducer"
 import { InAppNotifState, InAppNotifReducer } from "inAppNotif/InAppNotifReducer"
 import RootEpic from "RootEpic"
