@@ -45,48 +45,112 @@ export function fetchDirectorySuccess(directory: FsNode): FetchDirectorySuccess 
   return { type: "FetchDirectorySuccess", directory }
 }
 
-export type FetchDirectoryError = { type: "FetchDirectoryError", error: ApiError }
-export const fetchDirectoryError = (error: ApiError): FetchDirectoryError => ({ type: "FetchDirectoryError", error })
+export interface FetchDirectoryError extends Action {
+  type: "FetchDirectoryError"
+  error: ApiError
+}
+export function fetchDirectoryError(error: ApiError): FetchDirectoryError {
+  return { type: "FetchDirectoryError", error }
+}
 
-export type ShowFsNodeInfos = { type: "ShowFsNodeInfos", fsNode: FsNode }
-export const showFsNodeInfos = (fsNode: FsNode): ShowFsNodeInfos => ({ type: "ShowFsNodeInfos", fsNode })
-
-export type HideFsNodeInfos = { type: "HideFsNodeInfos" }
-export const hideFsNodeInfos = (): HideFsNodeInfos => ({ type: "HideFsNodeInfos" })
-
-export type SelectFsNode = { type: "SelectFsNode", fsNode: FsNode }
-export const selectFsNode = (fsNode: FsNode): SelectFsNode => ({ type: "SelectFsNode", fsNode })
-
-export type DeselectFsNode = { type: "DeselectFsNode", fsNode: FsNode }
-export const deselectFsNode = (fsNode: FsNode): DeselectFsNode => ({ type: "DeselectFsNode", fsNode })
-
-export type CanselSelectionOfFsNode = { type: "CanselSelectionOfFsNode" }
-export const canselSelectionOfFsNode = (): CanselSelectionOfFsNode => ({ type: "CanselSelectionOfFsNode" })
-
-export type CloseShare = { type: "CloseShare" }
-export const onCloseShare = (): CloseShare => ({ type: "CloseShare" })
-
-export type OnDeleteFsNode = { type: "OnDeleteFsNode", fsNode: FsNode }
+export interface OnDeleteFsNode extends Action {
+  type: "OnDeleteFsNode"
+  fsNode: FsNode
+}
 export function onDeleteFsNode(fsNode: FsNode): OnDeleteFsNode {
   return { type: "OnDeleteFsNode", fsNode }
 }
 
-export type OnDeleteFsNodeSuccess = { type: "OnDeleteFsNodeSuccess", fsNode: FsNode }
-export const onDeleteFsNodeSuccess = (fsNode: FsNode): OnDeleteFsNodeSuccess => ({ type: "OnDeleteFsNodeSuccess", fsNode })
+export interface OnDeleteFsNodeSuccess extends Action {
+  type: "OnDeleteFsNodeSuccess"
+  fsNode: FsNode
+}
+export function onDeleteFsNodeSuccess(fsNode: FsNode): OnDeleteFsNodeSuccess {
+  return { type: "OnDeleteFsNodeSuccess", fsNode }
+}
 
-export type OnDeleteFsNodeError = { type: "OnDeleteFsNodeError", error: ApiError }
-export const onDeleteFsNodeError = (error: ApiError): OnDeleteFsNodeError => ({ type: "OnDeleteFsNodeError", error })
+export interface OnDeleteFsNodeError extends Action {
+  type: "OnDeleteFsNodeError"
+  error: ApiError
+}
+export function onDeleteFsNodeError(error: ApiError): OnDeleteFsNodeError {
+  return { type: "OnDeleteFsNodeError", error }
+}
 
-export type ShowPreview = { type: "ShowPreview", fsFile?: FsFile }
-export const onShowPreview = (fsFile?: FsFile): ShowPreview => ({ type: "ShowPreview", fsFile })
+export interface ShowPreview extends Action {
+  type: "ShowPreview"
+  fsFile?: FsFile
+}
+export function onShowPreview(fsFile?: FsFile): ShowPreview {
+  return { type: "ShowPreview", fsFile }
+}
 
-export type Sharing = { type: "Sharing", fsNode: FsNode }
+export interface Sharing extends Action {
+  type: "Sharing"
+  fsNode: FsNode
+}
 export function onSharing(fsNode: FsNode): Sharing {
   return { type: "Sharing", fsNode }
 }
 
-export type SharingSuccess = { type: "SharingSuccess", share: Share, fsNode: FsNode }
-export const onSharingSuccess = (share: Share, fsNode: FsNode): SharingSuccess => ({ type: "SharingSuccess", share, fsNode })
+export interface SharingSuccess extends Action {
+  type: "SharingSuccess"
+  share: Share
+  fsNode: FsNode
+}
+export function onSharingSuccess(share: Share, fsNode: FsNode): SharingSuccess {
+  return { type: "SharingSuccess", share, fsNode }
+}
 
-export type SharingError = { type: "SharingError", error: ApiError }
-export const onSharingError = (error: ApiError): SharingError => ({ type: "SharingError", error })
+export interface SharingError extends Action {
+  type: "SharingError"
+  error: ApiError
+}
+export function onSharingError(error: ApiError): SharingError {
+  return { type: "SharingError", error }
+}
+
+export interface CloseShare extends Action {
+  type: "CloseShare"
+}
+export function onCloseShare(): CloseShare {
+  return { type: "CloseShare" }
+}
+
+export interface ShowFsNodeInfos extends Action {
+  type: "ShowFsNodeInfos"
+  fsNode: FsNode
+}
+export function showFsNodeInfos(fsNode: FsNode): ShowFsNodeInfos {
+  return { type: "ShowFsNodeInfos", fsNode }
+}
+
+export interface HideFsNodeInfos extends Action {
+  type: "HideFsNodeInfos"
+}
+export function hideFsNodeInfos(): HideFsNodeInfos {
+  return { type: "HideFsNodeInfos" }
+}
+
+export interface SelectFsNode extends Action {
+  type: "SelectFsNode"
+  fsNode: FsNode
+}
+export function selectFsNode(fsNode: FsNode): SelectFsNode {
+  return { type: "SelectFsNode", fsNode }
+}
+
+export interface DeselectFsNode extends Action {
+  type: "DeselectFsNode"
+  fsNode: FsNode
+}
+export function deselectFsNode(fsNode: FsNode): DeselectFsNode {
+  return { type: "DeselectFsNode", fsNode }
+}
+
+export interface CanselSelectionOfFsNode extends Action {
+  type: "CanselSelectionOfFsNode"
+}
+export function canselSelectionOfFsNode(): CanselSelectionOfFsNode {
+  return { type: "CanselSelectionOfFsNode" }
+}
