@@ -4,7 +4,7 @@ import * as Api from "services/Api"
 import { OnCreateNewFolderSuccess } from "files/newFolder/NewFolderActions"
 import { OnUploadFileSuccess } from "upload/UploadActions"
 import { MoveSuccess } from "files/move/MoveActions"
-import { RenameSuccess } from "rename/RenameActions"
+import { RenameSuccess } from "files/rename/RenameActions"
 
 export type FileSystemAction =
   FetchDirectory |

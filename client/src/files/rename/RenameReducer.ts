@@ -1,4 +1,4 @@
-import { RenameAction } from "rename/RenameActions"
+import { RenameAction } from "files/rename/RenameActions"
 import { ApiError } from "services/Api"
 import { FsNode } from "models/FsNode"
 

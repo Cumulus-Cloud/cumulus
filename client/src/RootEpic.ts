@@ -5,7 +5,7 @@ import { signupEpics } from "auth/signup/SignupEpics"
 import { fileSystemEpics } from "files/fileSystem/FileSystemEpics"
 import { moveEpics } from "files/move/MoveEpics"
 import { createNewFolderEpics } from "files/newFolder/NewFolderEpics"
-import { renameEpics } from "rename/RenameEpics"
+import { renameEpics } from "files/rename/RenameEpics"
 import { searchEpics } from "search/SearchEpics"
 import { uploadEpics } from "upload/UploadEpics"
 
