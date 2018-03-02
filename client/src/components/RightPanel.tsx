@@ -6,7 +6,7 @@ import { GlobalState } from "store"
 import { Dispatch, connect } from "react-redux"
 import { FsNode } from "models/FsNode"
 import FsNodeInfos from "components/FsNodeInfos"
-import * as FileSystemActions from "fileSystem/FileSystemActions"
+import * as FileSystemActions from "files/fileSystem/FileSystemActions"
 import MultFsNodesPanel from "components/MultFsNodesPanel"
 
 interface StateProps {

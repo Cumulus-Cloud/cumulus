@@ -16,7 +16,7 @@ import { Provider } from "react-redux"
 import { ConnectedRouter } from "react-router-redux"
 import LoginContainer from "auth/login/LoginContainer"
 import SignupContainer from "auth/signup/SignupContainer"
-import FileSystemContainer from "fileSystem/FileSystemContainer"
+import FileSystemContainer from "files/fileSystem/FileSystemContainer"
 import { store, history } from "store"
 
 ReactDOM.render(

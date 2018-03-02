@@ -1,6 +1,6 @@
 import * as React from "react"
 import * as styles from "inAppNotif/InAppNotifContainer.css"
-import { connect } from "react-redux"
+import { connect, Dispatch } from "react-redux"
 import { GlobalState } from "store"
 import { InAppNotif } from "inAppNotif/InAppNotif"
 import classNames from "utils/ClassNames"
@@ -9,7 +9,11 @@ interface PropsState {
   inAppNotif?: InAppNotif
 }
 
-type Props = PropsState
+interface DispatchProps {
+
+}
+
+type Props = PropsState & DispatchProps
 
 class InAppNotifContainer extends React.PureComponent<Props> {
   render() {
@@ -34,4 +38,9 @@ const mapStateToProps = (state: GlobalState): PropsState => {
   }
 }
 
-export default connect(mapStateToProps)(InAppNotifContainer)
+const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
+  return {
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(InAppNotifContainer)

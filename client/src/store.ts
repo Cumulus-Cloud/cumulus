@@ -5,7 +5,7 @@ import { RouterState, routerReducer, routerMiddleware } from "react-router-redux
 import { createEpicMiddleware } from "redux-observable"
 import { LoginState, LoginReducer } from "auth/login/LoginReducer"
 import { SignupState, SignupReducer } from "auth/signup/SignupReducer"
-import { FileSystemState, FileSystemReducer } from "fileSystem/FileSystemReducer"
+import { FileSystemState, FileSystemReducer } from "files/fileSystem/FileSystemReducer"
 import { NewFolderState, NewFolderReducer } from "newFolder/NewFolderReducer"
 import { UploadState, UploadReducer } from "upload/UploadReducer"
 import { SearchState, SearchReducer } from "search/SearchReducer"
