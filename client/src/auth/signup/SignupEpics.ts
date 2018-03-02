@@ -4,9 +4,9 @@ import * as Api from "services/Api"
 import * as SignupActions from "auth/signup/SignupActions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 
-export const signupEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("LOGIN_ON_SUBMIT")
-    .mergeMap(action =>
-      Api.authenticate(action.login, action.password)
+export const signupEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("SIGNUP_ON_SUBMIT")
+    .mergeMap((action: SignupActions.SIGNUP_ON_SUBMIT) =>
+      Api.signup(action.login, action.email, action.password)
       .then(user => {
         history.replace("/fs/")
         return SignupActions.signupOnSubmitSuccess(user)
