@@ -20,6 +20,7 @@ scalacOptions in ThisBuild := Seq(
   "-feature",
   "-g:vars",
   "-Xlint:_",
+  "-Ywarn-macros:after",
   "-opt:l:inline",
   "-opt-inline-from"
 )

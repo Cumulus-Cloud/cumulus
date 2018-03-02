@@ -30,7 +30,6 @@ sealed trait FsNode {
 
   def moved(path: Path): FsNode
 
-
 }
 
 object FsNode {
