@@ -1,3 +1,4 @@
+import { Action } from "redux"
 import { FsNode, FsFile } from "models/FsNode"
 import { Share } from "models/Share"
 import { ApiError } from "services/Api"
@@ -28,16 +29,24 @@ export type FileSystemAction =
   MoveSuccess |
   RenameSuccess
 
-export type Sharing = { type: "Sharing", fsNode: FsNode }
-export function onSharing(fsNode: FsNode): Sharing {
-  return { type: "Sharing", fsNode }
+export interface FetchDirectory extends Action {
+  type: "FetchDirectory"
+  path: string
+}
+export function fetchDirectory(path: string): FetchDirectory {
+  return { type: "FetchDirectory", path }
 }
 
-export type SharingSuccess = { type: "SharingSuccess", share: Share, fsNode: FsNode }
-export const onSharingSuccess = (share: Share, fsNode: FsNode): SharingSuccess => ({ type: "SharingSuccess", share, fsNode })
+export interface FetchDirectorySuccess extends Action {
+  type: "FetchDirectorySuccess"
+  directory: FsNode
+}
+export function fetchDirectorySuccess(directory: FsNode): FetchDirectorySuccess {
+  return { type: "FetchDirectorySuccess", directory }
+}
 
-export type SharingError = { type: "SharingError", error: ApiError }
-export const onSharingError = (error: ApiError): SharingError => ({ type: "SharingError", error })
+export type FetchDirectoryError = { type: "FetchDirectoryError", error: ApiError }
+export const fetchDirectoryError = (error: ApiError): FetchDirectoryError => ({ type: "FetchDirectoryError", error })
 
 export type ShowFsNodeInfos = { type: "ShowFsNodeInfos", fsNode: FsNode }
 export const showFsNodeInfos = (fsNode: FsNode): ShowFsNodeInfos => ({ type: "ShowFsNodeInfos", fsNode })
@@ -57,17 +66,6 @@ export const canselSelectionOfFsNode = (): CanselSelectionOfFsNode => ({ type: "
 export type CloseShare = { type: "CloseShare" }
 export const onCloseShare = (): CloseShare => ({ type: "CloseShare" })
 
-export type FetchDirectory = { type: "FetchDirectory", path: string }
-export function fetchDirectory(path: string): FetchDirectory {
-  return { type: "FetchDirectory", path }
-}
-
-export type FetchDirectorySuccess = { type: "FetchDirectorySuccess", directory: FsNode }
-export const fetchDirectorySuccess = (directory: FsNode): FetchDirectorySuccess => ({ type: "FetchDirectorySuccess", directory })
-
-export type FetchDirectoryError = { type: "FetchDirectoryError", error: ApiError }
-export const fetchDirectoryError = (error: ApiError): FetchDirectoryError => ({ type: "FetchDirectoryError", error })
-
 export type OnDeleteFsNode = { type: "OnDeleteFsNode", fsNode: FsNode }
 export function onDeleteFsNode(fsNode: FsNode): OnDeleteFsNode {
   return { type: "OnDeleteFsNode", fsNode }
@@ -81,3 +79,14 @@ export const onDeleteFsNodeError = (error: ApiError): OnDeleteFsNodeError => ({ 
 
 export type ShowPreview = { type: "ShowPreview", fsFile?: FsFile }
 export const onShowPreview = (fsFile?: FsFile): ShowPreview => ({ type: "ShowPreview", fsFile })
+
+export type Sharing = { type: "Sharing", fsNode: FsNode }
+export function onSharing(fsNode: FsNode): Sharing {
+  return { type: "Sharing", fsNode }
+}
+
+export type SharingSuccess = { type: "SharingSuccess", share: Share, fsNode: FsNode }
+export const onSharingSuccess = (share: Share, fsNode: FsNode): SharingSuccess => ({ type: "SharingSuccess", share, fsNode })
+
+export type SharingError = { type: "SharingError", error: ApiError }
+export const onSharingError = (error: ApiError): SharingError => ({ type: "SharingError", error })
