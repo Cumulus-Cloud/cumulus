@@ -1,7 +1,7 @@
 import { Epic, combineEpics } from "redux-observable"
 import { GlobalState } from "store"
 import * as Api from "services/Api"
-import { Rename, RenameError, renameSuccess, renameError } from "rename/RenameActions"
+import { Rename, RenameError, renameSuccess, renameError } from "files/rename/RenameActions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 
 export const renameEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("Rename")

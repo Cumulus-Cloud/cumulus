@@ -5,7 +5,7 @@ import Dropdown, { DropdownItem } from "components/menus/Dropdown"
 import MoreVertiIcon from "icons/MoreVertiIcon"
 import LogoutIcon from "icons/LogoutIcon"
 import * as Api from "services/Api"
-import SearchContainer from "search/SearchContainer"
+import SearchContainer from "files/search/SearchContainer"
 
 export default class AppBar extends React.PureComponent<{}> {
   render() {

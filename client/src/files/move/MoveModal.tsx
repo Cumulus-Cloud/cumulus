@@ -2,7 +2,7 @@ import * as React from "react"
 import * as styles from "./MoveModal.css"
 import { connect, Dispatch } from "react-redux"
 import { GlobalState } from "store"
-import * as MoveActions from "move/MoveActions"
+import * as MoveActions from "files/move/MoveActions"
 
 import Modal from "components/modals/Modal"
 import ModalActions from "components/modals/ModalActions"
@@ -11,7 +11,7 @@ import ModalContent from "components/modals/ModalContent"
 import FlatButton from "components/buttons/FlatButton"
 import { FsNode, FsDirectory, isDirectory } from "models/FsNode"
 import { ApiError } from "services/Api"
-import TargetDirectory from "move/TargetDirectory"
+import TargetDirectory from "files/move/TargetDirectory"
 import Breadcrumb from "components/breadcrumb/Breadcrumb"
 
 interface PropsState {

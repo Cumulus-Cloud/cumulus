@@ -1,7 +1,7 @@
 import { Epic, combineEpics } from "redux-observable"
 import { GlobalState } from "store"
 import * as Api from "services/Api"
-import * as FileSystemActions from "fileSystem/FileSystemActions"
+import * as FileSystemActions from "files/fileSystem/FileSystemActions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 
 // tslint:disable-next-line:no-any
