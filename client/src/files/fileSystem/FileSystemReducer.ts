@@ -1,4 +1,4 @@
-import { FileSystemAction, OnDeleteFsNodeSuccess, ShowFsNodeInfos, SelectFsNode } from "./FileSystemActions"
+import { FileSystemAction, DeleteFsNodeSuccess, ShowFsNodeInfos, SelectFsNode } from "./FileSystemActions"
 import { FsNode, FsFile, isDirectory, FsDirectory } from "models/FsNode"
 import { Share } from "models/Share"
 import { ApiError } from "services/Api"
@@ -34,9 +34,9 @@ export const FileSystemReducer = (state: FileSystemState = initState, action: Fi
     case "FetchDirectorySuccess": return { ...state, directory: action.directory, loading: false }
     case "FetchDirectoryError": return { ...state, error: action.error, loading: false }
     case "CreateNewFolderSuccess": return createNewFolderSuccessReduce(state, action)
-    case "OnDeleteFsNode": return { ...state, deleteLoading: action.fsNode.id }
-    case "OnDeleteFsNodeSuccess": return onDeleteFsNodeSuccessReducer(state, action)
-    case "OnDeleteFsNodeError": return { ...state, error: action.error, deleteLoading: undefined }
+    case "DeleteFsNode": return { ...state, deleteLoading: action.fsNode.id }
+    case "DeleteFsNodeSuccess": return deleteFsNodeSuccessReducer(state, action)
+    case "DeleteFsNodeError": return { ...state, error: action.error, deleteLoading: undefined }
     case "OnUploadFileSuccess": return onUploadFileSuccessReducer(state, action)
     case "ShowPreview": return { ...state, previewFsFile: action.fsFile }
     case "Sharing": return { ...state, sharingLoader: true }
@@ -106,7 +106,7 @@ function onUploadFileSuccessReducer(state: FileSystemState, action: OnUploadFile
   }
 }
 
-function onDeleteFsNodeSuccessReducer(state: FileSystemState, action: OnDeleteFsNodeSuccess): FileSystemState {
+function deleteFsNodeSuccessReducer(state: FileSystemState, action: DeleteFsNodeSuccess): FileSystemState {
   if (state.directory && isDirectory(state.directory)) {
     const newFsNode = { ...state.directory, content: state.directory.content.filter(fsNode => fsNode.id !== action.fsNode.id) }
     return { ...state, directory: newFsNode, deleteLoading: undefined }

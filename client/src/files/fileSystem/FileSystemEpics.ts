@@ -6,14 +6,14 @@ import {
   fetchDirectorySuccess,
   fetchDirectoryError,
   FetchDirectoryError,
-  OnDeleteFsNode,
-  onDeleteFsNodeSuccess,
-  onDeleteFsNodeError,
-  OnDeleteFsNodeError,
+  DeleteFsNode,
+  deleteFsNodeSuccess,
+  deleteFsNodeError,
   Sharing,
   onSharingSuccess,
   onSharingError,
-  SharingError
+  SharingError,
+  DeleteFsNodeError
 } from "files/fileSystem/FileSystemActions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 
@@ -33,19 +33,19 @@ export const fetchDirectoryErrorEpic: Epic<any, GlobalState> = (action$: Actions
     .map(action => showApiErrorNotif(action.error))
 }
 
-export const onDeleteFsNodeEpic: Epic<any, GlobalState> = (action$: ActionsObservable<OnDeleteFsNode>) => {
+export const onDeleteFsNodeEpic: Epic<any, GlobalState> = (action$: ActionsObservable<DeleteFsNode>) => {
   return action$
-    .ofType("OnDeleteFsNode")
+    .ofType("DeleteFsNode")
     .mergeMap(action =>
       Api.deleteFsNode(action.fsNode)
-        .then(() => onDeleteFsNodeSuccess(action.fsNode))
-        .catch(onDeleteFsNodeError)
+        .then(() => deleteFsNodeSuccess(action.fsNode))
+        .catch(deleteFsNodeError)
     )
 }
 
-export const onDeleteFsNodeErrorEpic: Epic<any, GlobalState> = (action$: ActionsObservable<OnDeleteFsNodeError>) => {
+export const onDeleteFsNodeErrorEpic: Epic<any, GlobalState> = (action$: ActionsObservable<DeleteFsNodeError>) => {
   return action$
-    .ofType("OnDeleteFsNodeError")
+    .ofType("DeleteFsNodeError")
     .map(action => showApiErrorNotif(action.error))
 }
 

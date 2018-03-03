@@ -12,9 +12,9 @@ export type FileSystemAction =
   FetchDirectorySuccess |
   FetchDirectoryError |
   CreateNewFolderSuccess |
-  OnDeleteFsNode |
-  OnDeleteFsNodeSuccess |
-  OnDeleteFsNodeError |
+  DeleteFsNode |
+  DeleteFsNodeSuccess |
+  DeleteFsNodeError |
   OnUploadFileSuccess |
   ShowPreview |
   Sharing |
@@ -53,28 +53,28 @@ export function fetchDirectoryError(error: ApiError): FetchDirectoryError {
   return { type: "FetchDirectoryError", error }
 }
 
-export interface OnDeleteFsNode extends Action {
-  type: "OnDeleteFsNode"
+export interface DeleteFsNode extends Action {
+  type: "DeleteFsNode"
   fsNode: FsNode
 }
-export function onDeleteFsNode(fsNode: FsNode): OnDeleteFsNode {
-  return { type: "OnDeleteFsNode", fsNode }
+export function deleteFsNode(fsNode: FsNode): DeleteFsNode {
+  return { type: "DeleteFsNode", fsNode }
 }
 
-export interface OnDeleteFsNodeSuccess extends Action {
-  type: "OnDeleteFsNodeSuccess"
+export interface DeleteFsNodeSuccess extends Action {
+  type: "DeleteFsNodeSuccess"
   fsNode: FsNode
 }
-export function onDeleteFsNodeSuccess(fsNode: FsNode): OnDeleteFsNodeSuccess {
-  return { type: "OnDeleteFsNodeSuccess", fsNode }
+export function deleteFsNodeSuccess(fsNode: FsNode): DeleteFsNodeSuccess {
+  return { type: "DeleteFsNodeSuccess", fsNode }
 }
 
-export interface OnDeleteFsNodeError extends Action {
-  type: "OnDeleteFsNodeError"
+export interface DeleteFsNodeError extends Action {
+  type: "DeleteFsNodeError"
   error: ApiError
 }
-export function onDeleteFsNodeError(error: ApiError): OnDeleteFsNodeError {
-  return { type: "OnDeleteFsNodeError", error }
+export function deleteFsNodeError(error: ApiError): DeleteFsNodeError {
+  return { type: "DeleteFsNodeError", error }
 }
 
 export interface ShowPreview extends Action {
