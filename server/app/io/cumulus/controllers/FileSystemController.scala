@@ -48,7 +48,7 @@ class FileSystemController(
 
         // Get the file's content
         maybeRange <- EitherT.fromEither[Future](headerRange(request, file))
-        content    <- EitherT(storageService.downloadFile(path, maybeRange))
+        content    <- EitherT.fromEither[Future](storageService.downloadFile(file, maybeRange))
 
         // Create the response
         result <- EitherT.pure[Future, AppError](

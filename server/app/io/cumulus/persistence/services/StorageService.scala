@@ -85,34 +85,26 @@ class StorageService(
 
   /**
     * Finds a file content by its path and owner. Will fail if the element does not exist or is not a file.
-    * @param path The path of the file
+    * @param file The file to read
     * @param session The session performing the operation
     */
-  def downloadFile(path: Path, maybeRange: Option[Range])(implicit session: Session): Future[Either[AppError, Source[ByteString, _]]] = {
-    implicit val user = session.user
-
-    for {
-      file    <- EitherT(fsNodeService.findFile(path))
-      content <- EitherT.fromEither[Future]{
-        maybeRange match {
-          // Range provided, only return a chunk of the file
-          case Some(range) =>
-            StorageReferenceReader.read(
-              storageEngine,
-              file,
-              range
-            )
-          // No range provided, return the content from the start
-          case _ =>
-            StorageReferenceReader.read(
-              storageEngine,
-              file
-            )
-        }
-      }
-    } yield content
-
-  }.value
+  def downloadFile(file: File, maybeRange: Option[Range])(implicit session: Session): Either[AppError, Source[ByteString, _]] = {
+    maybeRange match {
+      // Range provided, only return a chunk of the file
+      case Some(range) =>
+        StorageReferenceReader.read(
+          storageEngine,
+          file,
+          range
+        )
+      // No range provided, return the content from the start
+      case _ =>
+        StorageReferenceReader.read(
+          storageEngine,
+          file
+        )
+    }
+  }
 
   /**
     * Finds a file content by its path and owner. Will fail if the element does not exist or is not a file.

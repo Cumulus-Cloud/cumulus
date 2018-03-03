@@ -54,7 +54,7 @@ class SharingController(
 
         // Get the file's content
         maybeRange <- EitherT.fromEither[Future](headerRange(request, file))
-        content    <- EitherT(storageService.downloadFile(file.path, maybeRange)(session))
+        content    <- EitherT.fromEither[Future](storageService.downloadFile(file, maybeRange)(session))
 
         // Create the response
         result <- EitherT.pure[Future, AppError](
