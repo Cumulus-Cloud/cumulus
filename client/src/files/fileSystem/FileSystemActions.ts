@@ -2,7 +2,7 @@ import { Action } from "redux"
 import { FsNode, FsFile } from "models/FsNode"
 import { Share } from "models/Share"
 import { ApiError } from "services/Api"
-import { OnCreateNewFolderSuccess } from "files/newFolder/NewFolderActions"
+import { CreateNewFolderSuccess } from "files/newFolder/NewFolderActions"
 import { OnUploadFileSuccess } from "files/upload/UploadActions"
 import { MoveSuccess } from "files/move/MoveActions"
 import { RenameSuccess } from "files/rename/RenameActions"
@@ -11,7 +11,7 @@ export type FileSystemAction =
   FetchDirectory |
   FetchDirectorySuccess |
   FetchDirectoryError |
-  OnCreateNewFolderSuccess |
+  CreateNewFolderSuccess |
   OnDeleteFsNode |
   OnDeleteFsNodeSuccess |
   OnDeleteFsNodeError |

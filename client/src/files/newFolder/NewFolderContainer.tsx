@@ -57,11 +57,9 @@ const mapStateToProps = (state: GlobalState): PropsState => {
 }
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onNewFolderNameChange: newFolderName => dispatch(NewFolderActions.onNewFolderNameChange(newFolderName)),
-    onWantCreateNewFolder: () => dispatch(NewFolderActions.onWantCreateNewFolder()),
-    onCreateNewFolder: (directory, newFolderName) => {
-      dispatch(NewFolderActions.onCreateNewFolder(directory, newFolderName))
-    },
+    onNewFolderNameChange: newFolderName => dispatch(NewFolderActions.newFolderNameChange(newFolderName)),
+    onWantCreateNewFolder: () => dispatch(NewFolderActions.wantCreateNewFolder()),
+    onCreateNewFolder: (directory, newFolderName) => dispatch(NewFolderActions.createNewFolder(directory, newFolderName)),
   }
 }
 
