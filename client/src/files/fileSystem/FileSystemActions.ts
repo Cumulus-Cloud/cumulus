@@ -3,7 +3,7 @@ import { FsNode, FsFile } from "models/FsNode"
 import { Share } from "models/Share"
 import { ApiError } from "services/Api"
 import { CreateNewFolderSuccess } from "files/newFolder/NewFolderActions"
-import { OnUploadFileSuccess } from "files/upload/UploadActions"
+import { UploadFileSuccess } from "files/upload/UploadActions"
 import { MoveSuccess } from "files/move/MoveActions"
 import { RenameSuccess } from "files/rename/RenameActions"
 
@@ -15,7 +15,7 @@ export type FileSystemAction =
   DeleteFsNode |
   DeleteFsNodeSuccess |
   DeleteFsNodeError |
-  OnUploadFileSuccess |
+  UploadFileSuccess |
   ShowPreview |
   Sharing |
   SharingSuccess |

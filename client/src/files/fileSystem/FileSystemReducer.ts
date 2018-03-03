@@ -3,7 +3,7 @@ import { FsNode, FsFile, isDirectory, FsDirectory } from "models/FsNode"
 import { Share } from "models/Share"
 import { ApiError } from "services/Api"
 import { CreateNewFolderSuccess } from "files/newFolder/NewFolderActions"
-import { OnUploadFileSuccess } from "files/upload/UploadActions"
+import { UploadFileSuccess } from "files/upload/UploadActions"
 import { MoveSuccess } from "files/move/MoveActions"
 import { RenameSuccess } from "files/rename/RenameActions"
 
@@ -37,7 +37,7 @@ export const FileSystemReducer = (state: FileSystemState = initState, action: Fi
     case "DeleteFsNode": return { ...state, deleteLoading: action.fsNode.id }
     case "DeleteFsNodeSuccess": return deleteFsNodeSuccessReducer(state, action)
     case "DeleteFsNodeError": return { ...state, error: action.error, deleteLoading: undefined }
-    case "OnUploadFileSuccess": return onUploadFileSuccessReducer(state, action)
+    case "UploadFileSuccess": return uploadFileSuccessReducer(state, action)
     case "ShowPreview": return { ...state, previewFsFile: action.fsFile }
     case "Sharing": return { ...state, sharingLoader: true }
     case "SharingSuccess": return { ...state, sharingLoader: false, sharedFsNode: action.fsNode, share: action.share }
@@ -97,7 +97,7 @@ function createNewFolderSuccessReduce(state: FileSystemState, action: CreateNewF
   }
 }
 
-function onUploadFileSuccessReducer(state: FileSystemState, action: OnUploadFileSuccess): FileSystemState {
+function uploadFileSuccessReducer(state: FileSystemState, action: UploadFileSuccess): FileSystemState {
   if (state.directory && isDirectory(state.directory)) {
     const newFsNode = { ...state.directory, content: [...state.directory.content, action.fsNode] }
     return { ...state, directory: newFsNode }
