@@ -1,5 +1,6 @@
 import { ApiError } from "services/Api"
 import { SearchResult } from "models/Search"
+import { Action } from "redux"
 
 export type SearchAction =
   QueryChange |
@@ -8,19 +9,41 @@ export type SearchAction =
   SearchError |
   CancelSearch
 
-export type QueryChange = { type: "QueryChange", query: string }
-export const onQueryChange = (query: string): QueryChange => ({ type: "QueryChange", query })
+export interface QueryChange extends Action {
+  type: "QueryChange"
+  query: string
+}
+export function onQueryChange(query: string): QueryChange {
+  return { type: "QueryChange", query }
+}
 
-export type FsNodeSearch = { type: "FsNodeSearch", query: string }
+export interface FsNodeSearch extends Action {
+  type: "FsNodeSearch"
+  query: string
+}
 export function onFsNodeSearch(query: string): FsNodeSearch {
   return { type: "FsNodeSearch", query }
 }
 
-export type SearchSuccess = { type: "SearchSuccess", searchResult: SearchResult }
-export const onSearchSuccess = (searchResult: SearchResult): SearchSuccess => ({ type: "SearchSuccess", searchResult })
+export interface SearchSuccess extends Action {
+  type: "SearchSuccess"
+  searchResult: SearchResult
+}
+export function onSearchSuccess(searchResult: SearchResult): SearchSuccess {
+  return { type: "SearchSuccess", searchResult }
+}
 
-export type SearchError = { type: "SearchError", error: ApiError }
-export const onSearchError = (error: ApiError): SearchError => ({ type: "SearchError", error })
+export interface SearchError extends Action {
+  type: "SearchError"
+  error: ApiError
+}
+export function onSearchError(error: ApiError): SearchError {
+  return { type: "SearchError", error }
+}
 
-export type CancelSearch = { type: "CancelSearch" }
-export const onCancelSearch = (): CancelSearch => ({ type: "CancelSearch" })
+export interface CancelSearch extends Action {
+  type: "CancelSearch"
+}
+export function onCancelSearch(): CancelSearch {
+  return { type: "CancelSearch" }
+}
