@@ -128,7 +128,7 @@ trait Authentication[USER] extends BaseController with I18nSupport {
           val headerAuth = request.headers.get(headerName)
           val cookieAuth = request.cookies.get(cookieName).map(_.value)
 
-          val token     = headerAuth.orElse(cookieAuth).getOrElse("")
+          val token      = headerAuth.orElse(cookieAuth).getOrElse("")
           val jwtSession = JwtSession.deserialize(token)
 
           jwtSession.getAs[USER](tokenField).map(AuthenticatedRequest(_, request)) match {
