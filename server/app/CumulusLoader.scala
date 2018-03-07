@@ -1,5 +1,3 @@
-import scala.concurrent.ExecutionContextExecutor
-
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.typesafe.config.Config
 import controllers.AssetsComponents
@@ -22,9 +20,13 @@ import play.api.libs.mailer.MailerComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
-
 import router.Routes
 
+import scala.concurrent.ExecutionContextExecutor
+
+/**
+  * Application compile time loader.
+  */
 class CumulusLoader extends ApplicationLoader {
 
   def load(context: ApplicationLoader.Context): Application = {
@@ -36,6 +38,9 @@ class CumulusLoader extends ApplicationLoader {
 
 }
 
+/**
+  * Loading of all the components of the application.
+  */
 class CumulusComponents(
   context: ApplicationLoader.Context
 ) extends BuiltInComponentsFromContext(context)
@@ -80,7 +85,7 @@ class CumulusComponents(
   )
 
   // Configurations
-  implicit val config: Config      = configuration.underlying // for MailerComponents
+  implicit val config: Config     = configuration.underlying // for MailerComponents
   implicit val settings: Settings = new Settings(configuration)
 
   // Access the lazy val to trigger evolutions
@@ -92,7 +97,8 @@ class CumulusComponents(
 
   // executionContexts
   implicit val defaultEc: ExecutionContextExecutor = actorSystem.dispatcher
-  val databaseEc: ExecutionContextExecutor         = actorSystem.dispatcher //s.lookup("db-context")
+  val databaseEc: ExecutionContextExecutor         = actorSystem.dispatchers.lookup("db-context")
+  val tasksEc: ExecutionContextExecutor            = actorSystem.dispatchers.lookup("task-context")
 
   // Override messagesApi to use Hocon config
   override lazy val messagesApi: MessagesApi = new HoconMessagesApiProvider(environment, configuration, langs, httpConfiguration).get

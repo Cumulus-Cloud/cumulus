@@ -7,10 +7,6 @@ import scala.language.higherKinds
 
 import io.cumulus.core.persistence.Database
 
-case class MissingFieldException(errorMsg: String) extends Exception
-case class BadRequestException(errorMsg: String)   extends Exception
-case class ValidationException(error: String)      extends Exception
-
 case class QueryBuilder[D <: Database](db: D, ec: ExecutionContext) {
 
   def pure[A](a: => A): Query[D, A] = Query(db, ec)(_ => a)
