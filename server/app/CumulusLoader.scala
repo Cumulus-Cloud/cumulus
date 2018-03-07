@@ -1,6 +1,7 @@
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.typesafe.config.Config
 import controllers.AssetsComponents
+import io.cumulus.GarbageCollector
 import io.cumulus.controllers.utils.{Assets, LoggingFilter}
 import io.cumulus.controllers.{FileSystemController, HomeController, SharingController, UserController}
 import io.cumulus.core.Settings
@@ -130,5 +131,7 @@ class CumulusComponents(
   lazy val fsController: FileSystemController   = new FileSystemController(controllerComponents, fsNodeService, storageService, sharingService)
   lazy val sharingController: SharingController = new SharingController(controllerComponents, sharingService, storageService)
   lazy val assetController: Assets              = new Assets(context.environment, assetsMetadata, httpErrorHandler, jsMessageFactory.all, controllerComponents)
+
+  new GarbageCollector(actorSystem).start
 
 }
