@@ -8,7 +8,7 @@ import io.cumulus.core.controllers.utils.api.HttpErrorHandler
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.QueryBuilder
 import io.cumulus.persistence.services.{FsNodeService, SharingService, StorageService, UserService}
-import io.cumulus.persistence.storage.{LocalStorageEngine, StorageEngine}
+import io.cumulus.persistence.storage._
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore, UserStore}
 import io.cumulus.stages._
 import jsmessages.JsMessagesFactory
@@ -53,14 +53,14 @@ class CumulusComponents(
   with EvolutionsComponents {
 
   // List of supported ciphers
-  implicit val ciphers = Ciphers(Map(
-    AESCipherStage.name -> AESCipherStage
+  implicit val ciphers = Ciphers(Seq(
+    AESCipherStage
   ))
 
   // List of supported compressors
-  implicit val compressors = Compressions(Map(
-    GzipStage.name    -> GzipStage,
-    DeflateStage.name -> DeflateStage
+  implicit val compressors = Compressions(Seq(
+    GzipStage,
+    DeflateStage
   ))
 
   // List of metadata extractors available
@@ -75,6 +75,11 @@ class CumulusComponents(
     PDFDocumentThumbnailGenerator
   ))
 
+  // List of storage engine available
+  implicit val storageEngines = StorageEngines(Seq(
+    LocalStorage
+  ))
+
   lazy val router: Router = new Routes(
     httpErrorHandler,
     homeController,
@@ -85,8 +90,9 @@ class CumulusComponents(
   )
 
   // Configurations
-  implicit val config: Config     = configuration.underlying // for MailerComponents
-  implicit val settings: Settings = new Settings(configuration)
+  implicit lazy val playConfig: Configuration = configuration
+  implicit lazy val config: Config            = configuration.underlying // for MailerComponents
+  implicit lazy val settings: Settings        = new Settings(configuration)
 
   // Access the lazy val to trigger evolutions
   applicationEvolutions
@@ -117,12 +123,8 @@ class CumulusComponents(
   // Services
   lazy val userService: UserService       = new UserService(userStore, fsNodeStore)
   lazy val fsNodeService: FsNodeService   = new FsNodeService(fsNodeStore, sharingStore)
-  lazy val storageService: StorageService = new StorageService(fsNodeService, storageEngine)
+  lazy val storageService: StorageService = new StorageService(fsNodeService)
   lazy val sharingService: SharingService = new SharingService(userStore, fsNodeStore, sharingStore)
-
-  // Storage engine
-  lazy val storageEngine: StorageEngine = new LocalStorageEngine()
-
 
   // Controllers
   lazy val homeController: HomeController       = new HomeController(controllerComponents)

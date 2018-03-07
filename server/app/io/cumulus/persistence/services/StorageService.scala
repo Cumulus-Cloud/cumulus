@@ -1,7 +1,6 @@
 package io.cumulus.persistence.services
 
 import scala.concurrent.{ExecutionContext, Future}
-
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
@@ -13,16 +12,16 @@ import io.cumulus.core.validation.AppError
 import io.cumulus.core.{Logging, Settings}
 import io.cumulus.models.fs.{File, FileMetadata}
 import io.cumulus.models.{Path, Session, UserSession}
-import io.cumulus.persistence.storage.{StorageEngine, StorageReference}
+import io.cumulus.persistence.storage.{StorageEngines, StorageReference}
 import io.cumulus.stages._
 
 class StorageService(
-  fsNodeService: FsNodeService,
-  storageEngine: StorageEngine
+  fsNodeService: FsNodeService
 )(
   implicit
   ciphers: Ciphers,
   compressions: Compressions,
+  storageEngines: StorageEngines,
   materializer: Materializer,
   settings: Settings,
   metadataExtractors: MetadataExtractors,
@@ -58,7 +57,7 @@ class StorageService(
       // Define the file writer from this information
       fileWriter = {
         StorageReferenceWriter.writes(
-          storageEngine,
+          storageEngines.default, // Always use the default storage engine during upload
           cipher,
           compression,
           path
@@ -92,17 +91,10 @@ class StorageService(
     maybeRange match {
       // Range provided, only return a chunk of the file
       case Some(range) =>
-        StorageReferenceReader.read(
-          storageEngine,
-          file,
-          range
-        )
+        StorageReferenceReader.read(file, range)
       // No range provided, return the content from the start
       case _ =>
-        StorageReferenceReader.read(
-          storageEngine,
-          file
-        )
+        StorageReferenceReader.read(file)
     }
   }
 
@@ -116,31 +108,28 @@ class StorageService(
 
     for {
       file    <- EitherT(fsNodeService.findFile(path))
-      content <- EitherT.fromEither[Future]{
-        StorageReferenceReader.readThumbnail(
-          storageEngine,
-          file
-        )
-      }
+      content <- EitherT.fromEither[Future](StorageReferenceReader.readThumbnail(file))
     } yield content
 
   }.value
 
   /** Extract the metadata of the provided file */
   private def extractMetadata(file: File)(implicit session: UserSession): Either[AppError, FileMetadata] = {
-    val metadataExtractor =  metadataExtractors.get(file.mimeType)
+    val metadataExtractor = metadataExtractors.get(file.mimeType)
 
-    metadataExtractor.extract(file, storageEngine)
+    metadataExtractor.extract(file)
   }
 
   /** Generate a thumbnail of the provided file */
   private def generateThumbnail(file: File)(implicit session: UserSession): Future[Either[AppError, Option[StorageReference]]] = {
     val thumbnailGenerator = thumbnailGenerators.get(file.mimeType)
 
-    thumbnailGenerator.map { generator =>
-      generator.generate(file, storageEngine).map(_.map(Some(_)))
-    }.getOrElse(Future.successful(Right(None)))
+    thumbnailGenerator match {
+      case Some(generator) =>
+        generator.generate(file).map(_.map(Some(_)))
+      case None =>
+        Future.successful(Right(None))
+    }
   }
-
 
 }

@@ -11,10 +11,4 @@ class Settings(
     val objectSize = conf.get[Long]("cumulus.storage.objectSize")
   }
 
-  object storageEngines {
-    object localStorageEngine {
-      val path  = conf.get[String]("storageEngines.localStorageEngine.path")
-    }
-  }
-
 }

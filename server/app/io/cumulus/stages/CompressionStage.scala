@@ -15,10 +15,11 @@ trait CompressionStage {
 
 }
 
-case class Compressions(compressions: Map[String, CompressionStage]) {
+case class Compressions(compressions: Seq[CompressionStage]) {
 
   def get(name: String): Either[AppError, CompressionStage] =
-    compressions.get(name.toUpperCase)
+    compressions
+      .find(_.name == name.toUpperCase)
       .map(Right.apply)
       .getOrElse(Left(AppError.validation("validation.fs-node.unknown-compression", name)))
 

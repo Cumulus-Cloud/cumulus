@@ -1,32 +1,33 @@
 package io.cumulus.stages
 
 import javax.imageio.ImageIO
-import scala.concurrent.{ExecutionContext, Future}
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Keep, StreamConverters}
 import com.sksamuel.scrimage.Image
 import com.sksamuel.scrimage.nio.JpegWriter
-import io.cumulus.core.{Logging, Settings}
 import io.cumulus.core.stream.storage.{StorageReferenceReader, StorageReferenceWriter}
 import io.cumulus.core.validation.AppError
+import io.cumulus.core.{Logging, Settings}
 import io.cumulus.models.UserSession
 import io.cumulus.models.fs.File
-import io.cumulus.persistence.storage.{StorageEngine, StorageReference}
+import io.cumulus.persistence.storage.{StorageEngines, StorageReference}
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.{ImageType, PDFRenderer}
+
+import scala.concurrent.{ExecutionContext, Future}
 
 trait ThumbnailGenerator extends Logging {
 
   /** Generate the preview image of the file. Note that the preview can be of any size. */
   def generatePreview(
-    file: File,
-    storageEngine: StorageEngine
+    file: File
   )(implicit
     ec: ExecutionContext,
     materializer: Materializer,
     ciphers: Ciphers,
     compressions: Compressions,
+    storageEngines: StorageEngines,
     userSession: UserSession,
     settings: Settings
   ): Either[AppError, java.awt.Image]
@@ -36,19 +37,19 @@ trait ThumbnailGenerator extends Logging {
 
   /** Generate a thumbnail of a file. */
   final def generate(
-    file: File,
-    storageEngine: StorageEngine
+    file: File
   )(implicit
     ec: ExecutionContext,
     materializer: Materializer,
     ciphers: Ciphers,
     compressions: Compressions,
+    storageEngines: StorageEngines,
     userSession: UserSession,
     settings: Settings
   ): Future[Either[AppError, StorageReference]] = {
 
     val res = for {
-      preview     <- generatePreview(file, storageEngine)
+      preview     <- generatePreview(file)
       cipher      <- ciphers.get(file.storageReference.cipher)
       compression <- compressions.get(file.storageReference.compression)
     } yield {
@@ -59,7 +60,7 @@ trait ThumbnailGenerator extends Logging {
       // Write the image
       val thumbnailWriter =
         StorageReferenceWriter.writes(
-          storageEngine,
+          storageEngines.default, // Write the thumbnail on the default storage engine
           cipher,
           compression,
           "/not-used" // We need a name, but will just retrieve the storage information
@@ -94,18 +95,18 @@ object ThumbnailGenerator {
 
 object PDFDocumentThumbnailGenerator extends ThumbnailGenerator {
 
-  override def generatePreview(
-    file: File,
-    storageEngine: StorageEngine
+  def generatePreview(
+    file: File
   )(implicit
     ec: ExecutionContext,
     materializer: Materializer,
     ciphers: Ciphers,
     compressions: Compressions,
+    storageEngines: StorageEngines,
     userSession: UserSession,
     settings: Settings): Either[AppError, java.awt.Image] = {
 
-    StorageReferenceReader.read(storageEngine, file).map { fileSource =>
+    StorageReferenceReader.read(file).map { fileSource =>
       // Get the PDF document
       val fileInputStream = fileSource.runWith(StreamConverters.asInputStream())
       val document = PDDocument.load(fileInputStream)
@@ -124,18 +125,18 @@ object PDFDocumentThumbnailGenerator extends ThumbnailGenerator {
 
 object ImageThumbnailGenerator extends ThumbnailGenerator {
 
-  override def generatePreview(
-    file: File,
-    storageEngine: StorageEngine
+  def generatePreview(
+    file: File
   )(implicit
     ec: ExecutionContext,
     materializer: Materializer,
     ciphers: Ciphers,
     compressions: Compressions,
+    storageEngines: StorageEngines,
     userSession: UserSession,
     settings: Settings): Either[AppError, java.awt.Image] = {
 
-    StorageReferenceReader.read(storageEngine, file).map { fileSource =>
+    StorageReferenceReader.read(file).map { fileSource =>
       // Read the image
       val fileInputStream = fileSource.runWith(StreamConverters.asInputStream())
       ImageIO.read(fileInputStream)
