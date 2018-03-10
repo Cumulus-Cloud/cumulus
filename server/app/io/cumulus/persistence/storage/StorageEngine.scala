@@ -80,7 +80,7 @@ object StorageEngines {
     val defaultEngine =
       engines
         .find(_.reference == defaultReference)
-        .getOrElse(throw new Exception("Invalid default storage engine"))
+        .getOrElse(throw new Exception(s"Invalid default storage engine $defaultReference"))
 
     // Construct the final element
     StorageEngines(defaultEngine, engines)

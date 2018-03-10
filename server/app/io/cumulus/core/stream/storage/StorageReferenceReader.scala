@@ -31,7 +31,7 @@ object StorageReferenceReader extends Logging {
   ): Either[AppError, Source[ByteString, NotUsed]] =
     for {
       transformation   <- transformationForFile(file)
-      storageReference <- file.thumbnailStorageReference.toRight(AppError.notFound("validation.fs-node.no-thumbnail"))
+      storageReference <- file.thumbnailStorageReference.toRight(AppError.notFound("validation.fs-node.no-thumbnail", file.name))
       storageEngine    <- storageEngineForStorageReference(storageReference)
       source = {
         Source(storageReference.storage.toList)
@@ -176,7 +176,7 @@ object StorageReferenceReader extends Logging {
           .storage
           .headOption
           .map(ref => Right(ref.storageEngine, ref.storageEngineVersion, ref.storageEngineReference))
-          .getOrElse(Left(AppError.validation("TODO")))
+          .getOrElse(Left(AppError.validation("validation.fs-node.no-storage-reference")))
       }
 
       (name, version, ref) = storageInfo
