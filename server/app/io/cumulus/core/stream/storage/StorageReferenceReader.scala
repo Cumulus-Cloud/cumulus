@@ -175,7 +175,7 @@ object StorageReferenceReader extends Logging {
         storageReference
           .storage
           .headOption
-          .map(ref => Right(ref.storageEngine, ref.storageEngineVersion, ref.storageEngineReference))
+          .map(ref => Right((ref.storageEngine, ref.storageEngineVersion, ref.storageEngineReference)))
           .getOrElse(Left(AppError.validation("validation.fs-node.no-storage-reference")))
       }
 

@@ -9,6 +9,7 @@ import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.QueryBuilder
 import io.cumulus.persistence.services.{FsNodeService, SharingService, StorageService, UserService}
 import io.cumulus.persistence.storage._
+import io.cumulus.persistence.storage.engines.LocalStorage
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore, UserStore}
 import io.cumulus.stages._
 import jsmessages.JsMessagesFactory

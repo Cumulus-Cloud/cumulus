@@ -20,8 +20,6 @@ trait StorageEngine {
 
   def readObject(id: UUID)(implicit e: ExecutionContext): InputStream
 
-  def listObjects(implicit e: ExecutionContext): Future[Seq[UUID]]
-
 }
 
 trait StorageEngineFactory {

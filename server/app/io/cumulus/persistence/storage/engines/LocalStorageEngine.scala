@@ -1,18 +1,19 @@
-package io.cumulus.persistence.storage
+package io.cumulus.persistence.storage.engines
 
 import java.io.{FileInputStream, FileOutputStream, InputStream, OutputStream}
 import java.nio.file.Paths
 import java.util.UUID
 
-import scala.concurrent.{ExecutionContext, Future}
-import io.cumulus.core.Settings
 import io.cumulus.core.validation.AppError
+import io.cumulus.persistence.storage.{StorageEngine, StorageEngineFactory}
 import play.api.Configuration
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class LocalStorageEngine(val reference: String, storageRootPath: String) extends StorageEngine {
 
-  val name = LocalStorage.name
-  val version = LocalStorage.version
+  val name: String = LocalStorage.name
+  val version: String = LocalStorage.version
 
   def writeObject(id: UUID)(implicit e: ExecutionContext): OutputStream = {
     val objectPath = Paths.get(storageRootPath, id.toString)
@@ -39,8 +40,6 @@ class LocalStorageEngine(val reference: String, storageRootPath: String) extends
     Future.successful(Right(()))
   }
 
-  override def listObjects(implicit e: ExecutionContext) = ???
-
 }
 
 object LocalStorage extends StorageEngineFactory {
@@ -48,7 +47,7 @@ object LocalStorage extends StorageEngineFactory {
   def name: String = "LocalStorageEngine"
   def version: String = "0.1"
 
-  def create(reference: String, configuration: Configuration) = {
+  def create(reference: String, configuration: Configuration): LocalStorageEngine = {
     val storageRootPath = configuration.get[String]("path")
 
     new LocalStorageEngine(reference, storageRootPath)
