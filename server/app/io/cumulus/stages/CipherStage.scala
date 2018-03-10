@@ -16,10 +16,11 @@ trait CipherStage {
 
 }
 
-case class Ciphers(ciphers: Map[String, CipherStage]) {
+case class Ciphers(ciphers: Seq[CipherStage]) {
 
   def get(name: String): Either[AppError, CipherStage] =
-    ciphers.get(name.toUpperCase)
+    ciphers
+      .find(_.name == name.toUpperCase)
       .map(Right.apply)
       .getOrElse(Left(AppError.validation("validation.fs-node.unknown-cipher", name)))
 

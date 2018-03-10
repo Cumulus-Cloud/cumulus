@@ -13,10 +13,11 @@ import play.api.libs.json.{Format, Json}
   * @param hash The real hash of the object, with no compression nor encryption
   * @param storageSize The stored size of the object
   * @param storageHash The hash of the stored object
-  * @param cipher The chipher used on the object
+  * @param cipher The cipher used on the object
   * @param compression The compression used on the object
   * @param storageEngine The storage engine used with this object
   * @param storageEngineVersion The version of the storage engine used with this object
+  * @param storageEngineReference The reference of the storage engine used with this object
   * @param creation The creation date
   */
 case class StorageObject(
@@ -29,6 +30,7 @@ case class StorageObject(
   compression: Option[String],
   storageEngine: String,
   storageEngineVersion: String,
+  storageEngineReference: String,
   creation: LocalDateTime
 )
 

@@ -1,7 +1,6 @@
 package io.cumulus.core.stream.storage
 
 import scala.concurrent.ExecutionContext
-
 import akka.NotUsed
 import akka.stream.scaladsl.{Flow, Source}
 import akka.util.ByteString
@@ -11,7 +10,7 @@ import io.cumulus.core.utils.Range
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.Session
 import io.cumulus.models.fs.File
-import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
+import io.cumulus.persistence.storage.{StorageEngine, StorageEngines, StorageObject, StorageReference}
 import io.cumulus.stages.{Ciphers, Compressions}
 
 object StorageReferenceReader extends Logging {
@@ -19,30 +18,26 @@ object StorageReferenceReader extends Logging {
   /**
     * Reads the thumbnail of a file. If the thumbnail does not exists, an error will be returned.
     *
-    * @param storageEngine The storage engine to use
     * @param file The file containing the thumbnail to stream
     */
   def readThumbnail(
-    storageEngine: StorageEngine,
     file: File
   )(implicit
     session: Session,
     ciphers: Ciphers,
     compressions: Compressions,
+    storageEngines: StorageEngines,
     ec: ExecutionContext
   ): Either[AppError, Source[ByteString, NotUsed]] =
     for {
-      transformation <- transformationForFile(file)
-      source         <- file.thumbnailStorageReference match {
-        case Some(thumbnailStorageReference) =>
-          Right(
-            Source(thumbnailStorageReference.storage.toList)
-              .splitWhen(_ => true)
-              .via(StorageObjectReader(storageEngine, transformation))
-              .mergeSubstreams
-          )
-        case _ =>
-          Left(AppError.notFound("validation.fs-node.no-thumbnail"))
+      transformation   <- transformationForFile(file)
+      storageReference <- file.thumbnailStorageReference.toRight(AppError.notFound("validation.fs-node.no-thumbnail", file.name))
+      storageEngine    <- storageEngineForStorageReference(storageReference)
+      source = {
+        Source(storageReference.storage.toList)
+          .splitWhen(_ => true)
+          .via(StorageObjectReader(storageEngine, transformation))
+          .mergeSubstreams
       }
     } yield source
 
@@ -50,20 +45,20 @@ object StorageReferenceReader extends Logging {
     * Reads a file in its wholeness, and output a stream of its byte after applying the provided transformation
     * to each storage object.
     *
-    * @param storageEngine The storage engine to use
     * @param file The file to stream
     */
   def read(
-    storageEngine: StorageEngine,
     file: File
   )(implicit
     session: Session,
     ciphers: Ciphers,
     compressions: Compressions,
+    storageEngines: StorageEngines,
     ec: ExecutionContext
   ): Either[AppError, Source[ByteString, NotUsed]] =
     for {
       transformation <- transformationForFile(file)
+      storageEngine  <- storageEngineForStorageReference(file.storageReference)
       source         =  {
         Source(file.storageReference.storage.toList)
           .splitWhen(_ => true)
@@ -77,22 +72,22 @@ object StorageReferenceReader extends Logging {
     * Reads partially a file, from the starts of the range to end of the range. The reader will drop and ignore every
     * storage object outside of the range, and trim bytes still outside of the wanted range.
     *
-    * @param storageEngine The storage engine to use
     * @param file The file to stream
     * @param range The range of byte to output
     */
   def read(
-    storageEngine: StorageEngine,
     file: File,
     range: Range
   )(implicit
     session: Session,
     ciphers: Ciphers,
     compressions: Compressions,
+    storageEngines: StorageEngines,
     ec: ExecutionContext
   ): Either[AppError, Source[ByteString, NotUsed]] =
     for {
       transformation <- transformationForFile(file)
+      storageEngine  <- storageEngineForStorageReference(file.storageReference)
       source         =  {
         // Compute the objects within the range and the real byte range to read
         val (from, to, storageObjectsInRange) = dropStorageObjects(range, file)
@@ -166,6 +161,40 @@ object StorageReferenceReader extends Logging {
         .via(compression.map(_.uncompress).getOrElse(Flow[ByteString]))
     }
 
+  /** Get the storage engine */
+  private def storageEngineForStorageReference(
+    storageReference: StorageReference
+  )(
+    implicit storageEngines: StorageEngines
+  ): Either[AppError, StorageEngine] = {
+
+    for {
+      // Temporary, for now we guess the storage engine to use base on the first storage reference ; this can only works
+      // because we only use an unique storage reference with a file (no replication yet!)
+      storageInfo <- {
+        storageReference
+          .storage
+          .headOption
+          .map(ref => Right((ref.storageEngine, ref.storageEngineVersion, ref.storageEngineReference)))
+          .getOrElse(Left(AppError.validation("validation.fs-node.no-storage-reference")))
+      }
+
+      (name, version, ref) = storageInfo
+
+      storageEngine <- storageEngines.get(ref)
+
+      // Log any incoherence
+      _ = {
+        if(storageEngine.version != version)
+          logger.warn(s"Using the storage engine $name ($ref) with version ${storageEngine.version} instead of version $version")
+        if(storageEngine.name != name)
+          logger.warn(s"Using the storage engine ${storageEngine.name} instead of $name")
+      }
+
+    } yield storageEngine
+
+  }
+
   private def errorHandler(file: File): PartialFunction[Throwable, ByteString] = {
     case e: Exception =>
       val engineUsed =
@@ -173,7 +202,7 @@ object StorageReferenceReader extends Logging {
           .storageReference
           .storage
           .headOption
-          .map(v => v.storageEngine + " v" + v.storageEngineVersion)
+          .map(s => s.storageEngine + " version " + s.storageEngineVersion)
           .getOrElse("Nothing")
 
       logger.error(s"Error while reading file ${file.id} using $engineUsed", e)

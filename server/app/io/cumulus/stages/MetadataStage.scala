@@ -2,9 +2,6 @@ package io.cumulus.stages
 
 import java.time.format.DateTimeFormatter
 import java.time.{LocalDateTime, ZoneId}
-import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContext
-import scala.util.Try
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.StreamConverters
@@ -13,20 +10,26 @@ import io.cumulus.core.stream.storage.StorageReferenceReader
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.Session
 import io.cumulus.models.fs._
-import io.cumulus.persistence.storage.StorageEngine
+import io.cumulus.persistence.storage.StorageEngines
 import org.apache.pdfbox.pdmodel.PDDocument
 
+import scala.collection.JavaConverters._
+import scala.concurrent.ExecutionContext
+import scala.util.Try
 
+/**
+  * Abstract metadata extractor, used to read metadata from an uploaded file.
+  */
 trait MetadataExtractor {
 
   def extract(
-    file: File,
-    storageEngine: StorageEngine
+    file: File
   )(implicit
     ec: ExecutionContext,
     materializer: Materializer,
     ciphers: Ciphers,
     compressions: Compressions,
+    storageEngines: StorageEngines,
     session: Session
   ): Either[AppError, FileMetadata]
 
@@ -36,16 +39,19 @@ trait MetadataExtractor {
 
 }
 
+/**
+  * Default implementation, returning no metadata.
+  */
 object DefaultMetadataExtractor extends MetadataExtractor {
 
   override def extract(
-    file: File,
-    storageEngine: StorageEngine
+    file: File
   )(implicit
     ec: ExecutionContext,
     materializer: Materializer,
     ciphers: Ciphers,
     compressions: Compressions,
+    storageEngines: StorageEngines,
     session: Session
   ): Either[AppError, DefaultMetadata] = {
     Right(DefaultMetadata.empty)
@@ -55,20 +61,22 @@ object DefaultMetadataExtractor extends MetadataExtractor {
 
 }
 
+/**
+  * Implementation for images, using scrimage to read metadata from an image. Exif data are extracted.
+  */
 object ImageMetadataExtractor extends MetadataExtractor {
 
-  override def extract(
-    file: File,
-    storageEngine: StorageEngine
+  def extract(
+    file: File
   )(implicit
     ec: ExecutionContext,
     materializer: Materializer,
     ciphers: Ciphers,
     compressions: Compressions,
+    storageEngines: StorageEngines,
     session: Session
   ): Either[AppError, ImageMetadata] = {
     StorageReferenceReader.read(
-      storageEngine,
       file
     ).map { source =>
 
@@ -126,7 +134,7 @@ object ImageMetadataExtractor extends MetadataExtractor {
     }
   }
 
-  override def applyOn = Seq(
+  def applyOn = Seq(
     "image/bmp",
     "image/gif",
     "image/x-icon",
@@ -138,20 +146,22 @@ object ImageMetadataExtractor extends MetadataExtractor {
 
 }
 
+/**
+  * Implementation for PDFs, using PDFBox to read the document and extract metadata.
+  */
 object PDFDocumentMetadataExtractor extends MetadataExtractor {
 
-  override def extract(
-    file: File,
-    storageEngine: StorageEngine
+  def extract(
+    file: File
   )(implicit
     ec: ExecutionContext,
     materializer: Materializer,
     ciphers: Ciphers,
     compressions: Compressions,
+    storageEngines: StorageEngines,
     session: Session
   ): Either[AppError, PDFDocumentMetadata] = {
     StorageReferenceReader.read(
-      storageEngine,
       file
     ).map { source =>
 
@@ -187,7 +197,7 @@ object PDFDocumentMetadataExtractor extends MetadataExtractor {
     }
   }
 
-  override def applyOn = Seq(
+  def applyOn = Seq(
     "application/pdf"
   )
 

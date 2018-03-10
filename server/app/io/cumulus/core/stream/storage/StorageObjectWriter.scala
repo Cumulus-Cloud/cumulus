@@ -122,6 +122,7 @@ object StorageObjectWriter {
         compression = None,
         storageEngine = storageEngine.name,
         storageEngineVersion = storageEngine.version,
+        storageEngineReference = storageEngine.reference,
         creation = LocalDateTime.now
       )
 
