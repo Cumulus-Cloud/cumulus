@@ -16,15 +16,17 @@ trait ApiUtils extends Logging with I18nSupport {
   protected def toApiError(appError: AppError)(implicit request: Request[_]): Result = appError match {
     case error: GlobalError =>
       ApiError(error.errorType.status, error.key, error.args: _*).toResult
-    case error: ValidationError =>
+    case ValidationError(errors) =>
+      // Groups the validation errors by path to avoid swallowing errors with the same key
+      val jsonValidationErrors =
+        errors
+          .toList
+          .groupBy(_.path)
+          .map(r => (r._1, r._2.map(e => JsonValidationError(e.key, e.args: _*))))
+          .toList
+
       ApiErrors
-        .validationError(
-          JsError(
-            error.errors.map { e =>
-              e.path -> Seq(JsonValidationError(e.key, e.args: _*))
-            }.toList
-          )
-        )
+        .validationError(JsError(jsonValidationErrors))
         .toResult
   }
 
