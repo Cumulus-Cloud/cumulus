@@ -23,7 +23,7 @@ interface PropsState {
 
 interface DispatchProps {
   onCancelMove(): void
-  onMove(): void
+  onMove(fsNodeToMove: FsNode, target: FsDirectory): void
   onChangeTarget(path: string): void
 }
 
@@ -31,7 +31,7 @@ type Props = PropsState & DispatchProps
 
 export class MoveModal extends React.PureComponent<Props> {
   render() {
-    const { target, loading, onCancelMove, onMove } = this.props
+    const { target, loading, onCancelMove } = this.props
     const directories = target.content.filter(isDirectory)
     return (
       <Modal onClose={onCancelMove}>
@@ -49,7 +49,7 @@ export class MoveModal extends React.PureComponent<Props> {
         </ModalContent>
         <ModalActions>
           <FlatButton label={Messages("ui.cancel")} onClick={onCancelMove} />
-          <FlatButton label={Messages("ui.move")} onClick={onMove} loading={loading} />
+          <FlatButton label={Messages("ui.move")} onClick={this.handleOnMove} loading={loading} />
         </ModalActions>
       </Modal>
     )
@@ -78,6 +78,14 @@ export class MoveModal extends React.PureComponent<Props> {
     )
   }
 
+  handleOnMove = () => {
+    const { fsNodes, target, onMove } = this.props
+    if (fsNodes.length > 0) {
+      const fsNodeToMove = fsNodes[0]
+      onMove(fsNodeToMove, target)
+    }
+  }
+
   handleOnChangeTarget = (directory: FsDirectory) => () => this.props.onChangeTarget(directory.path)
 }
 
@@ -92,7 +100,7 @@ const mapStateToProps = (state: GlobalState): PropsState => {
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
     onCancelMove: () => dispatch(MoveActions.cancelMove()),
-    onMove: () => dispatch(MoveActions.move()),
+    onMove: (fsNodeToMove, target) => dispatch(MoveActions.move(fsNodeToMove, target)),
     onChangeTarget: path => dispatch(MoveActions.changeMoveTarget(path))
   }
 }

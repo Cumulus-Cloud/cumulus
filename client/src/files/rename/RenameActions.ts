@@ -1,4 +1,5 @@
-import * as Api from "services/Api"
+import { Action } from "redux"
+import { ApiError } from "services/Api"
 import { FsNode } from "models/FsNode"
 
 export type RenameAction =
@@ -9,25 +10,50 @@ export type RenameAction =
   RenameSuccess |
   RenameError
 
-export type WantRename = { type: "WantRename", fsNode: FsNode }
-export const wantRename = (fsNode: FsNode): WantRename => ({ type: "WantRename", fsNode })
+export interface WantRename extends Action {
+  type: "WantRename"
+  fsNode: FsNode
+}
+export function wantRename(fsNode: FsNode): WantRename {
+  return { type: "WantRename", fsNode }
+}
 
-export type CancelRename = { type: "CancelRename" }
-export const cancelRename = (): CancelRename => ({ type: "CancelRename" })
+export interface CancelRename extends Action {
+  type: "CancelRename"
+}
+export function cancelRename(): CancelRename {
+  return { type: "CancelRename" }
+}
 
-export type ChangeName = { type: "ChangeName", name: string }
-export const changeName = (name: string): ChangeName => ({ type: "ChangeName", name })
+export interface ChangeName extends Action {
+  type: "ChangeName"
+  name: string
+}
+export function changeName(name: string): ChangeName {
+  return { type: "ChangeName", name }
+}
 
-export type Rename = { type: "Rename", newName: string, fsNode: FsNode }
+export interface Rename extends Action {
+  type: "Rename"
+  newName: string
+  fsNode: FsNode
+}
 export function rename(newName: string, fsNode: FsNode): Rename {
   return { type: "Rename", newName, fsNode }
 }
 
-export type RenameSuccess = { type: "RenameSuccess", fsNode: FsNode }
-export const renameSuccess = (fsNode: FsNode): RenameSuccess => ({ type: "RenameSuccess", fsNode })
+export interface RenameSuccess extends Action {
+  type: "RenameSuccess"
+  fsNode: FsNode
+}
+export function renameSuccess(fsNode: FsNode): RenameSuccess {
+  return { type: "RenameSuccess", fsNode }
+}
 
-export type RenameError = { type: "RenameError", error: Api.ApiError }
-export const renameError = (error: Api.ApiError): RenameError => ({
-  type: "RenameError",
-  error
-})
+export interface RenameError extends Action {
+  type: "RenameError"
+  error: ApiError
+}
+export function renameError(error: ApiError): RenameError {
+  return { type: "RenameError", error }
+}

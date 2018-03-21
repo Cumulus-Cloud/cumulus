@@ -1,35 +1,50 @@
+import { Action } from "redux"
 import { FsNode } from "models/FsNode"
-import * as Api from "services/Api"
+import { ApiError } from "services/Api"
 
 export type NewFolderAction =
-  OnNewFolderNameChange |
-  OnWantCreateNewFolder |
-  OnCreateNewFolder |
-  OnCreateNewFolderError |
-  OnCreateNewFolderSuccess
+  NewFolderNameChange |
+  WantCreateNewFolder |
+  CreateNewFolder |
+  CreateNewFolderError |
+  CreateNewFolderSuccess
 
-export type OnNewFolderNameChange = { type: "OnNewFolderNameChange", newFolderName: string }
-export const onNewFolderNameChange = (newFolderName: string): OnNewFolderNameChange => ({
-  type: "OnNewFolderNameChange",
-  newFolderName
-})
-
-export type OnWantCreateNewFolder = { type: "OnWantCreateNewFolder" }
-export const onWantCreateNewFolder = (): OnWantCreateNewFolder => ({ type: "OnWantCreateNewFolder" })
-
-export type OnCreateNewFolder = { type: "OnCreateNewFolder", currentDirectory: FsNode, newFolderName: string }
-export function onCreateNewFolder(currentDirectory: FsNode, newFolderName: string): OnCreateNewFolder {
-  return { type: "OnCreateNewFolder", currentDirectory, newFolderName }
+export interface NewFolderNameChange extends Action {
+  type: "NewFolderNameChange"
+  newFolderName: string
+}
+export function newFolderNameChange(newFolderName: string): NewFolderNameChange {
+  return { type: "NewFolderNameChange", newFolderName }
 }
 
-export type OnCreateNewFolderSuccess = { type: "OnCreateNewFolderSuccess", newFolder: FsNode }
-export const onCreateNewFolderSuccess = (newFolder: FsNode): OnCreateNewFolderSuccess => ({
-  type: "OnCreateNewFolderSuccess",
-  newFolder
-})
+export interface WantCreateNewFolder extends Action {
+  type: "WantCreateNewFolder"
+}
+export function wantCreateNewFolder(): WantCreateNewFolder {
+  return { type: "WantCreateNewFolder" }
+}
 
-export type OnCreateNewFolderError = { type: "OnCreateNewFolderError", error: Api.ApiError }
-export const onCreateNewFolderError = (error: Api.ApiError): OnCreateNewFolderError => ({
-  type: "OnCreateNewFolderError",
-  error
-})
+export interface CreateNewFolder extends Action {
+  type: "CreateNewFolder"
+  currentDirectory: FsNode
+  newFolderName: string
+}
+export function createNewFolder(currentDirectory: FsNode, newFolderName: string): CreateNewFolder {
+  return { type: "CreateNewFolder", currentDirectory, newFolderName }
+}
+
+export interface CreateNewFolderSuccess extends Action {
+  type: "CreateNewFolderSuccess"
+  newFolder: FsNode
+}
+export function createNewFolderSuccess(newFolder: FsNode): CreateNewFolderSuccess {
+  return { type: "CreateNewFolderSuccess", newFolder }
+}
+
+export interface CreateNewFolderError extends Action {
+  type: "CreateNewFolderError"
+  error: ApiError
+}
+export function createNewFolderError(error: ApiError): CreateNewFolderError {
+  return { type: "CreateNewFolderError", error }
+}

@@ -1,4 +1,5 @@
-import * as Api from "services/Api"
+import { Action } from "redux"
+import { ApiError } from "services/Api"
 import { FsNode, FsDirectory } from "models/FsNode"
 
 export type MoveAction =
@@ -11,29 +12,67 @@ export type MoveAction =
   MoveSuccess |
   MoveError
 
-export type WantMove = { type: "WantMove", fsNodes: FsNode[], target: FsDirectory }
-export const wantMove = (fsNodes: FsNode[], target: FsDirectory): WantMove => ({ type: "WantMove", fsNodes, target })
-
-export type CancelMove = { type: "CancelMove" }
-export const cancelMove = (): CancelMove => ({ type: "CancelMove" })
-
-export type Move = { type: "Move" }
-export function move(): Move {
-  return { type: "Move" }
+export interface WantMove extends Action {
+  type: "WantMove"
+  fsNodes: FsNode[]
+  target: FsDirectory
+}
+export function wantMove(fsNodes: FsNode[], target: FsDirectory): WantMove {
+  return { type: "WantMove", fsNodes, target }
 }
 
-export type MoveSuccess = { type: "MoveSuccess", movedFsNode: FsNode, newFsNode: FsNode }
-export const moveSuccess = (movedFsNode: FsNode, newFsNode: FsNode): MoveSuccess => ({ type: "MoveSuccess", movedFsNode, newFsNode })
+export interface CancelMove extends Action {
+  type: "CancelMove"
+}
+export function cancelMove(): CancelMove {
+  return { type: "CancelMove" }
+}
 
-export type MoveError = { type: "MoveError", error: Api.ApiError }
-export const moveError = (error: Api.ApiError): MoveError => ({ type: "MoveError", error })
+export interface Move extends Action {
+  type: "Move"
+  fsNodeToMove: FsNode
+  target: FsDirectory
+}
+export function move(fsNodeToMove: FsNode, target: FsDirectory): Move {
+  return { type: "Move", fsNodeToMove, target }
+}
 
-export type ChangeMoveTarget = { type: "ChangeMoveTarget", path: string }
+export interface MoveSuccess extends Action {
+  type: "MoveSuccess"
+  movedFsNode: FsNode
+  newFsNode: FsNode
+}
+export function moveSuccess(movedFsNode: FsNode, newFsNode: FsNode): MoveSuccess {
+  return { type: "MoveSuccess", movedFsNode, newFsNode }
+}
+
+export interface MoveError extends Action {
+  type: "MoveError"
+  error: ApiError
+}
+export function moveError(error: ApiError): MoveError {
+  return { type: "MoveError", error }
+}
+
+export interface ChangeMoveTarget extends Action {
+  type: "ChangeMoveTarget"
+  path: string
+}
 export function changeMoveTarget(path: string): ChangeMoveTarget {
   return { type: "ChangeMoveTarget", path }
 }
-export type ChangeMoveTargetSuccess = { type: "ChangeMoveTargetSuccess", target: FsDirectory }
-export const changeMoveTargetSuccess = (target: FsDirectory): ChangeMoveTargetSuccess => ({ type: "ChangeMoveTargetSuccess", target })
+export interface ChangeMoveTargetSuccess extends Action {
+  type: "ChangeMoveTargetSuccess"
+  target: FsDirectory
+}
+export function changeMoveTargetSuccess(target: FsDirectory): ChangeMoveTargetSuccess {
+  return { type: "ChangeMoveTargetSuccess", target }
+}
 
-export type ChangeMoveTargetError = { type: "ChangeMoveTargetError", error: Api.ApiError }
-export const changeMoveTargetError = (error: Api.ApiError): ChangeMoveTargetError => ({ type: "ChangeMoveTargetError", error })
+export interface ChangeMoveTargetError extends Action {
+  type: "ChangeMoveTargetError"
+  error: ApiError
+}
+export function changeMoveTargetError(error: ApiError): ChangeMoveTargetError {
+  return { type: "ChangeMoveTargetError", error }
+}

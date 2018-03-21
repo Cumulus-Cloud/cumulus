@@ -1,53 +1,90 @@
+import { Action } from "redux"
 import { FsNode, Compression, Cipher } from "models/FsNode"
 import { FileToUpload } from "models/FileToUpload"
-import * as Api from "services/Api"
+import { ApiError } from "services/Api"
 
 export type UploadAction =
-  OnWantUpload |
-  OnAddFiles |
-  OnUploadFileSuccess |
-  OnUploadFile |
-  OnUploadFileError |
-  OnProgressUpload |
+  WantUpload |
+  AddFiles |
+  UploadFileSuccess |
+  UploadFile |
+  UploadFileError |
+  ProgressUpload |
   RemoveFileToUpload |
   SelectCipher |
   SelectCompression
 
-export type OnWantUpload = { type: "OnWantUpload" }
-export const onWantUpload = (): OnWantUpload => ({ type: "OnWantUpload" })
-
-export type OnAddFiles = { type: "OnAddFiles", filesToUpload: FileToUpload[] }
-export const onAddFiles = (filesToUpload: FileToUpload[]): OnAddFiles => ({ type: "OnAddFiles", filesToUpload })
-
-export type RemoveFileToUpload = { type: "RemoveFileToUpload", fileToUpload: FileToUpload }
-export const onRemoveFileToUpload = (fileToUpload: FileToUpload): RemoveFileToUpload => ({ type: "RemoveFileToUpload", fileToUpload })
-
-export type OnUploadFile = { type: "OnUploadFile", path: string, fileToUpload: FileToUpload }
-export function onUploadFile(path: string, fileToUpload: FileToUpload): OnUploadFile {
-  return { type: "OnUploadFile", path, fileToUpload }
+export interface WantUpload extends Action {
+  type: "WantUpload"
+}
+export function wantUpload(): WantUpload {
+  return { type: "WantUpload" }
 }
 
-export type OnUploadFileSuccess = { type: "OnUploadFileSuccess", fsNode: FsNode, fileToUpload: FileToUpload }
-export function onUploadFileSuccess(fsNode: FsNode, fileToUpload: FileToUpload): OnUploadFileSuccess {
-  return { type: "OnUploadFileSuccess", fsNode, fileToUpload }
+export interface AddFiles extends Action {
+  type: "AddFiles"
+  filesToUpload: FileToUpload[]
+}
+export const addFiles = (filesToUpload: FileToUpload[]): AddFiles => ({ type: "AddFiles", filesToUpload })
+
+export interface RemoveFileToUpload extends Action {
+  type: "RemoveFileToUpload"
+  fileToUpload: FileToUpload
+}
+export function removeFileToUpload(fileToUpload: FileToUpload): RemoveFileToUpload {
+  return { type: "RemoveFileToUpload", fileToUpload }
 }
 
-export type OnUploadFileError = { type: "OnUploadFileError", error: Api.ApiError, fileToUpload: FileToUpload  }
-export function onUploadFileError(error: Api.ApiError, fileToUpload: FileToUpload): OnUploadFileError {
-  return { type: "OnUploadFileError", error, fileToUpload }
+export interface UploadFile extends Action {
+  type: "UploadFile"
+  path: string
+  fileToUpload: FileToUpload
+}
+export function uploadFile(path: string, fileToUpload: FileToUpload): UploadFile {
+  return { type: "UploadFile", path, fileToUpload }
 }
 
-export type OnProgressUpload = { type: "OnProgressUpload", progress: number, fileToUpload: FileToUpload }
-export function onProgressUpload(progress: number, fileToUpload: FileToUpload): OnProgressUpload {
-  return { type: "OnProgressUpload", progress, fileToUpload }
+export interface UploadFileSuccess extends Action {
+  type: "UploadFileSuccess"
+  fsNode: FsNode
+  fileToUpload: FileToUpload
+}
+export function uploadFileSuccess(fsNode: FsNode, fileToUpload: FileToUpload): UploadFileSuccess {
+  return { type: "UploadFileSuccess", fsNode, fileToUpload }
 }
 
-export type SelectCipher = { type: "SelectCipher", fileToUpload: FileToUpload, cipher?: Cipher }
+export interface UploadFileError extends Action {
+  type: "UploadFileError"
+  error: ApiError
+  fileToUpload: FileToUpload
+}
+export function uploadFileError(error: ApiError, fileToUpload: FileToUpload): UploadFileError {
+  return { type: "UploadFileError", error, fileToUpload }
+}
+
+export interface ProgressUpload extends Action {
+  type: "ProgressUpload"
+  progress: number
+  fileToUpload: FileToUpload
+}
+export function progressUpload(progress: number, fileToUpload: FileToUpload): ProgressUpload {
+  return { type: "ProgressUpload", progress, fileToUpload }
+}
+
+export interface SelectCipher extends Action {
+  type: "SelectCipher"
+  fileToUpload: FileToUpload
+  cipher?: Cipher
+}
 export function onSelectCipher(fileToUpload: FileToUpload, cipher?: Cipher): SelectCipher {
   return { type: "SelectCipher", fileToUpload, cipher }
 }
 
-export type SelectCompression = { type: "SelectCompression", fileToUpload: FileToUpload, compression?: Compression }
+export interface SelectCompression extends Action {
+  type: "SelectCompression"
+  fileToUpload: FileToUpload
+  compression?: Compression
+}
 export function onSelectCompression(fileToUpload: FileToUpload, compression?: Compression): SelectCompression {
   return { type: "SelectCompression", fileToUpload, compression }
 }

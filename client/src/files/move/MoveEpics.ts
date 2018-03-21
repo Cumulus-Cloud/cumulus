@@ -1,34 +1,35 @@
-import { Epic, combineEpics } from "redux-observable"
+import { Epic, combineEpics, ActionsObservable } from "redux-observable"
 import { GlobalState } from "store"
 import * as Api from "services/Api"
-import * as MoveActions from "files/move/MoveActions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
+import {
+  Move, MoveError, ChangeMoveTarget, moveSuccess, moveError, changeMoveTargetSuccess, changeMoveTargetError, ChangeMoveTargetError
+} from "files/move/MoveActions"
 
-// tslint:disable-next-line:no-any
-export const moveEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("Move")
+export const moveEpic: Epic<any, GlobalState> = (action$: ActionsObservable<Move>) => action$.ofType("Move")
     .mergeMap(action => {
-      const fsNodeToMove = state.getState().move.fsNodes[0]
-      const target = state.getState().move.target!
-      return Api.move(fsNodeToMove, target)
-        .then(movedfsNode => MoveActions.moveSuccess(fsNodeToMove, movedfsNode))
-        .catch(MoveActions.moveError)
+      const { fsNodeToMove, target } = action
+      const to = `${target.path === "/" ? "" : target.path}/${fsNodeToMove.name}`
+      return Api.move(fsNodeToMove.path, to)
+        .then(movedfsNode => moveSuccess(fsNodeToMove, movedfsNode))
+        .catch(moveError)
     })
 
-// tslint:disable-next-line:no-any
-export const moveErrorEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("MoveError")
-    .map((action: MoveActions.MoveError) => showApiErrorNotif(action.error))
+export const moveErrorEpic: Epic<any, GlobalState> = (action$: ActionsObservable<MoveError>) => action$.ofType("MoveError")
+    .map(action => showApiErrorNotif(action.error))
 
-// tslint:disable-next-line:no-any
-export const changeMoveTargetEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("ChangeMoveTarget")
-    .mergeMap((action: MoveActions.ChangeMoveTarget) =>
+export const changeMoveTargetEpic: Epic<any, GlobalState> = (action$: ActionsObservable<ChangeMoveTarget>) => action$.ofType("ChangeMoveTarget")
+    .mergeMap(action =>
       Api.fetchDirectory(action.path)
-        .then(MoveActions.changeMoveTargetSuccess)
-        .catch(MoveActions.changeMoveTargetError)
+        .then(changeMoveTargetSuccess)
+        .catch(changeMoveTargetError)
     )
 
-// tslint:disable-next-line:no-any
-export const changeMoveTargetErrorEpic: Epic<any, GlobalState> = (action$, state) => action$.ofType("ChangeMoveTargetError")
-    .map((action: MoveActions.ChangeMoveTargetError) => showApiErrorNotif(action.error))
+export const changeMoveTargetErrorEpic: Epic<any, GlobalState> = (action$: ActionsObservable<ChangeMoveTargetError>) => {
+  return action$
+    .ofType("ChangeMoveTargetError")
+    .map(action => showApiErrorNotif(action.error))
+}
 
 export const moveEpics = combineEpics(
   moveEpic, moveErrorEpic,

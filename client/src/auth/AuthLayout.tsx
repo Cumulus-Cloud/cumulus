@@ -2,7 +2,7 @@ import * as React from "react"
 import * as styles from "./AuthLayout.css"
 import InAppNotifContainer from "inAppNotif/InAppNotifContainer"
 
-export default class AuthLayout extends React.PureComponent<{}> {
+export default class AuthLayout extends React.PureComponent {
   render() {
     const { children } = this.props
     return (

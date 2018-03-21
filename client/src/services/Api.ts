@@ -102,16 +102,8 @@ export function fetchDirectory(path: string): Promise<FsDirectory> {
   }).then(success(FsNodeValidator))
 }
 
-export function move(fsNode: FsNode, target: FsDirectory): Promise<FsNode> {
-  return withAuth(`/api/fs${encodeURI(fsNode.path)}`, {
-    method: "POST",
-    headers: HEADERS,
-    body: JSON.stringify({ operation: "MOVE", to: `${target.path}/${fsNode.name}` })
-  }).then(success(FsNodeValidator))
-}
-
-export function rename(fsNode: FsNode, to: string): Promise<FsNode> {
-  return withAuth(`/api/fs${encodeURI(fsNode.path)}`, {
+export function move(source: string, to: string): Promise<FsNode> {
+  return withAuth(`/api/fs${encodeURI(source)}`, {
     method: "POST",
     headers: HEADERS,
     body: JSON.stringify({ operation: "MOVE", to })

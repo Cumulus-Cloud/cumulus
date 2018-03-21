@@ -38,8 +38,8 @@ const mapStateToProps = (state: GlobalState): SignupState => state.signup
 
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onChange: (field, value) => dispatch(SignupActions.signupOnChange(field, value)),
-    onSubmit: (login, email, password) => dispatch(SignupActions.signupOnSubmit(login, email, password))
+    onChange: (field, value) => dispatch(SignupActions.signupChange(field, value)),
+    onSubmit: (login, email, password) => dispatch(SignupActions.signupSubmit(login, email, password))
   }
 }
 

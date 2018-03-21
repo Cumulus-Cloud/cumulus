@@ -49,8 +49,8 @@ export default class FsNodeComponent extends React.PureComponent<Props> {
   }
 
   renderName = () => {
-    const { fsNode } = this.props
-    if (isFile(fsNode) && !isPreviewAvailable(fsNode)) {
+    const { fsNode, renameMode } = this.props
+    if (isFile(fsNode) && !isPreviewAvailable(fsNode) && !renameMode) {
       return (
         <a className={styles.infos} href={Api.getDownloadUrl(fsNode)}>
           <FsNodeName fsNode={fsNode} />

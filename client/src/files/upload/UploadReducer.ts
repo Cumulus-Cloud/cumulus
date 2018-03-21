@@ -15,8 +15,8 @@ const initState: UploadState = {
 
 export const UploadReducer = (state: UploadState = initState, action: UploadAction): UploadState => {
   switch (action.type) {
-    case "OnWantUpload": return { ...state, wantUpload: !state.wantUpload, filesToUpload: [] }
-    case "OnAddFiles": {
+    case "WantUpload": return { ...state, wantUpload: !state.wantUpload, filesToUpload: [] }
+    case "AddFiles": {
       return {
         ...state,
         filesToUpload: [...state.filesToUpload, ...action.filesToUpload],
@@ -24,10 +24,10 @@ export const UploadReducer = (state: UploadState = initState, action: UploadActi
       }
     }
     case "RemoveFileToUpload": return { ...state, filesToUpload: state.filesToUpload.filter(f => f.id !== action.fileToUpload.id) }
-    case "OnUploadFile": {
+    case "UploadFile": {
       return { ...state, filesToUpload: state.filesToUpload.map(fileToUpload => ({ ...fileToUpload, loading: !fileToUpload.done})) }
     }
-    case "OnUploadFileSuccess": {
+    case "UploadFileSuccess": {
       const filesToUpload = state.filesToUpload.map(fileToUpload => {
         if (fileToUpload.id === action.fileToUpload.id) {
           return { ...fileToUpload, loading: false, done: true }
@@ -37,7 +37,7 @@ export const UploadReducer = (state: UploadState = initState, action: UploadActi
       })
       return { ...state, filesToUpload }
     }
-    case "OnUploadFileError": {
+    case "UploadFileError": {
       const filesToUpload = state.filesToUpload.map(fileToUpload => {
         if (fileToUpload.id === action.fileToUpload.id) {
           return { ...fileToUpload, progress: 0, loading: false }
@@ -47,7 +47,7 @@ export const UploadReducer = (state: UploadState = initState, action: UploadActi
       })
       return { ...state, filesToUpload }
     }
-    case "OnProgressUpload": {
+    case "ProgressUpload": {
       const filesToUpload = state.filesToUpload.map(fileToUpload => {
         if (fileToUpload.id === action.fileToUpload.id) {
           return { ...fileToUpload, progress: action.progress }

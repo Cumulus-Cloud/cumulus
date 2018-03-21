@@ -170,7 +170,7 @@ const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
     onFetchDirectory: path => dispatch(FileSystemActions.fetchDirectory(path)),
-    onDeleteFsNode: fsNode => dispatch(FileSystemActions.onDeleteFsNode(fsNode)),
+    onDeleteFsNode: fsNode => dispatch(FileSystemActions.deleteFsNode(fsNode)),
     onShowPreview: fsFile => dispatch(FileSystemActions.onShowPreview(fsFile)),
     onSharing: fsNode => dispatch(FileSystemActions.onSharing(fsNode)),
     onCloseShare: () => dispatch(FileSystemActions.onCloseShare()),

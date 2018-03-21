@@ -1,9 +1,9 @@
-import { FileSystemAction, OnDeleteFsNodeSuccess, ShowFsNodeInfos, SelectFsNode } from "./FileSystemActions"
+import { FileSystemAction, DeleteFsNodeSuccess, ShowFsNodeInfos, SelectFsNode } from "./FileSystemActions"
 import { FsNode, FsFile, isDirectory, FsDirectory } from "models/FsNode"
 import { Share } from "models/Share"
 import { ApiError } from "services/Api"
-import { OnCreateNewFolderSuccess } from "files/newFolder/NewFolderActions"
-import { OnUploadFileSuccess } from "files/upload/UploadActions"
+import { CreateNewFolderSuccess } from "files/newFolder/NewFolderActions"
+import { UploadFileSuccess } from "files/upload/UploadActions"
 import { MoveSuccess } from "files/move/MoveActions"
 import { RenameSuccess } from "files/rename/RenameActions"
 
@@ -33,11 +33,11 @@ export const FileSystemReducer = (state: FileSystemState = initState, action: Fi
     case "FetchDirectory": return { ...state, loading: true }
     case "FetchDirectorySuccess": return { ...state, directory: action.directory, loading: false }
     case "FetchDirectoryError": return { ...state, error: action.error, loading: false }
-    case "OnCreateNewFolderSuccess": return onCreateNewFolderSuccessReduce(state, action)
-    case "OnDeleteFsNode": return { ...state, deleteLoading: action.fsNode.id }
-    case "OnDeleteFsNodeSuccess": return onDeleteFsNodeSuccessReducer(state, action)
-    case "OnDeleteFsNodeError": return { ...state, error: action.error, deleteLoading: undefined }
-    case "OnUploadFileSuccess": return onUploadFileSuccessReducer(state, action)
+    case "CreateNewFolderSuccess": return createNewFolderSuccessReduce(state, action)
+    case "DeleteFsNode": return { ...state, deleteLoading: action.fsNode.id }
+    case "DeleteFsNodeSuccess": return deleteFsNodeSuccessReducer(state, action)
+    case "DeleteFsNodeError": return { ...state, error: action.error, deleteLoading: undefined }
+    case "UploadFileSuccess": return uploadFileSuccessReducer(state, action)
     case "ShowPreview": return { ...state, previewFsFile: action.fsFile }
     case "Sharing": return { ...state, sharingLoader: true }
     case "SharingSuccess": return { ...state, sharingLoader: false, sharedFsNode: action.fsNode, share: action.share }
@@ -89,7 +89,7 @@ function showFsNodeInfosReducer(state: FileSystemState, action: ShowFsNodeInfos)
   }
 }
 
-function onCreateNewFolderSuccessReduce(state: FileSystemState, action: OnCreateNewFolderSuccess): FileSystemState {
+function createNewFolderSuccessReduce(state: FileSystemState, action: CreateNewFolderSuccess): FileSystemState {
   if (state.directory && isDirectory(state.directory)) {
     return { ...state, directory: { ...state.directory, content: [...state.directory.content, action.newFolder] } }
   } else {
@@ -97,7 +97,7 @@ function onCreateNewFolderSuccessReduce(state: FileSystemState, action: OnCreate
   }
 }
 
-function onUploadFileSuccessReducer(state: FileSystemState, action: OnUploadFileSuccess): FileSystemState {
+function uploadFileSuccessReducer(state: FileSystemState, action: UploadFileSuccess): FileSystemState {
   if (state.directory && isDirectory(state.directory)) {
     const newFsNode = { ...state.directory, content: [...state.directory.content, action.fsNode] }
     return { ...state, directory: newFsNode }
@@ -106,7 +106,7 @@ function onUploadFileSuccessReducer(state: FileSystemState, action: OnUploadFile
   }
 }
 
-function onDeleteFsNodeSuccessReducer(state: FileSystemState, action: OnDeleteFsNodeSuccess): FileSystemState {
+function deleteFsNodeSuccessReducer(state: FileSystemState, action: DeleteFsNodeSuccess): FileSystemState {
   if (state.directory && isDirectory(state.directory)) {
     const newFsNode = { ...state.directory, content: state.directory.content.filter(fsNode => fsNode.id !== action.fsNode.id) }
     return { ...state, directory: newFsNode, deleteLoading: undefined }

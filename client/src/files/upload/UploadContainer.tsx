@@ -128,10 +128,10 @@ const mapStateToProps = (state: GlobalState): PropsState => {
 }
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onWantUpload: () => dispatch(UploadActions.onWantUpload()),
-    onAddFiles: (files) => dispatch(UploadActions.onAddFiles(files)),
-    onUploadFile: (path, file) => dispatch(UploadActions.onUploadFile(path, file)),
-    onRemoveFileToUpload: fileToUpload => dispatch(UploadActions.onRemoveFileToUpload(fileToUpload)),
+    onWantUpload: () => dispatch(UploadActions.wantUpload()),
+    onAddFiles: (files) => dispatch(UploadActions.addFiles(files)),
+    onUploadFile: (path, file) => dispatch(UploadActions.uploadFile(path, file)),
+    onRemoveFileToUpload: fileToUpload => dispatch(UploadActions.removeFileToUpload(fileToUpload)),
     onSelectCipher: (fileToUpload, cipher) => dispatch(UploadActions.onSelectCipher(fileToUpload, cipher)),
     onSelectCompression: (fileToUpload, compression) => dispatch(UploadActions.onSelectCompression(fileToUpload, compression)),
   }
