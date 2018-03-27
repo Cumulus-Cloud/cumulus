@@ -4,6 +4,7 @@ import classNames from "utils/ClassNames"
 import BaseButton from "components/buttons/BaseButton"
 
 interface Props {
+  title?: string
   loading?: boolean
   disable?: boolean
   onClick?(): void
@@ -12,13 +13,13 @@ interface Props {
 
 export default class IconButton extends React.PureComponent<Props> {
   render() {
-    const { className, children, loading = false, disable = false } = this.props
+    const { className, children, title, loading = false, disable = false } = this.props
     const classes = classNames({
       [styles.iconButton]: true,
       [className || ""]: !!className,
     })
     return (
-      <BaseButton className={classes} onClick={this.handleOnClick} loading={loading} disable={disable}>
+      <BaseButton title={title} className={classes} onClick={this.handleOnClick} loading={loading} disable={disable}>
         {children}
       </BaseButton>
     )

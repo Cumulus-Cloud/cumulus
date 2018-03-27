@@ -1,26 +1,25 @@
 import { UploadAction } from "files/upload/UploadActions"
 import { FileToUpload } from "models/FileToUpload"
+import { UploadModalStatus } from "models/UploadModalStatus"
 
 export interface UploadState {
-  idCounter: number
-  wantUpload: boolean
+  status: UploadModalStatus
   filesToUpload: FileToUpload[]
 }
 
 const initState: UploadState = {
-  idCounter: 1,
-  wantUpload: false,
+  status: "None",
   filesToUpload: [],
 }
 
 export const UploadReducer = (state: UploadState = initState, action: UploadAction): UploadState => {
   switch (action.type) {
-    case "WantUpload": return { ...state, wantUpload: !state.wantUpload, filesToUpload: [] }
+    case "UploaderModalStatus": return { ...state, status: action.status, filesToUpload: action.status === "None" ? [] : state.filesToUpload  }
     case "AddFiles": {
       return {
         ...state,
         filesToUpload: [...state.filesToUpload, ...action.filesToUpload],
-        idCounter: state.idCounter + action.filesToUpload.length
+        status: "Open",
       }
     }
     case "RemoveFileToUpload": return { ...state, filesToUpload: state.filesToUpload.filter(f => f.id !== action.fileToUpload.id) }
@@ -30,7 +29,7 @@ export const UploadReducer = (state: UploadState = initState, action: UploadActi
     case "UploadFileSuccess": {
       const filesToUpload = state.filesToUpload.map(fileToUpload => {
         if (fileToUpload.id === action.fileToUpload.id) {
-          return { ...fileToUpload, loading: false, done: true }
+          return { ...fileToUpload, loading: false, done: true, progress: 100 }
         } else {
           return fileToUpload
         }

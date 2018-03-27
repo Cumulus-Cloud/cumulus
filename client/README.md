@@ -1,3 +1,3 @@
 ## Cumulus Web App
 
-TODO
+Compress Icon made by [Freepik](http://www.freepik.com)

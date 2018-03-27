@@ -1,17 +1,12 @@
 .uploader {
   position: relative;
+  padding: 8px 25px;
+  border: 1px solid var(--darkPrimary);
   border-radius: 3px;
-  border: 2px dashed var(--primary);
-  background-color: var(--primaryBg);
-  margin-bottom: 20px;
-}
-
-.uploader:hover {
-  background-color: var(--lightPrimary);
-}
-
-.hover {
-  background-color: var(--lightPrimary);
+  background: transparent;
+  text-align: center;
+  display: flex;
+  justify-content: center;
 }
 
 .input {
@@ -26,8 +21,8 @@
 }
 
 .label {
-  width: 100%;
-  height: 60px;
+  color: var(--darkPrimary);
+  font-size: 0.9rem;
   display: flex;
   justify-content: center;
   align-items: center;

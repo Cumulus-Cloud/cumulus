@@ -1,0 +1,11 @@
+.filesToUploadList {
+  border-top: 1px solid var(--divider);
+  border-left: 1px solid var(--divider);
+  border-right: 1px solid var(--divider);
+}
+
+.actions {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}

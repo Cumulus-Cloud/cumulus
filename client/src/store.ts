@@ -37,7 +37,7 @@ const reducers = combineReducers({
   // tslint:disable-next-line:no-any
   signup: SignupReducer as any,
   newFolder: NewFolderReducer,
-  upload: UploadReducer,
+  upload: UploadReducer as any,
   fileSystem: FileSystemReducer,
   search: SearchReducer,
   move: MoveReducer,

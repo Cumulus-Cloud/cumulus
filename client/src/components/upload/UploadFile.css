@@ -1,36 +1,46 @@
-
 .uploadFile {
   width: 100%;
   display: inline-flex;
-  padding: 10px;
   align-items: center;
-
-  border-radius: 2px;
-  border: 1px solid var(--divider);
+  padding: 12px 20px;
+  background-color: var(--secondaryBg);
+  border-bottom: 1px solid var(--divider);
 }
 
 .infos {
-  padding: 0 10px;
-  min-height: 30px;
-  display: flex;
   flex: 1;
-  flex-direction: column;
-  justify-content: space-between;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.name {
+  flex: 1;
+  color: var(--primaryText);
+  font-size: 1rem;
   overflow: auto;
   overflow-wrap: break-word;
 }
 
-.name {
-  color: var(--primaryText);
-  font-size: 1.2rem;
-}
 
 .parametres {
-  display: flex;
   flex-direction: row;
-  padding: 5px 0;
+  display: flex;
+  margin-left: 10px;
+}
+
+.size {
+  align-items: center;
+  display: flex;
+  width: 80px;
+  margin-right: 10px;
+  color: var(--primaryText);
+  font-size: .8rem;
+  justify-content: right;
 }
 
 .parametre {
+  align-items: center;
+  display: flex;
   margin-right: 10px;
 }
