@@ -5,6 +5,9 @@ import akka.stream.scaladsl.{Compression, Flow}
 import akka.util.ByteString
 import io.cumulus.core.validation.AppError
 
+/**
+  * Abstract compression stage used to compress or decompress a file.
+  */
 trait CompressionStage {
 
   def name: String
@@ -31,26 +34,38 @@ case class Compressions(compressions: Seq[CompressionStage]) {
 
 }
 
+/**
+  * Compression stage using GZip.
+  *
+  * @see [[akka.stream.scaladsl.Compression$#gzip()]]
+  * @see [[akka.stream.scaladsl.Compression$#gunzip(int)]]
+  */
 object GzipStage extends CompressionStage {
 
   def name: String = "GZIP"
 
   def compress: Flow[ByteString, ByteString, NotUsed] =
-    Flow[ByteString].via(Compression.gzip)
+    Compression.gzip
 
   def uncompress: Flow[ByteString, ByteString, NotUsed] =
-    Flow[ByteString].via(Compression.gunzip())
+    Compression.gunzip()
 
 }
 
+/**
+  * Compression stage using deflate.
+  *
+  * @see [[akka.stream.scaladsl.Compression$#deflate()]]
+  * @see [[akka.stream.scaladsl.Compression$#inflate(int)]]
+  */
 object DeflateStage extends CompressionStage {
 
   def name: String = "DEFLATE"
 
   def compress: Flow[ByteString, ByteString, NotUsed] =
-    Flow[ByteString].via(Compression.deflate)
+    Compression.deflate
 
   def uncompress: Flow[ByteString, ByteString, NotUsed] =
-    Flow[ByteString].via(Compression.inflate())
+    Compression.inflate()
 
 }

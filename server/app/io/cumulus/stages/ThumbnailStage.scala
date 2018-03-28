@@ -59,7 +59,7 @@ trait ThumbnailGenerator extends Logging {
 
       // Write the image
       val thumbnailWriter =
-        StorageReferenceWriter.writes(
+        StorageReferenceWriter.writer(
           storageEngines.default, // Write the thumbnail on the default storage engine
           cipher,
           compression,
@@ -93,6 +93,10 @@ object ThumbnailGenerator {
 
 }
 
+/**
+  * Thumbnail generator for PDF file. The PDF will be read to generate the thumbnail. This generator use PDFBox as
+  * the backend.
+  */
 object PDFDocumentThumbnailGenerator extends ThumbnailGenerator {
 
   def generatePreview(
@@ -106,7 +110,7 @@ object PDFDocumentThumbnailGenerator extends ThumbnailGenerator {
     userSession: UserSession,
     settings: Settings): Either[AppError, java.awt.Image] = {
 
-    StorageReferenceReader.read(file).map { fileSource =>
+    StorageReferenceReader.reader(file).map { fileSource =>
       // Get the PDF document
       val fileInputStream = fileSource.runWith(StreamConverters.asInputStream())
       val document = PDDocument.load(fileInputStream)
@@ -123,6 +127,10 @@ object PDFDocumentThumbnailGenerator extends ThumbnailGenerator {
 
 }
 
+/**
+  * Thumbnail generator for an image. The image will be read to generate the thumbnail. This generator use scrimage as
+  * the backend.
+  */
 object ImageThumbnailGenerator extends ThumbnailGenerator {
 
   def generatePreview(
@@ -136,7 +144,7 @@ object ImageThumbnailGenerator extends ThumbnailGenerator {
     userSession: UserSession,
     settings: Settings): Either[AppError, java.awt.Image] = {
 
-    StorageReferenceReader.read(file).map { fileSource =>
+    StorageReferenceReader.reader(file).map { fileSource =>
       // Read the image
       val fileInputStream = fileSource.runWith(StreamConverters.asInputStream())
       ImageIO.read(fileInputStream)

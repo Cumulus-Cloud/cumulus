@@ -7,6 +7,15 @@ import io.cumulus.models.fs.FsNodeType
 import io.cumulus.models.{Path, User}
 import io.cumulus.persistence.stores.FsNodeStore._
 
+/**
+  * Filter for a filesystem node.
+  *
+  * @param likeName The name to look for.
+  * @param parent The parent of the node.
+  * @param nodeType The type of node (optional).
+  * @param mimeType The mime type of the node (optional, only for files).
+  * @param owner The owner of the node.
+  */
 case class FsNodeFilter(
   likeName: String,
   parent: Path,

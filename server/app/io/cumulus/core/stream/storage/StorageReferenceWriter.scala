@@ -18,14 +18,14 @@ object StorageReferenceWriter {
 
   /**
     * Returns a sink allowing to write a stream of bytes into the provided storage engine. The sink will output a
-    * cumulus file containing the storage references.
+    * file containing the storage references.
     *
-    * @param storageEngine The storage engine to use
-    * @param cipher The optional cipher used to crypt the byte steam
-    * @param compression The optional compression algorithm used to compress the byte steam
-    * @param path The path of the create file
+    * @param storageEngine The storage engine to use.
+    * @param cipher The optional cipher used to encrypt the byte stream.
+    * @param compression The optional compression algorithm used to compress the byte stream.
+    * @param path The path of the create file.
     */
-  def writes(
+  def writer(
     storageEngine: StorageEngine,
     cipher: Option[CipherStage],
     compression: Option[CompressionStage],
@@ -43,7 +43,7 @@ object StorageReferenceWriter {
     // Split the incoming stream of bytes, and writes it to multiple files
     val objectsWriter =
       Chunker.splitter(settings.storage.objectSize, settings.storage.chunkSize)
-        .via(StorageObjectWriter(storageEngine, transformation))
+        .via(StorageObjectWriter.writer(storageEngine, transformation))
         .mergeSubstreams
 
     // Will compute a SHA1 of the byte stream

@@ -76,7 +76,7 @@ object ImageMetadataExtractor extends MetadataExtractor {
     storageEngines: StorageEngines,
     session: Session
   ): Either[AppError, ImageMetadata] = {
-    StorageReferenceReader.read(
+    StorageReferenceReader.reader(
       file
     ).map { source =>
 
@@ -161,7 +161,7 @@ object PDFDocumentMetadataExtractor extends MetadataExtractor {
     storageEngines: StorageEngines,
     session: Session
   ): Either[AppError, PDFDocumentMetadata] = {
-    StorageReferenceReader.read(
+    StorageReferenceReader.reader(
       file
     ).map { source =>
 

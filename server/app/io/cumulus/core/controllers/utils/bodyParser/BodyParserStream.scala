@@ -7,6 +7,9 @@ import akka.util.ByteString
 import play.api.libs.streams.Accumulator
 import play.api.mvc.{BaseController, BodyParser}
 
+/**
+  * Trait to provide a raw stream of the body of a request.
+  */
 trait BodyParserStream { self: BaseController =>
 
   def streamBody(implicit ec:ExecutionContext): BodyParser[Source[ByteString, _]] =

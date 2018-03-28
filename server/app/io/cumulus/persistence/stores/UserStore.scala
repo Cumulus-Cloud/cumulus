@@ -11,6 +11,9 @@ import io.cumulus.core.persistence.anorm.AnormSupport._
 import io.cumulus.core.persistence.query.QueryBuilder
 import io.cumulus.models.{User, UserSecurity}
 
+/**
+  * User store, used to manage users in the database.
+  */
 class UserStore(
   implicit val qb: QueryBuilder[CumulusDB]
 ) extends AnormPKOperations[User, CumulusDB, UUID] with AnormRepository[User, CumulusDB] {

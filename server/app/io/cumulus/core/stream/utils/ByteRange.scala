@@ -5,6 +5,12 @@ import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
 import akka.util.ByteString
 import io.cumulus.core.utils.Range
 
+/**
+  * Trim a byte flow using the provided range. The first bytes out of the start of the range and the last bytes after
+  * the end of the range will be dropped.
+  *
+  * @param range The range to use. Only bytes inside of this range will be returned.
+  */
 class ByteRange(range: Range) extends GraphStage[FlowShape[ByteString, ByteString]] {
   val in = Inlet[ByteString]("ByteRange.in")
   val out = Outlet[ByteString]("ByteRange.out")
@@ -62,9 +68,22 @@ class ByteRange(range: Range) extends GraphStage[FlowShape[ByteString, ByteStrin
 
 object ByteRange {
 
+  /**
+    * Trim a byte flow using the provided range.
+    *
+    * @param range The range to use. Only bytes inside of this range will be returned.
+    * @see [[io.cumulus.core.stream.utils.ByteRange ByteRange]]
+    */
   def apply(range: Range): ByteRange =
     new ByteRange(range)
 
+  /**
+    * Trim a byte flow using the provided range.
+    *
+    * @param from The start of the range.
+    * @param to The end of the range.
+    * @see [[io.cumulus.core.stream.utils.ByteRange ByteRange]]
+    */
   def apply(from: Long, to: Long): ByteRange =
     ByteRange(Range(from, to))
 
