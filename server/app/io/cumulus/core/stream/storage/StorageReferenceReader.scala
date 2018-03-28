@@ -20,7 +20,7 @@ object StorageReferenceReader extends Logging {
     *
     * @param file The file containing the thumbnail to stream
     */
-  def readThumbnail(
+  def thumbnailReader(
     file: File
   )(implicit
     session: Session,
@@ -47,7 +47,7 @@ object StorageReferenceReader extends Logging {
     *
     * @param file The file to stream
     */
-  def read(
+  def reader(
     file: File
   )(implicit
     session: Session,
@@ -75,7 +75,7 @@ object StorageReferenceReader extends Logging {
     * @param file The file to stream
     * @param range The range of byte to output
     */
-  def read(
+  def reader(
     file: File,
     range: Range
   )(implicit

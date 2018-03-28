@@ -1,12 +1,13 @@
 package io.cumulus.persistence.storage
 
-import java.io.{InputStream, OutputStream}
 import java.util.UUID
+import scala.concurrent.{ExecutionContext, Future}
 
+import akka.stream.IOResult
+import akka.stream.scaladsl.{Sink, Source}
+import akka.util.ByteString
 import io.cumulus.core.validation.AppError
 import play.api.Configuration
-
-import scala.concurrent.{ExecutionContext, Future}
 
 trait StorageEngine {
 
@@ -16,9 +17,9 @@ trait StorageEngine {
 
   def deleteObject(id: UUID)(implicit e: ExecutionContext): Future[Either[AppError, Unit]]
 
-  def writeObject(id: UUID)(implicit e: ExecutionContext): OutputStream
+  def getObjectWriter(id: UUID)(implicit e: ExecutionContext): Sink[ByteString, Future[IOResult]]
 
-  def readObject(id: UUID)(implicit e: ExecutionContext): InputStream
+  def getObjectReader(id: UUID)(implicit e: ExecutionContext): Source[ByteString, Future[IOResult]]
 
 }
 

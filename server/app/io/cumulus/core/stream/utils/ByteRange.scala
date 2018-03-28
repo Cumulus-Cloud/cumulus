@@ -5,6 +5,7 @@ import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
 import akka.util.ByteString
 import io.cumulus.core.utils.Range
 
+// TODO doc
 class ByteRange(range: Range) extends GraphStage[FlowShape[ByteString, ByteString]] {
   val in = Inlet[ByteString]("ByteRange.in")
   val out = Outlet[ByteString]("ByteRange.out")

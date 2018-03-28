@@ -9,7 +9,7 @@ import io.cumulus.core.utils.{Base64, Crypto}
 
 
 /**
-  * Custom cipher for an Akka stream of `BytString`. Any cipher can be used with this method. According to the nature
+  * Custom cipher for an Akka stream of `ByteString`. Any cipher can be used with this method. According to the nature
   * of the cipher, the data will be streamed by block of varying size even if the data is streamed in with blocks of
   * different sizes. The behavior is to pull upstream until a block is completed, then push downstream, and repeat for
   * each downstream pull.
