@@ -1,11 +1,7 @@
 package io.cumulus.controllers
 
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{ExecutionContext, Future}
 
-import akka.{Done, NotUsed}
-import akka.stream.IOResult
-import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
-import akka.util.ByteString
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
