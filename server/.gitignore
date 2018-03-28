@@ -1,4 +1,11 @@
+
+# Ignore the front's generated files
 public/main.js
 public/main.css
 public/**/*.map
+
+# Ignore the app's logs
 log
+
+# Ignore the dev configuration file
+conf/local.conf
