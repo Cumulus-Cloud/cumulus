@@ -2,6 +2,8 @@ package io.cumulus.core.stream.utils
 
 import java.security.MessageDigest
 
+import akka.NotUsed
+import akka.stream.scaladsl.Flow
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
 import akka.util.ByteString
@@ -51,19 +53,19 @@ object DigestCalculator {
   /**
     * Compute the MD5 hash of the stream.
     */
-  def md5: DigestCalculator =
-    DigestCalculator("MD5")
+  def md5: Flow[ByteString, String, NotUsed] =
+    Flow[ByteString].via(DigestCalculator("MD5"))
 
   /**
     * Compute the SHA-1 hash of the stream.
     */
-  def sha1: DigestCalculator =
-    DigestCalculator("SHA-1")
+  def sha1: Flow[ByteString, String, NotUsed] =
+    Flow[ByteString].via(DigestCalculator("SHA-1"))
 
   /**
     * Compute the SHA-256 hash of the stream.
     */
-  def sha256: DigestCalculator =
-    DigestCalculator("SHA-256")
+  def sha256: Flow[ByteString, String, NotUsed] =
+    Flow[ByteString].via(DigestCalculator("SHA-256"))
 
 }

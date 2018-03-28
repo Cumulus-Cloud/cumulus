@@ -36,6 +36,26 @@ case class StorageObject(
 
 object StorageObject {
 
+  /**
+    * Create a default storage object for the provided storage engine.
+    *
+    * @param storageEngine The storage engine to use.
+    */
+  def create(storageEngine: StorageEngine): StorageObject =
+    StorageObject(
+      UUID.randomUUID(),
+      0,
+      "",
+      0,
+      "",
+      None,
+      None,
+      storageEngine.name,
+      storageEngine.version,
+      storageEngine.reference,
+      LocalDateTime.now
+    )
+
   implicit val format: Format[StorageObject] =
     Json.format[StorageObject]
 

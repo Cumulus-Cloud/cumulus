@@ -59,7 +59,7 @@ trait ThumbnailGenerator extends Logging {
 
       // Write the image
       val thumbnailWriter =
-        StorageReferenceWriter.writes(
+        StorageReferenceWriter.writer(
           storageEngines.default, // Write the thumbnail on the default storage engine
           cipher,
           compression,

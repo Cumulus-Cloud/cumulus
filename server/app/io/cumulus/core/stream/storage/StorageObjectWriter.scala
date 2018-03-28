@@ -1,197 +1,89 @@
 package io.cumulus.core.stream.storage
 
-import java.io.OutputStream
-import java.security.MessageDigest
-import java.time.LocalDateTime
-import java.util.UUID
 import scala.concurrent.ExecutionContext
 
 import akka.NotUsed
 import akka.stream._
-import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, ZipWith}
-import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
+import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, Source, ZipWith}
 import akka.util.ByteString
-import io.cumulus.core.Logging
-import io.cumulus.core.stream.storage.StorageObjectWriter.ObjectWriterState
+import io.cumulus.core.stream.utils.FlowExtensions._
+import io.cumulus.core.stream.utils.SinkExtensions._
 import io.cumulus.core.stream.utils.{Counter, DigestCalculator}
-import io.cumulus.core.utils.Base64
 import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
 
 /**
-  * Write a stream of `ByteString` into a storage object, and then returns this storage object in the stream. The
-  * storage object will contains the object size and hash.
-  *
-  * @param storageEngine The storage engine to use
+  * @see [[io.cumulus.core.stream.storage.StorageObjectWriter#apply StorageObjectWriter.writer]]
   */
-class StorageObjectWriter(storageEngine: StorageEngine)(implicit ec: ExecutionContext) extends GraphStage[FlowShape[ByteString, StorageObject]] with Logging {
-
-  val in  = Inlet[ByteString]("ObjectWriter.in")
-  val out = Outlet[StorageObject]("ObjectWriter.out")
-  override val shape = FlowShape.of(in, out)
-
-  override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = new GraphStageLogic(shape) {
-
-    // The storage engine used
-    private implicit val engine: StorageEngine = storageEngine
-
-    // The current state
-    private var state = ObjectWriterState.empty
-
-    setHandler(out, new OutHandler {
-      override def onPull(): Unit = {
-        if (!isClosed(in))
-          pull(in)
-      }
-    })
-
-    setHandler(in, new InHandler {
-      override def onPush(): Unit = {
-        write(grab(in))
-      }
-
-      override def onUpstreamFinish(): Unit = {
-        // Close the writer and add to the ready list
-        state.output.close()
-
-        val hash = Base64.encode(state.hashDigest.digest)
-
-        state = state.copy(
-          storageObject = state.storageObject.copy(
-            hash = hash,
-            size = state.written,
-            storageHash = hash, // By default, assume that the object is written directly
-            storageSize = state.written
-          )
-        )
-
-        logger.debug(s"Object ${state.storageObject.id} created into ${storageEngine.name} v${storageEngine.version}")
-
-        if (isAvailable(out)) {
-          emitStorageObject()
-          completeStage()
-        }
-      }
-    })
-
-    /**
-      * Write a buffer to a file source
-      *
-      * @param buffer The buffer to write
-      */
-    private def write(buffer: ByteString): Unit = {
-      // Write
-      state.output.write(buffer.toArray)
-
-      // Update state
-      state.hashDigest.update(buffer.toArray)
-      state = state.copy(written = state.written + buffer.length)
-
-      // Need more to read
-      pull(in)
-    }
-
-    /**
-      * Emit the file source. The source is emitted once the file is fully written
-      */
-    private def emitStorageObject(): Unit = {
-      push(out, state.storageObject)
-    }
-
-  }
-
-}
-
 object StorageObjectWriter {
 
-  private case class ObjectWriterState(
-    written: Int,
-    output: OutputStream,
-    storageObject: StorageObject,
-    hashDigest: MessageDigest
-  )
-
-  private object ObjectWriterState {
-    def empty(implicit storageEngine: StorageEngine, ec: ExecutionContext): ObjectWriterState = {
-      val storageObject = StorageObject(
-        id = UUID.randomUUID(),
-        size = 0,
-        hash = "",
-        storageSize = 0,
-        storageHash = "",
-        cipher = None,
-        compression = None,
-        storageEngine = storageEngine.name,
-        storageEngineVersion = storageEngine.version,
-        storageEngineReference = storageEngine.reference,
-        creation = LocalDateTime.now
-      )
-
-      // TODO handle failure ?
-      val output =  storageEngine.writeObject(storageObject.id)
-
-      ObjectWriterState(0, output, storageObject, MessageDigest.getInstance("SHA1"))
-    }
-  }
-
   /**
-    * Naïve version of the object writer, which assume the stream is not altered before. This stage will compute the
-    * stage and the hash of the byte stream, and assume the this value are representative of the byte source.<br/>
-    * <br/>
-    * See
-    * [[io.cumulus.core.stream.storage.StorageObjectWriter#apply(io.cumulus.persistence.storage.StorageEngine, akka.stream.scaladsl.Flow, scala.concurrent.ExecutionContext) StorageObjectWriter]]
-    * if a transformation is applied to the stream (compression, ..).
+    * Object writer (Flow of `ByteString` to `StorageObject`) which will write to a newly created storage object the
+    * content of the stream using the provided storage engine. An optional transformation to apply to the byte stream
+    * before writing can be provided (i.e. for compression or encryption).
+    * <br/><br/>
+    * This helper will correctly set the size and hash before and after the transformation (`storageSize` and
+    * `storageHash`).
+    * <br/><br/>
+    * This flow aims at being used with substreams to allow to upload multiples chunks without ending the stream.
     *
     * @param storageEngine The storage engine to use
-    * @see [[io.cumulus.core.stream.storage.StorageObjectWriter StorageObjectWriter]]
+    * @param transformation The transformation to performs (default to no transformation)
     */
-  def apply(storageEngine: StorageEngine)(implicit ec: ExecutionContext): StorageObjectWriter =
-    new StorageObjectWriter(storageEngine)
-
-  /**
-    * Writer which takes an arbitrary transformation to apply to the byte stream before writing. This helper will
-    * correctly set the size and hash before and after the transformation (`storageSize` and `storageHash`).
-    *
-    * @param storageEngine The storage engine to use
-    * @param transformation The transformation to performs
-    * @see [[io.cumulus.core.stream.storage.StorageObjectWriter StorageObjectWriter]]
-    */
-  def apply(
+  def writer(
     storageEngine: StorageEngine,
-    transformation: Flow[ByteString, ByteString, NotUsed]
+    transformation: Flow[ByteString, ByteString, NotUsed] = Flow[ByteString]
   )(implicit ec: ExecutionContext): Flow[ByteString, StorageObject, NotUsed] = {
 
-    // Will write the byte stream to a file
-    val objectWriter = StorageObjectWriter(storageEngine)
+    // Will write the byte stream using the provided storage engine, and return the storage object
+    val write: Flow[ByteString, StorageObject, _] =
+      Flow[ByteString].flatMap { firstBytes =>
+        // Empty storage object generated
+        val storageObject = StorageObject.create(storageEngine)
 
-    // Will compute a SHA1 of the byte stream
-    val sha1 = DigestCalculator.sha1
+        // Sink generated from the storage engine
+        val sink = storageEngine.getObjectWriter(storageObject.id)
+
+        Flow[ByteString]
+          .prepend(Source(List(firstBytes)))
+          .to(sink)
+          .toFlow
+          .map(_ => storageObject)
+      }
+
+    // Will compute the hash (SHA1) of a byte stream
+    val hash = DigestCalculator.sha1
 
     // Will compute the total size of a byte stream
     val size = Counter.apply
 
+    // Compute the hash and size of the object while writing it (before and after the transformation)
     val graph = GraphDSL.create() { implicit builder =>
-      val broadcast = builder.add(Broadcast[ByteString](3))
-      val zip       = builder.add(ZipWith[StorageObject, Long, String, StorageObject] {
-        case (storageObject, objectSize, objectSha1) =>
+      val broadcast            = builder.add(Broadcast[ByteString](3))
+      val broadcastTransformed = builder.add(Broadcast[ByteString](3))
+
+      val zip = builder.add(ZipWith[StorageObject, Long, String, Long, String, StorageObject] {
+        case (storageObject, storageSize, storageHash, chunkSize, chunkHash) =>
           storageObject.copy(
-            hash = objectSha1,
-            size = objectSize
+            hash = chunkHash,
+            size = chunkSize,
+            storageHash = storageHash,
+            storageSize = storageSize
           )
       })
 
       import GraphDSL.Implicits._
 
-      // Compute the hash and size of the object while writing it
-      broadcast ~> transformation ~> objectWriter ~> zip.in0
-      broadcast ~> size                           ~> zip.in1
-      broadcast ~> sha1                           ~> zip.in2
+      broadcast ~> transformation ~> broadcastTransformed ~> write ~> zip.in0
+                                     broadcastTransformed ~> size  ~> zip.in1
+                                     broadcastTransformed ~> hash  ~> zip.in2
+      broadcast ~> size                                            ~> zip.in3
+      broadcast ~> hash                                            ~> zip.in4
 
       FlowShape(broadcast.in, zip.out)
     }
 
     // Return the graph
-    Flow[ByteString]
-      .via(graph)
+    Flow[ByteString].via(graph)
   }
 
 }

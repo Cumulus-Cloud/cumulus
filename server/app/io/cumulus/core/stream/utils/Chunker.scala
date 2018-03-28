@@ -70,26 +70,29 @@ class Chunker(chunkSize: Int) extends GraphStage[FlowShape[ByteString, ByteStrin
   }
 }
 
+/**
+  * @see [[io.cumulus.core.stream.utils.Chunker Chunker]]
+  */
 object Chunker {
 
   /**
-    * @see [[io.cumulus.core.stream.utils.Chunker]]
+    * @see [[io.cumulus.core.stream.utils.Chunker Chunker]]
     */
   def apply(chunkSize: Int): Chunker =
     new Chunker(chunkSize)
 
   /**
     * Uses the chunker to split the incoming stream in an arbitrary number of sequential sub-streams of a defined size.
-    * Note that the last stream can be under the defined size.<br/>
-    * <br/>
-    * The operation is not made in memory like `grouped`, and can used for large flow of data.<br/>
-    * <br/>
-    * This works by using `Chunked` to group bytes by a defined (small) size, and then couting the number of this groups
+    * Note that the last stream can be under the defined size.
+    * <br/><br/>
+    * The operation is not made in memory like `grouped`, and can used for large flow of data.
+    * <br/><br/>
+    * This works by using `Chunked` to group bytes by a defined (small) size, and then counting the number of this groups
     * and thus guessing the total number of bytes passed through. The split is made using `splitAfter`.
     *
     * @param splitBy The total amount of byte to send to each sub-stream
     * @param chunkSize The size of a chunk, defaulted to 8096
-    * @see [[io.cumulus.core.stream.utils.Chunker]]
+    * @see [[io.cumulus.core.stream.utils.Chunker Chunker]]
     */
   def splitter(splitBy: Long, chunkSize: Int = 8096) = {
 

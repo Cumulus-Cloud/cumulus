@@ -56,7 +56,7 @@ class StorageService(
 
       // Define the file writer from this information
       fileWriter = {
-        StorageReferenceWriter.writes(
+        StorageReferenceWriter.writer(
           storageEngines.default, // Always use the default storage engine during upload
           cipher,
           compression,

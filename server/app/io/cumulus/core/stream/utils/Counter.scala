@@ -4,6 +4,9 @@ import akka.NotUsed
 import akka.stream.scaladsl.Flow
 import akka.util.ByteString
 
+/**
+  * @see [[io.cumulus.core.stream.utils.Counter#apply Counter.apply]]
+  */
 object Counter {
 
   /**

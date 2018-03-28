@@ -7,8 +7,11 @@ import java.util.UUID
 import io.cumulus.core.validation.AppError
 import io.cumulus.persistence.storage.{StorageEngine, StorageEngineFactory}
 import play.api.Configuration
-
 import scala.concurrent.{ExecutionContext, Future}
+
+import akka.stream.IOResult
+import akka.stream.scaladsl.{FileIO, Sink}
+import akka.util.ByteString
 
 class LocalStorageEngine(val reference: String, storageRootPath: String) extends StorageEngine {
 
@@ -22,6 +25,15 @@ class LocalStorageEngine(val reference: String, storageRootPath: String) extends
     storagePath.toFile.mkdirs()
 
     new FileOutputStream(objectPath.toFile)
+  }
+
+  override def getObjectWriter(id: UUID)(implicit e: ExecutionContext): Sink[ByteString, Future[IOResult]] = {
+    val objectPath = Paths.get(storageRootPath, id.toString)
+    val storagePath = objectPath.getParent
+
+    storagePath.toFile.mkdirs()
+
+    FileIO.toPath(objectPath)
   }
 
   def readObject(id: UUID)(implicit e: ExecutionContext): InputStream = {

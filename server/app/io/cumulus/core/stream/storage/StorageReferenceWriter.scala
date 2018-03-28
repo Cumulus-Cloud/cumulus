@@ -14,6 +14,9 @@ import io.cumulus.models.{Path, UserSession}
 import io.cumulus.persistence.storage.{StorageEngine, StorageObject, StorageReference}
 import io.cumulus.stages.{CipherStage, CompressionStage}
 
+/**
+  * @see [[io.cumulus.core.stream.storage.StorageReferenceWriter#writes StorageReferenceWriter.writes]]
+  */
 object StorageReferenceWriter {
 
   /**
@@ -21,11 +24,11 @@ object StorageReferenceWriter {
     * cumulus file containing the storage references.
     *
     * @param storageEngine The storage engine to use
-    * @param cipher The optional cipher used to crypt the byte steam
-    * @param compression The optional compression algorithm used to compress the byte steam
-    * @param path The path of the create file
+    * @param cipher The optional cipher used to crypt the byte stream
+    * @param compression The optional compression algorithm used to compress the byte stream
+    * @param path The path of the created file
     */
-  def writes(
+  def writer(
     storageEngine: StorageEngine,
     cipher: Option[CipherStage],
     compression: Option[CompressionStage],
@@ -43,7 +46,7 @@ object StorageReferenceWriter {
     // Split the incoming stream of bytes, and writes it to multiple files
     val objectsWriter =
       Chunker.splitter(settings.storage.objectSize, settings.storage.chunkSize)
-        .via(StorageObjectWriter(storageEngine, transformation))
+        .via(StorageObjectWriter.writer(storageEngine, transformation))
         .mergeSubstreams
 
     // Will compute a SHA1 of the byte stream
