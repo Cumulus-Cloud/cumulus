@@ -20,39 +20,6 @@ class HomeController (
 ) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with BodyParserJson {
 
   def index = Action {
-    /*
-    val p: Promise[IOResult] = Promise()
-    val sink: Sink[ByteString, Future[IOResult]] = ???
-
-    val sinkWithMap: Sink[ByteString, p.type] = sink.mapMaterializedValue { futIoResult =>
-      p.completeWith(futIoResult)
-    }
-
-    val source = Source.fromFuture(p.future)
-    val flow: Flow[ByteString, IOResult, NotUsed] = Flow.fromSinkAndSourceCoupled(sinkWithMap, source)
-
-    def completitionFlow[A, Mat](sink: Sink[A, Mat]): Flow[A, Done.type, Mat] = {
-      // never emits or completes on its own, but can still be cancelled
-      val never = Source.fromFuture(Future.never)
-      // the output will be cancelled when the input is done
-      val coupled = Flow.fromSinkAndSourceCoupledMat(sink, never)(Keep.left)
-      val output = Source.single(Done)
-      coupled.orElse(output)
-    }*/
-
-
-/*
-
-
-    val source: Source[String, NotUsed] = Source(List(ByteString("zz")))
-    val sink: Sink[ByteString, Future[IOResult]] = FileIO.toPath(Paths.get("/something"))
-    val stuff: Flow[Future[IOResult], String, NotUsed] = ???
-
-    val huh: Flow[ByteString, String, Future[IOResult]] = Flow.fromSinkAndSourceCoupledMat(sink, source)((a, b) => a)
-
-    huh.m
-    */
-
     Ok(io.cumulus.views.html.index())
   }
 
