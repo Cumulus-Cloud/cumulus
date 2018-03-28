@@ -106,7 +106,7 @@ object PDFDocumentThumbnailGenerator extends ThumbnailGenerator {
     userSession: UserSession,
     settings: Settings): Either[AppError, java.awt.Image] = {
 
-    StorageReferenceReader.read(file).map { fileSource =>
+    StorageReferenceReader.reader(file).map { fileSource =>
       // Get the PDF document
       val fileInputStream = fileSource.runWith(StreamConverters.asInputStream())
       val document = PDDocument.load(fileInputStream)
@@ -136,7 +136,7 @@ object ImageThumbnailGenerator extends ThumbnailGenerator {
     userSession: UserSession,
     settings: Settings): Either[AppError, java.awt.Image] = {
 
-    StorageReferenceReader.read(file).map { fileSource =>
+    StorageReferenceReader.reader(file).map { fileSource =>
       // Read the image
       val fileInputStream = fileSource.runWith(StreamConverters.asInputStream())
       ImageIO.read(fileInputStream)

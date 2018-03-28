@@ -91,10 +91,10 @@ class StorageService(
     maybeRange match {
       // Range provided, only return a chunk of the file
       case Some(range) =>
-        StorageReferenceReader.read(file, range)
+        StorageReferenceReader.reader(file, range)
       // No range provided, return the content from the start
       case _ =>
-        StorageReferenceReader.read(file)
+        StorageReferenceReader.reader(file)
     }
   }
 
@@ -108,7 +108,7 @@ class StorageService(
 
     for {
       file    <- EitherT(fsNodeService.findFile(path))
-      content <- EitherT.fromEither[Future](StorageReferenceReader.readThumbnail(file))
+      content <- EitherT.fromEither[Future](StorageReferenceReader.thumbnailReader(file))
     } yield content
 
   }.value

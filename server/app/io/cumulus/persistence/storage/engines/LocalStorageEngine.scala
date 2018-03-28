@@ -1,6 +1,5 @@
 package io.cumulus.persistence.storage.engines
 
-import java.io.{FileInputStream, FileOutputStream, InputStream, OutputStream}
 import java.nio.file.Paths
 import java.util.UUID
 
@@ -10,7 +9,7 @@ import play.api.Configuration
 import scala.concurrent.{ExecutionContext, Future}
 
 import akka.stream.IOResult
-import akka.stream.scaladsl.{FileIO, Sink}
+import akka.stream.scaladsl.{FileIO, Sink, Source}
 import akka.util.ByteString
 
 class LocalStorageEngine(val reference: String, storageRootPath: String) extends StorageEngine {
@@ -18,16 +17,7 @@ class LocalStorageEngine(val reference: String, storageRootPath: String) extends
   val name: String = LocalStorage.name
   val version: String = LocalStorage.version
 
-  def writeObject(id: UUID)(implicit e: ExecutionContext): OutputStream = {
-    val objectPath = Paths.get(storageRootPath, id.toString)
-    val storagePath = objectPath.getParent
-
-    storagePath.toFile.mkdirs()
-
-    new FileOutputStream(objectPath.toFile)
-  }
-
-  override def getObjectWriter(id: UUID)(implicit e: ExecutionContext): Sink[ByteString, Future[IOResult]] = {
+  def getObjectWriter(id: UUID)(implicit e: ExecutionContext): Sink[ByteString, Future[IOResult]] = {
     val objectPath = Paths.get(storageRootPath, id.toString)
     val storagePath = objectPath.getParent
 
@@ -36,10 +26,10 @@ class LocalStorageEngine(val reference: String, storageRootPath: String) extends
     FileIO.toPath(objectPath)
   }
 
-  def readObject(id: UUID)(implicit e: ExecutionContext): InputStream = {
+  def getObjectReader(id: UUID)(implicit e: ExecutionContext): Source[ByteString, Future[IOResult]] = {
     val objectPath = Paths.get(storageRootPath, id.toString)
 
-    new FileInputStream(objectPath.toFile)
+    FileIO.fromPath(objectPath)
   }
 
   def deleteObject(id: UUID)(implicit e: ExecutionContext): Future[Right[AppError, Unit]] = {

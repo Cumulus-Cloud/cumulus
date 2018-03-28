@@ -6,11 +6,12 @@ import scala.concurrent.ExecutionContext
 
 import akka.NotUsed
 import akka.stream._
-import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl._
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.util.ByteString
 import io.cumulus.core.Logging
 import io.cumulus.core.stream.storage.StorageObjectReader.ObjectReaderState
+import io.cumulus.core.stream.utils.{Counter, DigestCalculator}
 import io.cumulus.core.utils.Base64
 import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
 
@@ -208,9 +209,84 @@ object StorageObjectReader {
     transformation: Flow[ByteString, ByteString, NotUsed],
     bufferSize: Int = 8096
   )(implicit ec: ExecutionContext): Flow[StorageObject, ByteString, NotUsed] = {
+
+    //Flow[StorageObject]
+    //  .via(StorageObjectReader(storageEngine, bufferSize))
+    //  .via(transformation)
+
+    /*
+
+    // Will compute the hash (SHA1) of a byte stream
+    val hash = DigestCalculator.sha1
+
+    // Will compute the total size of a byte stream
+    val size = Counter.apply
+
+    val graph = GraphDSL.create() { implicit builder =>
+      val broadcastObject = builder.add(Broadcast[StorageObject](2))
+      val broadcastContent = builder.add(Broadcast[ByteString](3))
+
+      val readObject = Flow[StorageObject]
+        .flatMapConcat { storageObject =>
+          storageEngine
+            .getObjectReader(storageObject.id)
+          // TODO add integrity checks
+        }
+
+      val checkIntegrity = builder.add(ZipWith[StorageObject, Long, String, Long, String, StorageObject] {
+        case (storageObject, storageSize, storageHash, chunkSize, chunkHash) =>
+          storageObject.copy(
+            hash = chunkHash,
+            size = chunkSize,
+            storageHash = storageHash,
+            storageSize = storageSize
+          )
+      })
+
+      val zip = builder.add(ZipWith[StorageObject, Long, String, StorageObject] {
+        case (storageObject, storageSize, storageHash) =>
+          if(storageSize != storageObject.storageSize) {
+            //logger.warn(s"Object ${state.storageObject.id} integrity test KO on length")
+            throw new Exception(s"Integrity error (file chunk size and read size differs, $storageSize != ${storageObject.storageSize})"))
+          } else if(storageHash != storageObject.storageHash) {
+            //logger.warn(s"Object ${state.storageObject.id} integrity test KO on hash")
+            throw new Exception(s"Integrity error (chunk hash and read hash differs)")
+          } else {
+            //logger.debug(s"Object ${state.storageObject.id} integrity test OK")
+            storageObject
+          }
+      })
+
+      import GraphDSL.Implicits._
+
+      broadcastObject ~> readObject ~> broadcastContent ~> transformation
+                                       broadcastContent ~> size         ~> zip.in1
+                                       broadcastContent ~> hash         ~> zip.in2
+      broadcastObject                                                   ~> zip.in0
+
+      FlowShape(broadcast.in, transformation.shape.out)
+    }*/
+
+    val hash = DigestCalculator.sha1
+
     Flow[StorageObject]
-      .via(StorageObjectReader(storageEngine, bufferSize))
+      .flatMapConcat { storageObject =>
+        val switch = KillSwitches.single[ByteString]
+
+        hash.toMat(Sink.foreach { hash =>
+          if(storageObject.storageHash != hash)
+            switch.
+        })
+
+
+
+        storageEngine
+          .getObjectReader(storageObject.id)
+          .viaMat(switch)(Keep.right)
+          .alsoTo(hash.toMat(Sink.last)(Keep.both))
+      }
       .via(transformation)
+
   }
 
 }
