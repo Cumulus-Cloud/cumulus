@@ -1,6 +1,6 @@
 .uploadFile {
   width: 100%;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   padding: 12px 20px;
   background-color: var(--secondaryBg);
@@ -8,7 +8,7 @@
 }
 
 .infos {
-  flex: 1;
+  width: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -18,10 +18,10 @@
   flex: 1;
   color: var(--primaryText);
   font-size: 1rem;
-  overflow: auto;
+  overflow: hidden;
   overflow-wrap: break-word;
+  word-wrap: break-word;
 }
-
 
 .parametres {
   flex-direction: row;
@@ -42,5 +42,5 @@
 .parametre {
   align-items: center;
   display: flex;
-  margin-right: 10px;
+  margin-left: 10px;
 }

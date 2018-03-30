@@ -1,7 +1,7 @@
 import * as styles from "./UploadFile.css"
 import * as React from "react"
 import IconButton from "components/buttons/IconButton"
-import CancelIcon from "icons/CancelIcon"
+import CloseIcon from "icons/CloseIcon"
 import CompressIcon from "icons/CompressIcon"
 import LockCloseIcon from "icons/LockCloseIcon"
 import LockOpenIcon from "icons/LockOpenIcon"
@@ -42,7 +42,7 @@ export default class UploadFile extends React.PureComponent<Props> {
             <div className={styles.size}>{humanFileSize(fileToUpload.file.size)}</div>
             <div className={styles.parametre}>
               <IconButton onClick={this.handleOnDelete}>
-                <CancelIcon />
+                <CloseIcon />
               </IconButton>
             </div>
           </div>
