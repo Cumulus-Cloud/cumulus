@@ -2,7 +2,7 @@
   width: 100%;
   display: flex;
   align-items: center;
-  padding: 12px 20px;
+  padding: 7px 20px;
   background-color: var(--secondaryBg);
   border-bottom: 1px solid var(--divider);
 }
@@ -17,7 +17,7 @@
 .name {
   flex: 1;
   color: var(--primaryText);
-  font-size: 1rem;
+  font-size: .9rem;
   overflow: hidden;
   overflow-wrap: break-word;
   word-wrap: break-word;
