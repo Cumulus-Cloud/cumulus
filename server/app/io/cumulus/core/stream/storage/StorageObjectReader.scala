@@ -15,14 +15,14 @@ import io.cumulus.core.utils.Base64
 import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
 
 /**
-  * Transforms a flow of storage object into a flow of `ByteString`, reading the content of each object from the
-  * provided storage engine.<br/>
-  * <br/>
+  * Transforms a flow of storage object into a flow of byte, reading the content of each object from the provided
+  * storage engine.
+  * <br/><br/>
   * If used with a cipher and/or compression, the flow should be used with the splitting helper to allow individual
   * processing on each object.
   *
-  * @param storageEngine The storage engine use (note that it should technically be retrieved directly from the objects)
-  * @param bufferSize The buffer size to use, defaulted to 8096
+  * @param storageEngine The storage engine to use.
+  * @param bufferSize The buffer size to use, defaulted to 8096.
   */
 class StorageObjectReader(
   storageEngine: StorageEngine,
@@ -75,7 +75,7 @@ class StorageObjectReader(
 
     /**
       * Update the state to the provided storage object.
-      * @param storageObject The storage object to be read
+      * @param storageObject The storage object to be read.
       */
     private def read(storageObject: StorageObject): Unit = {
       state = ObjectReaderState(storageObject)
@@ -85,7 +85,7 @@ class StorageObjectReader(
 
     /**
       * Emit bytes from the current object. If the current object is done, the stream is closed and a
-      * new object is requested until no more objects are available
+      * new object is requested until no more objects are available.
       */
     private def emitBytes(): Unit = {
       // Read some data from the chunk
@@ -135,8 +135,8 @@ class StorageObjectReader(
       * Check the integrity of the last object, by comparing the number of bytes sent to the size of the object, and
       * then the object hash to the hash of the data sent.
       *
-      * @param totalRead The total number of byte read
-      * @param readHash The hash of all the bytes read
+      * @param totalRead The total number of byte read.
+      * @param readHash The hash of all the bytes read.
       */
     private def checkIntegrity(totalRead: BigInt, readHash: String) : Unit = {
       if(totalRead != state.storageObject.storageSize) {
@@ -185,31 +185,42 @@ object StorageObjectReader {
   }
 
   /**
-    * @see [[io.cumulus.core.stream.storage.StorageObjectReader]]
+    * Transforms a flow of storage object into a flow of byte, reading the content of each object from the provided
+    * storage engine.
+    *
+    * @param storageEngine The storage engine to use.
+    * @see [[io.cumulus.core.stream.storage.StorageObjectReader StorageObjectReader]]
     */
-  def apply(storageEngine: StorageEngine)(implicit ec: ExecutionContext): StorageObjectReader =
+  def reader(storageEngine: StorageEngine)(implicit ec: ExecutionContext): StorageObjectReader =
     new StorageObjectReader(storageEngine)
 
   /**
-    * @see [[io.cumulus.core.stream.storage.StorageObjectReader]]
+    * Transforms a flow of storage object into a flow of byte, reading the content of each object from the provided
+    * storage engine.
+    *
+    * @param storageEngine The storage engine to use.
+    * @param bufferSize The buffer size to use.
+    * @see [[io.cumulus.core.stream.storage.StorageObjectReader StorageObjectReader]]
     */
-  def apply(storageEngine: StorageEngine, bufferSize: Int)(implicit ec: ExecutionContext): StorageObjectReader =
+  def reader(storageEngine: StorageEngine, bufferSize: Int)(implicit ec: ExecutionContext): StorageObjectReader =
     new StorageObjectReader(storageEngine, bufferSize)
 
   /**
-    * Apply a transformation to a reader.
+    * Transforms a flow of storage object into a flow of byte, reading the content of each object from the provided
+    * storage engine. An additional transformation is applied to the source (decipher, decompression).
     *
-    * @param storageEngine The storage engine to use
-    * @param transformation The transformation to perform
-    * @see [[io.cumulus.core.stream.storage.StorageObjectReader]]
+    * @param storageEngine The storage engine to use.
+    * @param bufferSize The buffer size to use, defaulted to 8096.
+    * @param transformation The transformation to perform.
+    * @see [[io.cumulus.core.stream.storage.StorageObjectReader StorageObjectReader]]
     */
-  def apply(
+  def reader(
     storageEngine: StorageEngine,
     transformation: Flow[ByteString, ByteString, NotUsed],
     bufferSize: Int = 8096
   )(implicit ec: ExecutionContext): Flow[StorageObject, ByteString, NotUsed] = {
     Flow[StorageObject]
-      .via(StorageObjectReader(storageEngine, bufferSize))
+      .via(StorageObjectReader.reader(storageEngine, bufferSize))
       .via(transformation)
   }
 

@@ -7,12 +7,12 @@ import akka.util.ByteString
 
 /**
   * Splits and/or merge incoming `ByteString` to ensure that every `ByteString` outputted is the exact same length,
-  * excepted for the last one of the stream.<br/>
-  * <br/>
+  * excepted for the last one of the stream which may be shorter.
+  * <br/><br/>
   * This stage is used in conjunction with `splitWhen` to know when to split a stream in multiple sub-streams of a
   * predefined size.
   *
-  * @param chunkSize The chunk size, in byte
+  * @param chunkSize The chunk size, in byte.
   * @see [[https://doc.akka.io/docs/akka/2.5/scala/stream/stream-cookbook.html#working-with-io]]
   */
 class Chunker(chunkSize: Int) extends GraphStage[FlowShape[ByteString, ByteString]] {
@@ -73,23 +73,25 @@ class Chunker(chunkSize: Int) extends GraphStage[FlowShape[ByteString, ByteStrin
 object Chunker {
 
   /**
-    * @see [[io.cumulus.core.stream.utils.Chunker]]
+    * Splits and/or merge incoming `ByteString` to ensure that every `ByteString` outputted is the exact same length.
+    *
+    * @see [[io.cumulus.core.stream.utils.Chunker Chunker]]
     */
   def apply(chunkSize: Int): Chunker =
     new Chunker(chunkSize)
 
   /**
     * Uses the chunker to split the incoming stream in an arbitrary number of sequential sub-streams of a defined size.
-    * Note that the last stream can be under the defined size.<br/>
-    * <br/>
-    * The operation is not made in memory like `grouped`, and can used for large flow of data.<br/>
-    * <br/>
-    * This works by using `Chunked` to group bytes by a defined (small) size, and then couting the number of this groups
-    * and thus guessing the total number of bytes passed through. The split is made using `splitAfter`.
+    * Note that the last stream can be under the defined size.
+    * <br/><br/>
+    * The operation is not made in memory like `grouped`, and can used for large flow of data.
+    * <br/><br/>
+    * This works by using `Chunked` to group bytes by a defined (small) size, and then counting the number of this
+    * groups and thus guessing the total number of bytes passed through. The split is made using `splitAfter`.
     *
-    * @param splitBy The total amount of byte to send to each sub-stream
-    * @param chunkSize The size of a chunk, defaulted to 8096
-    * @see [[io.cumulus.core.stream.utils.Chunker]]
+    * @param splitBy The total amount of byte to send to each sub-stream.
+    * @param chunkSize The size of a chunk, defaulted to 8096.
+    * @see [[io.cumulus.core.stream.utils.Chunker Chunker]]
     */
   def splitter(splitBy: Long, chunkSize: Int = 8096) = {
 

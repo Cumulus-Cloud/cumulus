@@ -10,7 +10,10 @@ import play.api.libs.json._
 
 object JsonFormat {
 
-  implicit def UUIDFormat: Format[UUID] = new Format[UUID] {
+  /**
+    * UUID JSON format.
+    */
+  implicit val UUIDFormat: Format[UUID] = new Format[UUID] {
 
     override def reads(json: JsValue): JsResult[UUID] =
       Json.fromJson[String](json).flatMap { s =>
@@ -25,6 +28,10 @@ object JsonFormat {
 
   }
 
+  /**
+    * Non empty list format, for a given `A` type.
+    * @param format The format of `A`.
+    */
   implicit def nelFormat[A](implicit format: Format[A]): Format[NonEmptyList[A]] = new Format[NonEmptyList[A]] {
 
     override def reads(json: JsValue): JsResult[NonEmptyList[A]] =
@@ -38,7 +45,10 @@ object JsonFormat {
 
   }
 
-  implicit def byteStringFormat: Format[ByteString] = new Format[ByteString] {
+  /**
+    * ByteString JSON format. The ByteString is simply serialized in base64 and handled as a string.
+    */
+  implicit val byteStringFormat: Format[ByteString] = new Format[ByteString] {
 
     override def reads(json: JsValue): JsResult[ByteString] =
       Json.fromJson[String](json).flatMap { s =>
@@ -53,6 +63,10 @@ object JsonFormat {
 
   }
 
+  /**
+    * Helper to print human-readable size.
+    * @param size The size.
+    */
   def humanReadable(size: Long): String = {
     if (size <= 0) {
       "0 B"

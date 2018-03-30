@@ -8,25 +8,53 @@ import play.api.Configuration
 
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+  * Storage engine, used to write and read objects.
+  */
 trait StorageEngine {
 
+  /** Version of the engine */
   def version: String
+  /** Name of the engine */
   def name: String
+  /** Specific reference of the engine. Should be unique. */
   def reference: String
 
+  /**
+    * Deletes an object by its ID.
+    * @param id ID of the object to delete.
+    */
   def deleteObject(id: UUID)(implicit e: ExecutionContext): Future[Either[AppError, Unit]]
 
+  /**
+    * Creates an object for the specified UUID, and return a stream to write to that object.
+    * @param id ID of the object to create.
+    * @return An `OutputStream` to that object.
+    */
   def writeObject(id: UUID)(implicit e: ExecutionContext): OutputStream
 
+  /**
+    * Reads an object for the specified UUID, and return a stream to read that object's content.
+    * @param id ID of the object to read.
+    * @return An `InputStream` from that object.
+    */
   def readObject(id: UUID)(implicit e: ExecutionContext): InputStream
 
 }
 
+/**
+  * Engine factory to create an engine according to a specific configuration.
+  */
 trait StorageEngineFactory {
 
   def name: String
   def version: String
 
+  /**
+    * Creates a storage engine.
+    * @param reference The unique reference of the new engine.
+    * @param configuration The configuration for that engine.
+    */
   def create(reference: String, configuration: Configuration): StorageEngine
 
 }
@@ -47,7 +75,7 @@ object StorageEngines {
   val defaultKey = "default"
   val ignoredKeys = Seq(defaultKey, "replicate")
 
-  /** Initialize the storage engines using the configuration */
+  /** Initializes the storage engines using the configuration. */
   def apply(
     storageEngineFactories: Seq[StorageEngineFactory]
   )(implicit configuration: Configuration): StorageEngines = {
@@ -82,6 +110,7 @@ object StorageEngines {
 
     // Construct the final element
     StorageEngines(defaultEngine, engines)
+
   }
 
 }

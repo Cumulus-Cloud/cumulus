@@ -11,13 +11,14 @@ import org.bouncycastle.crypto.generators.SCrypt
 object Crypto {
 
   /**
-    * See @java.security.SecureRandom
+    * @see [[java.security.SecureRandom]]
     */
   implicit val random: SecureRandom = new SecureRandom()
 
   /**
     * Generate a random code of the required size. The code will contains only alphanumerical symbols.
-    * @param size The size, in character, of the code
+    *
+    * @param size The size, in character, of the code.
     */
   def randomCode(size: Int): String = {
     val bytes = new Array[Byte](size/2)
@@ -28,8 +29,8 @@ object Crypto {
   /**
     * Generate a Scrypt hash of the provided password.
     *
-    * @param password The string of the password to hash
-    * @param salt The salt to use
+    * @param password The string of the password to hash.
+    * @param salt The salt to use.
     */
   def scrypt(password: String, salt: ByteString): ByteString =
     scrypt(ByteString(password.getBytes("UTF-8")), salt)
@@ -46,9 +47,9 @@ object Crypto {
   /**
     * Shorthand to encrypt the provided byte string with the provided key and iv.
     *
-    * @param key The key to use
-    * @param iv The initialization vector
-    * @param toEncrypt The bytes to encrypt
+    * @param key The key to use.
+    * @param iv The initialization vector.
+    * @param toEncrypt The bytes to encrypt.
     */
   def AESEncrypt(key: ByteString, iv: ByteString, toEncrypt: ByteString): ByteString = {
     val keySpec = new SecretKeySpec(key.toArray, "AES")
@@ -60,9 +61,9 @@ object Crypto {
   /**
     * Shorthand to decrypt the provided byte string with the provided key and iv.
     *
-    * @param key The key to use
-    * @param iv The initialization vector
-    * @param toDecrypt The bytes to decrypt
+    * @param key The key to use.
+    * @param iv The initialization vector.
+    * @param toDecrypt The bytes to decrypt.
     */
   def AESDecrypt(key: ByteString, iv: ByteString, toDecrypt: ByteString): ByteString = {
     val keySpec = new SecretKeySpec(key.toArray, "AES")
@@ -87,11 +88,11 @@ object Crypto {
   /**
     * Helper to create a cipher.
     *
-    * @param mode The mode
-    * @param secretKey The secret key
-    * @param ivBytes The salt / Initialisation vector
-    * @param algorithm The algorithm to use
-    * @return The created cipher
+    * @param mode The mode.
+    * @param secretKey The secret key.
+    * @param ivBytes The salt / Initialisation vector.
+    * @param algorithm The algorithm to use.
+    * @return The created cipher.
     */
   def createCipher(mode: Int, secretKey: SecretKey, ivBytes: ByteString, algorithm: String) = {
     val cipher = Cipher.getInstance(algorithm)
@@ -101,12 +102,12 @@ object Crypto {
   }
 
   /**
-    * Helper to create an AES Cipher
+    * Helper to create an AES Cipher.
     *
-    * @param mode The mode to use
-    * @param secretKey The secret ke
-    * @param ivBytes The salt / Initialisation vector
-    * @return The created cipher
+    * @param mode The mode to use.
+    * @param secretKey The secret key.
+    * @param ivBytes The salt / Initialisation vector.
+    * @return The created cipher.
     */
   def createAESCipher(mode: Int, secretKey: SecretKey, ivBytes: ByteString) =
     createCipher(mode, secretKey, ivBytes, "AES/CBC/PKCS5Padding")

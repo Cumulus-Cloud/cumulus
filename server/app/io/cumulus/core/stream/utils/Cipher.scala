@@ -1,7 +1,8 @@
 package io.cumulus.core.stream.utils
 
+import akka.NotUsed
+import akka.stream.scaladsl.Flow
 import javax.crypto.spec.SecretKeySpec
-
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
 import akka.util.ByteString
@@ -9,12 +10,13 @@ import io.cumulus.core.utils.{Base64, Crypto}
 
 
 /**
-  * Custom cipher for an Akka stream of `BytString`. Any cipher can be used with this method. According to the nature
-  * of the cipher, the data will be streamed by block of varying size even if the data is streamed in with blocks of
-  * different sizes. The behavior is to pull upstream until a block is completed, then push downstream, and repeat for
-  * each downstream pull.
+  * Crypt a stream of `BytString` using the provided cipher. Any cipher can be used with this method.
+  * <br/><br/>
+  * According to the nature of the cipher, the data may be streamed by block of varying size even if the data is
+  * already streamed in with blocks of different sizes. The behavior is to pull upstream until a block is completed,
+  * then push downstream, and repeat for each downstream pull.
   *
-  * @param cipher The cipher to use
+  * @param cipher The cipher to use.
   */
 class Cipher(cipher: javax.crypto.Cipher) extends GraphStage[FlowShape[ByteString, ByteString]] {
 
@@ -63,6 +65,9 @@ class Cipher(cipher: javax.crypto.Cipher) extends GraphStage[FlowShape[ByteStrin
 object Cipher {
 
   /**
+    * Crypt a stream of `BytString` using the provided cipher. Any cipher can be used with this method.
+    *
+    * @param cipher The cipher to use.
     * @see [[io.cumulus.core.stream.utils.Cipher]]
     */
   def apply(cipher: javax.crypto.Cipher): Cipher =
@@ -71,22 +76,22 @@ object Cipher {
 }
 
 /**
-  * Helpers to generate AES/CBC cipher/decipher for Flow[FileChunk, FileChunk]
+  * Helpers to generate AES/CBC cipher/decipher for Flow[FileChunk, FileChunk].
   */
 object AESCipher {
 
   /**
     * Generate an AES/CBC cipher to encrypt a stream.
     *
-    * @param key The secret key (in base 64)
-    * @param salt The salt (in base 64) (initialization vector bytes)
-    * @return A graph stage using the provided key to encrypt the stream
+    * @param key The secret key (in base 64).
+    * @param salt The salt (in base 64) (initialization vector bytes).
+    * @return A graph stage using the provided key to encrypt the stream.
     * @see [[io.cumulus.core.stream.utils.AESCipher#encrypt(akka.util.ByteString, akka.util.ByteString) AESCipher.encrypt]]
     */
   def encrypt(
     key: String,
     salt: String
-  ): Option[Cipher] = {
+  ): Option[Flow[ByteString, ByteString, NotUsed]] = {
     for {
       keyBytes <- Base64.decode(key)
       saltBytes <- Base64.decode(salt)
@@ -95,30 +100,31 @@ object AESCipher {
 
   /**
     * Generate an AES/CBC cipher to encrypt a stream.
-    * @param key The secret key
-    * @param salt The salt (initialization vector bytes)
-    * @return A graph stage using the provided key to encrypt the stream
+    *
+    * @param key The secret key.
+    * @param salt The salt (initialization vector bytes).
+    * @return A graph stage using the provided key to encrypt the stream.
     */
   def encrypt(
     key: ByteString,
     salt: ByteString
-  ): Cipher = {
+  ): Flow[ByteString, ByteString, NotUsed] = {
     val keySpec = new SecretKeySpec(key.toArray, "AES")
-    Cipher(Crypto.createAESCipher(javax.crypto.Cipher.ENCRYPT_MODE, keySpec, salt))
+    Flow[ByteString].via(Cipher(Crypto.createAESCipher(javax.crypto.Cipher.ENCRYPT_MODE, keySpec, salt)))
   }
 
   /**
     * Generates an AES/CBC cipher to decrypt a stream.
     *
-    * @param key The secret key (in base 64)
-    * @param salt The salt (in base 64) (initialization vector bytes)
-    * @return A graph stage using the provided key to decrypt the stream
+    * @param key The secret key (in base 64).
+    * @param salt The salt (in base 64) (initialization vector bytes).
+    * @return A graph stage using the provided key to decrypt the stream.
     * @see [[io.cumulus.core.stream.utils.AESCipher#decrypt(akka.util.ByteString, akka.util.ByteString) AESCipher.decrypt]]
     */
   def decrypt(
     key: String,
     salt: String
-  ): Option[Cipher] = {
+  ): Option[Flow[ByteString, ByteString, NotUsed]] = {
     for {
       keyBytes <- Base64.decode(key)
       saltBytes <- Base64.decode(salt)
@@ -127,16 +133,17 @@ object AESCipher {
 
   /**
     * Generates an AES/CBC cipher to decrypt a stream.
-    * @param key The secret key
-    * @param salt The salt (initialization vector bytes)
-    * @return A graph stage using the provided key to decrypt the stream
+    *
+    * @param key The secret key.
+    * @param salt The salt (initialization vector bytes).
+    * @return A graph stage using the provided key to decrypt the stream.
     */
   def decrypt(
     key: ByteString,
     salt: ByteString
-  ): Cipher = {
+  ): Flow[ByteString, ByteString, NotUsed] = {
     val keySpec = new SecretKeySpec(key.toArray, "AES")
-    Cipher(Crypto.createAESCipher(javax.crypto.Cipher.DECRYPT_MODE, keySpec, salt))
+    Flow[ByteString].via(Cipher(Crypto.createAESCipher(javax.crypto.Cipher.DECRYPT_MODE, keySpec, salt)))
   }
 
 }

@@ -2,6 +2,10 @@ package io.cumulus.core
 
 import play.api.Configuration
 
+/**
+  * Settings of the application
+  * @param conf Underlying configuration.
+  */
 class Settings(
   conf: Configuration
 ) {
