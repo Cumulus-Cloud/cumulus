@@ -1,6 +1,10 @@
 .fsNodeName {
+  width: 400px;
+  flex: 1;
   color: var(--primaryText);
   font-size: 1rem;
+  overflow: hidden;
+  overflow-wrap: break-word;
 }
 
 .rename {
