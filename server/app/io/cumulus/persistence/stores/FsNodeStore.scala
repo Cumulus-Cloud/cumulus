@@ -11,6 +11,9 @@ import io.cumulus.models.fs.{Directory, FsNode}
 import io.cumulus.models.{Path, User}
 import io.cumulus.persistence.stores.FsNodeStore._
 
+/**
+  * Filesystem node store, used to manage fs node in the database.
+  */
 class FsNodeStore(
   implicit val qb: QueryBuilder[CumulusDB]
 ) extends AnormPKOperations[FsNode, CumulusDB, UUID] with AnormRepository[FsNode, CumulusDB] {
@@ -20,8 +23,8 @@ class FsNodeStore(
 
   /**
     * Find by a provided path and a provided user, used as the owner.
-    * @param path The path to look for
-    * @param user The owner of the element
+    * @param path The path to look for.
+    * @param user The owner of the element.
     */
   def findByPathAndUser(path: Path, user: User): Query[CumulusDB, Option[FsNode]] =
     qb { implicit c =>
@@ -31,8 +34,8 @@ class FsNodeStore(
 
   /**
     * Find by a provided path and a provided user, used as the owner.
-    * @param path The path to look for
-    * @param user The owner of the element
+    * @param path The path to look for.
+    * @param user The owner of the element.
     */
   def findAndLockByPathAndUser(path: Path, user: User): Query[CumulusDB, Option[FsNode]] =
     qb { implicit c =>
@@ -42,8 +45,8 @@ class FsNodeStore(
 
   /**
     * Find the contained elements for a provided path and user.
-    * @param path The parent path of the elements to look for
-    * @param user The owner of the elements
+    * @param path The parent path of the elements to look for.
+    * @param user The owner of the elements.
     */
   def findContainedByPathAndUser(path: Path, user: User): Query[CumulusDB, Seq[FsNode]] = {
     // Match directory starting by the location, but only on the direct level
@@ -57,9 +60,9 @@ class FsNodeStore(
 
   /**
     * Move any node to a specified location.
-    * @param node The node to move
-    * @param to The destination
-    * @param user The owner of the element
+    * @param node The node to move.
+    * @param to The destination.
+    * @param user The owner of the element.
     */
   def moveFsNode(node: FsNode, to: Path, user: User): Query[CumulusDB, Int] = {
     val searchRegex = s"^${node.path.toString}(/.*|$$)"

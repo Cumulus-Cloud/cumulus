@@ -30,7 +30,7 @@ case class StorageReference(
 
 object StorageReference {
 
-  def apply(
+  def create(
     size: Long,
     hash: String,
     cipher: Option[String],

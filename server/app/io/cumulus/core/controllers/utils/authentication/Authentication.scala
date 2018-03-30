@@ -69,7 +69,7 @@ trait Authentication[USER] extends BaseController with I18nSupport {
   protected object AuthenticatedAction {
 
     /**
-      * Default error handler returning a `ApiErrors.unauthorized("api-error.forbidden").toResult`
+      * Default error handler returning a `ApiErrors.unauthorized("api-error.forbidden").toResult`.
       */
     def defaultErrorHandler: ErrorHandler = { implicit request: Request[_] =>
       Future.successful(ApiErrors.unauthorized("api-error.forbidden").toResult)
@@ -157,7 +157,7 @@ trait Authentication[USER] extends BaseController with I18nSupport {
   /**
     * Create the JWT token for the session.
     *
-    * @param payload The payload of the token
+    * @param payload The payload of the token.
     */
   protected def createJwtSession(payload: USER)(implicit writes: Writes[USER]): JwtSession =
     JwtSession() + (tokenField, payload)
@@ -176,7 +176,7 @@ object Authentication {
     /**
       * Add (and refresh) a cookie containing the serialize session to a result.
       *
-      * @param jwtSession The JWT session to serialize
+      * @param jwtSession The JWT session to serialize.
       */
     def withAuthentication(jwtSession: JwtSession): Result =
       result.withCookies(Cookie(Authentication.cookieName, jwtSession.refresh().serialize))

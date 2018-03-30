@@ -18,10 +18,10 @@ import io.cumulus.core.utils.Base64
 import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
 
 /**
-  * Write a stream of `ByteString` into a storage object, and then returns this storage object in the stream. The
-  * storage object will contains the object size and hash.
+  * Object writer (Flow of `ByteString` to `StorageObject`) which will write to a newly created storage object the
+  * content of the stream using the provided storage engine.
   *
-  * @param storageEngine The storage engine to use
+  * @param storageEngine The storage engine to use.
   */
 class StorageObjectWriter(storageEngine: StorageEngine)(implicit ec: ExecutionContext) extends GraphStage[FlowShape[ByteString, StorageObject]] with Logging {
 
@@ -74,9 +74,9 @@ class StorageObjectWriter(storageEngine: StorageEngine)(implicit ec: ExecutionCo
     })
 
     /**
-      * Write a buffer to a file source
+      * Write a buffer to a file source.
       *
-      * @param buffer The buffer to write
+      * @param buffer The buffer to write.
       */
     private def write(buffer: ByteString): Unit = {
       // Write
@@ -91,7 +91,7 @@ class StorageObjectWriter(storageEngine: StorageEngine)(implicit ec: ExecutionCo
     }
 
     /**
-      * Emit the file source. The source is emitted once the file is fully written
+      * Emit the file source. The source is emitted once the file is fully written.
       */
     private def emitStorageObject(): Unit = {
       push(out, state.storageObject)
@@ -135,36 +135,44 @@ object StorageObjectWriter {
 
   /**
     * Naïve version of the object writer, which assume the stream is not altered before. This stage will compute the
-    * stage and the hash of the byte stream, and assume the this value are representative of the byte source.<br/>
-    * <br/>
+    * stage and the hash of the byte stream, and assume that this value are representative of the byte source.
+    * <br/><br/>
     * See
     * [[io.cumulus.core.stream.storage.StorageObjectWriter#apply(io.cumulus.persistence.storage.StorageEngine, akka.stream.scaladsl.Flow, scala.concurrent.ExecutionContext) StorageObjectWriter]]
     * if a transformation is applied to the stream (compression, ..).
     *
-    * @param storageEngine The storage engine to use
-    * @see [[io.cumulus.core.stream.storage.StorageObjectWriter StorageObjectWriter]]
+    * @param storageEngine The storage engine to use.
+    * @see [[io.cumulus.core.stream.storage.StorageObjectWriter StorageObjectWriter StorageObjectWriter]]
     */
-  def apply(storageEngine: StorageEngine)(implicit ec: ExecutionContext): StorageObjectWriter =
-    new StorageObjectWriter(storageEngine)
+  def writer(
+    storageEngine: StorageEngine
+  )(implicit ec: ExecutionContext): Flow[ByteString, StorageObject, NotUsed] =
+    Flow[ByteString].via(new StorageObjectWriter(storageEngine))
 
   /**
-    * Writer which takes an arbitrary transformation to apply to the byte stream before writing. This helper will
-    * correctly set the size and hash before and after the transformation (`storageSize` and `storageHash`).
+    * Object writer (Flow of `ByteString` to `StorageObject`) which will write to a newly created storage object the
+    * content of the stream using the provided storage engine. An optional transformation to apply to the byte stream
+    * before writing can be provided (i.e. for compression or encryption).
+    * <br/><br/>
+    * This helper will correctly set the size and hash before and after the transformation (`storageSize` and
+    * `storageHash`).
+    * <br/><br/>
+    * This flow aims at being used with substreams to allow to upload multiples chunks without ending the stream.
     *
-    * @param storageEngine The storage engine to use
-    * @param transformation The transformation to performs
+    * @param storageEngine The storage engine to use.
+    * @param transformation The transformation to performs.
     * @see [[io.cumulus.core.stream.storage.StorageObjectWriter StorageObjectWriter]]
     */
-  def apply(
+  def writer(
     storageEngine: StorageEngine,
     transformation: Flow[ByteString, ByteString, NotUsed]
   )(implicit ec: ExecutionContext): Flow[ByteString, StorageObject, NotUsed] = {
 
-    // Will write the byte stream to a file
-    val objectWriter = StorageObjectWriter(storageEngine)
+    // Will write the byte stream using the provided storage engine, and return the storage object
+    val objectWriter = new StorageObjectWriter(storageEngine)
 
-    // Will compute a SHA1 of the byte stream
-    val sha1 = DigestCalculator.sha1
+    // Will compute the hash (SHA1) of a byte stream
+    val hash = DigestCalculator.sha1
 
     // Will compute the total size of a byte stream
     val size = Counter.apply
@@ -184,7 +192,7 @@ object StorageObjectWriter {
       // Compute the hash and size of the object while writing it
       broadcast ~> transformation ~> objectWriter ~> zip.in0
       broadcast ~> size                           ~> zip.in1
-      broadcast ~> sha1                           ~> zip.in2
+      broadcast ~> hash                           ~> zip.in2
 
       FlowShape(broadcast.in, zip.out)
     }

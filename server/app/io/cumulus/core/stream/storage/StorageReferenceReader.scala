@@ -18,9 +18,9 @@ object StorageReferenceReader extends Logging {
   /**
     * Reads the thumbnail of a file. If the thumbnail does not exists, an error will be returned.
     *
-    * @param file The file containing the thumbnail to stream
+    * @param file The file containing the thumbnail to stream.
     */
-  def readThumbnail(
+  def thumbnailReader(
     file: File
   )(implicit
     session: Session,
@@ -36,7 +36,7 @@ object StorageReferenceReader extends Logging {
       source = {
         Source(storageReference.storage.toList)
           .splitWhen(_ => true)
-          .via(StorageObjectReader(storageEngine, transformation))
+          .via(StorageObjectReader.reader(storageEngine, transformation))
           .mergeSubstreams
       }
     } yield source
@@ -45,9 +45,9 @@ object StorageReferenceReader extends Logging {
     * Reads a file in its wholeness, and output a stream of its byte after applying the provided transformation
     * to each storage object.
     *
-    * @param file The file to stream
+    * @param file The file to stream.
     */
-  def read(
+  def reader(
     file: File
   )(implicit
     session: Session,
@@ -62,7 +62,7 @@ object StorageReferenceReader extends Logging {
       source         =  {
         Source(file.storageReference.storage.toList)
           .splitWhen(_ => true)
-          .via(StorageObjectReader(storageEngine, transformation))
+          .via(StorageObjectReader.reader(storageEngine, transformation))
           .mergeSubstreams
           .recover(errorHandler(file))
       }
@@ -70,12 +70,12 @@ object StorageReferenceReader extends Logging {
 
   /**
     * Reads partially a file, from the starts of the range to end of the range. The reader will drop and ignore every
-    * storage object outside of the range, and trim bytes still outside of the wanted range.
+    * storage object outside of the range, and trim bytes still outside of the requested range.
     *
-    * @param file The file to stream
-    * @param range The range of byte to output
+    * @param file The file to stream.
+    * @param range The range of byte to output.
     */
-  def read(
+  def reader(
     file: File,
     range: Range
   )(implicit
@@ -90,11 +90,11 @@ object StorageReferenceReader extends Logging {
       storageEngine  <- storageEngineForStorageReference(file.storageReference)
       source         =  {
         // Compute the objects within the range and the real byte range to read
-        val (from, to, storageObjectsInRange) = dropStorageObjects(range, file)
+        val (from, to, storageObjectsInRange) = computeDroppedObjects(range, file)
 
         Source(storageObjectsInRange.toList) // Only use objects in range
           .splitWhen(_ => true)
-          .via(StorageObjectReader(storageEngine, transformation))
+          .via(StorageObjectReader.reader(storageEngine, transformation))
           .mergeSubstreams
           .via(ByteRange(from, to)) // Don't forget to 'trim' the stream of bytes outside the offsets
           .recover(errorHandler(file))
@@ -102,11 +102,11 @@ object StorageReferenceReader extends Logging {
     } yield source
 
   /**
-    * Drop the storage objects outside of the requested range, and returns the real range and the list of the objects
-    * within the interval provided by the range. The real range is where the read cursor should be positioned within
-    * the returned storage objects.
+    * Compute the dropped storage objects outside of the requested range, and returns the real range and the list of
+    * the objects within the interval provided by the range. The real range is where the read cursor should be
+    * positioned within the returned storage objects.
     */
-  private def dropStorageObjects(range: Range, file: File): (Long, Long, Seq[StorageObject]) = {
+  private def computeDroppedObjects(range: Range, file: File): (Long, Long, Seq[StorageObject]) = {
 
     // We need to compute the storage object that are within the range and that we need to read. We also need the
     // real range of byte taking into account the dropped storage objects. In order to achieve this we fold keeping
@@ -148,7 +148,7 @@ object StorageReferenceReader extends Logging {
     (realFrom, realTo, storageObjectsInRange)
   }
 
-  /** Generate the transformations for a given file */
+  /** Generate the transformations for a given file. */
   private def transformationForFile(file: File)(implicit session: Session, ciphers: Ciphers, compressions: Compressions) =
     for {
       cipher      <- ciphers.get(file.storageReference.cipher)
@@ -161,7 +161,7 @@ object StorageReferenceReader extends Logging {
         .via(compression.map(_.uncompress).getOrElse(Flow[ByteString]))
     }
 
-  /** Get the storage engine */
+  /** Retrieve the storage engine from the storage reference. */
   private def storageEngineForStorageReference(
     storageReference: StorageReference
   )(
@@ -195,6 +195,7 @@ object StorageReferenceReader extends Logging {
 
   }
 
+  /** Custom error handler to log errors */
   private def errorHandler(file: File): PartialFunction[Throwable, ByteString] = {
     case e: Exception =>
       val engineUsed =

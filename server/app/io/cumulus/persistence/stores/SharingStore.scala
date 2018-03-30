@@ -12,6 +12,9 @@ import io.cumulus.core.persistence.query.{Query, QueryBuilder}
 import io.cumulus.models.fs.FsNode
 import io.cumulus.models.{Sharing, SharingSecurity}
 
+/**
+  * Sharing store, used to manage sharings in the database.
+  */
 class SharingStore(
   implicit val qb: QueryBuilder[CumulusDB]
 ) extends AnormPKOperations[Sharing, CumulusDB, UUID] with AnormRepository[Sharing, CumulusDB] {
@@ -21,7 +24,7 @@ class SharingStore(
 
   /**
     * Find the sharings for a provided node.
-    * @param fsNode The shared node
+    * @param fsNode The shared node.
     */
   def findByNode(fsNode: FsNode): Query[CumulusDB, List[Sharing]] =
     qb { implicit c =>
@@ -50,7 +53,7 @@ class SharingStore(
 
   /**
     * Find and lock the sharings for a provided node.
-    * @param fsNode The shared node
+    * @param fsNode The shared node.
     */
   def findAndLockByNode(fsNode: FsNode): Query[CumulusDB, List[Sharing]] =
     qb { implicit c =>

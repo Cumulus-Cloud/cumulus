@@ -6,7 +6,7 @@ import cats.data.NonEmptyList
 import play.api.libs.json.JsPath
 
 /**
-  * Common trait for every error
+  * Common trait for every application error.
   */
 sealed trait AppError {
   def errorType: AppErrorType
@@ -43,7 +43,7 @@ object AppError {
 
   /**
     * Error are almost always used as left. Use this implicit conversion to simply return an error where
-    * a Left[Error] is expected
+    * a Left[Error] is expected.
     */
   implicit def errorToLeft[A](error: AppError): Either[AppError, A] = Left(error)
 
@@ -59,20 +59,20 @@ object FieldValidationError {
 
   /**
     * Error are almost always used as left. Use this implicit conversion to simply return an error where
-    * a Left[Error] is expected
+    * a Left[Error] is expected.
     */
   implicit def fieldErrorToLeft[A](fieldError: FieldValidationError): Either[FieldValidationError, A] =
     Left(fieldError)
 }
 
 /**
-  * Validation error, composed of multiple errors
+  * Validation error, composed of multiple errors.
   */
 case class ValidationError(errors: NonEmptyList[FieldValidationError]) extends AppError {
   val errorType: AppErrorType = AppErrorType.Validation
 }
 
 /**
-  * Global error
+  * Global error.
   */
 case class GlobalError(errorType: AppErrorType, key: String, args: String*) extends AppError

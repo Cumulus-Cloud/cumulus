@@ -6,6 +6,9 @@ import akka.util.ByteString
 import io.cumulus.core.stream.utils.AESCipher
 import io.cumulus.core.validation.AppError
 
+/**
+  * Abstract cipher stage used to encrypt or decrypt a file.
+  */
 trait CipherStage {
 
   def name: String
@@ -32,14 +35,19 @@ case class Ciphers(ciphers: Seq[CipherStage]) {
 
 }
 
+/**
+  * Cipher stage using AES/CBC.
+  * @see [[io.cumulus.core.stream.utils.AESCipher#encrypt AESCipher.encrypt]]
+  * @see [[io.cumulus.core.stream.utils.AESCipher#decrypt AESCipher.decrypt]]
+  */
 object AESCipherStage extends CipherStage {
 
   def name: String = "AES"
 
   def encrypt(key: ByteString, salt: ByteString): Flow[ByteString, ByteString, NotUsed] =
-    Flow[ByteString].via(AESCipher.encrypt(key, salt))
+    AESCipher.encrypt(key, salt)
 
   def decrypt(key: ByteString, salt: ByteString): Flow[ByteString, ByteString, NotUsed] =
-    Flow[ByteString].via(AESCipher.decrypt(key, salt))
+    AESCipher.decrypt(key, salt)
 
 }

@@ -5,6 +5,9 @@ import play.api.i18n.I18nSupport
 import play.api.libs.json._
 import play.api.mvc._
 
+/**
+  * Trait to provided an easy to use JSON parser for a specified payload type.
+  */
 trait BodyParserJson extends I18nSupport { self: BaseController =>
 
   def parseJson[A](implicit reader: Reads[A]): BodyParser[A] =
