@@ -26,7 +26,13 @@ export const UploadReducer = (state: UploadState = initState, action: UploadActi
     case "UploadFile": {
       return {
         ...state,
-        filesToUpload: state.filesToUpload.map(fileToUpload => ({ ...fileToUpload, fileStatus: "Loading"} as FileToUpload))
+        filesToUpload: state.filesToUpload.map(fileToUpload => {
+          if (fileToUpload.fileStatus === "Ready") {
+            return { ...fileToUpload, fileStatus: "Loading"} as FileToUpload
+          } else {
+            return fileToUpload
+          }
+        })
       }
     }
     case "UploadFileSuccess": {
