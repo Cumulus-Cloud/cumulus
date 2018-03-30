@@ -16,6 +16,7 @@ export default class IconButton extends React.PureComponent<Props> {
     const { className, children, title, loading = false, disable = false } = this.props
     const classes = classNames({
       [styles.iconButton]: true,
+      [styles.iconButtonHover]: !disable,
       [className || ""]: !!className,
     })
     return (

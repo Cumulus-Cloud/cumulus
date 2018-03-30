@@ -20,14 +20,15 @@ interface Props {
 export default class UploadFile extends React.PureComponent<Props> {
   render() {
     const { fileToUpload } = this.props
-    const indeterminate = fileToUpload.progress === 100 && fileToUpload.fileStatus === "Loading"
+    const loading = fileToUpload.fileStatus === "Loading"
+    const indeterminate = fileToUpload.progress === 100 && loading
     return (
       <ProgressBlock className={styles.uploadFile} indeterminate={indeterminate} progress={fileToUpload.progress}>
         <div className={styles.infos}>
           <div className={styles.name}>{fileToUpload.name}</div>
           <div className={styles.parametres}>
             <div className={styles.parametre}>
-              <IconButton onClick={this.handleOnSelectCipher} title={Messages("ui.secure")}>
+              <IconButton onClick={this.handleOnSelectCipher} title={Messages("ui.secure")} disable={loading}>
                 {!!fileToUpload.cipher
                   ? <LockCloseIcon color="#4caf50" width={17} height={17} />
                   : <LockOpenIcon color="#6F6F6F" width={17} height={17} />
@@ -35,7 +36,7 @@ export default class UploadFile extends React.PureComponent<Props> {
               </IconButton>
             </div>
             <div className={styles.parametre}>
-              <IconButton onClick={this.handleOnSelectCompression} title={Messages("ui.compressionGzip")}>
+              <IconButton onClick={this.handleOnSelectCompression} title={Messages("ui.compressionGzip")} disable={loading}>
                 <CompressIcon color={fileToUpload.compression === "GZIP" ? "#4caf50" : "#6F6F6F" } width={17} height={17} />
               </IconButton>
             </div>
