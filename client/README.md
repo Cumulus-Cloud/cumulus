@@ -6,3 +6,8 @@ Compress Icon made by [Freepik](http://www.freepik.com)
 ```sh
 npm run build
 ```
+
+### Dev build
+```sh
+npm run watch
+```
