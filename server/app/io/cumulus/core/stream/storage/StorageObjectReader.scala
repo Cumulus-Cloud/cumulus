@@ -220,7 +220,7 @@ object StorageObjectReader {
     bufferSize: Int = 8096
   )(implicit ec: ExecutionContext): Flow[StorageObject, ByteString, NotUsed] = {
     Flow[StorageObject]
-      .via(StorageObjectReader(storageEngine, bufferSize))
+      .via(StorageObjectReader.reader(storageEngine, bufferSize))
       .via(transformation)
   }
 

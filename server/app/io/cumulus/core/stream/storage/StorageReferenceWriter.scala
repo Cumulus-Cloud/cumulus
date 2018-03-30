@@ -59,20 +59,18 @@ object StorageReferenceWriter {
       val broadcast = builder.add(Broadcast[ByteString](3))
       val zip       = builder.add(ZipWith[Seq[StorageObject], Long, String, File] {
         case (storageObjects, fileSize, fileSha1) =>
-          val storageRef = StorageReference(
-            size = fileSize,
-            hash = fileSha1,
-            cipher = cipher.map(_.name),
-            compression = compression.map(_.name),
-            storage = storageObjects
-          )
-
           // Create the file with the provided information
           File.create(
             owner = user.id,
             path = path,
             mimeType = MimeType.detect(path.name),
-            storage = storageRef
+            storage = StorageReference.create(
+              size = fileSize,
+              hash = fileSha1,
+              cipher = cipher.map(_.name),
+              compression = compression.map(_.name),
+              storage = storageObjects
+            )
           )
       })
 
