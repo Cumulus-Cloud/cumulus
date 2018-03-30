@@ -33,9 +33,9 @@ export default class ReducedUploader extends React.PureComponent<Props> {
         <ProgressBlock indeterminate={indeterminate} progress={progress} className={styles.reducedUploaderProgress}>
           <div className={styles.container}>
             <div className={styles.stats}>
-              <div className={styles.counter}>{notUploaded} Not Uploaded</div>
-              <div className={styles.counter}>{filesToUpload.filter(f => f.fileStatus === "Loading").length} Uploading</div>
-              <div className={styles.counter}>{filesToUpload.filter(f => f.fileStatus === "Done").length} Completed</div>
+              <div className={styles.counter}>{notUploaded} {Messages("ui.notUploaded")}</div>
+              <div className={styles.counter}>{filesToUpload.filter(f => f.fileStatus === "Loading").length} {Messages("ui.uploading")}</div>
+              <div className={styles.counter}>{filesToUpload.filter(f => f.fileStatus === "Done").length} {Messages("ui.completed")}</div>
               <IconButton disable={notUploaded === 0} onClick={this.handleOnUpload}>
                 <UploadIcon color={notUploaded === 0 ? "#6F6F6F" : "#3DC7BE"} />
               </IconButton>
