@@ -20,7 +20,7 @@ interface Props {
 export default class UploadFile extends React.PureComponent<Props> {
   render() {
     const { fileToUpload } = this.props
-    const indeterminate = fileToUpload.progress === 100 && fileToUpload.loading
+    const indeterminate = fileToUpload.progress === 100 && fileToUpload.fileStatus === "Loading"
     return (
       <ProgressBlock className={styles.uploadFile} indeterminate={indeterminate} progress={fileToUpload.progress}>
         <div className={styles.infos}>

@@ -24,12 +24,15 @@ export const UploadReducer = (state: UploadState = initState, action: UploadActi
     }
     case "RemoveFileToUpload": return { ...state, filesToUpload: state.filesToUpload.filter(f => f.id !== action.fileToUpload.id) }
     case "UploadFile": {
-      return { ...state, filesToUpload: state.filesToUpload.map(fileToUpload => ({ ...fileToUpload, loading: !fileToUpload.done})) }
+      return {
+        ...state,
+        filesToUpload: state.filesToUpload.map(fileToUpload => ({ ...fileToUpload, fileStatus: "Loading"} as FileToUpload))
+      }
     }
     case "UploadFileSuccess": {
       const filesToUpload = state.filesToUpload.map(fileToUpload => {
         if (fileToUpload.id === action.fileToUpload.id) {
-          return { ...fileToUpload, loading: false, done: true, progress: 100 }
+          return { ...fileToUpload, fileStatus: "Done", progress: 100 } as FileToUpload
         } else {
           return fileToUpload
         }
@@ -39,7 +42,7 @@ export const UploadReducer = (state: UploadState = initState, action: UploadActi
     case "UploadFileError": {
       const filesToUpload = state.filesToUpload.map(fileToUpload => {
         if (fileToUpload.id === action.fileToUpload.id) {
-          return { ...fileToUpload, progress: 0, loading: false }
+          return { ...fileToUpload, progress: 0, fileStatus: "Ready" } as FileToUpload
         } else {
           return fileToUpload
         }
