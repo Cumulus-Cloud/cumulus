@@ -137,13 +137,13 @@ class FileSystemController(
       case FsOperationShareDelete(reference) =>
         ApiResponse(sharingService.deleteSharing(reference))
       case FsOperationDelete(_) =>
-        ApiResponse(fsNodeService.deleteNode(path))
+        ApiResponse(storageService.deleteNode(path))
     }
   }
 
   def delete(path: Path) = AuthenticatedAction.async { implicit request =>
     ApiResponse {
-      fsNodeService.deleteNode(path)
+      storageService.deleteNode(path)
     }
   }
 

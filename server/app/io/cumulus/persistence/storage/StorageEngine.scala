@@ -5,8 +5,9 @@ import java.util.UUID
 
 import io.cumulus.core.validation.AppError
 import play.api.Configuration
-
 import scala.concurrent.{ExecutionContext, Future}
+
+import io.cumulus.core.stream.storage.StorageReferenceReader.logger
 
 /**
   * Storage engine, used to write and read objects.
@@ -59,13 +60,57 @@ trait StorageEngineFactory {
 
 }
 
+/**
+  * List of available storage engine with helpers to get a storage engine by its reference or any storage object.
+  */
 case class StorageEngines(default: StorageEngine, engines: Seq[StorageEngine]) {
 
+  /**
+    * Returns a storage engine by its reference (unique name). Will return an error if the reference doesn't refer to
+    * an existing storage engine.
+    * @param reference The reference to look for.
+    */
   def get(reference: String): Either[AppError, StorageEngine] =
     engines
       .find(_.reference.toUpperCase == reference.toUpperCase)
       .map(Right.apply)
       .getOrElse(Left(AppError.validation("validation.fs-node.unknown-storage-engine", reference)))
+
+  /**
+    * Returns a storage engine by its reference, using the provided storage object. Will return an error if the
+    * reference doesn't refer to an existing storage engine. Will also log any incoherence between the expected
+    * storage engine and the one found.
+    *
+    * @param storageObject The storage object used to retrieve the storage engine.
+    */
+  def get(storageObject: StorageObject): Either[AppError, StorageEngine] =
+    get(storageObject.storageEngineReference)
+    .map { storageEngine =>
+      // Log any incoherence
+      if(storageEngine.version != storageObject.storageEngineVersion)
+        logger.warn(s"Using the storage engine ${storageObject.storageEngineVersion} (${storageEngine.reference}) with version ${storageEngine.version} instead of version ${storageObject.storageEngineVersion}")
+      if(storageEngine.name != storageObject.storageEngine)
+        logger.warn(s"Using the storage engine ${storageEngine.name} instead of ${storageObject.storageEngine}")
+
+      storageEngine
+    }
+
+  /**
+    * Returns a storage engine by its reference, using the provided storage reference. Will return an error if the
+    * first reference doesn't refer to an existing storage engine, or if no reference are provided. Will also log any
+    * incoherence between the expected storage engine and the one found.
+    * <br/><br/>
+    * Note: Temporary, for now we guess the storage engine to use base on the first storage reference ; this can only
+    * works because we only use an unique storage reference with a file (no replication yet!)
+    *
+    * @param storageReference The storage reference used to retrieve the storage engine.
+    */
+  def get(storageReference: StorageReference): Either[AppError, StorageEngine] =
+    storageReference
+      .storage
+      .headOption
+      .toRight(AppError.validation("validation.fs-node.no-storage-reference"))
+      .flatMap(storageObject => get(storageObject))
 
 }
 
