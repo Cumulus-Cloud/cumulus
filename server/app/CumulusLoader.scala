@@ -1,3 +1,6 @@
+import scala.concurrent.ExecutionContextExecutor
+
+import akka.actor.ActorRef
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.typesafe.config.Config
 import controllers.AssetsComponents
@@ -21,9 +24,8 @@ import play.api.libs.mailer.MailerComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
-import router.Routes
 
-import scala.concurrent.ExecutionContextExecutor
+import router.Routes
 
 /**
   * Application compile time loader.
@@ -124,7 +126,7 @@ class CumulusComponents(
   // Services
   lazy val userService: UserService       = new UserService(userStore, fsNodeStore)
   lazy val fsNodeService: FsNodeService   = new FsNodeService(fsNodeStore, sharingStore)
-  lazy val storageService: StorageService = new StorageService(fsNodeService)
+  lazy val storageService: StorageService = new StorageService(fsNodeService, chunkRemover)
   lazy val sharingService: SharingService = new SharingService(userStore, fsNodeStore, sharingStore)
 
   // Controllers
@@ -133,5 +135,8 @@ class CumulusComponents(
   lazy val fsController: FileSystemController   = new FileSystemController(controllerComponents, fsNodeService, storageService, sharingService)
   lazy val sharingController: SharingController = new SharingController(controllerComponents, sharingService, storageService)
   lazy val assetController: Assets              = new Assets(context.environment, assetsMetadata, httpErrorHandler, jsMessageFactory.all, controllerComponents)
+
+  // Actors
+  lazy val chunkRemover: ActorRef = actorSystem.actorOf(ChunkRemover.props(storageEngines), "ChunkRemover")
 
 }

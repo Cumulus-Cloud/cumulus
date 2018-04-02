@@ -23,8 +23,8 @@ class FsNodeService(
 
   /**
     * Finds a file by its path and owner. Will fail if the element does not exist or is not a file.
-    * @param path The path of the file
-    * @param user The user performing the operation
+    * @param path The path of the file.
+    * @param user The user performing the operation.
     */
   def findFile(path: Path)(implicit user: User): Future[Either[AppError, File]] = {
 
@@ -47,8 +47,8 @@ class FsNodeService(
 
   /**
     * Finds a directory by its path and owner. Will fail if the element does not exist or is not a directory.
-    * @param path The path of the directory
-    * @param user The user performing the operation
+    * @param path The path of the directory.
+    * @param user The user performing the operation.
     */
   def findDirectory(path: Path)(implicit user: User): Future[Either[AppError, Directory]] = {
 
@@ -72,8 +72,8 @@ class FsNodeService(
   /**
     * Finds a filesystem node by its path and owner. If the node is a directory, it will also contains the contained
     * nodes.
-    * @param path The path of the node
-    * @param user The user performing the operation
+    * @param path The path of the node.
+    * @param user The user performing the operation.
     */
   def findNode(path: Path)(implicit user: User): Future[Either[AppError, FsNode]] =
     find(path).commit()
@@ -100,11 +100,11 @@ class FsNodeService(
   }
 
   /**
-    * Search a node by name
-    * @param parent The node parent
-    * @param name The node's partial name
-    * @param nodeType The optional node type
-    * @param user The user performing the operation
+    * Search a node by name.
+    * @param parent The node parent.
+    * @param name The node's partial name.
+    * @param nodeType The optional node type.
+    * @param user The user performing the operation.
     */
   def searchNodes(
     parent: Path,
@@ -125,8 +125,8 @@ class FsNodeService(
     * created and to avoid useless computation. Node that verifications will still be made during the final file
     * creation.
     *
-    * @param path The new file path
-    * @param user The user performing the operation
+    * @param path The new file path.
+    * @param user The user performing the operation.
     */
   def checkForNewNode(path: Path)(implicit user: User): Future[Either[AppError, Path]] = {
 
@@ -144,8 +144,8 @@ class FsNodeService(
   /**
     * Creates a directory into the user file-system. The path of the directory should be unique and its parent should
     * exists.
-    * @param directory The directory to create
-    * @param user The user performing the operation
+    * @param directory The directory to create.
+    * @param user The user performing the operation.
     */
   def createDirectory(directory: Directory)(implicit user: User): Future[Either[AppError, Directory]] =
     createNode(directory).map(_.map(_ => directory))
@@ -153,17 +153,17 @@ class FsNodeService(
   /**
     * Creates a file (only its metadata - for now) into the user file-system. The path of the file should be unique
     * and its parent should exists.
-    * @param file The file to create
-    * @param user The user performing the operation
+    * @param file The file to create.
+    * @param user The user performing the operation.
     */
   def createFile(file: File)(implicit user: User): Future[Either[AppError, File]] =
     createNode(file).map(_.map(_ => file))
 
   /**
     * Moves a node to the provided path. The destination should not already exists and a directory parent.
-    * @param path The node to move
-    * @param to The new path of the node
-    * @param user The user performing the operation
+    * @param path The node to move.
+    * @param to The new path of the node.
+    * @param user The user performing the operation.
     */
   def moveNode(path: Path, to: Path)(implicit user: User): Future[Either[AppError, FsNode]] = {
 
@@ -205,11 +205,13 @@ class FsNodeService(
   }.commit()
 
   /**
-    * Deletes a node.
-    * @param path The path of the node
-    * @param user The user performing the operation
+    * Deletes a node in the file system. The deleted node should ne be a directory with children, and should not be
+    * shared or have any children shared. The content will not be deleted.
+    *
+    * @param path The path of the node.
+    * @param user The user performing the operation.
     */
-  def deleteNode(path: Path)(implicit user: User): Future[Either[AppError, Unit]] = {
+  def deleteNode(path: Path)(implicit user: User): Future[Either[AppError, FsNode]] = {
 
     for {
       // Test if the deleted node is not the fs root
@@ -242,14 +244,14 @@ class FsNodeService(
       nodeParent <- getParentWithLock(node.path)
       _          <- QueryE.lift(fsNodeStore.update(nodeParent.modified(LocalDateTime.now)))
 
-    } yield ()
+    } yield node
 
   }.commit()
 
   /**
     * Creates a node into the filesystem. The path of the node should be unique and its parent should exists.
-    * @param node The node to create
-    * @param user The user performing the operation
+    * @param node The node to create.
+    * @param user The user performing the operation.
     */
   private def createNode(node: FsNode)(implicit user: User): Future[Either[AppError, FsNode]] = {
 
@@ -276,7 +278,7 @@ class FsNodeService(
 
   }.commit()
 
-  /** Checks that an element doesn't already exists */
+  /** Checks that an element doesn't already exists. */
   private def doesntAlreadyExists(path: Path)(implicit user: User) = {
     QueryE {
       fsNodeStore.findByPathAndUser(path, user).map {
@@ -292,7 +294,7 @@ class FsNodeService(
     }
   }
 
-  /** Get a node and returns an error if the node doesn't exist */
+  /** Get a node and returns an error if the node doesn't exist. */
   private def getNode(path: Path)(implicit user: User) = {
     QueryE.getOrNotFound(fsNodeStore.findByPathAndUser(path, user))
   }
@@ -302,7 +304,7 @@ class FsNodeService(
     QueryE.getOrNotFound(fsNodeStore.findAndLockByPathAndUser(path, user))
   }
 
-  /** Gets the parent directory of the element or returns a not found error */
+  /** Gets the parent directory of the element or returns a not found error. */
   private def getParent(path: Path)(implicit user: User) = {
     QueryE {
       fsNodeStore.findByPathAndUser(path.parent, user).map {
@@ -314,7 +316,7 @@ class FsNodeService(
     }
   }
 
-  /** Gets the parent directory of the element and lock it for the transaction */
+  /** Gets the parent directory of the element and lock it for the transaction. */
   private def getParentWithLock(path: Path)(implicit user: User) = {
     QueryE {
       fsNodeStore.findAndLockByPathAndUser(path.parent, user).map {

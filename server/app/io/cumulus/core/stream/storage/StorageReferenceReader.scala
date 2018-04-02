@@ -1,6 +1,7 @@
 package io.cumulus.core.stream.storage
 
 import scala.concurrent.ExecutionContext
+
 import akka.NotUsed
 import akka.stream.scaladsl.{Flow, Source}
 import akka.util.ByteString
@@ -10,7 +11,7 @@ import io.cumulus.core.utils.Range
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.Session
 import io.cumulus.models.fs.File
-import io.cumulus.persistence.storage.{StorageEngine, StorageEngines, StorageObject, StorageReference}
+import io.cumulus.persistence.storage.{StorageEngines, StorageObject}
 import io.cumulus.stages.{Ciphers, Compressions}
 
 object StorageReferenceReader extends Logging {
@@ -32,7 +33,7 @@ object StorageReferenceReader extends Logging {
     for {
       transformation   <- transformationForFile(file)
       storageReference <- file.thumbnailStorageReference.toRight(AppError.notFound("validation.fs-node.no-thumbnail", file.name))
-      storageEngine    <- storageEngineForStorageReference(storageReference)
+      storageEngine    <- storageEngines.get(storageReference)
       source = {
         Source(storageReference.storage.toList)
           .splitWhen(_ => true)
@@ -58,7 +59,7 @@ object StorageReferenceReader extends Logging {
   ): Either[AppError, Source[ByteString, NotUsed]] =
     for {
       transformation <- transformationForFile(file)
-      storageEngine  <- storageEngineForStorageReference(file.storageReference)
+      storageEngine  <- storageEngines.get(file.storageReference)
       source         =  {
         Source(file.storageReference.storage.toList)
           .splitWhen(_ => true)
@@ -87,7 +88,7 @@ object StorageReferenceReader extends Logging {
   ): Either[AppError, Source[ByteString, NotUsed]] =
     for {
       transformation <- transformationForFile(file)
-      storageEngine  <- storageEngineForStorageReference(file.storageReference)
+      storageEngine  <- storageEngines.get(file.storageReference)
       source         =  {
         // Compute the objects within the range and the real byte range to read
         val (from, to, storageObjectsInRange) = computeDroppedObjects(range, file)
@@ -160,40 +161,6 @@ object StorageReferenceReader extends Logging {
         .via(cipher.map(_.decrypt(privateKey, salt)).getOrElse(Flow[ByteString]))
         .via(compression.map(_.uncompress).getOrElse(Flow[ByteString]))
     }
-
-  /** Retrieve the storage engine from the storage reference. */
-  private def storageEngineForStorageReference(
-    storageReference: StorageReference
-  )(
-    implicit storageEngines: StorageEngines
-  ): Either[AppError, StorageEngine] = {
-
-    for {
-      // Temporary, for now we guess the storage engine to use base on the first storage reference ; this can only works
-      // because we only use an unique storage reference with a file (no replication yet!)
-      storageInfo <- {
-        storageReference
-          .storage
-          .headOption
-          .map(ref => Right((ref.storageEngine, ref.storageEngineVersion, ref.storageEngineReference)))
-          .getOrElse(Left(AppError.validation("validation.fs-node.no-storage-reference")))
-      }
-
-      (name, version, ref) = storageInfo
-
-      storageEngine <- storageEngines.get(ref)
-
-      // Log any incoherence
-      _ = {
-        if(storageEngine.version != version)
-          logger.warn(s"Using the storage engine $name ($ref) with version ${storageEngine.version} instead of version $version")
-        if(storageEngine.name != name)
-          logger.warn(s"Using the storage engine ${storageEngine.name} instead of $name")
-      }
-
-    } yield storageEngine
-
-  }
 
   /** Custom error handler to log errors */
   private def errorHandler(file: File): PartialFunction[Throwable, ByteString] = {
