@@ -52,8 +52,8 @@ export default class UploadModal extends React.PureComponent<Props> {
 
   renderActions = () => {
     const { filesToUpload } = this.props
-    const isDone = filesToUpload.filter(f => f.fileStatus !== "Done").length === 0
-    const loading = !!filesToUpload.find(fileToUpload => fileToUpload.fileStatus === "Loading")
+    const isDone = filesToUpload.filter(f => f.status !== "Done").length === 0
+    const loading = !!filesToUpload.find(fileToUpload => fileToUpload.status === "Loading")
     if (isDone) {
       return (
         <FlatButton
@@ -88,7 +88,7 @@ export default class UploadModal extends React.PureComponent<Props> {
 
   handleOnUpload = () => {
     const { directory, filesToUpload, onUploadFile } = this.props
-    filesToUpload.filter(f => f.fileStatus === "Ready").forEach(fileToUpload => {
+    filesToUpload.filter(f => f.status === "Ready").forEach(fileToUpload => {
       onUploadFile(`${directory.path}/${fileToUpload.name}`.replace("//", "/"), fileToUpload)
     })
   }

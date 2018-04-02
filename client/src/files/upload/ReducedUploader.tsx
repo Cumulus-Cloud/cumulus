@@ -25,17 +25,17 @@ export default class ReducedUploader extends React.PureComponent<Props> {
   render() {
     const { filesToUpload } = this.props
     const progress = totalProgress(filesToUpload)
-    const loading = !!filesToUpload.find(fileToUpload => fileToUpload.fileStatus === "Loading")
+    const loading = !!filesToUpload.find(fileToUpload => fileToUpload.status === "Loading")
     const indeterminate = progress === filesToUpload.length * 100 && loading
-    const notUploaded = filesToUpload.filter(f => f.fileStatus === "Ready").length
+    const notUploaded = filesToUpload.filter(f => f.status === "Ready").length
     return (
       <div className={styles.reducedUploader}>
         <ProgressBlock indeterminate={indeterminate} progress={progress} className={styles.reducedUploaderProgress}>
           <div className={styles.container}>
             <div className={styles.stats}>
               <div className={styles.counter}>{notUploaded} {Messages("ui.notUploaded")}</div>
-              <div className={styles.counter}>{filesToUpload.filter(f => f.fileStatus === "Loading").length} {Messages("ui.uploading")}</div>
-              <div className={styles.counter}>{filesToUpload.filter(f => f.fileStatus === "Done").length} {Messages("ui.completed")}</div>
+              <div className={styles.counter}>{filesToUpload.filter(f => f.status === "Loading").length} {Messages("ui.uploading")}</div>
+              <div className={styles.counter}>{filesToUpload.filter(f => f.status === "Done").length} {Messages("ui.completed")}</div>
               <IconButton disable={notUploaded === 0} onClick={this.handleOnUpload}>
                 <UploadIcon color={notUploaded === 0 ? "#6F6F6F" : "#3DC7BE"} />
               </IconButton>
@@ -54,13 +54,13 @@ export default class ReducedUploader extends React.PureComponent<Props> {
 
   handleOnUpload = () => {
     const { filesToUpload, onUploadFile } = this.props
-    filesToUpload.filter(f => f.fileStatus === "Ready").forEach(fileToUpload => {
+    filesToUpload.filter(f => f.status === "Ready").forEach(fileToUpload => {
       onUploadFile(`${fileToUpload.directory.path}/${fileToUpload.name}`.replace("//", "/"), fileToUpload)
     })
   }
 }
 
 export function totalProgress(filesToUpload: FileToUpload[]): number {
-  const files = filesToUpload.filter(f => f.fileStatus === "Loading")
+  const files = filesToUpload.filter(f => f.status === "Loading")
   return files.reduce((acc, fileToUpload) => acc + fileToUpload.progress, 0) / files.length
 }

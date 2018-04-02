@@ -1,10 +1,10 @@
 import { Compression, Cipher, FsDirectory } from "models/FsNode"
 
-export type FileStatus = "Ready" | "Loading" | "Done"
+export type FileToUploadStatus = "Ready" | "Loading" | "Done"
 
 export interface FileToUpload {
   id: string
-  fileStatus: FileStatus
+  status: FileToUploadStatus
   name: string
   progress: number
   file: File
@@ -26,7 +26,7 @@ export function fromFileList(filesList: FileList, directory: FsDirectory): FileT
   return fileListToArray(filesList).map(file => {
     return {
       id: file.name,
-      fileStatus: "Ready",
+      status: "Ready",
       name: file.name,
       progress: 0,
       file,
