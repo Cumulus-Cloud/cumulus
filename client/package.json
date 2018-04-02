@@ -1,64 +1,64 @@
 {
   "name": "cumulus",
   "version": "0.0.1",
-  "description": "Cumulus Cloud",
-  "main": "index.js",
-  "directories": {
-    "test": "test"
-  },
+  "description": "Personal cloud done right !",
+  "author": "Cumulus-Cloud",
   "private": true,
-  "scripts": {
-    "build": "NODE_ENV='production' webpack",
-    "watch": "NODE_ENV='development' webpack -w",
-    "test": "echo 'soon'"
-  },
+  "license": "MIT",
+  "homepage": "https://github.com/Cumulus-Cloud/cumulus#readme",
+  "keywords": [
+    "Cloud"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Cumulus-Cloud/cumulus.git"
   },
-  "keywords": [
-    "Cloud"
-  ],
-  "author": "Cumulus-Cloud",
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Cumulus-Cloud/cumulus/issues"
   },
-  "homepage": "https://github.com/Cumulus-Cloud/cumulus#readme",
-  "devDependencies": {
-    "@types/es6-shim": "0.31.35",
-    "@types/react": "16.0.38",
-    "@types/react-dom": "16.0.4",
-    "@types/react-redux": "5.0.15",
-    "@types/react-router": "4.0.22",
-    "@types/react-router-redux": "5.0.12",
-    "autoprefixer": "8.0.0",
-    "awesome-typescript-loader": "3.5.0",
-    "css-loader": "0.28.10",
-    "extract-text-webpack-plugin": "3.0.2",
-    "postcss-loader": "2.1.0",
-    "source-map-loader": "0.2.3",
-    "style-loader": "0.20.2",
-    "tslint": "5.9.1",
-    "typescript": "2.7.2",
-    "webpack": "3.10.0",
-    "whatwg-fetch": "2.0.3"
+  "scripts": {
+    "build": "NODE_ENV='production' webpack",
+    "watch": "NODE_ENV='development' webpack -w",
+    "test": "echo 'soon'"
   },
   "dependencies": {
     "date-fns": "1.29.0",
     "es6-promise": "4.2.4",
     "es6-shim": "0.35.3",
     "history": "4.7.2",
-    "react": "16.2.0",
-    "react-dom": "16.2.0",
+    "react": "16.3.0",
+    "react-dnd": "2.6.0",
+    "react-dnd-html5-backend": "2.6.0",
+    "react-dom": "16.3.0",
     "react-redux": "5.0.7",
     "react-router": "4.2.0",
     "react-router-redux": "5.0.0-alpha.8",
     "redux": "3.7.2",
     "redux-devtools-extension": "2.13.2",
     "redux-observable": "0.18.0",
-    "reset-css": "2.2.1",
-    "rxjs": "5.5.6",
+    "reset-css": "3.0.0",
+    "rxjs": "5.5.8",
     "validation.ts": "0.0.17"
+  },
+  "devDependencies": {
+    "@types/es6-shim": "0.31.36",
+    "@types/react": "16.1.0",
+    "@types/react-dnd": "2.0.36",
+    "@types/react-dnd-html5-backend": "2.1.9",
+    "@types/react-dom": "16.0.4",
+    "@types/react-redux": "5.0.15",
+    "@types/react-router": "4.0.23",
+    "@types/react-router-redux": "5.0.13",
+    "autoprefixer": "8.2.0",
+    "awesome-typescript-loader": "4.0.1",
+    "css-loader": "0.28.11",
+    "extract-text-webpack-plugin": "3.0.2",
+    "postcss-loader": "2.1.3",
+    "source-map-loader": "0.2.3",
+    "style-loader": "0.20.3",
+    "tslint": "5.9.1",
+    "typescript": "2.8.1",
+    "webpack": "3.10.0",
+    "whatwg-fetch": "2.0.4"
   }
 }

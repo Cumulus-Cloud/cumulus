@@ -68,7 +68,7 @@ export default class FsNodeComponent extends React.PureComponent<Props> {
   renderIcon = () => {
     const { fsNode } = this.props
     if (fsNode.nodeType === "FILE") {
-      return <FileIcon extention={getExtention(fsNode.name).toUpperCase()} />
+      return <FileIcon extention={getExtention(fsNode.name).substring(0, 4).toUpperCase()} />
     } else {
       return <DirectoryIcon width={30} height={30} />
     }

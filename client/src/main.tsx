@@ -11,7 +11,7 @@ import "rxjs/add/observable/of"
 
 import * as React from "react"
 import * as ReactDOM from "react-dom"
-import { Route } from "react-router"
+import { Route, Switch } from "react-router"
 import { Provider } from "react-redux"
 import { ConnectedRouter } from "react-router-redux"
 import LoginContainer from "auth/login/LoginContainer"
@@ -22,12 +22,12 @@ import { store, history } from "store"
 ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
-      <div>
+      <Switch>
         <Route exact path="/" component={FileSystemContainer} />
         <Route exact path="/fs/*" component={FileSystemContainer} />
         <Route exact path="/login" component={LoginContainer} />
         <Route exact path="/signup" component={SignupContainer} />
-      </div>
+      </Switch>
     </ConnectedRouter>
   </Provider>,
   document.getElementById("app")

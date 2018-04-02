@@ -4,6 +4,7 @@ import classNames from "utils/ClassNames"
 import LoaderIcon from "icons/LoaderIcon"
 
 interface Props {
+  title?: string
   disable?: boolean
   loading?: boolean
   className?: string
@@ -15,16 +16,16 @@ interface Props {
 
 export default class BaseButton extends React.PureComponent<Props> {
   render() {
-    const { className, href, matchParent = false } = this.props
+    const { className, href, title, matchParent = false } = this.props
     const classes = classNames({
       [styles.baseButton]: true,
       [styles.matchParent]: matchParent,
       [className || ""]: !!className,
     })
     if (href) {
-      return <a href={href} className={classes} onClick={this.handleOnClick}>{this.renderContent()}</a>
+      return <a title={title} href={href} className={classes} onClick={this.handleOnClick}>{this.renderContent()}</a>
     } else {
-      return <button role="button" className={classes} onClick={this.handleOnClick}>{this.renderContent()}</button>
+      return <button role="button" title={title} className={classes} onClick={this.handleOnClick}>{this.renderContent()}</button>
     }
   }
 

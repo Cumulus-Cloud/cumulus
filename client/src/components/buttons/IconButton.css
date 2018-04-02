@@ -3,10 +3,14 @@
   justify-content: center;
   align-items: center;
   padding: 5px;
-  cursor: pointer;
   background: transparent;
+  cursor: not-allowed;
 }
 
-.iconButton:hover {
+.iconButtonHover {
+  cursor: pointer;
+}
+
+.iconButtonHover:hover {
   opacity: 0.7;
 }

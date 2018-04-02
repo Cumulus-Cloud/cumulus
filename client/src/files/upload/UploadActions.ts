@@ -2,9 +2,10 @@ import { Action } from "redux"
 import { FsNode, Compression, Cipher } from "models/FsNode"
 import { FileToUpload } from "models/FileToUpload"
 import { ApiError } from "services/Api"
+import { UploadModalStatus } from "models/UploadModalStatus"
 
 export type UploadAction =
-  WantUpload |
+  UploaderModalStatus |
   AddFiles |
   UploadFileSuccess |
   UploadFile |
@@ -14,11 +15,12 @@ export type UploadAction =
   SelectCipher |
   SelectCompression
 
-export interface WantUpload extends Action {
-  type: "WantUpload"
+export interface UploaderModalStatus extends Action {
+  type: "UploaderModalStatus"
+  status: UploadModalStatus
 }
-export function wantUpload(): WantUpload {
-  return { type: "WantUpload" }
+export function uploaderModalStatus(status: UploadModalStatus): UploaderModalStatus {
+  return { type: "UploaderModalStatus", status }
 }
 
 export interface AddFiles extends Action {

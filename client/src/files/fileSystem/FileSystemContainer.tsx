@@ -21,6 +21,7 @@ import RightPanel from "components/RightPanel"
 import FsNodeComponent from "components/FsNodeComponent"
 import MoveModal from "files/move/MoveModal"
 import InAppNotifContainer from "inAppNotif/InAppNotifContainer"
+import DropUploaderContainer from "files/upload/DropUploaderContainer"
 
 interface DispatchProps {
   onFetchDirectory(path: string): void
@@ -60,7 +61,7 @@ class FileSystemContainer extends React.PureComponent<Props> {
   render() {
     const { directory, share, wantMove, sharedFsNode } = this.props
     return (
-      <div className={styles.fileSystemContainer}>
+      <DropUploaderContainer className={styles.fileSystemContainer}>
         <LeftPanel />
         <div className={styles.mainContainer}>
           <AppBar />
@@ -78,7 +79,7 @@ class FileSystemContainer extends React.PureComponent<Props> {
             <RightPanel />
           </div>
         </div>
-      </div>
+      </DropUploaderContainer>
     )
   }
 

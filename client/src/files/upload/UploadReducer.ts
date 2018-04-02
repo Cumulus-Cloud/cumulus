@@ -1,36 +1,44 @@
 import { UploadAction } from "files/upload/UploadActions"
 import { FileToUpload } from "models/FileToUpload"
+import { UploadModalStatus } from "models/UploadModalStatus"
 
 export interface UploadState {
-  idCounter: number
-  wantUpload: boolean
+  status: UploadModalStatus
   filesToUpload: FileToUpload[]
 }
 
 const initState: UploadState = {
-  idCounter: 1,
-  wantUpload: false,
+  status: "None",
   filesToUpload: [],
 }
 
 export const UploadReducer = (state: UploadState = initState, action: UploadAction): UploadState => {
   switch (action.type) {
-    case "WantUpload": return { ...state, wantUpload: !state.wantUpload, filesToUpload: [] }
+    case "UploaderModalStatus": return { ...state, status: action.status, filesToUpload: action.status === "None" ? [] : state.filesToUpload  }
     case "AddFiles": {
       return {
         ...state,
         filesToUpload: [...state.filesToUpload, ...action.filesToUpload],
-        idCounter: state.idCounter + action.filesToUpload.length
+        status: "Open",
       }
     }
     case "RemoveFileToUpload": return { ...state, filesToUpload: state.filesToUpload.filter(f => f.id !== action.fileToUpload.id) }
     case "UploadFile": {
-      return { ...state, filesToUpload: state.filesToUpload.map(fileToUpload => ({ ...fileToUpload, loading: !fileToUpload.done})) }
+      return {
+        ...state,
+        filesToUpload: state.filesToUpload.map(fileToUpload => {
+          if (fileToUpload.status === "Ready") {
+            return { ...fileToUpload, status: "Loading"} as FileToUpload
+          } else {
+            return fileToUpload
+          }
+        })
+      }
     }
     case "UploadFileSuccess": {
       const filesToUpload = state.filesToUpload.map(fileToUpload => {
         if (fileToUpload.id === action.fileToUpload.id) {
-          return { ...fileToUpload, loading: false, done: true }
+          return { ...fileToUpload, status: "Done", progress: 100 } as FileToUpload
         } else {
           return fileToUpload
         }
@@ -40,7 +48,7 @@ export const UploadReducer = (state: UploadState = initState, action: UploadActi
     case "UploadFileError": {
       const filesToUpload = state.filesToUpload.map(fileToUpload => {
         if (fileToUpload.id === action.fileToUpload.id) {
-          return { ...fileToUpload, progress: 0, loading: false }
+          return { ...fileToUpload, progress: 0, status: "Ready" } as FileToUpload
         } else {
           return fileToUpload
         }

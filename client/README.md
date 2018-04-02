@@ -1,3 +1,13 @@
 ## Cumulus Web App
 
-TODO
+Compress Icon made by [Freepik](http://www.freepik.com)
+
+### Build
+```sh
+npm run build
+```
+
+### Dev build
+```sh
+npm run watch
+```
