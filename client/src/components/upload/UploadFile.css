@@ -34,6 +34,7 @@
   display: flex;
   width: 80px;
   margin-right: 10px;
+  margin-left: 15px;
   color: var(--primaryText);
   font-size: .8rem;
   justify-content: right;

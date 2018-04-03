@@ -3,7 +3,8 @@
 }
 
 body {
-  font-family: Helvetica, Arial, sans-serif;
+  font-family: 'Lato', sans-serif;
+  line-height: normal;
 }
 
 :root {
