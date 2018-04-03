@@ -6,10 +6,11 @@ import anorm._
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.anorm.AnormSupport._
 import io.cumulus.core.persistence.anorm.{AnormPKOperations, AnormRepository, AnormSupport}
-import io.cumulus.core.persistence.query.{Query, QueryBuilder}
+import io.cumulus.core.persistence.query._
 import io.cumulus.models.fs.{Directory, FsNode}
 import io.cumulus.models.{Path, User}
 import io.cumulus.persistence.stores.FsNodeStore._
+import io.cumulus.persistence.stores.orderings.FsNodeOrdering
 
 /**
   * Filesystem node store, used to manage fs node in the database.
@@ -48,12 +49,17 @@ class FsNodeStore(
     * @param path The parent path of the elements to look for.
     * @param user The owner of the elements.
     */
-  def findContainedByPathAndUser(path: Path, user: User): Query[CumulusDB, Seq[FsNode]] = {
+  def findContainedByPathAndUser[Ordering <: QueryOrdering](
+    path: Path,
+    user: User,
+    pagination: QueryPagination,
+    ordering: Ordering = FsNodeOrdering.empty
+  ): Query[CumulusDB, Seq[FsNode]] = {
     // Match directory starting by the location, but only on the direct level
     val regex = if (path.isRoot) "^/[^/]+$" else s"^${path.toString}/[^/]+$$"
 
     qb { implicit c =>
-      SQL"SELECT * FROM #$table WHERE #$ownerField = ${user.id} AND #$pathField ~ $regex"
+      SQL"SELECT * FROM #$table WHERE #$ownerField = ${user.id} AND #$pathField ~ $regex #${ordering.toORDER} #${pagination.toLIMIT}"
         .as(rowParser.*)
     }
   }

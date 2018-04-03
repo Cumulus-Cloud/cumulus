@@ -9,6 +9,7 @@ import io.cumulus.controllers.utils.FileDownloaderUtils
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.controllers.utils.bodyParser.{BodyParserJson, BodyParserStream}
+import io.cumulus.core.persistence.query.QueryPagination
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.fs.{Directory, FsNodeType}
 import io.cumulus.models.{Path, Sharing, UserSession}
@@ -28,15 +29,28 @@ class FileSystemController(
   compressions: Compressions
 ) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with FileDownloaderUtils with BodyParserJson with BodyParserStream {
 
-  def get(path: Path) = AuthenticatedAction.async { implicit request =>
+  def get(path: Path, contentLimit: Option[Int], contentOffset: Option[Int]) = AuthenticatedAction.async { implicit request =>
     ApiResponse {
-      fsNodeService.findNode(path)
+      fsNodeService.findNode(
+        path,
+        contentLimit
+          .map(QueryPagination(_, contentOffset))
+          .getOrElse(QueryPagination(51)) // Default pagination
+      )
     }
   }
 
-  def search(path: Path, name: String, nodeType: Option[FsNodeType], mimeType: Option[String]) = AuthenticatedAction.async { implicit request =>
+  def search(path: Path, name: String, nodeType: Option[FsNodeType], mimeType: Option[String], limit: Option[Int], offset: Option[Int]) = AuthenticatedAction.async { implicit request =>
     ApiResponse {
-      fsNodeService.searchNodes(path, name, nodeType, mimeType)
+      fsNodeService.searchNodes(
+        path,
+        name,
+        nodeType,
+        mimeType,
+        limit
+          .map(QueryPagination(_, offset))
+          .getOrElse(QueryPagination(51)) // Default pagination
+      )
     }
   }
 
