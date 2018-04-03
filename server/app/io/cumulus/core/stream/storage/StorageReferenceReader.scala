@@ -57,17 +57,20 @@ object StorageReferenceReader extends Logging {
     storageEngines: StorageEngines,
     ec: ExecutionContext
   ): Either[AppError, Source[ByteString, NotUsed]] =
-    for {
-      transformation <- transformationForFile(file)
-      storageEngine  <- storageEngines.get(file.storageReference)
-      source         =  {
-        Source(file.storageReference.storage.toList)
-          .splitWhen(_ => true)
-          .via(StorageObjectReader.reader(storageEngine, transformation))
-          .mergeSubstreams
-          .recover(errorHandler(file))
-      }
-    } yield source
+    if (file.size <= 0) // Special case for empty files, which require neither any transformation nor any actual download
+      Right(Source(List.empty))
+    else
+      for {
+        transformation <- transformationForFile(file)
+        storageEngine <- storageEngines.get(file.storageReference)
+        source = {
+          Source(file.storageReference.storage.toList)
+            .splitWhen(_ => true)
+            .via(StorageObjectReader.reader(storageEngine, transformation))
+            .mergeSubstreams
+            .recover(errorHandler(file))
+        }
+      } yield source
 
   /**
     * Reads partially a file, from the starts of the range to end of the range. The reader will drop and ignore every
@@ -86,21 +89,24 @@ object StorageReferenceReader extends Logging {
     storageEngines: StorageEngines,
     ec: ExecutionContext
   ): Either[AppError, Source[ByteString, NotUsed]] =
-    for {
-      transformation <- transformationForFile(file)
-      storageEngine  <- storageEngines.get(file.storageReference)
-      source         =  {
-        // Compute the objects within the range and the real byte range to read
-        val (from, to, storageObjectsInRange) = computeDroppedObjects(range, file)
+    if (file.size <= 0) // Special case for empty files, which require neither any transformation nor any actual download
+      Right(Source(List.empty))
+    else
+      for {
+        transformation <- transformationForFile(file)
+        storageEngine  <- storageEngines.get(file.storageReference)
+        source         =  {
+          // Compute the objects within the range and the real byte range to read
+          val (from, to, storageObjectsInRange) = computeDroppedObjects(range, file)
 
-        Source(storageObjectsInRange.toList) // Only use objects in range
-          .splitWhen(_ => true)
-          .via(StorageObjectReader.reader(storageEngine, transformation))
-          .mergeSubstreams
-          .via(ByteRange(from, to)) // Don't forget to 'trim' the stream of bytes outside the offsets
-          .recover(errorHandler(file))
-      }
-    } yield source
+          Source(storageObjectsInRange.toList) // Only use objects in range
+            .splitWhen(_ => true)
+            .via(StorageObjectReader.reader(storageEngine, transformation))
+            .mergeSubstreams
+            .via(ByteRange(from, to)) // Don't forget to 'trim' the stream of bytes outside the offsets
+            .recover(errorHandler(file))
+        }
+      } yield source
 
   /**
     * Compute the dropped storage objects outside of the requested range, and returns the real range and the list of
