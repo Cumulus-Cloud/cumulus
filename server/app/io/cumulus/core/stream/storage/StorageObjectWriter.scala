@@ -168,9 +168,6 @@ object StorageObjectWriter {
     transformation: Flow[ByteString, ByteString, NotUsed]
   )(implicit ec: ExecutionContext): Flow[ByteString, StorageObject, NotUsed] = {
 
-
-    println("created writer")
-
     // Will write the byte stream using the provided storage engine, and return the storage object
     val objectWriter = new StorageObjectWriter(storageEngine)
 
