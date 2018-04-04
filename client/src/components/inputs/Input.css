@@ -13,7 +13,7 @@
   padding: 5px 0;
   font-size: 1rem;
   border: none;
-  border-bottom: 1px solid var(--primary);
+  border-bottom: 1px solid var(--darkPrimary);
   outline: none;
 }
 
@@ -22,7 +22,7 @@
 }
 
 .label {
-  color: var(--primary);
+  color: var(--darkPrimary);
 }
 
 .error {

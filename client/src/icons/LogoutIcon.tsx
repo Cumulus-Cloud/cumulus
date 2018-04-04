@@ -6,7 +6,7 @@ interface Props {
   height?: number
 }
 
-export default function LogoutIcon({ color = "#303f9f", width = 24, height = 24 }: Props) {
+export default function LogoutIcon({ color = "#3DC7BE", width = 24, height = 24 }: Props) {
   return (
     <svg width={width} height={height} viewBox="0 0 24 24" fill={color} version="1.1" xmlns="http://www.w3.org/2000/svg">
       <path d="M0 0h24v24H0z" fill="none" />
