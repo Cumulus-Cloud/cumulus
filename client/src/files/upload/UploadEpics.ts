@@ -7,7 +7,7 @@ import { Observable } from "rxjs/Observable"
 import { Observer } from "rxjs/Observer"
 import debounce from "utils/debounce"
 
-export const uploadEpic: Epic<any, GlobalState> = (action$: ActionsObservable<UploadFile>) => action$.ofType("UploadFile")
+export const uploadEpic: Epic<UploadAction, GlobalState> = (action$: ActionsObservable<UploadFile>) => action$.ofType("UploadFile")
     .mergeMap(action => {
       return Observable.create((observer: Observer<UploadAction>) => {
         const progress = (e: ProgressEvent) => {
