@@ -105,11 +105,11 @@ export function isImageMetadata(metadata: PDFDocumentMetadata | ImageMetadata | 
   return metadata.metadataType === "ImageMetadata"
 }
 
-export function isPDFDocumentMetadata(metadata: PDFDocumentMetadata | ImageMetadata | DefaultMetadata): metadata is ImageMetadata {
+export function isPDFDocumentMetadata(metadata: PDFDocumentMetadata | ImageMetadata | DefaultMetadata): metadata is PDFDocumentMetadata {
   return metadata.metadataType === "PDFDocumentMetadata"
 }
 
-export function isDefaultMetadata(metadata: PDFDocumentMetadata | ImageMetadata | DefaultMetadata): metadata is ImageMetadata {
+export function isDefaultMetadata(metadata: PDFDocumentMetadata | ImageMetadata | DefaultMetadata): metadata is DefaultMetadata {
   return metadata.metadataType === "DefaultMetadata"
 }
 
