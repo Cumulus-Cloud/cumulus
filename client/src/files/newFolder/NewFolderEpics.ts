@@ -14,7 +14,7 @@ export const createNewFolderEpic: Epic<any, GlobalState> = (action$: ActionsObse
 export const createNewFolderErrorEpic: Epic<any, GlobalState> = (action$: ActionsObservable<CreateNewFolderError>) => {
     return action$
         .ofType("CreateNewFolderError")
-        .map(action => showApiErrorNotif(action.error))
+        .map(action => showApiErrorNotif(action.error));
 }
 
 export const createNewFolderEpics = combineEpics(
