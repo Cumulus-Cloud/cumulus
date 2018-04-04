@@ -9,7 +9,7 @@ export const signupEpic: Epic<any, GlobalState> = (action$: ActionsObservable<Si
       Api.signup(action.login, action.email, action.password)
       .then(user => {
         history.replace("/fs/")
-        return signupSubmitSuccess(user)
+        return signupSubmitSuccess()
       })
       .catch(signupSubmitError)
     )

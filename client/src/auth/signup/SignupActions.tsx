@@ -1,6 +1,5 @@
 import { Action } from "redux"
 import { ApiError } from "services/Api"
-import { User } from "models/User"
 
 export type SignupAction =
   SignupChange |
@@ -29,10 +28,9 @@ export function signupSubmit(login: string, email: string, password: string): Si
 
 export interface SignupSubmitSuccess extends Action {
   type: "SignupSubmitSuccess"
-  user: User
 }
-export function signupSubmitSuccess(user: User): SignupSubmitSuccess {
-  return { type: "SignupSubmitSuccess", user }
+export function signupSubmitSuccess(): SignupSubmitSuccess {
+  return { type: "SignupSubmitSuccess" }
 }
 
 export interface SignupSubmitError extends Action {

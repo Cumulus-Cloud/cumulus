@@ -33,8 +33,7 @@ const epicMiddleware = createEpicMiddleware(RootEpic)
 
 const reducers = combineReducers({
   login: LoginReducer,
-  // tslint:disable-next-line:no-any
-  signup: SignupReducer as any,
+  signup: SignupReducer,
   newFolder: NewFolderReducer,
   // tslint:disable-next-line:no-any
   upload: UploadReducer as any,
