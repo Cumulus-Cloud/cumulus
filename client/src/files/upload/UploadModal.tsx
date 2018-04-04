@@ -38,7 +38,7 @@ export default class UploadModal extends React.PureComponent<Props> {
         <ModalActions>
           <div className={styles.actions}>
             <Uploader onChange={this.handleOnChange} />
-            <div>
+            <div className={styles.rightActions}>
               <FlatButton label={Messages("ui.reduce")} onClick={this.handleOnUploaderModalStatus("Reduced")} />
               {this.renderActions()}
             </div>
