@@ -34,7 +34,7 @@ trait QueryFilter {
   def namedParameters: Seq[NamedParameter] = filters.flatMap(_.namedParameters)
 
   /**
-    * The sequence of filters defining the filter. Each filter is defined by some SQL and its
+    * The sequence of filters defining the filter. Each filter is defined by some SQL and its associated named parameters.
     */
   def filters: Seq[ParameterizedSqlFilter]
 

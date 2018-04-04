@@ -9,6 +9,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 import cats.instances.future._
+import io.cumulus.core.persistence.query.QueryPagination
 import io.cumulus.models.fs.{Directory, File}
 import io.cumulus.persistence.storage.StorageReference
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
@@ -50,7 +51,7 @@ class FileSystemSpec extends PlaySpec
       val r = for {
         _           <- EitherT(userService.createUser(user))
         createdUser <- EitherT(userService.findByLogin("test"))
-        root        <- EitherT(fsNodeService.findDirectory("/")(user))
+        root        <- EitherT(fsNodeService.findDirectory("/", QueryPagination(99))(user))
       } yield (createdUser, root)
 
       whenReady(r.value, defaultPatience) {

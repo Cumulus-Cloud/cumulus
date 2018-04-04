@@ -9,14 +9,14 @@ POST    /api/users/signup             io.cumulus.controllers.UserController.sign
 GET     /api/users/me                 io.cumulus.controllers.UserController.me
 
 # API - FS get/update routes
-GET     /api/fs*path                  io.cumulus.controllers.FileSystemController.get(path: Path)
+GET     /api/fs*path                  io.cumulus.controllers.FileSystemController.get(path: Path, contentLimit: Option[Int], contentOffset: Option[Int])
 PUT     /api/fs*path                  io.cumulus.controllers.FileSystemController.create(path: Path)
 POST    /api/fs*path                  io.cumulus.controllers.FileSystemController.update(path: Path)
 DELETE  /api/fs*path                  io.cumulus.controllers.FileSystemController.delete(path: Path)
 GET     /api/sharings/fs*path         io.cumulus.controllers.SharingController.list(path: Path)
 
 # API- Search
-GET     /api/search*path              io.cumulus.controllers.FileSystemController.search(path: Path, name: String, nodeType: Option[FsNodeType], `type`: Option[String])
+GET     /api/search*path              io.cumulus.controllers.FileSystemController.search(path: Path, name: String, nodeType: Option[FsNodeType], `type`: Option[String], limit: Option[Int], offset: Option[Int])
 
 # API - Upload and download routes
 POST    /api/upload*path              io.cumulus.controllers.FileSystemController.upload(path: Path, cipher: Option[String], compression: Option[String])

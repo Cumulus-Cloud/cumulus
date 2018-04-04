@@ -9,7 +9,10 @@ import io.cumulus.core.persistence.query.{QueryBuilder, QueryE, QueryPagination}
 import io.cumulus.core.validation.AppError
 import io.cumulus.models._
 import io.cumulus.models.fs._
-import io.cumulus.persistence.stores.{FsNodeFilter, FsNodeStore, SharingStore}
+import io.cumulus.persistence.stores.filters.FsNodeFilter
+import io.cumulus.persistence.stores.orderings.FsNodeOrdering
+import io.cumulus.persistence.stores.orderings.QueryOrderingType.{OrderByFilenameAsc, OrderByNodeType}
+import io.cumulus.persistence.stores.{FsNodeStore, SharingStore}
 import play.api.libs.json.__
 
 class FsNodeService(
@@ -30,7 +33,7 @@ class FsNodeService(
 
     for {
       // Find the node
-      node <- find(path)
+      node <- find(path, QueryPagination(0))
 
       // Check if the node is a file
       file <- QueryE.pure {
@@ -49,12 +52,13 @@ class FsNodeService(
     * Finds a directory by its path and owner. Will fail if the element does not exist or is not a directory.
     * @param path The path of the directory.
     * @param user The user performing the operation.
+    * @param contentPagination The pagination for the contained elements.
     */
-  def findDirectory(path: Path)(implicit user: User): Future[Either[AppError, Directory]] = {
+  def findDirectory(path: Path, contentPagination: QueryPagination)(implicit user: User): Future[Either[AppError, Directory]] = {
 
     for {
       // Find the node
-      node <- find(path)
+      node <- find(path, contentPagination)
 
       // Check if the node is a directory
       directory <- QueryE.pure {
@@ -74,12 +78,13 @@ class FsNodeService(
     * nodes.
     * @param path The path of the node.
     * @param user The user performing the operation.
+    * @param contentPagination The pagination for the contained elements.
     */
-  def findNode(path: Path)(implicit user: User): Future[Either[AppError, FsNode]] =
-    find(path).commit()
+  def findNode(path: Path, contentPagination: QueryPagination)(implicit user: User): Future[Either[AppError, FsNode]] =
+    find(path, contentPagination).commit()
 
   /** Find a node by path and owner */
-  private def find(path: Path)(implicit user: User): QueryE[CumulusDB, FsNode] = {
+  private def find(path: Path, contentPagination: QueryPagination)(implicit user: User): QueryE[CumulusDB, FsNode] = {
 
     for {
       // Search the node by path and owner
@@ -90,7 +95,14 @@ class FsNodeService(
         node match {
           // For directory we want to find the contained fsNode, so we need an extra query
           case directory: Directory =>
-            QueryE.lift(fsNodeStore.findContainedByPathAndUser(path, user)).map(c => directory.copy(content = c))
+            QueryE.lift {
+              fsNodeStore.findContainedByPathAndUser(
+                path = path,
+                user = user,
+                pagination = contentPagination,
+                ordering = FsNodeOrdering.of(OrderByNodeType, OrderByFilenameAsc)
+              )
+            }.map(c => directory.copy(content = c))
           case other: FsNode =>
             QueryE.pure(other)
         }
@@ -104,18 +116,21 @@ class FsNodeService(
     * @param parent The node parent.
     * @param name The node's partial name.
     * @param nodeType The optional node type.
+    * @param pagination The pagination of the research.
     * @param user The user performing the operation.
     */
   def searchNodes(
     parent: Path,
     name: String,
     nodeType: Option[FsNodeType],
-    mimeType: Option[String]
+    mimeType: Option[String],
+    pagination: QueryPagination
   )(implicit user: User): Future[Either[AppError, Seq[FsNode]]] = {
-    val filter = FsNodeFilter(name, parent, nodeType, mimeType, user)
+    val filter     = FsNodeFilter(name, parent, nodeType, mimeType, user)
+    val ordering   = FsNodeOrdering.empty
 
     fsNodeStore
-      .findAll(filter, QueryPagination(51, None))
+      .findAll(filter, ordering, pagination)
       .commit()
       .map(nodes => Right(nodes.filterNot(_.path.isRoot))) // Ignore the root folder
   }
@@ -226,7 +241,7 @@ class FsNodeService(
       node <- getNodeWithLock(path)
 
       // Check that no children element exists
-      _ <- QueryE(fsNodeStore.findContainedByPathAndUser(path, user).map {
+      _ <- QueryE(fsNodeStore.findContainedByPathAndUser(path, user, QueryPagination(1)).map {
         case contained if contained.nonEmpty =>
           Left(AppError.validation("validation.fs-node.non-empty", path))
         case _ =>
