@@ -9,7 +9,7 @@ export const loginEpic: Epic<any, GlobalState> = (action$: ActionsObservable<Log
       Api.authenticate(action.login, action.password)
       .then(user => {
         history.replace("/fs/")
-        return loginOnSubmitSuccess(user)
+        return loginOnSubmitSuccess()
       })
       .catch(loginSubmitError)
     )
