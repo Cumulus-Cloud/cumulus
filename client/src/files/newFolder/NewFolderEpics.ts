@@ -6,7 +6,7 @@ import { CreateNewFolder, createNewFolderSuccess, createNewFolderError, CreateNe
 
 export const createNewFolderEpic: Epic<any, GlobalState> = (action$: ActionsObservable<CreateNewFolder>) => action$.ofType("CreateNewFolder")
     .mergeMap(action =>
-      Api.createFnNode(`${action.currentDirectory.path}/${action.newFolderName}`.replace("//", "/"), "DIRECTORY")
+      Api.createFnNode(action.currentDirectory, action.newFolderName, "DIRECTORY")
         .then(createNewFolderSuccess)
         .catch(createNewFolderError)
     )
