@@ -9,7 +9,7 @@ import {
 export const createNewFolderEpic: Epic<NewFolderAction, GlobalState> = (action$: ActionsObservable<CreateNewFolder>) => {
   return action$.ofType("CreateNewFolder")
     .mergeMap(action =>
-      Api.createFnNode(`${action.currentDirectory.path}/${action.newFolderName}`, "DIRECTORY")
+      Api.createFnNode(action.currentDirectory, action.newFolderName, "DIRECTORY")
         .then(createNewFolderSuccess)
         .catch(createNewFolderError)
     )
@@ -18,7 +18,7 @@ export const createNewFolderEpic: Epic<NewFolderAction, GlobalState> = (action$:
 export const createNewFolderErrorEpic: Epic<any, GlobalState> = (action$: ActionsObservable<CreateNewFolderError>) => {
     return action$
         .ofType("CreateNewFolderError")
-        .map(action => showApiErrorNotif(action.error))
+        .map(action => showApiErrorNotif(action.error));
 }
 
 export const createNewFolderEpics = combineEpics(

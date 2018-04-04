@@ -1,6 +1,6 @@
 package io.cumulus.core.persistence.query
 
-case class QueryPagination(limit: Int, offset: Option[Int]) {
+case class QueryPagination(limit: Int, offset: Option[Int] = None) {
 
   def toLIMIT: String = {
     offset match {

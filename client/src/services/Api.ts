@@ -88,7 +88,8 @@ export function me(): Promise<User> {
   }).then(success(userValidator))
 }
 
-export function createFnNode(path: string, nodeType: NodeType): Promise<FsNode> {
+export function createFnNode(fsNode: FsNode, name: string, nodeType: NodeType): Promise<FsNode> {
+  const path = `${fsNode.path}${fsNode.path === "/" ? "" : "/"}${name}`
   return withAuth(`/api/fs${encodeURI(path)}`, {
     method: "PUT",
     body: JSON.stringify({ nodeType })
