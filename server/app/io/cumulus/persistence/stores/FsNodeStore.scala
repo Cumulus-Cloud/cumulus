@@ -29,7 +29,7 @@ class FsNodeStore(
     */
   def findByPathAndUser(path: Path, user: User): Query[CumulusDB, Option[FsNode]] =
     qb { implicit c =>
-      SQL"SELECT * FROM #$table WHERE #$ownerField = ${user.id} AND #$pathField = ${path.toString}"
+      SQL"SELECT #$metadataField FROM #$table WHERE #$ownerField = ${user.id} AND #$pathField = ${path.toString}"
         .as(rowParser.singleOpt)
     }
 
@@ -40,7 +40,7 @@ class FsNodeStore(
     */
   def findAndLockByPathAndUser(path: Path, user: User): Query[CumulusDB, Option[FsNode]] =
     qb { implicit c =>
-      SQL"SELECT * FROM #$table WHERE #$ownerField = ${user.id} AND #$pathField = ${path.toString} FOR UPDATE"
+      SQL"SELECT #$metadataField FROM #$table WHERE #$ownerField = ${user.id} AND #$pathField = ${path.toString} FOR UPDATE"
         .as(rowParser.singleOpt)
     }
 
@@ -59,7 +59,7 @@ class FsNodeStore(
     val regex = if (path.isRoot) "^/[^/]+$" else s"^${path.toString}/[^/]+$$"
 
     qb { implicit c =>
-      SQL"SELECT * FROM #$table WHERE #$ownerField = ${user.id} AND #$pathField ~ $regex #${ordering.toORDER} #${pagination.toLIMIT}"
+      SQL"SELECT #$metadataField FROM #$table WHERE #$ownerField = ${user.id} AND #$pathField ~ $regex #${ordering.toORDER} #${pagination.toLIMIT}"
         .as(rowParser.*)
     }
   }
