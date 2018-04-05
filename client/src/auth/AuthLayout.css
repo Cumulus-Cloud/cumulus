@@ -16,7 +16,7 @@
 
 @media screen and (min-width: 480px) {
   .authPage {
-    background-image: url("/assets/bg.jpg");
+    background-image: url("./bg.jpg");
     background-size: cover;
   }
 
