@@ -58,7 +58,7 @@
     "style-loader": "0.20.3",
     "tslint": "5.9.1",
     "typescript": "2.8.1",
-    "webpack": "3.10.0",
+    "webpack": "4.5.0",
     "whatwg-fetch": "2.0.4"
   }
 }
