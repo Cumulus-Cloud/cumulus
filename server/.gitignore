@@ -3,6 +3,7 @@
 public/main.js
 public/main.css
 public/**/*.map
+public/**/*.jpg
 
 # Ignore the app's logs
 log
