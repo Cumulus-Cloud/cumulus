@@ -23,12 +23,12 @@ class SharingService(
 ) extends Logging {
 
   /**
-    * Share a node.
+    * Shares a node.
     *
-    * @param path The path of the node to be shared
-    * @param password The password of the user performing the sharing
-    * @param expiration Optional date of expiration of the sharing
-    * @param user The user performing the operation
+    * @param path The path of the node to be shared.
+    * @param password The password of the user performing the sharing.
+    * @param expiration Optional date of expiration of the sharing.
+    * @param user The user performing the operation.
     */
   def shareNode(
     path: Path,
@@ -64,12 +64,12 @@ class SharingService(
   }.commit()
 
   /**
-    * List of the sharings of the node.
+    * Lists all the sharings of the node.
     *
-    * @param path The path of the node
-    * @param user The user performing the operation
+    * @param path The path of the node.
+    * @param user The user performing the operation.
     */
-  def list(path: Path)(implicit user: User): Future[Either[AppError, Seq[Sharing]]] = {
+  def listSharings(path: Path)(implicit user: User): Future[Either[AppError, Seq[Sharing]]] = {
 
     for {
       // Find the node
@@ -83,10 +83,28 @@ class SharingService(
   }.commit()
 
   /**
-    * Delete a sharing.
+    * Finds a sharing.
     *
-    * @param reference The reference of the sharing to delete
-    * @param user The user performing the operation
+    * @param reference The reference of the sharing to search.
+    * @param user The user performing the operation.
+    */
+  def findSharing(
+    reference: String
+  )(implicit user: User): Future[Either[AppError, Sharing]] = {
+
+    for {
+      // Get the sharing
+      sharing <- QueryE.getOrNotFound(sharingStore.findAndLockBy(SharingStore.referenceField, reference))
+      _       <- QueryE.pure(checkUserCredentials(sharing, user))
+    } yield sharing
+
+  }.commit()
+
+  /**
+    * Deletes a sharing.
+    *
+    * @param reference The reference of the sharing to delete.
+    * @param user The user performing the operation.
     */
   def deleteSharing(
     reference: String
@@ -95,13 +113,7 @@ class SharingService(
     for {
       // Get the sharing
       sharing <- QueryE.getOrNotFound(sharingStore.findAndLockBy(SharingStore.referenceField, reference))
-
-      _ <- QueryE.pure {
-        if(sharing.owner != user.id)
-          Left(AppError.forbidden("validation.sharing.forbidden"))
-        else
-          Right(())
-      }
+      _       <- QueryE.pure(checkUserCredentials(sharing, user))
 
       // Delete it
       _ <- QueryE.lift(sharingStore.delete(sharing.id))
@@ -110,6 +122,13 @@ class SharingService(
 
   }.commit()
 
+  /** Check if the current user have access to critical information for this sharing. */
+  private def checkUserCredentials(sharing: Sharing, user: User) = {
+    if(sharing.owner != user.id)
+      Left(AppError.forbidden("validation.sharing.forbidden"))
+    else
+      Right(())
+  }
 
   /**
     * Returns a shared directory. Will fail if the element is not a directory or not found.
@@ -172,9 +191,9 @@ class SharingService(
   /**
     * Finds and returns a shared node.
     *
-    * @param reference The reference of the shared node
-    * @param path The path of the element, relative to the shared node
-    * @param secretCode The secret code of the sharing
+    * @param reference The reference of the shared node.
+    * @param path The path of the element, relative to the shared node.
+    * @param secretCode The secret code of the sharing.
     */
   def findSharedNode(
     reference: String,
@@ -188,9 +207,9 @@ class SharingService(
     * is shared and the find method is call this sharing with the path `/fuzz`, then the element `/foo/bar/fuzz` will
     * be searched (and returned if found). The returned node will have a sanitized path relative to the shared node.
     *
-    * @param reference The reference of the sharing
-    * @param path The path of the element contained. Use `/` to get the base shared element (directory or file)
-    * @param secretCode The secret code of the sharing
+    * @param reference The reference of the sharing.
+    * @param path The path of the element contained. Use `/` to get the base shared element (directory or file).
+    * @param secretCode The secret code of the sharing.
     */
   private def find(
     reference: String,

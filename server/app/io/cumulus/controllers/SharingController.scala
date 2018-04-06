@@ -9,10 +9,12 @@ import io.cumulus.core.utils.Base16
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.{Path, SharingSession, UserSession}
 import io.cumulus.persistence.services.{SharingService, StorageService}
-import play.api.mvc.{AbstractController, ControllerComponents}
-
+import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+  * Sharing visitor controller. This controller handle all the unauthenticated operation on shared elements.
+  */
 class SharingController(
   cc: ControllerComponents,
   sharingService: SharingService,
@@ -21,7 +23,14 @@ class SharingController(
   ec: ExecutionContext
 ) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with FileDownloaderUtils {
 
-  def get(path: Path, reference: String, key: String) = Action.async { implicit request =>
+  /**
+    * Gets a sharing for an unauthenticated user.
+    *
+    * @param path The paths within the sharing, '/' for the root element.
+    * @param reference The reference of the sharing.
+    * @param key The unique cipher key of the sharing.
+    */
+  def get(path: Path, reference: String, key: String): Action[AnyContent] = Action.async { implicit request =>
     ApiResponse {
       sharingService.findSharedNode(reference, path, key).map {
         case Right((_, _, node)) =>
@@ -32,16 +41,25 @@ class SharingController(
     }
   }
 
-  def list(path: Path) = AuthenticatedAction.async { implicit request =>
-    ApiResponse {
-      sharingService.list(path)
-    }
-  }
-
-  def downloadRoot(reference: String, name: String, key: String, forceDownload: Option[Boolean]) =
+  /**
+    * Downloads the root element of the sharing.
+    *
+    * @param reference The reference of the sharing.
+    * @param name The name of the sharing, only used for display.
+    * @param key The unique cipher key of the sharing.
+    * @param forceDownload True to force download, otherwise content will be opened directly in the browser.
+    */
+  def downloadRoot(reference: String, name: String, key: String, forceDownload: Option[Boolean]): Action[AnyContent] =
     download("/", reference, key, forceDownload)
 
-  def download(path: Path, reference: String, key: String, forceDownload: Option[Boolean]) = Action.async { implicit request =>
+  /**
+    * Downloads a shared file for an unauthenticated user.
+    *
+    * @param path The paths within the sharing, '/' for the root element.
+    * @param reference The reference of the sharing.
+    * @param key The unique cipher key of the sharing.
+    */
+  def download(path: Path, reference: String, key: String, forceDownload: Option[Boolean]): Action[AnyContent] = Action.async { implicit request =>
     ApiResponse.result {
       for {
         // Get the sharing, the user and the file
