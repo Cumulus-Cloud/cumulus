@@ -37,7 +37,7 @@
     "redux-devtools-extension": "2.13.2",
     "redux-observable": "0.18.0",
     "reset-css": "3.0.0",
-    "rxjs": "5.5.9",
+    "rxjs": "5.5.10",
     "validation.ts": "0.0.17"
   },
   "devDependencies": {
