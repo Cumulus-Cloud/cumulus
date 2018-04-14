@@ -8,12 +8,14 @@ import CloseIcon from "icons/CloseIcon"
 import IconButton from "components/buttons/IconButton"
 import FsMetadata from "components/FsMetadata"
 import * as parse from "date-fns/parse"
-import * as distanceInWordsToNow from "date-fns/distance_in_words_to_now"
+import * as format from "date-fns/format"
 
 interface Props {
   fsNode: FsNode
   onHideFsNodeInfos(): void
 }
+
+const dateFormat = "DD/MM/YYYY"
 
 export default class FsNodeInfo extends React.PureComponent<Props> {
   render() {
@@ -47,8 +49,8 @@ export default class FsNodeInfo extends React.PureComponent<Props> {
           {!!fsNode.compression ? <FsMetadata label={Messages("ui.metadata.compression")} value={fsNode.compression} /> : null}
           {!!fsNode.cipher ? <FsMetadata label={Messages("ui.metadata.cipher")} value={fsNode.cipher} /> : null}
           <FsMetadata label={Messages("ui.metadata.hash")} value={fsNode.hash} />
-          <FsMetadata label={Messages("ui.metadata.creation")} value={distanceInWordsToNow(parse(fsNode.creation))} />
-          <FsMetadata label={Messages("ui.metadata.modification")} value={distanceInWordsToNow(parse(fsNode.modification))} />
+          <FsMetadata label={Messages("ui.metadata.creation")} value={format(parse(fsNode.creation), dateFormat)} />
+          <FsMetadata label={Messages("ui.metadata.modification")} value={format(parse(fsNode.modification), dateFormat)} />
           {isImageMetadata(fsNode.metadata) ? ImageMetadataComponent(fsNode.metadata) : null}
           {isPDFDocumentMetadata(fsNode.metadata) ? PDFMetadataComponent(fsNode.metadata) : null}
           {isDefaultMetadata(fsNode.metadata) ? DefaultMetadataComponent(fsNode.metadata) : null}
@@ -57,8 +59,8 @@ export default class FsNodeInfo extends React.PureComponent<Props> {
     } else {
       return (
         <>
-          <FsMetadata label={Messages("ui.metadata.creation")} value={distanceInWordsToNow(parse(fsNode.creation))} />
-          <FsMetadata label={Messages("ui.metadata.modification")} value={distanceInWordsToNow(parse(fsNode.modification))} />
+          <FsMetadata label={Messages("ui.metadata.creation")} value={format(parse(fsNode.creation), dateFormat)} />
+          <FsMetadata label={Messages("ui.metadata.modification")} value={format(parse(fsNode.modification), dateFormat)} />
         </>
       )
     }
@@ -74,7 +76,7 @@ function ImageMetadataComponent(metadata: ImageMetadata) {
       {!!metadata.height ? <FsMetadata label={Messages("ui.metadata.height")} value={`${metadata.height} px`} /> : null}
       {!!metadata.maker ? <FsMetadata label={Messages("ui.metadata.maker")} value={metadata.maker} /> : null}
       {!!metadata.model ? <FsMetadata label={Messages("ui.metadata.model")} value={metadata.model} /> : null}
-      {!!metadata.datetime ? <FsMetadata label={Messages("ui.metadata.datetime")} value={metadata.datetime} /> : null}
+      {!!metadata.datetime ? <FsMetadata label={Messages("ui.metadata.datetime")} value={format(parse(metadata.datetime), dateFormat)} /> : null}
     </>
   )
 }
@@ -87,8 +89,13 @@ function PDFMetadataComponent(metadata: PDFDocumentMetadata) {
       {!!metadata.creator ? <FsMetadata label={Messages("ui.metadata.creator")} value={metadata.creator} /> : null}
       {!!metadata.producer ? <FsMetadata label={Messages("ui.metadata.producer")} value={`${metadata.producer}`} /> : null}
       {!!metadata.pageCount ? <FsMetadata label={Messages("ui.metadata.pageCount")} value={`${metadata.pageCount}`} /> : null}
-      {!!metadata.creationDate ? <FsMetadata label={Messages("ui.metadata.creationDate")} value={`${metadata.creationDate}`} /> : null}
-      {!!metadata.modificationDate ? <FsMetadata label={Messages("ui.metadata.modificationDate")} value={`${metadata.modificationDate}`} /> : null}
+      {!!metadata.creationDate
+        ? <FsMetadata label={Messages("ui.metadata.creationDate")} value={format(parse(metadata.creationDate), dateFormat)} />
+        : null
+      }
+      {!!metadata.modificationDate
+        ? <FsMetadata label={Messages("ui.metadata.modificationDate")} value={format(parse(metadata.modificationDate), dateFormat)} />
+      : null}
     </>
   )
 }
