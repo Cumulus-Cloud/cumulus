@@ -30,7 +30,8 @@ export function fromFileList(filesList: FileList, directory: FsDirectory): FileT
       name: file.name,
       progress: 0,
       file,
-      directory
+      directory,
+      cipher: "AES",
     } as FileToUpload
   })
 }

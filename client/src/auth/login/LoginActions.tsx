@@ -1,4 +1,3 @@
-import { User } from "models/User"
 import { ApiError } from "services/Api"
 import { Action } from "redux"
 
@@ -26,10 +25,9 @@ export const loginSubmit = (login: string, password: string): LoginSubmit => ({ 
 
 export interface LoginSubmitSuccess extends Action {
   type: "LoginSubmitSuccess"
-  user: User
 }
-export function loginOnSubmitSuccess(user: User): LoginSubmitSuccess {
-  return { type: "LoginSubmitSuccess", user }
+export function loginOnSubmitSuccess(): LoginSubmitSuccess {
+  return { type: "LoginSubmitSuccess" }
 }
 
 export interface LoginSubmitError extends Action {

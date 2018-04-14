@@ -13,11 +13,12 @@ import {
   onSharingSuccess,
   onSharingError,
   SharingError,
-  DeleteFsNodeError
+  DeleteFsNodeError,
+  FileSystemAction
 } from "files/fileSystem/FileSystemActions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 
-export const fetchDirectoryEpic: Epic<any, GlobalState> = (action$: ActionsObservable<FetchDirectory>) => {
+export const fetchDirectoryEpic: Epic<FileSystemAction, GlobalState> = (action$: ActionsObservable<FetchDirectory>) => {
   return action$
     .ofType("FetchDirectory")
     .mergeMap(action =>
@@ -33,7 +34,7 @@ export const fetchDirectoryErrorEpic: Epic<any, GlobalState> = (action$: Actions
     .map(action => showApiErrorNotif(action.error))
 }
 
-export const onDeleteFsNodeEpic: Epic<any, GlobalState> = (action$: ActionsObservable<DeleteFsNode>) => {
+export const onDeleteFsNodeEpic: Epic<FileSystemAction, GlobalState> = (action$: ActionsObservable<DeleteFsNode>) => {
   return action$
     .ofType("DeleteFsNode")
     .mergeMap(action =>
@@ -49,7 +50,7 @@ export const onDeleteFsNodeErrorEpic: Epic<any, GlobalState> = (action$: Actions
     .map(action => showApiErrorNotif(action.error))
 }
 
-export const sharingEpic: Epic<any, GlobalState> = (action$: ActionsObservable<Sharing>) => {
+export const sharingEpic: Epic<FileSystemAction, GlobalState> = (action$: ActionsObservable<Sharing>) => {
   return action$
     .ofType("Sharing")
     .mergeMap(action =>

@@ -14,14 +14,15 @@ const initState: SignupState = {
   email: "",
   password: "",
   loading: false,
+  formErrors: undefined
 }
 
 export const SignupReducer = (state: SignupState = initState, action: SignupAction) => {
   switch (action.type) {
     case "SignupChange": return { ...state, [action.field]: action.value }
     case "SignupSubmit": return { ...state, loading: true, formErrors: {} }
-    case "SignupSubmitSuccess": return { ...state, loading: false, login: "", email: "", password: "" }
     case "SignupSubmitError": return { ...state, formErrors: action.error, loading: false }
+    case "SignupSubmitSuccess": return initState
     default: return state
   }
 }

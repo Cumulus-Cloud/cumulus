@@ -12,3 +12,8 @@
   display: flex;
   justify-content: space-between;
 }
+
+.rightActions {
+  display: flex;
+  flex-direction: row;
+}

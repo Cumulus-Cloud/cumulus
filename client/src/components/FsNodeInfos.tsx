@@ -1,7 +1,9 @@
 import * as React from "react"
 import * as styles from "./FsNodeInfos.css"
 import * as Api from "services/Api"
-import { FsNode, isFile } from "models/FsNode"
+import {
+  FsNode, isFile, ImageMetadata, isImageMetadata, PDFDocumentMetadata, isPDFDocumentMetadata, DefaultMetadata, isDefaultMetadata
+} from "models/FsNode"
 import CloseIcon from "icons/CloseIcon"
 import IconButton from "components/buttons/IconButton"
 import FsMetadata from "components/FsMetadata"
@@ -47,6 +49,9 @@ export default class FsNodeInfo extends React.PureComponent<Props> {
           <FsMetadata label={Messages("ui.metadata.hash")} value={fsNode.hash} />
           <FsMetadata label={Messages("ui.metadata.creation")} value={distanceInWordsToNow(parse(fsNode.creation))} />
           <FsMetadata label={Messages("ui.metadata.modification")} value={distanceInWordsToNow(parse(fsNode.modification))} />
+          {isImageMetadata(fsNode.metadata) ? ImageMetadataComponent(fsNode.metadata) : null}
+          {isPDFDocumentMetadata(fsNode.metadata) ? PDFMetadataComponent(fsNode.metadata) : null}
+          {isDefaultMetadata(fsNode.metadata) ? DefaultMetadataComponent(fsNode.metadata) : null}
         </>
       )
     } else {
@@ -60,4 +65,37 @@ export default class FsNodeInfo extends React.PureComponent<Props> {
   }
 
   handleOnHideFsNodeInfos = () => this.props.onHideFsNodeInfos()
+}
+
+function ImageMetadataComponent(metadata: ImageMetadata) {
+  return (
+    <>
+      {!!metadata.width ? <FsMetadata label={Messages("ui.metadata.width")} value={`${metadata.width} px`} /> : null}
+      {!!metadata.height ? <FsMetadata label={Messages("ui.metadata.height")} value={`${metadata.height} px`} /> : null}
+      {!!metadata.maker ? <FsMetadata label={Messages("ui.metadata.maker")} value={metadata.maker} /> : null}
+      {!!metadata.model ? <FsMetadata label={Messages("ui.metadata.model")} value={metadata.model} /> : null}
+      {!!metadata.datetime ? <FsMetadata label={Messages("ui.metadata.datetime")} value={metadata.datetime} /> : null}
+    </>
+  )
+}
+
+function PDFMetadataComponent(metadata: PDFDocumentMetadata) {
+  return (
+    <>
+      {!!metadata.title ? <FsMetadata label={Messages("ui.metadata.title")} value={`${metadata.title}`} /> : null}
+      {!!metadata.author ? <FsMetadata label={Messages("ui.metadata.author")} value={metadata.author} /> : null}
+      {!!metadata.creator ? <FsMetadata label={Messages("ui.metadata.creator")} value={metadata.creator} /> : null}
+      {!!metadata.producer ? <FsMetadata label={Messages("ui.metadata.producer")} value={`${metadata.producer}`} /> : null}
+      {!!metadata.pageCount ? <FsMetadata label={Messages("ui.metadata.pageCount")} value={`${metadata.pageCount}`} /> : null}
+      {!!metadata.creationDate ? <FsMetadata label={Messages("ui.metadata.creationDate")} value={`${metadata.creationDate}`} /> : null}
+      {!!metadata.modificationDate ? <FsMetadata label={Messages("ui.metadata.modificationDate")} value={`${metadata.modificationDate}`} /> : null}
+    </>
+  )
+}
+
+function DefaultMetadataComponent(metadata: DefaultMetadata) {
+  return (
+    <>
+    </>
+  )
 }

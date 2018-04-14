@@ -2,10 +2,8 @@
   "compilerOptions": {
     "jsx": "react",
     "target": "es5",
-    "strict": true,
     "noUnusedLocals": true,
     "sourceMap": true,
-    "noImplicitAny": true,
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
@@ -14,7 +12,11 @@
         "src/*"
       ]
     },
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true
   },
   "include": [
     "./src/**/*"

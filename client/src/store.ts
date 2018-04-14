@@ -32,13 +32,10 @@ const middleware = routerMiddleware(history)
 const epicMiddleware = createEpicMiddleware(RootEpic)
 
 const reducers = combineReducers({
-  // tslint:disable-next-line:no-any
-  login: LoginReducer as any,
-  // tslint:disable-next-line:no-any
-  signup: SignupReducer as any,
+  login: LoginReducer,
+  signup: SignupReducer,
   newFolder: NewFolderReducer,
-  // tslint:disable-next-line:no-any
-  upload: UploadReducer as any,
+  upload: UploadReducer,
   fileSystem: FileSystemReducer,
   search: SearchReducer,
   move: MoveReducer,
