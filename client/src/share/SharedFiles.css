@@ -1,0 +1,18 @@
+.sharedFiles {
+  display: flex;
+  flex-direction: row;
+}
+
+.mainContainer {
+  flex: 1;
+}
+
+.filesContainer {
+  display: flex;
+  flex-direction: row;
+}
+
+.content {
+  flex: 1;
+  padding: 10px
+}

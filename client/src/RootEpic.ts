@@ -8,6 +8,7 @@ import { createNewFolderEpics } from "files/newFolder/NewFolderEpics"
 import { renameEpics } from "files/rename/RenameEpics"
 import { searchEpics } from "files/search/SearchEpics"
 import { uploadEpics } from "files/upload/UploadEpics"
+import { sharedFilesEpics } from "share/SharedFilesEpics"
 
 const RootEpic = combineEpics(
   loginEpics,
@@ -19,6 +20,7 @@ const RootEpic = combineEpics(
   searchEpics,
   uploadEpics,
   hideInAppNotifEpics,
+  sharedFilesEpics
 )
 
 export default RootEpic

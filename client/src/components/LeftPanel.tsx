@@ -17,6 +17,9 @@ export default class LeftPanel extends React.PureComponent<{}> {
           <li className={styles.menuitem}>
             <a className={activeStyle} href="#/fs/">{Messages("ui.myserver")}</a>
           </li>
+          <li className={styles.menuitem}>
+            <a className={styles.link} href="#/shared">{Messages("ui.sharedFiles")}</a>
+          </li>
           {/* <li className={styles.menuitem}><a className={styles.link}>Other Servers</a></li>
           <li className={styles.menuitem}><a className={styles.link}>Shared with me</a></li>
           <li className={styles.menuitem}><a className={styles.link}>Recent</a></li>

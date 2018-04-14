@@ -17,6 +17,7 @@ import { ConnectedRouter } from "react-router-redux"
 import LoginContainer from "auth/login/LoginContainer"
 import SignupContainer from "auth/signup/SignupContainer"
 import FileSystemContainer from "files/fileSystem/FileSystemContainer"
+import SharedFiles from "share/SharedFiles"
 import { store, history } from "store"
 
 ReactDOM.render(
@@ -27,6 +28,7 @@ ReactDOM.render(
         <Route exact path="/fs/*" component={FileSystemContainer} />
         <Route exact path="/login" component={LoginContainer} />
         <Route exact path="/signup" component={SignupContainer} />
+        <Route exact path="/shared" component={SharedFiles} />
       </Switch>
     </ConnectedRouter>
   </Provider>,

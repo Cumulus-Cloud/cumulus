@@ -12,6 +12,7 @@ import { SearchState, SearchReducer } from "files/search/SearchReducer"
 import { MoveState, MoveReducer } from "files/move/MoveReducer"
 import { RenameState, RenameReducer } from "files/rename/RenameReducer"
 import { InAppNotifState, InAppNotifReducer } from "inAppNotif/InAppNotifReducer"
+import { SharedFilesState, SharedFilesReducer } from "share/SharedFilesReducer"
 import RootEpic from "RootEpic"
 
 export interface GlobalState {
@@ -24,6 +25,7 @@ export interface GlobalState {
   move: MoveState
   rename: RenameState
   inAppNotif: InAppNotifState
+  sharedFiles: SharedFilesState
   router: Reducer<RouterState>
 }
 
@@ -41,6 +43,7 @@ const reducers = combineReducers({
   move: MoveReducer,
   rename: RenameReducer,
   inAppNotif: InAppNotifReducer,
+  sharedFiles: SharedFilesReducer,
   router: routerReducer,
 })
 const enhancer = composeWithDevTools(

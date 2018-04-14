@@ -103,6 +103,13 @@ export function fetchDirectory(path: string): Promise<FsDirectory> {
   }).then(success(FsNodeValidator))
 }
 
+export function fetchSharedFiles(): Promise<FsNode[]> {
+  return withAuth(`/api/sharings/`, {
+    method: "GET",
+    headers: HEADERS,
+  }).then(success(FsNodeValidator))
+}
+
 export function move(source: string, to: string): Promise<FsNode> {
   return withAuth(`/api/fs${encodeURI(source)}`, {
     method: "POST",
