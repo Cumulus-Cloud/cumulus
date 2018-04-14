@@ -18,7 +18,8 @@
   },
   "scripts": {
     "build": "parcel build src/main.tsx --out-dir ../server/public --public-url assets",
-    "watch": "parcel watch src/main.tsx --out-dir ../server/public --public-url assets",
+    "watch": "parcel watch src/main.tsx --out-dir ../server/public --public-url assets --no-hmr",
+    "watch-hot": "parcel watch src/main.tsx --out-dir ../server/public --public-url assets",
     "test": "echo 'soon'"
   },
   "dependencies": {
