@@ -5,7 +5,7 @@ import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvide
 import com.typesafe.config.Config
 import controllers.AssetsComponents
 import io.cumulus.controllers.utils.{Assets, LoggingFilter}
-import io.cumulus.controllers.{FileSystemController, HomeController, SharingController, UserController}
+import io.cumulus.controllers.{SharingManagementController, _}
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.HttpErrorHandler
 import io.cumulus.core.persistence.CumulusDB
@@ -88,6 +88,7 @@ class CumulusComponents(
     homeController,
     userController,
     fsController,
+    sharingManagementController,
     sharingController,
     assetController
   )
@@ -130,11 +131,12 @@ class CumulusComponents(
   lazy val sharingService: SharingService = new SharingService(userStore, fsNodeStore, sharingStore)
 
   // Controllers
-  lazy val homeController: HomeController       = new HomeController(controllerComponents)
-  lazy val userController: UserController       = new UserController(controllerComponents, userService)
-  lazy val fsController: FileSystemController   = new FileSystemController(controllerComponents, fsNodeService, storageService, sharingService)
-  lazy val sharingController: SharingController = new SharingController(controllerComponents, sharingService, storageService)
-  lazy val assetController: Assets              = new Assets(context.environment, assetsMetadata, httpErrorHandler, jsMessageFactory.all, controllerComponents)
+  lazy val homeController: HomeController                           = new HomeController(controllerComponents)
+  lazy val userController: UserController                           = new UserController(controllerComponents, userService)
+  lazy val fsController: FileSystemController                       = new FileSystemController(controllerComponents, fsNodeService, storageService, sharingService)
+  lazy val sharingController: SharingController                     = new SharingController(controllerComponents, sharingService, storageService)
+  lazy val sharingManagementController: SharingManagementController = new SharingManagementController(controllerComponents, sharingService)
+  lazy val assetController: Assets                                  = new Assets(context.environment, assetsMetadata, httpErrorHandler, jsMessageFactory.all, controllerComponents)
 
   // Actors
   lazy val chunkRemover: ActorRef = actorSystem.actorOf(ChunkRemover.props(storageEngines), "ChunkRemover")
