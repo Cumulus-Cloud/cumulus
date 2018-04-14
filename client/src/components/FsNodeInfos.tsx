@@ -15,7 +15,7 @@ interface Props {
   onHideFsNodeInfos(): void
 }
 
-const dateFormat = "DD/MM/YYYY"
+const dateFormat = "HH:mm:ss DD/MM/YYYY"
 
 export default class FsNodeInfo extends React.PureComponent<Props> {
   render() {
