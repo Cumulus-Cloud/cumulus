@@ -77,7 +77,7 @@ case class Directory(
   hidden: Boolean,
   owner: UUID,
   permissions: Seq[Permission],
-  content: Seq[FsNode]
+  content: Seq[FsNode] // TODO pagination here
 ) extends FsNode {
 
   def modified(now: LocalDateTime): Directory =

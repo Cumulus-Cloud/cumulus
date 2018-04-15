@@ -5,9 +5,9 @@ import scala.concurrent.Future
 
 import io.cumulus.core.Logging
 import io.cumulus.core.persistence.CumulusDB
-import io.cumulus.core.persistence.query.{QueryBuilder, QueryE}
+import io.cumulus.core.persistence.query.{QueryBuilder, QueryE, QueryPagination}
 import io.cumulus.core.utils.Crypto._
-import io.cumulus.core.utils.{Base16, Crypto}
+import io.cumulus.core.utils.{Base16, Crypto, PaginatedList}
 import io.cumulus.core.validation.AppError
 import io.cumulus.models._
 import io.cumulus.models.fs.{Directory, File, FsNode}
@@ -64,19 +64,34 @@ class SharingService(
   }.commit()
 
   /**
+    * Lists all the sharings of an user.
+    *
+    * @param pagination The pagination of the results.
+    * @param user The user performing the operation.
+    */
+  def listAllSharings(
+    pagination: QueryPagination
+  )(implicit user: User): Future[Either[AppError, PaginatedList[SharingInfo]]] = {
+    QueryE.lift(sharingStore.findInfoByUser(user, pagination)).run()
+  }
+
+  /**
     * Lists all the sharings of the node.
     *
     * @param path The path of the node.
     * @param user The user performing the operation.
     */
-  def listSharings(path: Path)(implicit user: User): Future[Either[AppError, Seq[Sharing]]] = {
+  def listSharings(
+    path: Path,
+    pagination: QueryPagination
+  )(implicit user: User): Future[Either[AppError, PaginatedList[Sharing]]] = {
 
     for {
       // Find the node
       node <- QueryE.getOrNotFound(fsNodeStore.findByPathAndUser(path, user))
 
       // Find all the sharing of this node
-      sharings <- QueryE.lift(sharingStore.findByNode(node))
+      sharings <- QueryE.lift(sharingStore.findByNode(node, pagination))
 
     } yield sharings
 
@@ -90,13 +105,13 @@ class SharingService(
     */
   def findSharing(
     reference: String
-  )(implicit user: User): Future[Either[AppError, Sharing]] = {
+  )(implicit user: User): Future[Either[AppError, SharingInfo]] = {
 
     for {
       // Get the sharing
-      sharing <- QueryE.getOrNotFound(sharingStore.findAndLockBy(SharingStore.referenceField, reference))
-      _       <- QueryE.pure(checkUserCredentials(sharing, user))
-    } yield sharing
+      sharingInfo <- QueryE.getOrNotFound(sharingStore.findInfoByReference(reference))
+      _           <- QueryE.pure(checkUserCredentials(sharingInfo.sharing, user))
+    } yield sharingInfo
 
   }.commit()
 
@@ -215,7 +230,7 @@ class SharingService(
     reference: String,
     path: Path,
     secretCode: String
-  ) = {
+  ): QueryE[CumulusDB, (Sharing, User, FsNode)] = {
 
     for {
       // Find the sharing used

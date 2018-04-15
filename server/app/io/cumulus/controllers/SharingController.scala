@@ -25,7 +25,6 @@ class SharingController(
 
   /**
     * Gets a sharing for an unauthenticated user.
-    *
     * @param path The paths within the sharing, '/' for the root element.
     * @param reference The reference of the sharing.
     * @param key The unique cipher key of the sharing.
@@ -43,7 +42,6 @@ class SharingController(
 
   /**
     * Downloads the root element of the sharing.
-    *
     * @param reference The reference of the sharing.
     * @param name The name of the sharing, only used for display.
     * @param key The unique cipher key of the sharing.
@@ -54,7 +52,6 @@ class SharingController(
 
   /**
     * Downloads a shared file for an unauthenticated user.
-    *
     * @param path The paths within the sharing, '/' for the root element.
     * @param reference The reference of the sharing.
     * @param key The unique cipher key of the sharing.
