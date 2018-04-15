@@ -50,7 +50,6 @@ class FileSystemController(
 
   /**
     * Search through the filesystem.
-    *
     * @param path Root element for the search. Use '/' to search in the whole filesystem.
     * @param name Name to look for. Approximation are allowed.
     * @param nodeType The optional type of node to look for.
@@ -60,7 +59,7 @@ class FileSystemController(
     */
   def search(path: Path, name: String, nodeType: Option[FsNodeType], mimeType: Option[String], limit: Option[Int], offset: Option[Int]): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
-      ApiResponse {
+      ApiResponse.paginated {
         val pagination = QueryPagination(limit, offset)
 
         fsNodeService.searchNodes(path, name, nodeType, mimeType, pagination)
@@ -69,7 +68,6 @@ class FileSystemController(
 
   /**
     * Downloads the file by its path.
-    *
     * @param path The path of the file to download.
     * @param forceDownload True to force the download, otherwise content will be opened directly in the browser.
     */
@@ -99,7 +97,6 @@ class FileSystemController(
 
   /**
     * Download a file's thumbnail.
-    *
     * @param path The path of the file.
     * @param forceDownload True to force the download, otherwise content will be opened directly in the browser.
     */
@@ -136,7 +133,6 @@ class FileSystemController(
 
   /**
     * Upload a new file.
-    *
     * @param path The path of the new file.
     * @param cipherName The cipher to use.
     * @param compressionName The compression to use.
@@ -158,7 +154,6 @@ class FileSystemController(
 
   /**
     * Create a new directory.
-    *
     * @param path The path of the new directory.
     */
   def create(path: Path): Action[AnyContent] =
@@ -171,7 +166,6 @@ class FileSystemController(
 
   /**
     * Update a file.
-    *
     * @param path The file to update.
     */
   def update(path: Path): Action[FsOperation] =
@@ -204,7 +198,6 @@ class FileSystemController(
 
   /**
     * Delete a file by its path.
-    *
     * @param path The path of the file to delete.
     */
   def delete(path: Path): Action[AnyContent] =
