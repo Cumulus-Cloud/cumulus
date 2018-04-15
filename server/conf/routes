@@ -15,7 +15,8 @@ POST    /api/fs*path                  io.cumulus.controllers.FileSystemControlle
 DELETE  /api/fs*path                  io.cumulus.controllers.FileSystemController.delete(path: Path)
 
 # API - Sharing manager (authenticated side)
-GET     /api/sharings/fs*path         io.cumulus.controllers.SharingManagementController.list(path: Path)
+GET     /api/sharings                 io.cumulus.controllers.SharingManagementController.all(limit: Option[Int], offset: Option[Int])
+GET     /api/sharings/fs*path         io.cumulus.controllers.SharingManagementController.list(path: Path, limit: Option[Int], offset: Option[Int])
 GET     /api/sharings/:ref            io.cumulus.controllers.SharingManagementController.get(ref: String)
 DELETE  /api/sharings/:ref            io.cumulus.controllers.SharingManagementController.delete(ref: Path)
 

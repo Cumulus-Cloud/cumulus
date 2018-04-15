@@ -33,7 +33,7 @@ class FsNodeService(
 
     for {
       // Find the node
-      node <- find(path, QueryPagination(0))
+      node <- find(path, QueryPagination.empty)
 
       // Check if the node is a file
       file <- QueryE.pure {
@@ -102,7 +102,7 @@ class FsNodeService(
                 pagination = contentPagination,
                 ordering = FsNodeOrdering.of(OrderByNodeType, OrderByFilenameAsc)
               )
-            }.map(c => directory.copy(content = c))
+            }.map(c => directory.copy(content = c.items))
           case other: FsNode =>
             QueryE.pure(other)
         }
@@ -241,7 +241,7 @@ class FsNodeService(
       node <- getNodeWithLock(path)
 
       // Check that no children element exists
-      _ <- QueryE(fsNodeStore.findContainedByPathAndUser(path, user, QueryPagination(1)).map {
+      _ <- QueryE(fsNodeStore.findContainedByPathAndUser(path, user, QueryPagination.first).map {
         case contained if contained.nonEmpty =>
           Left(AppError.validation("validation.fs-node.non-empty", path))
         case _ =>

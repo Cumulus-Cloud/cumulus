@@ -7,6 +7,8 @@ import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.anorm.AnormSupport._
 import io.cumulus.core.persistence.anorm.{AnormPKOperations, AnormRepository, AnormSupport}
 import io.cumulus.core.persistence.query._
+import io.cumulus.core.utils.PaginatedList
+import io.cumulus.core.utils.PaginatedList._
 import io.cumulus.models.fs.{Directory, FsNode}
 import io.cumulus.models.{Path, User}
 import io.cumulus.persistence.stores.FsNodeStore._
@@ -54,13 +56,14 @@ class FsNodeStore(
     user: User,
     pagination: QueryPagination,
     ordering: Ordering = FsNodeOrdering.empty
-  ): Query[CumulusDB, Seq[FsNode]] = {
+  ): Query[CumulusDB, PaginatedList[FsNode]] = {
     // Match directory starting by the location, but only on the direct level
     val regex = if (path.isRoot) "^/[^/]+$" else s"^${path.toString}/[^/]+$$"
 
     qb { implicit c =>
       SQL"SELECT #$metadataField FROM #$table WHERE #$ownerField = ${user.id} AND #$pathField ~ $regex #${ordering.toORDER} #${pagination.toLIMIT}"
         .as(rowParser.*)
+        .toPaginatedList(pagination.offset)
     }
   }
 

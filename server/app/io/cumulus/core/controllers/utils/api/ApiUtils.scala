@@ -4,6 +4,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import cats.data.EitherT
 import io.cumulus.core.Logging
+import io.cumulus.core.utils.PaginatedList
 import io.cumulus.core.validation.{AppError, GlobalError, ValidationError}
 import play.api.i18n.I18nSupport
 import play.api.libs.json._
@@ -105,6 +106,26 @@ trait ApiUtils extends Logging with I18nSupport {
     ): Future[Result] = {
       result
         .map(toResult[R])
+        .recover {
+          case e =>
+            logger.error("Error while processing request", e)
+            ApiErrors.internalServerError.toResult
+        }
+    }
+
+    /**
+      * Avoid issue with the wrong default writer selected for paginated lists..
+      */
+    def paginated[REQUEST <: Request[_], T](
+      result: Future[Either[AppError, PaginatedList[T]]]
+    )(
+      implicit
+      request: REQUEST,
+      writes: Writes[T],
+      ec: ExecutionContext
+    ): Future[Result] = {
+      result
+        .map(toResult[PaginatedList[T]](_)(request, PaginatedList.writer[T]))
         .recover {
           case e =>
             logger.error("Error while processing request", e)
