@@ -27,7 +27,7 @@
     "es6-promise": "4.2.4",
     "es6-shim": "0.35.3",
     "history": "4.7.2",
-    "react": "16.3.1",
+    "react": "16.3.2",
     "react-dnd": "2.6.0",
     "react-dnd-html5-backend": "2.6.0",
     "react-dom": "16.3.1",
