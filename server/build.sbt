@@ -37,20 +37,18 @@ lazy val cumulusServer = project
     routesGeneratorClass := InjectedRoutesGenerator,
 
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-akka-http-server" % "2.6.13",
-      //"com.typesafe.play" %% "twirl-api" % "1.3.15",
-      "com.typesafe.play" %% "play-ws" % "2.6.13",
-      "com.typesafe.play" %% "play-json" % "2.6.9",
-      "com.typesafe.play" %% "play-logback" % "2.6.13",
-      "com.typesafe.play" %% "play-jdbc" % "2.6.13",
+      // Play server
+      akkaHttpServer,
       javaCore,
-
-        //ws,
+      ws,
+      // Logging
+      logback,
       // i18n
       Dependencies.jsMessages.core,
       Dependencies.i18nHocon.core,
       // Persistence
-      //jdbc,
+      jdbc,
+      evolutions,
       //evolutions,
       Dependencies.postgresql.core,
       Dependencies.anorm.core,

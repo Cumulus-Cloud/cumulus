@@ -1,121 +1,58 @@
-import scala.concurrent.{ExecutionContextExecutor, Future}
+package io.cumulus
+
+import scala.concurrent.ExecutionContextExecutor
 
 import akka.actor.ActorRef
+import akka.stream.{ActorMaterializer, Materializer}
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.typesafe.config.Config
-import controllers.AssetsComponents
+import controllers._
 import io.cumulus.controllers.utils.{Assets, LoggingFilter}
-import io.cumulus.controllers.{SharingManagementController, _}
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.HttpErrorHandler
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.QueryBuilder
 import io.cumulus.persistence.services.{FsNodeService, SharingService, StorageService, UserService}
-import io.cumulus.persistence.storage._
 import io.cumulus.persistence.storage.engines.LocalStorage
+import io.cumulus.persistence.storage.{ChunkRemover, StorageEngines}
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore, UserStore}
 import io.cumulus.stages._
 import jsmessages.JsMessagesFactory
-import play.BuiltInComponents
-import play.api.{BuiltInComponentsFromContext, _}
+import play.api
+import play.api._
+import play.api.db.evolutions.EvolutionsComponents
 import play.api.db.{DBComponents, Database, HikariCPComponents}
 import play.api.i18n.MessagesApi
 import play.api.libs.mailer.MailerComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
-import play.api.routing.Router
-import play.api.routing.sird._
-import play.api.mvc._
-import play.api.mvc._
-import play.api.routing.sird._
-import play.controllers.AssetsComponents
-import play.core.server.{AkkaHttpServer, AkkaHttpServerComponents}
-import play.libs.ws.ahc.AhcWSComponents
+import _root_.controllers.AssetsComponents
+import play.core.server.AkkaHttpServerComponents
 
-
-class CumulusApp extends App {
-
-  val routesURI = app.classloader.getResource("routes").toURI
-  val parsedRoutes = RoutesFileParser.parse(new File(routesURI))
-  println(parsedRoutes)
-
-  val components =
-    new AkkaHttpServerComponents with BuiltInComponents with HoconI18nComponents with AssetsComponents with AhcWSComponents with DBComponents with HikariCPComponents {
-
-
-
-    }
-
-
-    /*
-
-    val server = AkkaHttpServer.fromRouterWithComponents() { components =>
-    import Results._
-    import components.{ defaultActionBuilder => Action }
-    {
-      case GET(p"/hello/$to") => Action {
-        Ok(s"Hello $to")
-      }
-      case GET(p"/stop") => Action {
-        Ok(s"OK")
-      }
-    }
-  }*/
-
-}
+import router.Routes
 
 /**
-  * Application compile time loader.
+  * Create an embed (programmatically managed) play server using the Cumulus web app components and a default context.
   */
+class CumulusServer extends AkkaHttpServerComponents {
+  val application: api.Application = {
+    // Create the default context of the application
+    val context: ApplicationLoader.Context = ApplicationLoader.createContext(Environment.simple())
 
-/*
-class CumulusLoader extends ApplicationLoader {
-
-  def test = {
-
-    val server = AkkaHttpServer.fromRouterWithComponents() { components =>
-      import Results._
-      import components.{ defaultActionBuilder => Action }
-      {
-        case GET(p"/hello/$to") => Action {
-          Ok(s"Hello $to")
-        }
-      }
-    }
-
-  }
-
-  def load(context: ApplicationLoader.Context): Application = {
+    // Init the logger
     LoggerConfigurator(context.environment.classLoader).foreach {
       _.configure(context.environment)
     }
 
-    println("Starting the app")
-    val app = new CumulusComponents(context).application
-
-    import scala.concurrent.ExecutionContext.Implicits.global
-
-    Future {
-      Thread.sleep(5000)
-      println("Stopping the app")
-
-      Play.stop(app)
-      app.stop().map { _ =>
-        println("App stopped")
-
-        val newApp = new CumulusComponents(context).application
-        Play.start(newApp)
-
-      }
-    }
-
-    println("App started")
-    app
+    // Instantiate all the components of the application
+    new CumulusComponents(context).application
   }
+}
 
-}*/
-
-/*
+/**
+  * Create the components of the Cumulus web application.
+  * @param context The context of the app.
+  */
 class CumulusComponents(
   context: ApplicationLoader.Context
 ) extends BuiltInComponentsFromContext(context)
@@ -124,9 +61,8 @@ class CumulusComponents(
   with AhcWSComponents
   with DBComponents
   with HikariCPComponents
-  with MailerComponents {
-
-  // with EvolutionsComponents { TODO
+  with MailerComponents
+  with EvolutionsComponents {
 
   // List of supported ciphers
   implicit val ciphers = Ciphers(Seq(
@@ -156,17 +92,17 @@ class CumulusComponents(
     LocalStorage
   ))
 
-
-
-  lazy val router: Router = new Routes(
-    httpErrorHandler,
-    homeController,
-    userController,
-    fsController,
-    sharingManagementController,
-    sharingController,
-    assetController
-  )
+  // Compile time generated router
+  lazy val router =
+    new Routes(
+      httpErrorHandler,
+      homeController,
+      userController,
+      fsController,
+      sharingManagementController,
+      sharingController,
+      assetController
+    )
 
   // Configurations
   implicit lazy val playConfig: Configuration = configuration
@@ -184,6 +120,8 @@ class CumulusComponents(
   implicit val defaultEc: ExecutionContextExecutor = actorSystem.dispatcher
   val databaseEc: ExecutionContextExecutor         = actorSystem.dispatchers.lookup("db-context")
   val tasksEc: ExecutionContextExecutor            = actorSystem.dispatchers.lookup("task-context")
+
+  override implicit lazy val materializer: Materializer = ActorMaterializer()(actorSystem)
 
   // Override messagesApi to use Hocon config
   override lazy val messagesApi: MessagesApi = new HoconMessagesApiProvider(environment, configuration, langs, httpConfiguration).get
@@ -206,7 +144,7 @@ class CumulusComponents(
   lazy val sharingService: SharingService = new SharingService(userStore, fsNodeStore, sharingStore)
 
   // Controllers
-  lazy val homeController: HomeController                           = new HomeController(controllerComponents)
+  lazy val homeController: HomeController                           = new HomeController(controllerComponents, actorSystem.scheduler)
   lazy val userController: UserController                           = new UserController(controllerComponents, userService)
   lazy val fsController: FileSystemController                       = new FileSystemController(controllerComponents, fsNodeService, storageService, sharingService)
   lazy val sharingController: SharingController                     = new SharingController(controllerComponents, sharingService, storageService)
@@ -217,4 +155,3 @@ class CumulusComponents(
   lazy val chunkRemover: ActorRef = actorSystem.actorOf(ChunkRemover.props(storageEngines), "ChunkRemover")
 
 }
-*/
