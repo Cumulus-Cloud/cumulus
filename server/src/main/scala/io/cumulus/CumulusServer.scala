@@ -27,7 +27,7 @@ import play.api.libs.mailer.MailerComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
 import _root_.controllers.AssetsComponents
-import play.core.server.AkkaHttpServerComponents
+import play.core.server.{AkkaHttpServerComponents, ServerConfig}
 
 import router.Routes
 
@@ -35,9 +35,30 @@ import router.Routes
   * Create an embed (programmatically managed) play server using the Cumulus web app components and a default context.
   */
 class CumulusServer extends AkkaHttpServerComponents {
+
+  val env = Environment.simple()
+
+  val port    = Configuration.load(env).get[Int]("play.http.port")
+  val address = Configuration.load(env).get[String]("play.http.address")
+  val modeRaw = Configuration.load(env).get[String]("play.http.mode")
+
+  val mode = modeRaw.toUpperCase match {
+    case "DEV"  => Mode.Dev
+    case "TEST" => Mode.Test
+    case "PROD" => Mode.Prod
+    case _      => throw new Exception(s"Invalid mode type '$modeRaw' ; can only be 'DEV', 'TEST' or 'PROD'")
+  }
+
+  override lazy val serverConfig =
+    ServerConfig(
+      port = Some(port),
+      mode = mode,
+      address = address
+    )
+
   val application: api.Application = {
     // Create the default context of the application
-    val context: ApplicationLoader.Context = ApplicationLoader.createContext(Environment.simple())
+    val context: ApplicationLoader.Context = ApplicationLoader.createContext(env)
 
     // Init the logger
     LoggerConfigurator(context.environment.classLoader).foreach {
