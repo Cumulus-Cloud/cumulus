@@ -1,8 +1,3 @@
-import org.scalatestplus.play.FakeApplicationFactory
-import play.api._
-import play.api.inject.DefaultApplicationLifecycle
-import play.core.DefaultWebCommands
-
 trait CumulusAppTest extends FakeApplicationFactory {
 
   protected var cumulusComponents: CumulusComponents = _
@@ -22,4 +17,3 @@ trait CumulusAppTest extends FakeApplicationFactory {
   }
 
 }
-

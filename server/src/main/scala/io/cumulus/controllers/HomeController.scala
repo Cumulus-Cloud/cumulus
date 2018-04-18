@@ -22,15 +22,18 @@ class HomeController (
 ) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with BodyParserJson {
 
   def index = Action {
-    Ok(io.cumulus.views.html.index())
+    //Ok(io.cumulus.views.html.index())
+    Ok("ok")
   }
 
   def testLogin = Action {
-    Ok(io.cumulus.views.html.test.login())
+    //Ok(io.cumulus.views.html.test.login())
+    Ok("ok")
   }
 
   def test = AuthenticatedAction.withErrorHandler { implicit request =>
-    Ok(io.cumulus.views.html.test.index())
+    //Ok(io.cumulus.views.html.test.index())
+    Ok("ok")
   } { _: Request[_] =>
     Future.successful(Redirect(routes.HomeController.testLogin()))
   }

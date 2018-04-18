@@ -44,4 +44,4 @@ GET     /test/login                   io.cumulus.controllers.HomeController.test
 GET     /messages.js                  io.cumulus.controllers.utils.Assets.messages
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file                 io.cumulus.controllers.utils.Assets.versioned(path = "/public", file: controllers.Assets.Asset)
+GET     /assets/*file                 io.cumulus.controllers.utils.Assets.versioned(path = "/src/main/resources/public", file: controllers.Assets.Asset)

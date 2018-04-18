@@ -79,7 +79,7 @@ object Dependencies {
   object pdfbox {
     val version = "2.0.8"
 
-    val core = "org.apache.pdfbox" % "pdfbox" % version
+    val core = "org.apache.pdfbox" % "pdfbox" % version exclude("commons-logging", "commons-logging")
   }
 
 }

@@ -25,10 +25,33 @@ scalacOptions in ThisBuild := Seq(
   "-opt-inline-from"
 )
 
+lazy val commonSettings = Seq(
+  version := "0.1-SNAPSHOT",
+  organization := "io.cumulus",
+  scalaVersion := "2.12.4",
+  test in assembly := {}
+)
+
+assemblyMergeStrategy in assembly := {
+  case manifest if manifest.contains("MANIFEST.MF") =>
+    // We don't need manifest files since sbt-assembly will create
+    // one with the given settings
+    MergeStrategy.discard
+  case referenceOverrides if referenceOverrides.contains("reference-overrides.conf") =>
+    // Keep the content for all reference-overrides.conf files
+    MergeStrategy.concat
+  case x =>
+    // For all the other files, use the default sbt-assembly merge strategy
+    val oldStrategy = (assemblyMergeStrategy in assembly).value
+    oldStrategy(x)
+}
+
 lazy val cumulusServer = project
   .in(file("."))
+  .settings(commonSettings: _*)
   .settings(
     name := "cumulus-server",
+    mainClass in assembly := Some("io.cumulus.CumulusApp"),
 
     // Allow to use `Path` and `FsNodeType` in route
     routesAddImport += "io.cumulus.models.Path",
@@ -42,7 +65,7 @@ lazy val cumulusServer = project
       javaCore,
       ws,
       // Logging
-      logback,
+      //logback,
       // i18n
       Dependencies.jsMessages.core,
       Dependencies.i18nHocon.core,
