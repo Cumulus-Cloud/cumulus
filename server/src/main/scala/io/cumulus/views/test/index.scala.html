@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Cumulus Redex</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+        <h1>Cumulus Redux</h1>
+        <span>Path to show: </span>
+        <input id="path" type="text" value="/" />
+        <input id="show" type="button" value="Show" />
+        <input id="download" type="button" value="Download" />
+        <input id="delete" type="button" value="Del" />
+        <br/><hr />
+        <input id="create" type="button" value="Create new directory" />
+        <input id="upload" type="button" value="Upload file" />
+        <input id="file" type="file" />
+        <br/><hr />
+        <video width="320" height="240" controls="" src="/api/stream/videos/test.mkv"></video>
+
+        <pre id="content" >[No content]</pre>
+        <iframe id="downloader" style="display:none;"></iframe>
+        <div id="image"></div>
+    </body>
+    
+        <script
+        src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g="
+        crossorigin="anonymous"></script>
+        <script>
+            $(document).ready(() => {
+                // Show
+                $('#show').click(() => {
+                    const path = $('#path').val()
+    
+                    fetch(`/api/fs${path}`, {
+                        method: 'GET',
+                        credentials: "same-origin"
+                    }).then((response) => {
+                        return response.json()
+                    }).then((json) => {
+                        console.log(json)
+                        $('#content').text(JSON.stringify(json, null, 2))
+                    }).catch((err) => {
+                        console.log(err)
+                    })
+                })
+
+                // Download
+                $('#download').click(() => {
+                    const path = $('#path').val()
+                    if(path.endsWith('.jpg') || path.endsWith('.png')) {
+                        const img = $('<img>')
+                        img.attr('src', `/api/download${path}`)
+                        img.appendTo('#image')
+                    } else if (path.endsWith('.mkv') || path.endsWith('.webm') || path.endsWith('.mp4')) {
+                        const video = $('<video width="320" height="240" controls>')
+                        video.attr('src', `/api/stream${path}`)
+                        video.appendTo('#image')
+                    } else {
+                        $('#downloader').attr({ src : `/api/download${path}`})
+                    }
+                })
+
+                // Delete
+                $('#delete').click(() => {
+                    const path = $('#path').val()
+    
+                    fetch(`/api/fs${path}`, {
+                        method: 'DELETE',
+                        credentials: "same-origin"
+                    }).then((response) => {
+                        return response.json()
+                    }).then((json) => {
+                        console.log(json)
+                        $('#content').text(JSON.stringify(json, null, 2))
+                    }).catch((err) => {
+                        console.log(err)
+                    })
+                })
+
+                // Create
+                $('#create').click(() => {
+                    const path = prompt("Path of the directory: ")
+                    
+                    if(path != null) {
+                        fetch(`/api/fs${path}`, {
+                            method: 'PUT',
+                            credentials: "same-origin"
+                        }).then((response) => {
+                            return response.json()
+                        }).then((json) => {
+                            console.log(json)
+                            $('#content').text(JSON.stringify(json, null, 2))
+                        }).catch((err) => {
+                            console.log(err)
+                        })
+                    }
+                })
+
+                // Upload
+                $('#upload').click(() => {
+                    const path = prompt("Path of the file: ")
+                    const file = $('#file')[0].files[0]
+
+                    if(path && file) {
+                    
+                        var xhr = new XMLHttpRequest()
+                        xhr.open('POST', `/api/upload${path}`, true)
+
+                        xhr.addEventListener('error', (e) => {
+                            console.log("An error occurred while transferring the file")
+                        })
+                        xhr.addEventListener('abort', (e) => {
+                            console.log("The transfer has been canceled by the user")
+                        })
+                        xhr.addEventListener('load', (e) => {
+                            console.log("The transfer is complete")
+                        })
+                        xhr.addEventListener('progress', (e) => {
+                            if (e.lengthComputable) {
+                            console.log(e.loaded / e.total)
+                            }
+                        })
+
+                        xhr.send(file)
+                    }
+                })
+            })
+        </script>
+</html>

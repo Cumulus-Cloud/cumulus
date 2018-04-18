@@ -25,24 +25,35 @@ scalacOptions in ThisBuild := Seq(
   "-opt-inline-from"
 )
 
-// Removes twirl unused warnings
-TwirlKeys.templateImports := Seq()
-
 lazy val cumulusServer = project
   .in(file("."))
   .settings(
     name := "cumulus-server",
+
     // Allow to use `Path` and `FsNodeType` in route
-    routesImport += "io.cumulus.models.Path",
-    routesImport += "io.cumulus.models.fs.FsNodeType",
+    routesAddImport += "io.cumulus.models.Path",
+    routesAddImport += "io.cumulus.models.fs.FsNodeType",
+    routesFile := "routes",
+    routesGeneratorClass := InjectedRoutesGenerator,
+
     libraryDependencies ++= Seq(
-      ws,
+      "com.typesafe.play" %% "play-akka-http-server" % "2.6.13",
+      "com.typesafe.play" %% "twirl-api" % "1.3.15",
+      "com.typesafe.play" %% "play-ws" % "2.6.13",
+      "com.typesafe.play" %% "play-json" % "2.6.9",
+      "com.typesafe.play" %% "play-logback" % "2.6.13",
+      "com.typesafe.play" %% "play-jdbc" % "2.6.13",
+      //"com.typesafe.play" %% "routes-compiler" % "2.6.13",
+      "com.typesafe.play" %% "sbt-routes-compiler" % "2.6.13",
+
+
+        //ws,
       // i18n
       Dependencies.jsMessages.core,
       Dependencies.i18nHocon.core,
       // Persistence
-      jdbc,
-      evolutions,
+      //jdbc,
+      //evolutions,
       Dependencies.postgresql.core,
       Dependencies.anorm.core,
       Dependencies.commonsIO.core,
@@ -66,4 +77,5 @@ lazy val cumulusServer = project
       Dependencies.scalatest.play % Test
     )
   )
-  .enablePlugins(PlayScala)
+  .enablePlugins(RoutesCompilation)
+

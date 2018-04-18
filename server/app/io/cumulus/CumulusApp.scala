@@ -1,121 +1,48 @@
-import scala.concurrent.{ExecutionContextExecutor, Future}
+package io.cumulus.stages
 
-import akka.actor.ActorRef
-import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
-import com.typesafe.config.Config
-import controllers.AssetsComponents
-import io.cumulus.controllers.utils.{Assets, LoggingFilter}
-import io.cumulus.controllers.{SharingManagementController, _}
-import io.cumulus.core.Settings
-import io.cumulus.core.controllers.utils.api.HttpErrorHandler
-import io.cumulus.core.persistence.CumulusDB
-import io.cumulus.core.persistence.query.QueryBuilder
-import io.cumulus.persistence.services.{FsNodeService, SharingService, StorageService, UserService}
-import io.cumulus.persistence.storage._
-import io.cumulus.persistence.storage.engines.LocalStorage
-import io.cumulus.persistence.stores.{FsNodeStore, SharingStore, UserStore}
-import io.cumulus.stages._
-import jsmessages.JsMessagesFactory
-import play.BuiltInComponents
-import play.api.{BuiltInComponentsFromContext, _}
-import play.api.db.{DBComponents, Database, HikariCPComponents}
-import play.api.i18n.MessagesApi
-import play.api.libs.mailer.MailerComponents
-import play.api.libs.ws.ahc.AhcWSComponents
-import play.api.mvc.EssentialFilter
-import play.api.routing.Router
-import play.api.routing.sird._
-import play.api.mvc._
-import play.api.mvc._
-import play.api.routing.sird._
-import play.controllers.AssetsComponents
-import play.core.server.{AkkaHttpServer, AkkaHttpServerComponents}
-import play.libs.ws.ahc.AhcWSComponents
+import play.api.mvc.{Action, Results}
+import play.api.mvc.Results.Ok
+import play.core.server.AkkaHttpServer
 
+object CumulusApp extends App {
 
-class CumulusApp extends App {
+  val components = new AkkaHttpServerComponents with BuiltInComponents with NoHttpFiltersComponents {
 
-  val routesURI = app.classloader.getResource("routes").toURI
-  val parsedRoutes = RoutesFileParser.parse(new File(routesURI))
-  println(parsedRoutes)
-
-  val components =
-    new AkkaHttpServerComponents with BuiltInComponents with HoconI18nComponents with AssetsComponents with AhcWSComponents with DBComponents with HikariCPComponents {
-
-
-
+    override lazy val router: Router = Router.from {
+      case GET(p"/hello/$to") => Action {
+        Results.Ok(s"Hello $to")
+      }
     }
 
+    override lazy val httpErrorHandler = new DefaultHttpErrorHandler(
+      environment,
+      configuration,
+      sourceMapper,
+      Some(router)
+    ) {
 
-    /*
+      override protected def onNotFound(request: RequestHeader, message: String): Future[Result] = {
+        Future.successful(Results.NotFound("Nothing was found!"))
+      }
+    }
+  }
+  val server = components.server
 
-    val server = AkkaHttpServer.fromRouterWithComponents() { components =>
+  val server = AkkaHttpServer.fromRouterWithComponents() { components =>
     import Results._
-    import components.{ defaultActionBuilder => Action }
+    import components.{defaultActionBuilder => Action}
     {
       case GET(p"/hello/$to") => Action {
         Ok(s"Hello $to")
       }
-      case GET(p"/stop") => Action {
+      case GET(p"/ok") => Action {
         Ok(s"OK")
       }
     }
-  }*/
+  }
 
 }
 
-/**
-  * Application compile time loader.
-  */
-
-/*
-class CumulusLoader extends ApplicationLoader {
-
-  def test = {
-
-    val server = AkkaHttpServer.fromRouterWithComponents() { components =>
-      import Results._
-      import components.{ defaultActionBuilder => Action }
-      {
-        case GET(p"/hello/$to") => Action {
-          Ok(s"Hello $to")
-        }
-      }
-    }
-
-  }
-
-  def load(context: ApplicationLoader.Context): Application = {
-    LoggerConfigurator(context.environment.classLoader).foreach {
-      _.configure(context.environment)
-    }
-
-    println("Starting the app")
-    val app = new CumulusComponents(context).application
-
-    import scala.concurrent.ExecutionContext.Implicits.global
-
-    Future {
-      Thread.sleep(5000)
-      println("Stopping the app")
-
-      Play.stop(app)
-      app.stop().map { _ =>
-        println("App stopped")
-
-        val newApp = new CumulusComponents(context).application
-        Play.start(newApp)
-
-      }
-    }
-
-    println("App started")
-    app
-  }
-
-}*/
-
-/*
 class CumulusComponents(
   context: ApplicationLoader.Context
 ) extends BuiltInComponentsFromContext(context)
@@ -124,9 +51,8 @@ class CumulusComponents(
   with AhcWSComponents
   with DBComponents
   with HikariCPComponents
-  with MailerComponents {
-
-  // with EvolutionsComponents { TODO
+  with MailerComponents
+  with EvolutionsComponents {
 
   // List of supported ciphers
   implicit val ciphers = Ciphers(Seq(
@@ -155,8 +81,6 @@ class CumulusComponents(
   implicit val storageEngines = StorageEngines(Seq(
     LocalStorage
   ))
-
-
 
   lazy val router: Router = new Routes(
     httpErrorHandler,
@@ -217,4 +141,4 @@ class CumulusComponents(
   lazy val chunkRemover: ActorRef = actorSystem.actorOf(ChunkRemover.props(storageEngines), "ChunkRemover")
 
 }
-*/
+
