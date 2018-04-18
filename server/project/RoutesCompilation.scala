@@ -23,10 +23,7 @@ object RoutesCompilation extends AutoPlugin {
     routesFile           := "routes",
     compileRoutes        := compileRoutesTask.value,
 
-    sourceGenerators in Compile <+= compileRoutes
-
-    //(compile in Compile) <<= (compile in Compile) dependsOn compileRoutes,
-    //(run in Compile)     <<= (run in Compile)     dependsOn compileRoutes
+    sourceGenerators in Compile += compileRoutes
   )
 
   lazy val compileRoutesTask =
