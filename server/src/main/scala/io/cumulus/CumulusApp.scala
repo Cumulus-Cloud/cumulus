@@ -92,7 +92,7 @@ class CumulusComponents(
   ))
 
   // Compile time generated router
-  val router =
+  lazy val router =
     new Routes(
       httpErrorHandler,
       homeController,

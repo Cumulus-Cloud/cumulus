@@ -16,11 +16,11 @@ class HomeController (
 ) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with BodyParserJson {
 
   def index = Action {
-    Ok("todo") //Ok(io.cumulus.views.html.index())
+    Ok(io.cumulus.views.html.index())
   }
 
   def testLogin = Action {
-    Ok("todo") //Ok(io.cumulus.views.html.test.login())
+    Ok(io.cumulus.views.html.test.login())
   }
 
   def test = AuthenticatedAction.withErrorHandler { implicit request =>

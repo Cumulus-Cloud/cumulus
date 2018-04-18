@@ -38,14 +38,12 @@ lazy val cumulusServer = project
 
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-akka-http-server" % "2.6.13",
-      "com.typesafe.play" %% "twirl-api" % "1.3.15",
+      //"com.typesafe.play" %% "twirl-api" % "1.3.15",
       "com.typesafe.play" %% "play-ws" % "2.6.13",
       "com.typesafe.play" %% "play-json" % "2.6.9",
       "com.typesafe.play" %% "play-logback" % "2.6.13",
       "com.typesafe.play" %% "play-jdbc" % "2.6.13",
-      //"com.typesafe.play" %% "routes-compiler" % "2.6.13",
-      "com.typesafe.play" %% "sbt-routes-compiler" % "2.6.13",
-
+      javaCore,
 
         //ws,
       // i18n
@@ -77,5 +75,5 @@ lazy val cumulusServer = project
       Dependencies.scalatest.play % Test
     )
   )
-  .enablePlugins(RoutesCompilation)
+  .enablePlugins(RoutesCompilation, SbtTwirl)
 
