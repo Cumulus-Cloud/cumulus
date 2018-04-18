@@ -24,9 +24,9 @@ class HomeController (
   }
 
   def test = AuthenticatedAction.withErrorHandler { implicit request =>
-    Ok("todo") //Ok(io.cumulus.views.html.test.index())
+    Ok(io.cumulus.views.html.test.index())
   } { _: Request[_] =>
-    Future.successful(Ok("todo")) //Redirect(routes.HomeController.testLogin()))
+    Future.successful(Redirect(routes.HomeController.testLogin()))
   }
 
 }

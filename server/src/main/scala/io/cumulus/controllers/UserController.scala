@@ -57,8 +57,7 @@ class UserController (
   }
 
   def logout = Action { implicit request =>
-    Ok("todo").withoutAuthentication
-    //Redirect(routes.HomeController.index()).withoutAuthentication
+    Redirect(routes.HomeController.index()).withoutAuthentication
   }
 
 }

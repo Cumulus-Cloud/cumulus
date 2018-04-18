@@ -193,13 +193,11 @@ class FileSystemController(
           ApiResponse {
             sharingService.shareNode(path, request.user.password, duration).map {
               case Right((sharing, secretCode)) =>
-                /*
                 Right(Json.toJsObject(sharing)(Sharing.apiWrite)
                   + ("key" -> Json.toJson(secretCode))
                   + ("download" -> JsString(routes.SharingController.downloadRoot(sharing.reference, path.name, secretCode, None).url))
                   + ("path" -> JsString(routes.SharingController.get("/", sharing.reference, secretCode).url))
-                )*/
-                ???
+                )
               case Left(e) =>
                 Left(e)
             }
