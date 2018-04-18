@@ -17,9 +17,9 @@
     "url": "https://github.com/Cumulus-Cloud/cumulus/issues"
   },
   "scripts": {
-    "build": "parcel build src/main.tsx --out-dir ../server/src/resources/public --public-url assets",
-    "watch": "parcel watch src/main.tsx --out-dir ../server/src/resources/public --public-url assets --no-hmr",
-    "watch-hot": "parcel watch src/main.tsx --out-dir ../server/src/resources/public --public-url assets",
+    "build": "parcel build src/main.tsx --out-dir ../server/src/main/resources/public --public-url assets",
+    "watch": "parcel watch src/main.tsx --out-dir ../server/src/main/resources/public --public-url assets --no-hmr",
+    "watch-hot": "parcel watch src/main.tsx --out-dir ../server/src/main/resources/public --public-url assets",
     "test": "echo 'soon'"
   },
   "dependencies": {

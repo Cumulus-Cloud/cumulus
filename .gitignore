@@ -1,33 +1,3 @@
-# Ignore Play! working directory #
-bin/
-tmp/
-/server/db
-/server/lib/
-/server/logs/
-/server/modules
-/server/project/target
-/server/project/project
-/server/target
-test-result
-*.eml
-/server/dist/
-.cache
-/.idea
-/.idea_modules
-/.classpath
-/.project
-/.settings
-/RUNNING_PID
-/server/.idea
-/server/.idea_modules
-/server/.classpath
-/.project
-/.settings
-/RUNNING_PID
 
 # Server runtime directories
-/server/tmp/
-/server/log/
-/server/storage/
 cumulus-log/
-

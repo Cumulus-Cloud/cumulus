@@ -32,6 +32,7 @@ lazy val commonSettings = Seq(
   test in assembly := {}
 )
 
+// Merge configuration for sbt-assembly
 assemblyMergeStrategy in assembly := {
   case manifest if manifest.contains("MANIFEST.MF") =>
     // We don't need manifest files since sbt-assembly will create
@@ -46,6 +47,10 @@ assemblyMergeStrategy in assembly := {
     oldStrategy(x)
 }
 
+// Add Twirl files to the unmanaged sources
+sourceDirectories in (Compile, TwirlKeys.compileTemplates) := (unmanagedSourceDirectories in Compile).value
+
+// Main project
 lazy val cumulusServer = project
   .in(file("."))
   .settings(commonSettings: _*)
