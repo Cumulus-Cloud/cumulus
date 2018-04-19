@@ -103,5 +103,5 @@ lazy val cumulusServer = project
       Dependencies.scalatest.play % Test
     )
   )
-  .enablePlugins(RoutesCompilation, SbtTwirl)
+  .enablePlugins(RoutesCompilation, SbtTwirl, JavaAppPackaging)
 
