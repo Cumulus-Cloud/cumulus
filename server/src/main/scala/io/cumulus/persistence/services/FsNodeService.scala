@@ -6,6 +6,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import io.cumulus.core.Logging
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.{QueryBuilder, QueryE, QueryPagination}
+import io.cumulus.core.utils.PaginatedList
 import io.cumulus.core.validation.AppError
 import io.cumulus.models._
 import io.cumulus.models.fs._
@@ -33,7 +34,7 @@ class FsNodeService(
 
     for {
       // Find the node
-      node <- find(path, QueryPagination(0))
+      node <- find(path, QueryPagination.empty)
 
       // Check if the node is a file
       file <- QueryE.pure {
@@ -102,7 +103,7 @@ class FsNodeService(
                 pagination = contentPagination,
                 ordering = FsNodeOrdering.of(OrderByNodeType, OrderByFilenameAsc)
               )
-            }.map(c => directory.copy(content = c))
+            }.map(c => directory.copy(content = c.items))
           case other: FsNode =>
             QueryE.pure(other)
         }
@@ -112,7 +113,7 @@ class FsNodeService(
   }
 
   /**
-    * Search a node by name.
+    * Search through all the user's nodes.
     * @param parent The node parent.
     * @param name The node's partial name.
     * @param nodeType The optional node type.
@@ -125,21 +126,20 @@ class FsNodeService(
     nodeType: Option[FsNodeType],
     mimeType: Option[String],
     pagination: QueryPagination
-  )(implicit user: User): Future[Either[AppError, Seq[FsNode]]] = {
+  )(implicit user: User): Future[Either[AppError, PaginatedList[FsNode]]] = {
     val filter     = FsNodeFilter(name, parent, nodeType, mimeType, user)
     val ordering   = FsNodeOrdering.empty
 
     fsNodeStore
       .findAll(filter, ordering, pagination)
       .commit()
-      .map(nodes => Right(nodes.filterNot(_.path.isRoot))) // Ignore the root folder
+      .map(nodes => Right(PaginatedList(nodes.filterNot(_.path.isRoot), pagination.offset.getOrElse(0)))) // Ignore the root folder
   }
 
   /**
     * Check that a new node can be created. Used to non-atomically check for a new file that the uploaded file can be
     * created and to avoid useless computation. Node that verifications will still be made during the final file
     * creation.
-    *
     * @param path The new file path.
     * @param user The user performing the operation.
     */
@@ -241,7 +241,7 @@ class FsNodeService(
       node <- getNodeWithLock(path)
 
       // Check that no children element exists
-      _ <- QueryE(fsNodeStore.findContainedByPathAndUser(path, user, QueryPagination(1)).map {
+      _ <- QueryE(fsNodeStore.findContainedByPathAndUser(path, user, QueryPagination.first).map {
         case contained if contained.nonEmpty =>
           Left(AppError.validation("validation.fs-node.non-empty", path))
         case _ =>

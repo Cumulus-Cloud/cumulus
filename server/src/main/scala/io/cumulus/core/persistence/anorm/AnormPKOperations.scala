@@ -7,9 +7,9 @@ import io.cumulus.core.persistence.query.{Query, QueryFilter, QueryOrdering, Que
 
 /**
  * Abstract class that provides operations based on the private key of the table
- * Functions provided: find, exits, update, delete, upsert
- *
- * You must also mixin the trait AnormRepository
+ * Functions provided: find, exits, update, delete, upsert.
+ * <br/><br/>
+ * You must also mixin the trait AnormRepository.
  */
 abstract class AnormPKOperations[T, DB <: Database, PK](
   implicit

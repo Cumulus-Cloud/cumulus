@@ -8,6 +8,7 @@ import cats.data.EitherT
 import cats.implicits._
 import io.cumulus.controllers.payloads.fs._
 import io.cumulus.controllers.utils.FileDownloaderUtils
+import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.controllers.utils.bodyParser.{BodyParserJson, BodyParserStream}
@@ -28,7 +29,8 @@ class FileSystemController(
 )(implicit
   ec: ExecutionContext,
   ciphers: Ciphers,
-  compressions: Compressions
+  compressions: Compressions,
+  settings: Settings
 ) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with FileDownloaderUtils with BodyParserJson with BodyParserStream {
 
   /**
@@ -40,18 +42,14 @@ class FileSystemController(
   def get(path: Path, contentLimit: Option[Int], contentOffset: Option[Int]): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
       ApiResponse {
-        fsNodeService.findNode(
-          path,
-          contentLimit
-            .map(QueryPagination(_, contentOffset))
-            .getOrElse(QueryPagination(51)) // Default pagination
-        )
+        val pagination = QueryPagination(contentLimit, contentOffset)
+
+        fsNodeService.findNode(path, pagination)
       }
     }
 
   /**
     * Search through the filesystem.
-    *
     * @param path Root element for the search. Use '/' to search in the whole filesystem.
     * @param name Name to look for. Approximation are allowed.
     * @param nodeType The optional type of node to look for.
@@ -61,22 +59,15 @@ class FileSystemController(
     */
   def search(path: Path, name: String, nodeType: Option[FsNodeType], mimeType: Option[String], limit: Option[Int], offset: Option[Int]): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
-      ApiResponse {
-        fsNodeService.searchNodes(
-          path,
-          name,
-          nodeType,
-          mimeType,
-          limit
-            .map(QueryPagination(_, offset))
-            .getOrElse(QueryPagination(51)) // Default pagination
-        )
+      ApiResponse.paginated {
+        val pagination = QueryPagination(limit, offset)
+
+        fsNodeService.searchNodes(path, name, nodeType, mimeType, pagination)
       }
     }
 
   /**
     * Downloads the file by its path.
-    *
     * @param path The path of the file to download.
     * @param forceDownload True to force the download, otherwise content will be opened directly in the browser.
     */
@@ -106,7 +97,6 @@ class FileSystemController(
 
   /**
     * Download a file's thumbnail.
-    *
     * @param path The path of the file.
     * @param forceDownload True to force the download, otherwise content will be opened directly in the browser.
     */
@@ -143,7 +133,6 @@ class FileSystemController(
 
   /**
     * Upload a new file.
-    *
     * @param path The path of the new file.
     * @param cipherName The cipher to use.
     * @param compressionName The compression to use.
@@ -165,7 +154,6 @@ class FileSystemController(
 
   /**
     * Create a new directory.
-    *
     * @param path The path of the new directory.
     */
   def create(path: Path): Action[AnyContent] =
@@ -178,7 +166,6 @@ class FileSystemController(
 
   /**
     * Update a file.
-    *
     * @param path The file to update.
     */
   def update(path: Path): Action[FsOperation] =
@@ -211,7 +198,6 @@ class FileSystemController(
 
   /**
     * Delete a file by its path.
-    *
     * @param path The path of the file to delete.
     */
   def delete(path: Path): Action[AnyContent] =
