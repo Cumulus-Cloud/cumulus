@@ -1,18 +1,70 @@
-## Cumulus Server
+<p align="center"><img src="https://cumulus-cloud.github.io/assets/img/logo3.png" width="280" /></p>
+<p align="center">
+  <span><img style="display: inline-block; width: 50%" src="https://cumulus-cloud.github.io/assets/img/logos/scala.png"></span>
+  <span style="margin-right: 30px"><img src="https://cumulus-cloud.github.io/assets/img/logos/play.png"></span>
+  <span><img src="https://cumulus-cloud.github.io/assets/img/logos/akka.png"></span>
+  <span><img src="https://cumulus-cloud.github.io/assets/img/logos/postgresql.png"></span>
+</p>
 
-API of the Cumulus Webapp, handling the virtual file system and the multiple upload storages. The Cumulus API is moslty
-REST-like and made with ease of use in mind.
+# Cumulus Server
 
-### Launch the server
+API of the **Cumulus Web Application**. The API is responsible for handling the virtual file system and the multiple upload storages. The Cumulus API is moslty REST-like and made with ease of use in mind.
+
+
+The web server used is [Play! Framework](https://www.playframework.com/) in [embed mode](https://www.playframework.com/documentation/2.6.x/ScalaEmbeddingPlayAkkaHttp) ; giving us more flexibility and control on how to start/restart/stop programatically the server.
+
+[Akka Stream](https://akka.io/) is used (through Play!) for all the operations on the upload/download files (encryption, compression, splitting in chunks, integrity tests and upload).
+
+Metadata storage is handled by [Anorm](https://playframework.github.io/anorm/) with [PostgreSQL](https://www.postgresql.org/).
+
+### Building the server
+#### Developpement
+To build & start the server using sbt:
+```
+$ sbt run
+```
+You may also simply build the server:
+```
+$ sbt compile
+```
+Both command will also compile the `routes` file and the twirls templates. Note that since this project is using an embed Pay! server, there is unfortunately no Play!'s like hot-reload mecanism ; but `~run` can still be used. 
+
+#### Production
+Both **sbt-native-packager** and **sbt-assembly** are available as sbt commands.
+
+If you wish to generate a standalone Jar file containing everything needed to run the project (a.k.a. a fat Jar) , you can use **sbt-assembly**:
+```
+$ sbt assembly
+```
+The generated fat Jar will be available in the `target/scala-2.12` directory, and can be directly used:
+```
+$ java -jar /target/scala-2.12/cumulus-server-assembly-0.1-SNAPSHOT.jar
+```
+For more informations, refers to the [own projet page](https://github.com/sbt/sbt-assembly).
+
+If instead you want to create an installer or a launching app, you  can use **sbt-native-packager** (which is used by default by Play! as the build plugin):
+```
+$ sbt universal:packageBin # To generate a zip
+$ sbt stage                # To generate a non-compressed app ready to run
+```
+Once generated, the app can also be directly used:
+```
+$ ./target/universal/stage/bin/cumulus-server
+```
+For more informations, refers to the [own projet page](https://github.com/sbt/sbt-native-packager).
+
+> Note that the server will need some environement variable to be set in production mode, or to customise the HTTP binding. See the part on the configuration file for more information.
+
+### Launching & using the server
 
 #### Prerequisites
 You'll need :
 
-- SBT, to build the application
+- SBT, to build the application (see the building part)
 - PostreSQL 10.x or docker & docker-compose
 
 ##### Without docker
-Even if we recommend to use docker, you still can configure the server to use your own services. The development configuration override should be done inside the custom configuration file `local.conf`, based on `local.example.conf`.
+> Even if we recommend to use docker, you still can configure the server to use your own services. The development configuration override should be done inside the custom configuration file `local.conf`, based on `local.example.conf`.
 
 You will need to at least update the configuration file to match the configuration of your database:
 
@@ -61,7 +113,7 @@ $ cd server/devtools/docker
 $ docker-compose up -d
 ```
 
-#### Compile and build the server
+#### Compile and build the server (for developpement purpose)
 To build & start the server using sbt:
 ```
 $ sbt run
@@ -74,6 +126,9 @@ $ sbt compile
 ```
 $ sbt clean
 ```
+
+### Configuration file
+> TODO
 
 ### Stack
 
