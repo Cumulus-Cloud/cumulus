@@ -17,10 +17,10 @@ POST    /api/fs*path                  io.cumulus.controllers.FileSystemControlle
 DELETE  /api/fs*path                  io.cumulus.controllers.FileSystemController.delete(path: Path)
 
 # API - Sharing manager (authenticated side)
-GET     /api/sharings                 io.cumulus.controllers.SharingManagementController.all(limit: Option[Int], offset: Option[Int])
-GET     /api/sharings/fs*path         io.cumulus.controllers.SharingManagementController.list(path: Path, limit: Option[Int], offset: Option[Int])
-GET     /api/sharings/:ref            io.cumulus.controllers.SharingManagementController.get(ref: String)
-DELETE  /api/sharings/:ref            io.cumulus.controllers.SharingManagementController.delete(ref: Path)
+GET     /api/sharings                 io.cumulus.controllers.SharingController.all(limit: Option[Int], offset: Option[Int])
+GET     /api/sharings/fs*path         io.cumulus.controllers.SharingController.list(path: Path, limit: Option[Int], offset: Option[Int])
+GET     /api/sharings/:ref            io.cumulus.controllers.SharingController.get(ref: String)
+DELETE  /api/sharings/:ref            io.cumulus.controllers.SharingController.delete(ref: Path)
 
 # API- Search
 GET     /api/search*path              io.cumulus.controllers.FileSystemController.search(path: Path, name: String, nodeType: Option[FsNodeType], `type`: Option[String], limit: Option[Int], offset: Option[Int])
@@ -31,11 +31,11 @@ GET     /api/download*path            io.cumulus.controllers.FileSystemControlle
 GET     /api/thumbnail*path           io.cumulus.controllers.FileSystemController.downloadThumbnail(path: Path, download: Option[Boolean])
 
 # API - Shared (visitor)
-GET     /api/shared/fs*path           io.cumulus.controllers.SharingController.get(path: Path, reference, key)
-GET     /api/shared/download*path     io.cumulus.controllers.SharingController.download(path: Path, reference, key, download: Option[Boolean])
+GET     /api/shared/fs*path           io.cumulus.controllers.SharingPublicController.get(path: Path, reference, key)
+GET     /api/shared/download*path     io.cumulus.controllers.SharingPublicController.download(path: Path, reference, key, download: Option[Boolean])
 
 # Shared (visitor) 'pretty' routes for root element (file)
-GET     /shared/download/:ref/:name   io.cumulus.controllers.SharingController.downloadRoot(ref, name, key, download: Option[Boolean])
+GET     /shared/download/:ref/:name   io.cumulus.controllers.SharingPublicController.downloadRoot(ref, name, key, download: Option[Boolean])
 
 # Test routes
 GET     /test                         io.cumulus.controllers.HomeController.test

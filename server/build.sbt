@@ -71,8 +71,6 @@ lazy val cumulusServer = project
       akkaHttpServer,
       javaCore,
       ws,
-      // Logging
-      //logback,
       // i18n
       Dependencies.jsMessages.core,
       Dependencies.i18nHocon.core,
@@ -100,7 +98,9 @@ lazy val cumulusServer = project
       // Crypto
       Dependencies.bouncyCastle.core,
       // Test dependencies
-      Dependencies.scalatest.play % Test
+      Dependencies.scalatest.play % Test,
+      // MacWire
+      Dependencies.macWire.macros
     )
   )
   .enablePlugins(RoutesCompilation, SbtTwirl, JavaAppPackaging)

@@ -182,8 +182,8 @@ class FileSystemController(
               case Right((sharing, secretCode)) =>
                 Right(Json.toJsObject(sharing)(Sharing.apiWrite)
                   + ("key" -> Json.toJson(secretCode))
-                  + ("download" -> JsString(routes.SharingController.downloadRoot(sharing.reference, path.name, secretCode, None).url))
-                  + ("path" -> JsString(routes.SharingController.get("/", sharing.reference, secretCode).url))
+                  + ("download" -> JsString(routes.SharingPublicController.downloadRoot(sharing.reference, path.name, secretCode, None).url))
+                  + ("path" -> JsString(routes.SharingPublicController.get("/", sharing.reference, secretCode).url))
                 )
               case Left(e) =>
                 Left(e)

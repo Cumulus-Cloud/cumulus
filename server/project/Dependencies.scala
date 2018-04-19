@@ -82,4 +82,10 @@ object Dependencies {
     val core = "org.apache.pdfbox" % "pdfbox" % version exclude("commons-logging", "commons-logging")
   }
 
+  object macWire {
+    val version = "2.3.1"
+
+    val macros = "com.softwaremill.macwire" %% "macros" % version
+  }
+
 }

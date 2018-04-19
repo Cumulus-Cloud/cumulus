@@ -2,7 +2,7 @@ package io.cumulus
 
 import scala.concurrent.ExecutionContextExecutor
 
-import akka.actor.ActorRef
+import akka.actor.{ActorRef, Scheduler}
 import akka.stream.{ActorMaterializer, Materializer}
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.typesafe.config.Config
@@ -17,7 +17,7 @@ import io.cumulus.persistence.storage.engines.LocalStorage
 import io.cumulus.persistence.storage.{ChunkRemover, StorageEngines}
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore, UserStore}
 import io.cumulus.stages._
-import jsmessages.JsMessagesFactory
+import jsmessages.{JsMessages, JsMessagesFactory}
 import play.api
 import play.api._
 import play.api.db.evolutions.EvolutionsComponents
@@ -85,6 +85,8 @@ class CumulusComponents(
   with MailerComponents
   with EvolutionsComponents {
 
+  import com.softwaremill.macwire._
+
   // List of supported ciphers
   implicit val ciphers = Ciphers(Seq(
     AESCipherStage
@@ -114,21 +116,13 @@ class CumulusComponents(
   ))
 
   // Compile time generated router
-  lazy val router =
-    new Routes(
-      httpErrorHandler,
-      homeController,
-      userController,
-      fsController,
-      sharingManagementController,
-      sharingController,
-      assetController
-    )
+  lazy val router: Routes  = wire[Routes]
+  val routerPrefix: String = ""
 
   // Configurations
   implicit lazy val playConfig: Configuration = configuration
   implicit lazy val config: Config            = configuration.underlying // for MailerComponents
-  implicit lazy val settings: Settings        = new Settings(configuration)
+  implicit lazy val settings: Settings        = wire[Settings]
 
   // Access the lazy val to trigger evolutions
   applicationEvolutions
@@ -138,39 +132,40 @@ class CumulusComponents(
   implicit lazy val welcomeQB: QueryBuilder[CumulusDB] = QueryBuilder(CumulusDB(database), databaseEc)
 
   // executionContexts
-  implicit val defaultEc: ExecutionContextExecutor = actorSystem.dispatcher
-  val databaseEc: ExecutionContextExecutor         = actorSystem.dispatchers.lookup("db-context")
-  val tasksEc: ExecutionContextExecutor            = actorSystem.dispatchers.lookup("task-context")
+  implicit lazy val defaultEc: ExecutionContextExecutor = actorSystem.dispatcher
+  lazy val databaseEc: ExecutionContextExecutor         = actorSystem.dispatchers.lookup("db-context")
+  lazy val tasksEc: ExecutionContextExecutor            = actorSystem.dispatchers.lookup("task-context")
+  lazy val scheduler: Scheduler                         = actorSystem.scheduler
 
   override implicit lazy val materializer: Materializer = ActorMaterializer()(actorSystem)
 
   // Override messagesApi to use Hocon config
-  override lazy val messagesApi: MessagesApi = new HoconMessagesApiProvider(environment, configuration, langs, httpConfiguration).get
-  val jsMessageFactory = new JsMessagesFactory(messagesApi)
+  override implicit lazy val messagesApi: MessagesApi = wire[HoconMessagesApiProvider].get
+  lazy val jsMessages: JsMessages                     = wire[JsMessagesFactory].all
 
   // HTTP components
-  lazy val loggingFilter: LoggingFilter = new LoggingFilter()
+  lazy val loggingFilter: LoggingFilter                = wire[LoggingFilter]
   override lazy val httpFilters: Seq[EssentialFilter]  = Seq(loggingFilter)
-  override lazy val httpErrorHandler: HttpErrorHandler = new HttpErrorHandler()(messagesApi)
+  override lazy val httpErrorHandler: HttpErrorHandler = wire[HttpErrorHandler]
 
   // Stores
-  lazy val userStore: UserStore       = new UserStore
-  lazy val fsNodeStore: FsNodeStore   = new FsNodeStore
-  lazy val sharingStore: SharingStore = new SharingStore
+  lazy val userStore: UserStore       = wire[UserStore]
+  lazy val fsNodeStore: FsNodeStore   = wire[FsNodeStore]
+  lazy val sharingStore: SharingStore = wire[SharingStore]
 
   // Services
-  lazy val userService: UserService       = new UserService(userStore, fsNodeStore)
-  lazy val fsNodeService: FsNodeService   = new FsNodeService(fsNodeStore, sharingStore)
-  lazy val storageService: StorageService = new StorageService(fsNodeService, chunkRemover)
-  lazy val sharingService: SharingService = new SharingService(userStore, fsNodeStore, sharingStore)
+  lazy val userService: UserService       = wire[UserService]
+  lazy val fsNodeService: FsNodeService   = wire[FsNodeService]
+  lazy val storageService: StorageService = wire[StorageService]
+  lazy val sharingService: SharingService = wire[SharingService]
 
   // Controllers
-  lazy val homeController: HomeController                           = new HomeController(controllerComponents, actorSystem.scheduler)
-  lazy val userController: UserController                           = new UserController(controllerComponents, userService)
-  lazy val fsController: FileSystemController                       = new FileSystemController(controllerComponents, fsNodeService, storageService, sharingService)
-  lazy val sharingController: SharingController                     = new SharingController(controllerComponents, sharingService, storageService)
-  lazy val sharingManagementController: SharingManagementController = new SharingManagementController(controllerComponents, sharingService)
-  lazy val assetController: Assets                                  = new Assets(context.environment, assetsMetadata, httpErrorHandler, jsMessageFactory.all, controllerComponents)
+  lazy val homeController: HomeController                 = wire[HomeController]
+  lazy val userController: UserController                 = wire[UserController]
+  lazy val fsController: FileSystemController             = wire[FileSystemController]
+  lazy val sharingController: SharingPublicController     = wire[SharingPublicController]
+  lazy val sharingManagementController: SharingController = wire[SharingController]
+  lazy val assetController: Assets                        = wire[Assets]
 
   // Actors
   lazy val chunkRemover: ActorRef = actorSystem.actorOf(ChunkRemover.props(storageEngines), "ChunkRemover")
