@@ -23,6 +23,7 @@ object RoutesCompilation extends AutoPlugin {
     routesFile           := "routes",
     compileRoutes        := compileRoutesTask.value,
 
+    // TODO avoid recompiling the route file if no changes have been detected
     sourceGenerators in Compile += compileRoutes
   )
 

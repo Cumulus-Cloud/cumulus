@@ -47,6 +47,8 @@ assemblyMergeStrategy in assembly := {
     oldStrategy(x)
 }
 
+// Remove unused warnings for compiled twirl templates
+TwirlKeys.templateImports := Seq()
 // Add Twirl files to the unmanaged sources
 sourceDirectories in (Compile, TwirlKeys.compileTemplates) := (unmanagedSourceDirectories in Compile).value
 
