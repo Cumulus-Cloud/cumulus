@@ -27,7 +27,7 @@ You may also simply build the server:
 ```
 $ sbt compile
 ```
-Both command will also compile the `routes` file and the twirls templates. Note that since this project is using an embed Pay! server, there is unfortunately no Play!'s like hot-reload mecanism ; but `~run` can still be used. 
+> Both command will also compile the `routes` file and the twirls templates. Note that since this project is using an embed Pay! server, there is unfortunately no Play!'s like hot-reload mecanism ; but `~run` can still be used. 
 
 #### Production
 Both **sbt-native-packager** and **sbt-assembly** are available as sbt commands.
@@ -63,9 +63,17 @@ You'll need :
 - SBT, to build the application (see the building part)
 - PostreSQL 10.x or docker & docker-compose
 
-##### Without docker
 > Even if we recommend to use docker, you still can configure the server to use your own services. The development configuration override should be done inside the custom configuration file `local.conf`, based on `local.example.conf`.
 
+#### With docker
+A docker compose file in `server/devtools/docker` is already defined, mounting the storage point and starting a PostgreSQL server (and also a mail server, not used for now).
+
+```
+$ cd server/devtools/docker
+$ docker-compose up -d
+```
+
+#### Without docker
 You will need to at least update the configuration file to match the configuration of your database:
 
 ```hocon
@@ -103,29 +111,9 @@ cumulus {
 }
 ```
 
-For now, only the local storage is done. Note that the configuration inside the docker compose provided is already configured using environment variables.
+> For now, only the local storage is available. Note that the configuration inside the docker compose provided is already configured using environment variables.
 
-##### With docker
-A docker compose file in `server/devtools/docker` is already defined, mounting the storage point and starting a PostgreSQL server (and also a mail server, not used for now).
-
-```
-$ cd server/devtools/docker
-$ docker-compose up -d
-```
-
-#### Compile and build the server (for developpement purpose)
-To build & start the server using sbt:
-```
-$ sbt run
-```
-You may also simply build the server:
-```
-$ sbt compile
-```
-.. or clean the compilation results:
-```
-$ sbt clean
-```
+> In the future replication will be available, allowing to define multiple source with priorities. 
 
 ### Configuration file
 > TODO
