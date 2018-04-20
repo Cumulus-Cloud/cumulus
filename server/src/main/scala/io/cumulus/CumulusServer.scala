@@ -2,11 +2,13 @@ package io.cumulus
 
 import scala.concurrent.ExecutionContextExecutor
 
+import _root_.controllers.AssetsComponents
 import akka.actor.{ActorRef, Scheduler}
 import akka.stream.{ActorMaterializer, Materializer}
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
+import com.softwaremill.macwire._
 import com.typesafe.config.Config
-import controllers._
+import io.cumulus.controllers._
 import io.cumulus.controllers.utils.{Assets, LoggingFilter}
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.HttpErrorHandler
@@ -26,7 +28,6 @@ import play.api.i18n.MessagesApi
 import play.api.libs.mailer.MailerComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
-import _root_.controllers.AssetsComponents
 import play.core.server.{AkkaHttpServerComponents, ServerConfig}
 
 import router.Routes
@@ -84,8 +85,6 @@ class CumulusComponents(
   with HikariCPComponents
   with MailerComponents
   with EvolutionsComponents {
-
-  import com.softwaremill.macwire._
 
   // List of supported ciphers
   implicit val ciphers = Ciphers(Seq(
