@@ -20,7 +20,6 @@ import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
 /**
   * Object writer (Flow of `ByteString` to `StorageObject`) which will write to a newly created storage object the
   * content of the stream using the provided storage engine.
-  *
   * @param storageEngine The storage engine to use.
   */
 class StorageObjectWriter(storageEngine: StorageEngine)(implicit ec: ExecutionContext) extends GraphStage[FlowShape[ByteString, StorageObject]] with Logging {
@@ -75,7 +74,6 @@ class StorageObjectWriter(storageEngine: StorageEngine)(implicit ec: ExecutionCo
 
     /**
       * Write a buffer to a file source.
-      *
       * @param buffer The buffer to write.
       */
     private def write(buffer: ByteString): Unit = {
@@ -136,11 +134,6 @@ object StorageObjectWriter {
   /**
     * Naïve version of the object writer, which assume the stream is not altered before. This stage will compute the
     * stage and the hash of the byte stream, and assume that this value are representative of the byte source.
-    * <br/><br/>
-    * See
-    * [[io.cumulus.core.stream.storage.StorageObjectWriter#writer(io.cumulus.persistence.storage.StorageEngine, akka.stream.scaladsl.Flow, scala.concurrent.ExecutionContext) StorageObjectWriter]]
-    * if a transformation is applied to the stream (compression, ..).
-    *
     * @param storageEngine The storage engine to use.
     * @see [[io.cumulus.core.stream.storage.StorageObjectWriter StorageObjectWriter]]
     */
@@ -158,7 +151,6 @@ object StorageObjectWriter {
     * `storageHash`).
     * <br/><br/>
     * This flow aims at being used with substreams to allow to upload multiples chunks without ending the stream.
-    *
     * @param storageEngine The storage engine to use.
     * @param transformation The transformation to performs.
     * @see [[io.cumulus.core.stream.storage.StorageObjectWriter StorageObjectWriter]]

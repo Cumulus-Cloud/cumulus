@@ -18,6 +18,10 @@ trait CompressionStage {
 
 }
 
+/**
+  * Handler to return a compression by name.
+  * @param compressions List of all the compressions available.
+  */
 case class Compressions(compressions: Seq[CompressionStage]) {
 
   def get(name: String): Either[AppError, CompressionStage] =
@@ -37,8 +41,8 @@ case class Compressions(compressions: Seq[CompressionStage]) {
 /**
   * Compression stage using GZip.
   *
-  * @see [[akka.stream.scaladsl.Compression$#gzip() Compression.gzip]]
-  * @see [[akka.stream.scaladsl.Compression$#gunzip(int) Compression.gunzip]]
+  * @see [[https://doc.akka.io/japi/akka/current/akka/stream/scaladsl/Compression$.html Compression.gzip]]
+  * @see [[https://doc.akka.io/japi/akka/current/akka/stream/scaladsl/Compression$.html Compression.gunzip]]
   */
 object GzipStage extends CompressionStage {
 
@@ -55,8 +59,8 @@ object GzipStage extends CompressionStage {
 /**
   * Compression stage using deflate.
   *
-  * @see [[akka.stream.scaladsl.Compression$#deflate() Compression.deflate]]
-  * @see [[akka.stream.scaladsl.Compression$#inflate(int) Compression.inflate]]
+  * @see [[https://doc.akka.io/japi/akka/current/akka/stream/scaladsl/Compression$.html Compression.deflate]]
+  * @see [[https://doc.akka.io/japi/akka/current/akka/stream/scaladsl/Compression$.html Compression.inflate]]
   */
 object DeflateStage extends CompressionStage {
 

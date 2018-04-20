@@ -47,7 +47,7 @@ case class Query[DB <: Database, +A](db: DB, ec: ExecutionContext)(private val a
 
   /**
     * This is a transaction.
-    * Use it instead of run if you have dependant update queries
+    * Use it instead of run if you have dependant update queries.
     */
   def commit(logException: Boolean = true): Future[A] = {
     val result = Future {

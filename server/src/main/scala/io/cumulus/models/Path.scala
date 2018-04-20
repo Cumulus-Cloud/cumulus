@@ -130,8 +130,8 @@ object Path {
   def trim(path: String): String = convertStringToPath(path).toString.trim
 
   /**
-    * Clean the location using [[java.net.URLDecoder.decode URLDecoder]] and
-    * [[io.cumulus.models.Path$#trim(java.lang.String) Path.trim]].
+    * Clean the location using [[https://docs.oracle.com/javase/8/docs/api/java/net/URLDecoder.html URLDecoder]] and
+    * `Path.trim`.
     * @param path Path to sanitize.
     * @return The sanitized path.
     */

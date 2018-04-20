@@ -37,8 +37,7 @@ case class Ciphers(ciphers: Seq[CipherStage]) {
 
 /**
   * Cipher stage using AES/CBC.
-  * @see [[io.cumulus.core.stream.utils.AESCipher#encrypt AESCipher.encrypt]]
-  * @see [[io.cumulus.core.stream.utils.AESCipher#decrypt AESCipher.decrypt]]
+  * @see [[io.cumulus.core.stream.utils.AESCipher AESCipher]]
   */
 object AESCipherStage extends CipherStage {
 
