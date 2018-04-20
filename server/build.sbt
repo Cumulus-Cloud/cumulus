@@ -1,6 +1,6 @@
 organization in ThisBuild := "io.cumulus"
 
-scalaVersion in ThisBuild := "2.12.4"
+scalaVersion in ThisBuild := "2.12.5"
 
 scalacOptions in ThisBuild := Seq(
   "-encoding",
@@ -25,17 +25,51 @@ scalacOptions in ThisBuild := Seq(
   "-opt-inline-from"
 )
 
-// Removes twirl unused warnings
-TwirlKeys.templateImports := Seq()
+lazy val commonSettings = Seq(
+  version := "0.1-SNAPSHOT",
+  organization := "io.cumulus",
+  scalaVersion := "2.12.5",
+  test in assembly := {}
+)
 
+// Merge configuration for sbt-assembly
+assemblyMergeStrategy in assembly := {
+  case manifest if manifest.contains("MANIFEST.MF") =>
+    // We don't need manifest files since sbt-assembly will create
+    // one with the given settings
+    MergeStrategy.discard
+  case referenceOverrides if referenceOverrides.contains("reference-overrides.conf") =>
+    // Keep the content for all reference-overrides.conf files
+    MergeStrategy.concat
+  case x =>
+    // For all the other files, use the default sbt-assembly merge strategy
+    val oldStrategy = (assemblyMergeStrategy in assembly).value
+    oldStrategy(x)
+}
+
+// Remove unused warnings for compiled twirl templates
+TwirlKeys.templateImports := Seq()
+// Add Twirl files to the unmanaged sources
+sourceDirectories in (Compile, TwirlKeys.compileTemplates) := (unmanagedSourceDirectories in Compile).value
+
+// Main project
 lazy val cumulusServer = project
   .in(file("."))
+  .settings(commonSettings: _*)
   .settings(
     name := "cumulus-server",
+    mainClass in assembly := Some("io.cumulus.CumulusApp"),
+
     // Allow to use `Path` and `FsNodeType` in route
-    routesImport += "io.cumulus.models.Path",
-    routesImport += "io.cumulus.models.fs.FsNodeType",
+    routesAddImport += "io.cumulus.models.Path",
+    routesAddImport += "io.cumulus.models.fs.FsNodeType",
+    routesFile := "routes",
+    routesGeneratorClass := InjectedRoutesGenerator,
+
     libraryDependencies ++= Seq(
+      // Play server
+      akkaHttpServer,
+      javaCore,
       ws,
       // i18n
       Dependencies.jsMessages.core,
@@ -43,6 +77,7 @@ lazy val cumulusServer = project
       // Persistence
       jdbc,
       evolutions,
+      //evolutions,
       Dependencies.postgresql.core,
       Dependencies.anorm.core,
       Dependencies.commonsIO.core,
@@ -63,7 +98,10 @@ lazy val cumulusServer = project
       // Crypto
       Dependencies.bouncyCastle.core,
       // Test dependencies
-      Dependencies.scalatest.play % Test
+      Dependencies.scalatest.play % Test,
+      // MacWire
+      Dependencies.macWire.macros
     )
   )
-  .enablePlugins(PlayScala)
+  .enablePlugins(RoutesCompilation, SbtTwirl, JavaAppPackaging)
+
