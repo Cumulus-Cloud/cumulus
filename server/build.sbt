@@ -1,6 +1,6 @@
 organization in ThisBuild := "io.cumulus"
 
-scalaVersion in ThisBuild := "2.12.4"
+scalaVersion in ThisBuild := "2.12.5"
 
 scalacOptions in ThisBuild := Seq(
   "-encoding",
@@ -28,7 +28,7 @@ scalacOptions in ThisBuild := Seq(
 lazy val commonSettings = Seq(
   version := "0.1-SNAPSHOT",
   organization := "io.cumulus",
-  scalaVersion := "2.12.4",
+  scalaVersion := "2.12.5",
   test in assembly := {}
 )
 

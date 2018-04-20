@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
 
   object postgresql {
-    val version = "42.2.1"
+    val version = "42.2.2"
 
     val core = "org.postgresql" % "postgresql" % version
   }
@@ -15,7 +15,7 @@ object Dependencies {
   }
 
   object enumeratum {
-    val version = "1.5.12"
+    val version = "1.5.13"
 
     val core = "com.beachape"  %% "enumeratum" % version
     val play = "com.beachape"  %% "enumeratum-play" % version
@@ -28,7 +28,7 @@ object Dependencies {
   }
 
   object cats {
-    val version = "1.0.1"
+    val version = "1.1.0"
 
     val core = "org.typelevel" %% "cats-core" % version
   }
@@ -58,7 +58,7 @@ object Dependencies {
   }
 
   object jwtPlay {
-    val version = "0.14.1"
+    val version = "0.16.0"
 
     val core = "com.pauldijou" %% "jwt-play" % version
   }
@@ -77,7 +77,7 @@ object Dependencies {
   }
 
   object pdfbox {
-    val version = "2.0.8"
+    val version = "2.0.9"
 
     val core = "org.apache.pdfbox" % "pdfbox" % version exclude("commons-logging", "commons-logging")
   }
