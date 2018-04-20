@@ -86,7 +86,7 @@ object AESCipher {
     * @param key The secret key (in base 64).
     * @param salt The salt (in base 64) (initialization vector bytes).
     * @return A graph stage using the provided key to encrypt the stream.
-    * @see [[io.cumulus.core.stream.utils.AESCipher#encrypt(akka.util.ByteString, akka.util.ByteString) AESCipher.encrypt]]
+    * @see [[io.cumulus.core.stream.utils.AESCipher#encrypt(akka.util.ByteString,akka.util.ByteString) AESCipher.encrypt]]
     */
   def encrypt(
     key: String,
@@ -119,7 +119,7 @@ object AESCipher {
     * @param key The secret key (in base 64).
     * @param salt The salt (in base 64) (initialization vector bytes).
     * @return A graph stage using the provided key to decrypt the stream.
-    * @see [[io.cumulus.core.stream.utils.AESCipher#decrypt(akka.util.ByteString, akka.util.ByteString) AESCipher.decrypt]]
+    * @see [[io.cumulus.core.stream.utils.AESCipher#decrypt(akka.util.ByteString,akka.util.ByteString) AESCipher.decrypt]]
     */
   def decrypt(
     key: String,

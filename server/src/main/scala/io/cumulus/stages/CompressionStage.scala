@@ -37,8 +37,8 @@ case class Compressions(compressions: Seq[CompressionStage]) {
 /**
   * Compression stage using GZip.
   *
-  * @see [[akka.stream.scaladsl.Compression$#gzip()]]
-  * @see [[akka.stream.scaladsl.Compression$#gunzip(int)]]
+  * @see [[akka.stream.scaladsl.Compression$#gzip() Compression.gzip]]
+  * @see [[akka.stream.scaladsl.Compression$#gunzip(int) Compression.gunzip]]
   */
 object GzipStage extends CompressionStage {
 
@@ -55,8 +55,8 @@ object GzipStage extends CompressionStage {
 /**
   * Compression stage using deflate.
   *
-  * @see [[akka.stream.scaladsl.Compression$#deflate()]]
-  * @see [[akka.stream.scaladsl.Compression$#inflate(int)]]
+  * @see [[akka.stream.scaladsl.Compression$#deflate() Compression.deflate]]
+  * @see [[akka.stream.scaladsl.Compression$#inflate(int) Compression.inflate]]
   */
 object DeflateStage extends CompressionStage {
 

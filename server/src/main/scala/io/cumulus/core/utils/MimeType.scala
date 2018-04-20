@@ -10,7 +10,7 @@ object MimeType {
   /**
     * Detect the mime type of a file, based in its filename.
     *
-    * @see [[java.net.URLConnection#guessContentTypeFromName]]
+    * @see [[java.net.URLConnection.guessContentTypeFromName(java.lang.String) URLConnection.guessContentTypeFromName]]
     * @param fileName The name of file.
     */
   def detect(fileName: String): String = {

@@ -11,7 +11,7 @@ import org.bouncycastle.crypto.generators.SCrypt
 object Crypto {
 
   /**
-    * @see [[java.security.SecureRandom]]
+    * @see [[java.security.SecureRandom#SecureRandom() SecureRandom]]
     */
   implicit val random: SecureRandom = new SecureRandom()
 
@@ -76,7 +76,7 @@ object Crypto {
     * Generate a random salt.
     *
     * @param size The size (in number of bytes)
-    * @param random The random to use (default is [[java.security.SecureRandom]])
+    * @param random The random to use (default is [[java.security.SecureRandom#SecureRandom() SecureRandom]])
     * @return The salt
     */
   def randomBytes(size: Int)(implicit random: Random): ByteString = {

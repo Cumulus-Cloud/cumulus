@@ -27,13 +27,13 @@ case class QueryE[DB <: Database, A](query: Query[DB, Either[AppError, A]]) {
 
   /**
     * Runs the underlying query.
-    * @see [[io.cumulus.core.persistence.query.Query#run(boolean) Query.run()]]
+    * @see [[io.cumulus.core.persistence.query.Query#run(Boolean) Query.run]]
     */
   def run(logException: Boolean = true): Future[Either[AppError, A]] = query.run(logException)
 
   /**
     * Commits the underlying query.
-    * @see [[io.cumulus.core.persistence.query.Query#commit(boolean) Query.commit()]]
+    * @see [[io.cumulus.core.persistence.query.Query#commit(Boolean) Query.commit()]]
     */
   def commit(logException: Boolean = true): Future[Either[AppError, A]] = query.commit(logException)
 

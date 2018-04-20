@@ -138,11 +138,11 @@ object StorageObjectWriter {
     * stage and the hash of the byte stream, and assume that this value are representative of the byte source.
     * <br/><br/>
     * See
-    * [[io.cumulus.core.stream.storage.StorageObjectWriter#apply(io.cumulus.persistence.storage.StorageEngine, akka.stream.scaladsl.Flow, scala.concurrent.ExecutionContext) StorageObjectWriter]]
+    * [[io.cumulus.core.stream.storage.StorageObjectWriter#writer(io.cumulus.persistence.storage.StorageEngine, akka.stream.scaladsl.Flow, scala.concurrent.ExecutionContext) StorageObjectWriter]]
     * if a transformation is applied to the stream (compression, ..).
     *
     * @param storageEngine The storage engine to use.
-    * @see [[io.cumulus.core.stream.storage.StorageObjectWriter StorageObjectWriter StorageObjectWriter]]
+    * @see [[io.cumulus.core.stream.storage.StorageObjectWriter StorageObjectWriter]]
     */
   def writer(
     storageEngine: StorageEngine
