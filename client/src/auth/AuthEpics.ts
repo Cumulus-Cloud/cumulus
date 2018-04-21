@@ -8,8 +8,9 @@ import {
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 import { ApiError } from "services/Api"
 import { Observable } from "rxjs/Observable"
+import { Actions } from "actions"
 
-export const loginEpic: Epic<AuthAction, GlobalState, Dependencies> = (
+export const loginEpic: Epic<Actions, GlobalState, Dependencies> = (
   action$: ActionsObservable<LoginSubmit>,
   store: MiddlewareAPI<GlobalState>,
   dependencies: Dependencies,
@@ -25,7 +26,7 @@ export const loginEpic: Epic<AuthAction, GlobalState, Dependencies> = (
     )
 }
 
-export const loginErrorEpic: Epic<any, GlobalState> = (action$: ActionsObservable<LoginSubmitError>) => {
+export const loginErrorEpic: Epic<Actions, GlobalState> = (action$: ActionsObservable<LoginSubmitError>) => {
   return action$
     .ofType("LoginSubmitError")
     .map(action => showApiErrorNotif(action.error))
@@ -47,13 +48,13 @@ export const signupEpic: Epic<AuthAction, GlobalState, Dependencies> = (
     )
 }
 
-export const signupErrorEpic: Epic<any, GlobalState> = (action$: ActionsObservable<SignupSubmitError>) => {
+export const signupErrorEpic: Epic<Actions, GlobalState> = (action$: ActionsObservable<SignupSubmitError>) => {
   return action$
     .ofType("SignupSubmitError")
     .map((action: SignupSubmitError) => showApiErrorNotif(action.error))
 }
 
-export const authEpics = combineEpics<AuthAction, GlobalState, Dependencies>(
+export const authEpics = combineEpics<Actions, GlobalState, Dependencies>(
   loginEpic, loginErrorEpic,
   signupEpic, signupErrorEpic,
 )
