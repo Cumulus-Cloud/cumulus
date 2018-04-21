@@ -56,7 +56,6 @@ export class MoveModal extends React.PureComponent<Props> {
   }
 
   handleOnChangeTargetBreadcrumb = (path: string) => {
-    console.log("handleOnChangeTarget", path)
     this.props.onChangeTarget(path === "" ? "/" : path)
   }
 

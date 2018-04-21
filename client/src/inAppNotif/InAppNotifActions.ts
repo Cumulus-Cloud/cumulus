@@ -17,10 +17,8 @@ export function showErrorNotif(message: string): ShowInAppNotif {
 }
 
 export function showApiErrorNotif(error: ApiError): ShowInAppNotif {
-  console.log("showApiErrorNotif", error)
   if (error.errors) {
     const firstKey = Object.keys(error.errors).pop()
-    console.log("showApiErrorNotif firstKey", firstKey)
     if (firstKey && error.errors[firstKey].length > 0) {
       const message = error.errors[firstKey][0].message
       return showInAppNotif({ type: "error", message })

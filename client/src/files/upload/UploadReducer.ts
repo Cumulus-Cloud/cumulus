@@ -46,7 +46,6 @@ export const UploadReducer = (state: UploadState = initState, action: UploadActi
       return { ...state, filesToUpload }
     }
     case "UploadFileError": {
-      console.log("UploadFileError reducer", action)
       const filesToUpload = state.filesToUpload.map(fileToUpload => {
         if (fileToUpload.id === action.fileToUpload.id) {
           return { ...fileToUpload, progress: 0, status: "Ready" } as FileToUpload

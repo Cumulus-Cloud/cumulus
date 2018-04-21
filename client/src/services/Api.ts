@@ -114,7 +114,6 @@ export function createRequest(instance: AxiosInstance): Request {
       const cancelToken = source.token
       instance.request<T>({ ...config, cancelToken })
         .then(response => {
-          console.log("createRequest response", response)
           if (validator) {
             validator.validate(response.data).mapError(err => {
               console.error("Serveur Api validation fail", config.url, err)
@@ -124,7 +123,6 @@ export function createRequest(instance: AxiosInstance): Request {
           observer.complete()
         })
         .catch((error: AxiosError) => {
-          console.log("createRequest error", error)
           if (error.response && error.response.status) {
             observer.error(error.response.data)
           } else {
