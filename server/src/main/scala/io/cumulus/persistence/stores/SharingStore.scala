@@ -51,7 +51,7 @@ class SharingStore(
     qb { implicit c =>
       SQL"""
           SELECT #$selectAllWithFsNode
-          FROM $table
+          FROM #$table
           INNER JOIN #${FsNodeStore.table}
           ON #$table.#$fsNodeField = #${FsNodeStore.table}.#${FsNodeStore.pkField}
           WHERE #$table.#$fsNodeField = ${fsNode.id}
@@ -68,7 +68,7 @@ class SharingStore(
 
       SQL"""
           SELECT #$selectAllWithFsNode
-          FROM $table
+          FROM #$table
           WHERE #$referenceField = $reference
         """.as(withFsNodeRowParser.singleOpt)
     }
@@ -83,7 +83,7 @@ class SharingStore(
 
       SQL"""
           SELECT #$selectAll
-          FROM $table
+          FROM #$table
           WHERE #$fsNodeField = ${fsNode.id}
           #${pagination.toLIMIT}
         """.as(rowParser.*).toPaginatedList(pagination.offset)
@@ -98,7 +98,7 @@ class SharingStore(
 
       SQL"""
           SELECT #$selectAll
-          FROM $table
+          FROM #$table
           WHERE #$fsNodeField = ${fsNode.id}
           FOR UPDATE
         """.as(rowParser.*)
