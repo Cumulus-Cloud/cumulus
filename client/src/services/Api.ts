@@ -16,33 +16,38 @@ import { Observer } from "rxjs/Observer"
 export interface Requests {
   signup(login: string, email: string, password: string): Observable<AuthApiResponse>
   login(login: string, password: string): Observable<AuthApiResponse>
-  fetchDirectory(token: string): (path: string) => Observable<FsDirectory>
+  fetchDirectory(path: string): Observable<FsDirectory>
+  deleteFsNode(fsNode: FsNode): Observable<void>
+  share(fsNode: FsNode): Observable<Share>
 }
 
 type Request = <T>(config: AxiosRequestConfig, validator?: Validator<T>) => Observable<T>
 
 export function createRequests(request: Request): Requests {
   return {
-    login: (login: string, password: string) => {
-      return request({
-        url: "/api/users/login",
-        method: "POST",
-        data: { login, password }
-      }, AuthApiResponseValidator)
-    },
-    signup: (login: string, email: string, password: string) => {
-      return request({
-        url: "/api/users/signup",
-        method: "POST",
-        data: { login, email, password }
-      }, AuthApiResponseValidator)
-    },
-    fetchDirectory: (token: string) => (path: string) => {
-      return request({
-        url: `/api/fs${encodeURI(path)}`,
-        method: "GET",
-      })
-    }
+    login: (login, password) => request({
+      url: "/api/users/login",
+      method: "POST",
+      data: { login, password }
+    }, AuthApiResponseValidator),
+    signup: (login, email, password) => request({
+      url: "/api/users/signup",
+      method: "POST",
+      data: { login, email, password }
+    }, AuthApiResponseValidator),
+    fetchDirectory: path => request({
+      url: `/api/fs${encodeURI(path)}`,
+      method: "GET",
+    }),
+    deleteFsNode: fsNode => request({
+      url: `/api/fs${encodeURI(fsNode.path)}`,
+      method: "DELETE",
+    }),
+    share: fsNode => request({
+      url: `/api/fs${encodeURI(fsNode.path)}`,
+      method: "POST",
+      data: { operation: "SHARE_LINK" }
+    }, ShareValidator)
   }
 }
 
@@ -141,21 +146,6 @@ export function move(source: string, to: string): Promise<FsNode> {
     headers: HEADERS,
     body: JSON.stringify({ operation: "MOVE", to })
   }).then(success(FsNodeValidator))
-}
-
-export function deleteFsNode(fsNode: FsNode): Promise<void> {
-  return withAuth(`/api/fs${encodeURI(fsNode.path)}`, {
-    method: "DELETE",
-    headers: HEADERS,
-  }).then(success())
-}
-
-export function share(fsNode: FsNode): Promise<Share> {
-  return withAuth(`/api/fs${encodeURI(fsNode.path)}`, {
-    method: "POST",
-    headers: HEADERS,
-    body: JSON.stringify({ operation: "SHARE_LINK" })
-  }).then(success(ShareValidator))
 }
 
 export function search(query: string, current?: FsDirectory, nodeType?: NodeType, type?: string): Promise<SearchResult> {
