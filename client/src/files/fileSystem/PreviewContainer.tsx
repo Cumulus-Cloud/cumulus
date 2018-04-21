@@ -9,7 +9,6 @@ import ModalActions from "components/modals/ModalActions"
 import FlatButton from "components/buttons/FlatButton"
 import VideoPlayer from "components/preview/VideoPlayer"
 import ImagePreview from "components/preview/ImagePreview"
-import * as Api from "services/Api"
 
 interface DispatchProps {
   onShowPreview(fsNode?: FsFile): void
@@ -43,9 +42,9 @@ class PreviewContainer extends React.PureComponent<Props> {
 
   renderPreview = (fsFile: FsFile) => {
     if (videosPreviewAvailable.filter(v => fsFile.name.toLowerCase().endsWith(v)).length > 0) {
-      return <VideoPlayer src={Api.getDownloadUrl(fsFile, true)} />
+      return <VideoPlayer src={`/api/download${encodeURI(fsFile.path)}`} />
     } else if (imagesPreviewAvailable.filter(img => fsFile.name.toLowerCase().endsWith(img)).length > 0) {
-      return <ImagePreview src={Api.getDownloadUrl(fsFile, true)} />
+      return <ImagePreview src={`/api/download${encodeURI(fsFile.path)}`} />
     }
   }
 }

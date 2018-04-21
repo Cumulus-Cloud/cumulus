@@ -1,6 +1,5 @@
 import * as React from "react"
 import * as styles from "./FsNodeInfos.css"
-import * as Api from "services/Api"
 import {
   FsNode, isFile, ImageMetadata, isImageMetadata, PDFDocumentMetadata, isPDFDocumentMetadata, DefaultMetadata, isDefaultMetadata
 } from "models/FsNode"
@@ -29,7 +28,7 @@ export default class FsNodeInfo extends React.PureComponent<Props> {
         <div>
           <h3 className={styles.name}>{fsNode.name}</h3>
           {isFile(fsNode) && fsNode.hasThumbnail
-            ? <img className={styles.preview} src={Api.getThumbnail(fsNode)} />
+            ? <img className={styles.preview} src={`/api/thumbnail${encodeURI(fsNode.path)}`} />
             : null
           }
           <div className={styles.infos}>

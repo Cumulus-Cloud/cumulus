@@ -10,7 +10,15 @@ export type AuthAction =
   SignupChange |
   SignupSubmit |
   SignupSubmitSuccess |
-  SignupSubmitError
+  SignupSubmitError |
+  Logout
+
+export interface Logout extends Action {
+  type: "Logout"
+}
+export function logout(): Logout {
+  return { type: "Logout" }
+}
 
 export interface LoginSubmit extends Action {
   type: "LoginSubmit"

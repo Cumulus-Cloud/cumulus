@@ -1,5 +1,4 @@
 import { AuthAction } from "auth/AuthActions"
-import { AuthApiResponse } from "models/AuthApiResponse"
 import { ApiError } from "models/ApiError"
 import { User } from "models/User"
 

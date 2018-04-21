@@ -4,7 +4,7 @@ import { Observable } from "rxjs/Observable"
 import { GlobalState, Dependencies } from "store"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 import {
-  Move, MoveError, ChangeMoveTarget, moveSuccess, moveError, changeMoveTargetSuccess, changeMoveTargetError, ChangeMoveTargetError, MoveAction
+  Move, MoveError, ChangeMoveTarget, moveSuccess, moveError, changeMoveTargetSuccess, changeMoveTargetError, ChangeMoveTargetError
 } from "files/move/MoveActions"
 import { Actions } from "actions"
 import { ApiError } from "models/ApiError"

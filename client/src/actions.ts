@@ -4,6 +4,8 @@ import { FileSystemAction } from "files/fileSystem/FileSystemActions"
 import { MoveAction } from "files/move/MoveActions"
 import { NewFolderAction } from "files/newFolder/NewFolderActions"
 import { RenameAction } from "files/rename/RenameActions"
+import { SearchAction } from "files/search/SearchActions"
+import { UploadAction } from "files/upload/UploadActions"
 
 export type Actions =
   AuthAction |
@@ -11,4 +13,6 @@ export type Actions =
   FileSystemAction |
   MoveAction |
   NewFolderAction |
-  RenameAction
+  RenameAction |
+  SearchAction |
+  UploadAction

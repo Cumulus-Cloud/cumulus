@@ -3,7 +3,7 @@ import { MiddlewareAPI } from "redux"
 import { GlobalState, history, Dependencies } from "store"
 import {
   loginOnSubmitSuccess, loginSubmitError, LoginSubmit, LoginSubmitError, SignupSubmit,
-  signupSubmitSuccess, signupSubmitError, SignupSubmitError, AuthAction
+  signupSubmitSuccess, signupSubmitError, SignupSubmitError, AuthAction, Logout
 } from "auth/AuthActions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 import { Observable } from "rxjs/Observable"
@@ -54,7 +54,17 @@ export const signupErrorEpic: Epic<Actions, GlobalState> = (action$: ActionsObse
     .map((action: SignupSubmitError) => showApiErrorNotif(action.error))
 }
 
+export const logout: Epic<Actions, GlobalState> = (action$: ActionsObservable<Logout>) => {
+  return action$
+    .ofType("Logout")
+    .map(() => {
+      history.replace("/login")
+      return Observable.empty<Actions>()
+    })
+}
+
 export const authEpics = combineEpics(
   loginEpic, loginErrorEpic,
   signupEpic, signupErrorEpic,
+  logout
 )

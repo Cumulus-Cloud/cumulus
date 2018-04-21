@@ -1,26 +1,27 @@
-import { history } from "store"
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from "axios"
+import { Observer } from "rxjs/Observer"
+import { Observable } from "rxjs/Observable"
+import { Validator } from "validation.ts"
 import { User, UserValidator } from "models/User"
 import { AuthApiResponse, AuthApiResponseValidator } from "models/AuthApiResponse"
-import { Validator } from "validation.ts"
-import { FsNode, FsDirectory, FsNodeValidator, NodeType, FsFile } from "models/FsNode"
+import { FsNode, FsDirectory, FsNodeValidator, NodeType } from "models/FsNode"
 import { FileToUpload } from "models/FileToUpload"
 import { Share, ShareValidator } from "models/Share"
 import { SearchResult, SearchResultValidator } from "models/Search"
-import { Promise } from "es6-shim"
-import { success } from "services/request"
 import querystring from "utils/querystring"
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from "axios"
-import { Observable } from "rxjs/Observable"
-import { Observer } from "rxjs/Observer"
 
 export interface Requests {
   signup(login: string, email: string, password: string): Observable<AuthApiResponse>
   login(login: string, password: string): Observable<AuthApiResponse>
+  logout(): Observable<void>
+  user(): Observable<User>
   fetchDirectory(path: string): Observable<FsDirectory>
   deleteFsNode(fsNode: FsNode): Observable<void>
   share(fsNode: FsNode): Observable<Share>
   move(source: string, to: string): Observable<FsNode>
   createFnNode(fsNode: FsNode, name: string, nodeType: NodeType): Observable<FsNode>
+  search(query: string, current?: FsDirectory, nodeType?: NodeType, type?: string): Observable<SearchResult>
+  upload(path: string, fileToUpload: FileToUpload, progression?: (e: ProgressEvent) => void): Observable<FsNode>
 }
 
 type Request = <T>(config: AxiosRequestConfig, validator?: Validator<T>) => Observable<T>
@@ -37,6 +38,14 @@ export function createRequests(request: Request): Requests {
       method: "POST",
       data: { login, email, password }
     }, AuthApiResponseValidator),
+    logout: () => request({
+      url: `/api/users/logout`,
+      method: "POST",
+    }),
+    user: () => request({
+      url: `/api/users/me`,
+      method: "GET",
+    }, UserValidator),
     fetchDirectory: path => request({
       url: `/api/fs${encodeURI(path)}`,
       method: "GET",
@@ -60,6 +69,29 @@ export function createRequests(request: Request): Requests {
       method: "PUT",
       data: { nodeType }
     }, FsNodeValidator),
+    search: (query, current, nodeType, type) => {
+      const qs = querystring({
+        name: query,
+        nodeType,
+        type
+      })
+      return request({
+        url: `/api/search${current ? current.path : "/"}${qs}`,
+        method: "GET",
+      }, SearchResultValidator)
+    },
+    upload: (path, fileToUpload, progression) => {
+      const qs = querystring({
+        cipher: fileToUpload.cipher,
+        compression: fileToUpload.compression,
+      })
+      return request({
+        url: `/api/upload${encodeURI(path)}${qs}`,
+        method: "POST",
+        onUploadProgress: progression,
+        data: fileToUpload.file as Blob
+      })
+    }
   }
 }
 
@@ -101,128 +133,5 @@ export function createRequest(instance: AxiosInstance): Request {
         })
       return () => source.cancel()
     })
-  }
-}
-
-const HEADERS = [
-  ["Content-Type", "application/json"]
-]
-
-const AUTH_TOKEN_STORAGE_KEY = "AUTH_TOKEN_STORAGE_KEY"
-
-function getAuthToken(): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
-    if (!token) {
-      history.replace("/login")
-      reject({
-        message: "Unauthorized"
-      })
-    } else {
-      resolve(token)
-    }
-  })
-}
-
-function withAuth(path: string, options?: RequestInit, headers?: Headers): Promise<Response> {
-  return getAuthToken().then(token => {
-    return fetch(path, {
-      ...options,
-      headers: [
-        ...HEADERS,
-        ["Authorization", token]
-      ],
-      credentials: "same-origin",
-    })
-  })
-}
-
-export function me(): Promise<User> {
-  return withAuth(`/api/users/me`, {
-    method: "GET",
-    headers: HEADERS,
-  }).then(success(UserValidator))
-}
-
-export function search(query: string, current?: FsDirectory, nodeType?: NodeType, type?: string): Promise<SearchResult> {
-  const qs = querystring({
-    name: query,
-    nodeType,
-    type
-  })
-  return withAuth(`/api/search${current ? current.path : "/"}${qs}`, {
-    method: "GET",
-    headers: HEADERS,
-  }).then(success(SearchResultValidator))
-}
-
-export function logout(): Promise<void> {
-  localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
-  sessionStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
-  return fetch("/api/users/logout", {
-    method: "POST",
-    credentials: "same-origin",
-  }).then(() => {
-    history.replace("/login")
-  }).catch(() => {
-    history.replace("/login")
-  })
-}
-
-export function upload(path: string, fileToUpload: FileToUpload, progression?: (e: ProgressEvent) => void): Promise<FsNode> {
-  return new Promise((resolve, reject) => {
-    return getAuthToken().then(token => {
-      const xhr = new XMLHttpRequest()
-      const qs = querystring({
-        cipher: fileToUpload.cipher,
-        compression: fileToUpload.compression,
-      })
-      xhr.open("POST", `/api/upload${encodeURI(path)}${qs}`)
-      xhr.setRequestHeader("Authorization", token)
-      xhr.addEventListener("load", event => {
-        // tslint:disable-next-line:no-any
-        resolve(JSON.parse((event.target as any).response))
-      })
-      xhr.onerror = e => {
-        console.log("onerror", e, xhr, xhr.status)
-        reject({
-          // tslint:disable-next-line:no-any
-          message: (e.target as any).responseText,
-          errors: {}
-        })
-      }
-      if (progression) {
-        xhr.upload.addEventListener("progress", progression)
-      }
-      xhr.send(fileToUpload.file as Blob)
-    })
-  })
-}
-
-export function getDownloadUrl(file: FsNode, cookie: boolean = true): string {
-  if (cookie) {
-    return `/api/download${encodeURI(file.path)}`
-  } else {
-    const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
-    if (!token) {
-      history.push("/login")
-      return `/login`
-    } else {
-      return `/api/download${encodeURI(file.path)}?token=${token}`
-    }
-  }
-}
-
-export function getThumbnail(file: FsFile, cookie: boolean = true): string {
-  if (cookie) {
-    return `/api/thumbnail${encodeURI(file.path)}`
-  } else {
-    const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
-    if (!token) {
-      history.push("/login")
-      return `/login`
-    } else {
-      return `/api/thumbnail${encodeURI(file.path)}?token=${token}`
-    }
   }
 }
