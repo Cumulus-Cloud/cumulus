@@ -19,6 +19,7 @@ export interface Requests {
   fetchDirectory(path: string): Observable<FsDirectory>
   deleteFsNode(fsNode: FsNode): Observable<void>
   share(fsNode: FsNode): Observable<Share>
+  move(source: string, to: string): Observable<FsNode>
 }
 
 type Request = <T>(config: AxiosRequestConfig, validator?: Validator<T>) => Observable<T>
@@ -47,7 +48,12 @@ export function createRequests(request: Request): Requests {
       url: `/api/fs${encodeURI(fsNode.path)}`,
       method: "POST",
       data: { operation: "SHARE_LINK" }
-    }, ShareValidator)
+    }, ShareValidator),
+    move: (source, to) => request({
+      url: `/api/fs${encodeURI(source)}`,
+      method: "POST",
+      data: { operation: "MOVE", to }
+    }, FsNodeValidator)
   }
 }
 
@@ -137,14 +143,6 @@ export function createFnNode(fsNode: FsNode, name: string, nodeType: NodeType): 
   return withAuth(`/api/fs${encodeURI(path)}`, {
     method: "PUT",
     body: JSON.stringify({ nodeType })
-  }).then(success(FsNodeValidator))
-}
-
-export function move(source: string, to: string): Promise<FsNode> {
-  return withAuth(`/api/fs${encodeURI(source)}`, {
-    method: "POST",
-    headers: HEADERS,
-    body: JSON.stringify({ operation: "MOVE", to })
   }).then(success(FsNodeValidator))
 }
 

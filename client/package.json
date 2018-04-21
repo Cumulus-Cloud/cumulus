@@ -23,7 +23,7 @@
     "test": "echo 'soon'"
   },
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "0.18.0",
     "date-fns": "1.29.0",
     "es6-promise": "4.2.4",
     "es6-shim": "0.35.3",
