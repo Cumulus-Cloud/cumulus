@@ -1,6 +1,6 @@
 import { history } from "store"
 import { User, userValidator } from "models/User"
-import { object, string } from "validation.ts"
+import { object, string, Validator } from "validation.ts"
 import { FsNode, FsDirectory, FsNodeValidator, NodeType, FsFile } from "models/FsNode"
 import { FileToUpload } from "models/FileToUpload"
 import { Share, ShareValidator } from "models/Share"
@@ -8,12 +8,76 @@ import { SearchResult, SearchResultValidator } from "models/Search"
 import { Promise } from "es6-shim"
 import { success } from "services/request"
 import querystring from "utils/querystring"
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from "axios"
+import { Observable } from "rxjs/Observable"
+import { Observer } from "rxjs/Observer"
 
 export interface ApiError {
   key: string
   message: string
   errors: Record<string, ApiError[]>
   args: string[]
+}
+
+export interface Requests {
+  signup(): (login: string, email: string, password: string) => Observable<User>
+  login(): (login: string, password: string) => Observable<User>
+}
+
+type Request = <T>(config: AxiosRequestConfig, validator?: Validator<T>) => Observable<T>
+
+export function createRequests(request: Request): Requests {
+  return {
+    login: () => (login: string, password: string) => {
+      return request({
+        url: "/api/users/login",
+        method: "POST",
+        data: { login, password }
+      })
+    },
+    signup: () => (login: string, email: string, password: string) => {
+      return request({
+        url: "/api/users/signup",
+        method: "POST",
+        data: { login, email, password }
+      })
+    }
+  }
+}
+
+export function createApiInstance(baseURL: string): Requests {
+  const instance = axios.create({
+    baseURL,
+    timeout: 5 * 60 * 1000,
+    headers: {
+      "Content-Type": "application/json"
+    }
+  })
+  return createRequests(createRequest(instance))
+}
+
+export function createRequest(instance: AxiosInstance): Request {
+  return <T>(config: AxiosRequestConfig, validator?: Validator<T>) => {
+    return Observable.create((observer: Observer<T>) => {
+      const source = axios.CancelToken.source()
+      const cancelToken = source.token
+      instance.request<T>({ ...config, cancelToken })
+        .then(response => {
+          console.log("createRequest response", response)
+          observer.next(response.data) // TODO add validation
+          observer.complete()
+        })
+        .catch((error: AxiosError) => {
+          console.log("createRequest error", error)
+          if (error.response && error.response.status) {
+            observer.error(error.response.data)
+          } else {
+            observer.error(error)
+          }
+        })
+      return () => source.cancel()
+    })
+  }
 }
 
 const HEADERS = [
@@ -153,7 +217,7 @@ export function logout(): Promise<void> {
 
 export function upload(path: string, fileToUpload: FileToUpload, progression?: (e: ProgressEvent) => void): Promise<FsNode> {
   return new Promise((resolve, reject) => {
-    getAuthToken().then(token => {
+    return getAuthToken().then(token => {
       const xhr = new XMLHttpRequest()
       const qs = querystring({
         cipher: fileToUpload.cipher,
@@ -166,9 +230,11 @@ export function upload(path: string, fileToUpload: FileToUpload, progression?: (
         resolve(JSON.parse((event.target as any).response))
       })
       xhr.onerror = e => {
+        console.log("onerror", e, xhr, xhr.status)
         reject({
           // tslint:disable-next-line:no-any
-          message: (e.target as any).responseText
+          message: (e.target as any).responseText,
+          errors: {}
         })
       }
       if (progression) {

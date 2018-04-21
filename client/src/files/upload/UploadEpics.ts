@@ -20,6 +20,7 @@ export const uploadEpic: Epic<UploadAction, GlobalState> = (action$: ActionsObse
             observer.complete()
           })
           .catch(error => {
+            console.log("uploadEpic catch", error)
             observer.next(uploadFileError(error, action.fileToUpload))
             observer.complete()
           })
@@ -29,7 +30,10 @@ export const uploadEpic: Epic<UploadAction, GlobalState> = (action$: ActionsObse
 export const uploadErrorEpic: Epic<any, GlobalState> = (action$: ActionsObservable<UploadFileError>) => {
   return action$
     .ofType("UploadFileError")
-    .map(action => showApiErrorNotif(action.error))
+    .map(action => {
+      console.log("uploadErrorEpic", action)
+      return showApiErrorNotif(action.error)
+    })
 }
 
 export const uploadEpics = combineEpics(

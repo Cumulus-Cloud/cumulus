@@ -13,6 +13,7 @@ import { MoveState, MoveReducer } from "files/move/MoveReducer"
 import { RenameState, RenameReducer } from "files/rename/RenameReducer"
 import { InAppNotifState, InAppNotifReducer } from "inAppNotif/InAppNotifReducer"
 import RootEpic from "RootEpic"
+import { createApiInstance, Requests } from "services/Api"
 
 export interface GlobalState {
   login: LoginState
@@ -27,9 +28,18 @@ export interface GlobalState {
   router: Reducer<RouterState>
 }
 
+export interface Dependencies {
+  requests: Requests
+}
+
+const requests = createApiInstance("http://localhost:9000")
+
 export const history = createHashHistory()
 const middleware = routerMiddleware(history)
-const epicMiddleware = createEpicMiddleware(RootEpic)
+const dependencies: Dependencies = {
+  requests
+}
+const epicMiddleware = createEpicMiddleware(RootEpic, { dependencies })
 
 const reducers = combineReducers({
   login: LoginReducer,
