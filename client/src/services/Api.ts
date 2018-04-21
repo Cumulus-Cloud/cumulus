@@ -20,22 +20,22 @@ export interface ApiError {
 }
 
 export interface Requests {
-  signup(): (login: string, email: string, password: string) => Observable<User>
-  login(): (login: string, password: string) => Observable<User>
+  signup(login: string, email: string, password: string): Observable<User>
+  login(login: string, password: string): Observable<User>
 }
 
 type Request = <T>(config: AxiosRequestConfig, validator?: Validator<T>) => Observable<T>
 
 export function createRequests(request: Request): Requests {
   return {
-    login: () => (login: string, password: string) => {
+    login: (login: string, password: string) => {
       return request({
         url: "/api/users/login",
         method: "POST",
         data: { login, password }
       })
     },
-    signup: () => (login: string, email: string, password: string) => {
+    signup: (login: string, email: string, password: string) => {
       return request({
         url: "/api/users/signup",
         method: "POST",

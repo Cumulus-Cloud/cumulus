@@ -3,7 +3,7 @@ import { composeWithDevTools } from "redux-devtools-extension"
 import createHashHistory from "history/createHashHistory"
 import { RouterState, routerReducer, routerMiddleware } from "react-router-redux"
 import { createEpicMiddleware } from "redux-observable"
-import { LoginState, LoginReducer } from "auth/login/LoginReducer"
+import { AuthState, AuthReducer } from "auth/AuthReducer"
 import { SignupState, SignupReducer } from "auth/signup/SignupReducer"
 import { FileSystemState, FileSystemReducer } from "files/fileSystem/FileSystemReducer"
 import { NewFolderState, NewFolderReducer } from "files/newFolder/NewFolderReducer"
@@ -16,7 +16,7 @@ import RootEpic from "RootEpic"
 import { createApiInstance, Requests } from "services/Api"
 
 export interface GlobalState {
-  login: LoginState
+  auth: AuthState
   signup: SignupState
   newFolder: NewFolderState
   upload: UploadState
@@ -42,7 +42,7 @@ const dependencies: Dependencies = {
 const epicMiddleware = createEpicMiddleware(RootEpic, { dependencies })
 
 const reducers = combineReducers({
-  login: LoginReducer,
+  auth: AuthReducer,
   signup: SignupReducer,
   newFolder: NewFolderReducer,
   upload: UploadReducer,

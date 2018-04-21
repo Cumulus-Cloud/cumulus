@@ -1,5 +1,5 @@
 import { combineEpics } from "redux-observable"
-import { loginEpics } from "auth/login/LoginEpics"
+import { authEpics } from "auth/AuthEpics"
 import { hideInAppNotifEpics } from "inAppNotif/InAppNotifEpics"
 import { signupEpics } from "auth/signup/SignupEpics"
 import { fileSystemEpics } from "files/fileSystem/FileSystemEpics"
@@ -10,7 +10,7 @@ import { searchEpics } from "files/search/SearchEpics"
 import { uploadEpics } from "files/upload/UploadEpics"
 
 const RootEpic = combineEpics(
-  loginEpics,
+  authEpics,
   signupEpics,
   fileSystemEpics,
   moveEpics,

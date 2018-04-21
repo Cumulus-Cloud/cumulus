@@ -1,18 +1,25 @@
 import * as React from "react"
 import { connect, Dispatch } from "react-redux"
-import * as LoginActions from "./LoginActions"
+import * as AuthActions from "auth/AuthActions"
 import { GlobalState } from "store"
 import LoginForm from "./LoginForm"
-import { LoginState } from "./LoginReducer"
 import AuthLayout from "auth/AuthLayout"
 import GhostButton from "components/buttons/GhostButton"
+import { ApiError } from "services/Api"
 
 interface DispatchProps {
   onChange(field: string, value: string): void
   onSubmit(login: string, password: string): void
 }
 
-type Props = LoginState & DispatchProps
+interface PropsState {
+  login: string
+  password: string
+  formErrors?: ApiError
+  loading: boolean
+}
+
+type Props = PropsState & DispatchProps
 
 class LoginContainer extends React.PureComponent<Props> {
   render() {
@@ -33,12 +40,14 @@ class LoginContainer extends React.PureComponent<Props> {
   }
 }
 
-const mapStateToProps = (state: GlobalState): LoginState => state.login
+const mapStateToProps = (state: GlobalState): PropsState => {
+  return state.auth.login
+}
 
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onChange: (field, value) => dispatch(LoginActions.loginChange(field, value)),
-    onSubmit: (login, password) => dispatch(LoginActions.loginSubmit(login, password))
+    onChange: (field, value) => dispatch(AuthActions.loginChange(field, value)),
+    onSubmit: (login, password) => dispatch(AuthActions.loginSubmit(login, password))
   }
 }
 
