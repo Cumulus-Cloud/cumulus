@@ -3,14 +3,16 @@ import { MiddlewareAPI } from "redux"
 import { GlobalState, history, Dependencies } from "store"
 import {
   loginOnSubmitSuccess, loginSubmitError, LoginSubmit, LoginSubmitError, SignupSubmit,
-  signupSubmitSuccess, signupSubmitError, SignupSubmitError, AuthAction, Logout
+  signupSubmitSuccess, signupSubmitError, SignupSubmitError, Logout
 } from "auth/AuthActions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 import { Observable } from "rxjs/Observable"
 import { Actions } from "actions"
 import { ApiError } from "models/ApiError"
 
-export const loginEpic: Epic<Actions, GlobalState, Dependencies> = (
+type EpicType = Epic<Actions, GlobalState, Dependencies>
+
+export const loginEpic: EpicType = (
   action$: ActionsObservable<LoginSubmit>,
   store: MiddlewareAPI<GlobalState>,
   dependencies: Dependencies,
@@ -26,13 +28,13 @@ export const loginEpic: Epic<Actions, GlobalState, Dependencies> = (
     )
 }
 
-export const loginErrorEpic: Epic<Actions, GlobalState> = (action$: ActionsObservable<LoginSubmitError>) => {
+export const loginErrorEpic: EpicType = (action$: ActionsObservable<LoginSubmitError>) => {
   return action$
     .ofType("LoginSubmitError")
     .map(action => showApiErrorNotif(action.error))
 }
 
-export const signupEpic: Epic<AuthAction, GlobalState, Dependencies> = (
+export const signupEpic: EpicType = (
   action$: ActionsObservable<SignupSubmit>,
   store: MiddlewareAPI<GlobalState>,
   dependencies: Dependencies,
@@ -48,16 +50,16 @@ export const signupEpic: Epic<AuthAction, GlobalState, Dependencies> = (
     )
 }
 
-export const signupErrorEpic: Epic<Actions, GlobalState> = (action$: ActionsObservable<SignupSubmitError>) => {
+export const signupErrorEpic: EpicType = (action$: ActionsObservable<SignupSubmitError>) => {
   return action$
     .ofType("SignupSubmitError")
     .map((action: SignupSubmitError) => showApiErrorNotif(action.error))
 }
 
-export const logout: Epic<Actions, GlobalState> = (action$: ActionsObservable<Logout>) => {
+export const logoutEpic: EpicType = (action$: ActionsObservable<Logout>) => {
   return action$
     .ofType("Logout")
-    .map(() => {
+    .mergeMap(() => {
       history.replace("/login")
       return Observable.empty<Actions>()
     })
@@ -66,5 +68,5 @@ export const logout: Epic<Actions, GlobalState> = (action$: ActionsObservable<Lo
 export const authEpics = combineEpics(
   loginEpic, loginErrorEpic,
   signupEpic, signupErrorEpic,
-  logout
+  logoutEpic,
 )

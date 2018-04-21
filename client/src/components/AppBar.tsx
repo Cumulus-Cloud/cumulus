@@ -24,5 +24,5 @@ export default class AppBar extends React.PureComponent<Props> {
     )
   }
 
-  handleOnLogout = () => this.props.logout()
+  handleOnLogout = () => this.props.onLogout()
 }

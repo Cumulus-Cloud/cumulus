@@ -3,6 +3,7 @@ import { AuthApiResponse } from "models/AuthApiResponse"
 import { ApiError } from "models/ApiError"
 
 export type AuthAction =
+  Logout |
   LoginChange |
   LoginSubmit |
   LoginSubmitError |
@@ -10,8 +11,7 @@ export type AuthAction =
   SignupChange |
   SignupSubmit |
   SignupSubmitSuccess |
-  SignupSubmitError |
-  Logout
+  SignupSubmitError
 
 export interface Logout extends Action {
   type: "Logout"
