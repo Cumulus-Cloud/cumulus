@@ -54,7 +54,7 @@ export const signupErrorEpic: Epic<Actions, GlobalState> = (action$: ActionsObse
     .map((action: SignupSubmitError) => showApiErrorNotif(action.error))
 }
 
-export const authEpics = combineEpics<Actions, GlobalState, Dependencies>(
+export const authEpics = combineEpics(
   loginEpic, loginErrorEpic,
   signupEpic, signupErrorEpic,
 )
