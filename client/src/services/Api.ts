@@ -13,16 +13,10 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from "axios"
 import { Observable } from "rxjs/Observable"
 import { Observer } from "rxjs/Observer"
 
-export interface ApiError {
-  key: string
-  message: string
-  errors: Record<string, ApiError[]>
-  args: string[]
-}
-
 export interface Requests {
   signup(login: string, email: string, password: string): Observable<AuthApiResponse>
   login(login: string, password: string): Observable<AuthApiResponse>
+  fetchDirectory(token: string): (path: string) => Observable<FsDirectory>
 }
 
 type Request = <T>(config: AxiosRequestConfig, validator?: Validator<T>) => Observable<T>
@@ -42,6 +36,12 @@ export function createRequests(request: Request): Requests {
         method: "POST",
         data: { login, email, password }
       }, AuthApiResponseValidator)
+    },
+    fetchDirectory: (token: string) => (path: string) => {
+      return request({
+        url: `/api/fs${encodeURI(path)}`,
+        method: "GET",
+      })
     }
   }
 }
@@ -132,13 +132,6 @@ export function createFnNode(fsNode: FsNode, name: string, nodeType: NodeType): 
   return withAuth(`/api/fs${encodeURI(path)}`, {
     method: "PUT",
     body: JSON.stringify({ nodeType })
-  }).then(success(FsNodeValidator))
-}
-
-export function fetchDirectory(path: string): Promise<FsDirectory> {
-  return withAuth(`/api/fs${encodeURI(path)}`, {
-    method: "GET",
-    headers: HEADERS,
   }).then(success(FsNodeValidator))
 }
 

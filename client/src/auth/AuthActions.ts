@@ -1,6 +1,6 @@
 import { Action } from "redux"
-import { ApiError } from "services/Api"
 import { AuthApiResponse } from "models/AuthApiResponse"
+import { ApiError } from "models/ApiError"
 
 export type AuthAction =
   LoginChange |

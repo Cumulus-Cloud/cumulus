@@ -10,9 +10,9 @@ import ModalHeader from "components/modals/ModalHeader"
 import ModalContent from "components/modals/ModalContent"
 import FlatButton from "components/buttons/FlatButton"
 import { FsNode, FsDirectory, isDirectory } from "models/FsNode"
-import { ApiError } from "services/Api"
 import TargetDirectory from "files/move/TargetDirectory"
 import Breadcrumb from "components/breadcrumb/Breadcrumb"
+import { ApiError } from "models/ApiError"
 
 interface PropsState {
   fsNodes: FsNode[]

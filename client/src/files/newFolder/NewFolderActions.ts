@@ -1,6 +1,6 @@
 import { Action } from "redux"
 import { FsNode } from "models/FsNode"
-import { ApiError } from "services/Api"
+import { ApiError } from "models/ApiError"
 
 export type NewFolderAction =
   NewFolderNameChange |

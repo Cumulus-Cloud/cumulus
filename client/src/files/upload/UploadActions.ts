@@ -1,8 +1,8 @@
 import { Action } from "redux"
 import { FsNode, Compression, Cipher } from "models/FsNode"
 import { FileToUpload } from "models/FileToUpload"
-import { ApiError } from "services/Api"
 import { UploadModalStatus } from "models/UploadModalStatus"
+import { ApiError } from "models/ApiError"
 
 export type UploadAction =
   UploaderModalStatus |

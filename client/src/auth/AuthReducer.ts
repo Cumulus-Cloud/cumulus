@@ -1,6 +1,6 @@
-import { ApiError } from "services/Api"
 import { AuthAction } from "auth/AuthActions"
 import { AuthApiResponse } from "models/AuthApiResponse"
+import { ApiError } from "models/ApiError"
 
 export interface AuthState {
   login: {

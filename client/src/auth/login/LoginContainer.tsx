@@ -5,7 +5,7 @@ import { GlobalState } from "store"
 import LoginForm from "./LoginForm"
 import AuthLayout from "auth/AuthLayout"
 import GhostButton from "components/buttons/GhostButton"
-import { ApiError } from "services/Api"
+import { ApiError } from "models/ApiError"
 
 interface DispatchProps {
   onChange(field: string, value: string): void

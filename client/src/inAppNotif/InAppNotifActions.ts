@@ -1,6 +1,6 @@
 import { Action } from "redux"
 import { InAppNotif } from "inAppNotif/InAppNotif"
-import { ApiError } from "services/Api"
+import { ApiError } from "models/ApiError"
 
 export type InAppNotifAction = ShowInAppNotif | HideInAppNotif
 

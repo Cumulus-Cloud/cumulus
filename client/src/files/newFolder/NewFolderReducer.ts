@@ -1,5 +1,5 @@
 import { NewFolderAction } from "files/newFolder/NewFolderActions"
-import { ApiError } from "services/Api"
+import { ApiError } from "models/ApiError"
 
 export interface NewFolderState {
   newFolderName: string

@@ -6,9 +6,9 @@ import {
   signupSubmitSuccess, signupSubmitError, SignupSubmitError, AuthAction
 } from "auth/AuthActions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
-import { ApiError } from "services/Api"
 import { Observable } from "rxjs/Observable"
 import { Actions } from "actions"
+import { ApiError } from "models/ApiError"
 
 export const loginEpic: Epic<Actions, GlobalState, Dependencies> = (
   action$: ActionsObservable<LoginSubmit>,
@@ -18,9 +18,9 @@ export const loginEpic: Epic<Actions, GlobalState, Dependencies> = (
   return action$.ofType("LoginSubmit")
     .concatMap(({ login, password }) =>
       dependencies.requests.login(login, password)
-        .map(() => {
+        .map(auth => {
           history.replace("/fs/")
-          return loginOnSubmitSuccess()
+          return loginOnSubmitSuccess(auth)
         })
         .catch((error: ApiError) => Observable.of(loginSubmitError(error)))
     )
@@ -40,9 +40,9 @@ export const signupEpic: Epic<AuthAction, GlobalState, Dependencies> = (
   return action$.ofType("SignupSubmit")
     .concatMap(({ email, login, password }) =>
       dependencies.requests.signup(login, email, password)
-      .map(() => {
+      .map(auth => {
         history.replace("/fs/")
-        return signupSubmitSuccess()
+        return signupSubmitSuccess(auth)
       })
       .catch((error: ApiError) => Observable.of(signupSubmitError(error)))
     )

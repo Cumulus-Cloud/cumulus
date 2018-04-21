@@ -1,6 +1,6 @@
 import { RenameAction } from "files/rename/RenameActions"
-import { ApiError } from "services/Api"
 import { FsNode } from "models/FsNode"
+import { ApiError } from "models/ApiError"
 
 export interface RenameState {
   newName: string
