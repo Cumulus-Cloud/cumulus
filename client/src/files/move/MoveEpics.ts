@@ -9,7 +9,9 @@ import {
 import { Actions } from "actions"
 import { ApiError } from "models/ApiError"
 
-export const moveEpic: Epic<Actions, GlobalState> = (
+type EpicType = Epic<Actions, GlobalState, Dependencies>
+
+export const moveEpic: EpicType = (
   action$: ActionsObservable<Move>,
   store: MiddlewareAPI<GlobalState>,
   dependencies: Dependencies,
@@ -23,12 +25,12 @@ export const moveEpic: Epic<Actions, GlobalState> = (
     })
 }
 
-export const moveErrorEpic: Epic<Actions, GlobalState> = (action$: ActionsObservable<MoveError>) => {
+export const moveErrorEpic: EpicType = (action$: ActionsObservable<MoveError>) => {
   return action$.ofType("MoveError")
     .map(action => showApiErrorNotif(action.error))
 }
 
-export const changeMoveTargetEpic: Epic<Actions, GlobalState> = (
+export const changeMoveTargetEpic: EpicType = (
   action$: ActionsObservable<ChangeMoveTarget>,
   store: MiddlewareAPI<GlobalState>,
   dependencies: Dependencies,
@@ -41,7 +43,7 @@ export const changeMoveTargetEpic: Epic<Actions, GlobalState> = (
     )
 }
 
-export const changeMoveTargetErrorEpic: Epic<Actions, GlobalState> = (action$: ActionsObservable<ChangeMoveTargetError>) => {
+export const changeMoveTargetErrorEpic: EpicType = (action$: ActionsObservable<ChangeMoveTargetError>) => {
   return action$
     .ofType("ChangeMoveTargetError")
     .map(action => showApiErrorNotif(action.error))

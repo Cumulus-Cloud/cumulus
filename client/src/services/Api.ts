@@ -20,6 +20,7 @@ export interface Requests {
   deleteFsNode(fsNode: FsNode): Observable<void>
   share(fsNode: FsNode): Observable<Share>
   move(source: string, to: string): Observable<FsNode>
+  createFnNode(fsNode: FsNode, name: string, nodeType: NodeType): Observable<FsNode>
 }
 
 type Request = <T>(config: AxiosRequestConfig, validator?: Validator<T>) => Observable<T>
@@ -53,7 +54,12 @@ export function createRequests(request: Request): Requests {
       url: `/api/fs${encodeURI(source)}`,
       method: "POST",
       data: { operation: "MOVE", to }
-    }, FsNodeValidator)
+    }, FsNodeValidator),
+    createFnNode: (fsNode, name, nodeType) => request({
+      url: `/api/fs${encodeURI(`${fsNode.path}${fsNode.path === "/" ? "" : "/"}${name}`)}`,
+      method: "PUT",
+      data: { nodeType }
+    }, FsNodeValidator),
   }
 }
 
@@ -136,14 +142,6 @@ export function me(): Promise<User> {
     method: "GET",
     headers: HEADERS,
   }).then(success(UserValidator))
-}
-
-export function createFnNode(fsNode: FsNode, name: string, nodeType: NodeType): Promise<FsNode> {
-  const path = `${fsNode.path}${fsNode.path === "/" ? "" : "/"}${name}`
-  return withAuth(`/api/fs${encodeURI(path)}`, {
-    method: "PUT",
-    body: JSON.stringify({ nodeType })
-  }).then(success(FsNodeValidator))
 }
 
 export function search(query: string, current?: FsDirectory, nodeType?: NodeType, type?: string): Promise<SearchResult> {
