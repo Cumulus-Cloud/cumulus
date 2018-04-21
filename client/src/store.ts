@@ -1,4 +1,6 @@
 import { Reducer, createStore, combineReducers, applyMiddleware } from "redux"
+import { persistStore, persistReducer } from 'redux-persist'
+import storage from 'redux-persist/lib/storage'
 import { composeWithDevTools } from "redux-devtools-extension"
 import createHashHistory from "history/createHashHistory"
 import { RouterState, routerReducer, routerMiddleware } from "react-router-redux"
@@ -54,4 +56,14 @@ const enhancer = composeWithDevTools(
   applyMiddleware(epicMiddleware),
   applyMiddleware(middleware),
 )
-export const store = createStore(reducers, enhancer)
+
+const persistConfig = {
+  key: "root",
+  storage,
+  whitelist: ["auth"]
+}
+
+const persistedReducer = persistReducer(persistConfig, reducers)
+
+export const store = createStore(persistedReducer, enhancer)
+export const persistor = persistStore(store)

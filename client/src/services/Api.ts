@@ -1,6 +1,7 @@
 import { history } from "store"
-import { User, userValidator } from "models/User"
-import { object, string, Validator } from "validation.ts"
+import { User, UserValidator } from "models/User"
+import { AuthApiResponse, AuthApiResponseValidator } from "models/AuthApiResponse"
+import { Validator } from "validation.ts"
 import { FsNode, FsDirectory, FsNodeValidator, NodeType, FsFile } from "models/FsNode"
 import { FileToUpload } from "models/FileToUpload"
 import { Share, ShareValidator } from "models/Share"
@@ -20,8 +21,8 @@ export interface ApiError {
 }
 
 export interface Requests {
-  signup(login: string, email: string, password: string): Observable<User>
-  login(login: string, password: string): Observable<User>
+  signup(login: string, email: string, password: string): Observable<AuthApiResponse>
+  login(login: string, password: string): Observable<AuthApiResponse>
 }
 
 type Request = <T>(config: AxiosRequestConfig, validator?: Validator<T>) => Observable<T>
@@ -33,14 +34,14 @@ export function createRequests(request: Request): Requests {
         url: "/api/users/login",
         method: "POST",
         data: { login, password }
-      })
+      }, AuthApiResponseValidator)
     },
     signup: (login: string, email: string, password: string) => {
       return request({
         url: "/api/users/signup",
         method: "POST",
         data: { login, email, password }
-      })
+      }, AuthApiResponseValidator)
     }
   }
 }
@@ -56,6 +57,7 @@ export function createApiInstance(baseURL: string): Requests {
   return createRequests(createRequest(instance))
 }
 
+// TODO refactor
 export function createRequest(instance: AxiosInstance): Request {
   return <T>(config: AxiosRequestConfig, validator?: Validator<T>) => {
     return Observable.create((observer: Observer<T>) => {
@@ -64,7 +66,12 @@ export function createRequest(instance: AxiosInstance): Request {
       instance.request<T>({ ...config, cancelToken })
         .then(response => {
           console.log("createRequest response", response)
-          observer.next(response.data) // TODO add validation
+          if (validator) {
+            validator.validate(response.data).mapError(err => {
+              console.error("Serveur Api validation fail", config.url, err)
+            })
+          }
+          observer.next(response.data)
           observer.complete()
         })
         .catch((error: AxiosError) => {
@@ -113,43 +120,11 @@ function withAuth(path: string, options?: RequestInit, headers?: Headers): Promi
   })
 }
 
-function saveAuthToken(token: string, session: boolean = false) {
-  (session ? sessionStorage : localStorage).setItem(AUTH_TOKEN_STORAGE_KEY, token)
-}
-
-export const userApiResponse = object({
-  user: userValidator,
-  token: string
-})
-export function authenticate(login: string, password: string): Promise<User> {
-  return fetch(`/api/users/login`, {
-    method: "POST",
-    body: JSON.stringify({ login, password }),
-    headers: HEADERS,
-    credentials: "same-origin",
-  }).then(success(userApiResponse)).then(response => {
-    saveAuthToken(response.token)
-    return response.user
-  })
-}
-
-export function signup(login: string, email: string, password: string): Promise<User> {
-  return fetch(`/api/users/signup`, {
-    method: "POST",
-    body: JSON.stringify({ login, email, password }),
-    headers: HEADERS,
-    credentials: "same-origin",
-  }).then(success(userApiResponse)).then(response => {
-    saveAuthToken(response.token)
-    return response.user
-  })
-}
-
 export function me(): Promise<User> {
   return withAuth(`/api/users/me`, {
     method: "GET",
     headers: HEADERS,
-  }).then(success(userValidator))
+  }).then(success(UserValidator))
 }
 
 export function createFnNode(fsNode: FsNode, name: string, nodeType: NodeType): Promise<FsNode> {

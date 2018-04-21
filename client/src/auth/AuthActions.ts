@@ -1,5 +1,6 @@
 import { Action } from "redux"
 import { ApiError } from "services/Api"
+import { AuthApiResponse } from "models/AuthApiResponse"
 
 export type AuthAction =
   LoginChange |
@@ -22,9 +23,10 @@ export function loginSubmit(login: string, password: string): LoginSubmit {
 
 export interface LoginSubmitSuccess extends Action {
   type: "LoginSubmitSuccess"
+  auth: AuthApiResponse
 }
-export function loginOnSubmitSuccess(): LoginSubmitSuccess {
-  return { type: "LoginSubmitSuccess" }
+export function loginOnSubmitSuccess(auth: AuthApiResponse): LoginSubmitSuccess {
+  return { type: "LoginSubmitSuccess", auth }
 }
 
 export interface LoginSubmitError extends Action {
@@ -65,9 +67,10 @@ export function signupSubmit(login: string, email: string, password: string): Si
 
 export interface SignupSubmitSuccess extends Action {
   type: "SignupSubmitSuccess"
+  auth: AuthApiResponse
 }
-export function signupSubmitSuccess(): SignupSubmitSuccess {
-  return { type: "SignupSubmitSuccess" }
+export function signupSubmitSuccess(auth: AuthApiResponse): SignupSubmitSuccess {
+  return { type: "SignupSubmitSuccess", auth }
 }
 
 export interface SignupSubmitError extends Action {
