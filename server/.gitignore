@@ -1,12 +1,42 @@
 
-# Ignore the front's generated files
-public/main.js
-public/main.css
-public/**/*.map
-public/**/*.jpg
+# Ignore Play! working directory
+bin/
+tmp/
+db
+lib/
+logs/
+modules
+project/target
+project/project
+target
+test-result
+*.eml
+dist/
+.cache
+/.idea
+/.idea_modules
+/.classpath
+/.project
+/.settings
+/RUNNING_PID
+.idea
+/.idea_modules
+/.classpath
+/.project
+/.settings
+/RUNNING_PID
 
-# Ignore the app's logs
+
+# Ignore the front's generated files
+src/main/resources/public/main.js
+src/main/resources/public/main.css
+src/main/resources/public/**/*.map
+src/main/resources/public/**/*.jpg
+
+# Ignore server runtime directories
+tmp
 log
+storage
 
 # Ignore the dev configuration file
 conf/local.conf
