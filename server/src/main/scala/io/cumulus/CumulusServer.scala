@@ -115,8 +115,8 @@ class CumulusComponents(
   ))
 
   // Compile time generated router
+  val routerPrefix: String = "/"
   lazy val router: Routes  = wire[Routes]
-  val routerPrefix: String = ""
 
   // Configurations
   implicit lazy val playConfig: Configuration = configuration
