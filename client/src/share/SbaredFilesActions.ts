@@ -1,7 +1,6 @@
 import { Action } from "redux"
-// import { FsNode } from "models/FsNode"
-import { ApiError } from "services/Api"
-import { FsNode } from "models/FsNode";
+import { ApiError } from "models/ApiError"
+import { SharingApiResponse } from "models/Sharing"
 
 export type SharedFilesAction =
   FetchSharedFiles |
@@ -17,10 +16,10 @@ export function fetchSharedFiles(): FetchSharedFiles {
 
 export interface FetchSharedFilesSuccess extends Action {
   type: "FetchSharedFilesSuccess"
-  fsNodes: FsNode[]
+  sharingApiResponse: SharingApiResponse
 }
-export function fetchSharedFilesSuccess(fsNodes: FsNode[]): FetchSharedFilesSuccess {
-  return { type: "FetchSharedFilesSuccess", fsNodes }
+export function fetchSharedFilesSuccess(sharingApiResponse: SharingApiResponse): FetchSharedFilesSuccess {
+  return { type: "FetchSharedFilesSuccess", sharingApiResponse }
 }
 
 export interface FetchSharedFilesError extends Action {

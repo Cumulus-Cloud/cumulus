@@ -1,21 +1,29 @@
+import { MiddlewareAPI } from "redux"
+import { Observable } from "rxjs/Observable"
 import { Epic, combineEpics, ActionsObservable } from "redux-observable"
-import { GlobalState } from "store"
-import * as Api from "services/Api"
-import { SharedFilesAction, FetchSharedFiles, FetchSharedFilesError, fetchSharedFilesSuccess, fetchSharedFilesError } from "share/SbaredFilesActions"
+import { GlobalState, Dependencies } from "store"
+import { Actions } from "actions"
+import { FetchSharedFiles, FetchSharedFilesError, fetchSharedFilesSuccess, fetchSharedFilesError } from "share/SbaredFilesActions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
+import { ApiError } from "models/ApiError"
 
-export const fetchSharedFilesEpic: Epic<SharedFilesAction, GlobalState> = (action$: ActionsObservable<FetchSharedFiles>) => {
+type EpicType = Epic<Actions, GlobalState, Dependencies>
+
+export const fetchSharedFilesEpic: EpicType = (
+  action$: ActionsObservable<FetchSharedFiles>,
+  store: MiddlewareAPI<GlobalState>,
+  dependencies: Dependencies,
+) => {
   return action$
     .ofType("FetchSharedFiles")
     .mergeMap(action =>
-      Api.fetchSharedFiles()
-        .then(fetchSharedFilesSuccess)
-        .catch(fetchSharedFilesError)
+      dependencies.requests.sharings()
+        .map(fetchSharedFilesSuccess)
+        .catch((error: ApiError) => Observable.of(fetchSharedFilesError(error)))
     )
 }
 
-// tslint:disable-next-line:no-any
-export const fetchSharedFilesErrorEpic: Epic<any, GlobalState> = (action$: ActionsObservable<FetchSharedFilesError>) => {
+export const fetchSharedFilesErrorEpic: EpicType = (action$: ActionsObservable<FetchSharedFilesError>) => {
   return action$
     .ofType("FetchSharedFilesError")
     .map(action => showApiErrorNotif(action.error))

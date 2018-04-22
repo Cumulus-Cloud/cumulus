@@ -10,6 +10,7 @@ import { Share, ShareValidator } from "models/Share"
 import { SearchResult, SearchResultValidator } from "models/Search"
 import querystring from "utils/querystring"
 import { history } from "store"
+import { SharingApiResponse, SharingApiResponseValidator } from "models/Sharing"
 
 export interface Requests {
   signup(login: string, email: string, password: string): Observable<AuthApiResponse>
@@ -23,6 +24,7 @@ export interface Requests {
   createFnNode(fsNode: FsNode, name: string, nodeType: NodeType): Observable<FsNode>
   search(query: string, current?: FsDirectory, nodeType?: NodeType, type?: string): Observable<SearchResult>
   upload(path: string, fileToUpload: FileToUpload, progression?: (e: ProgressEvent) => void): Observable<FsNode>
+  sharings(): Observable<SharingApiResponse>
 }
 
 type Request = <T>(config: AxiosRequestConfig, validator?: Validator<T>) => Observable<T>
@@ -92,7 +94,11 @@ export function createRequests(request: Request): Requests {
         onUploadProgress: progression,
         data: fileToUpload.file as Blob
       })
-    }
+    },
+    sharings: () => request({
+      url: `/api/sharings`,
+      method: "GET",
+    }, SharingApiResponseValidator)
   }
 }
 

@@ -3,20 +3,23 @@ import { Dispatch, connect } from "react-redux"
 import { match as RouterMatch } from "react-router"
 import { GlobalState } from "store"
 import * as styles from "./SharedFiles.css"
-import AppBar from "components/AppBar"
+import AppBarContainer from "app/AppBarContainer"
 import InAppNotifContainer from "inAppNotif/InAppNotifContainer"
 import PreviewContainer from "files/fileSystem/PreviewContainer"
 import LeftPanel from "components/LeftPanel"
 import RightPanel from "components/RightPanel"
 import * as SbaredFilesActions from "share/SbaredFilesActions"
-import { FsNode } from "models/FsNode"
+import { SharingItem } from "models/Sharing"
+import { ApiError } from "models/ApiError"
 
 interface DispatchProps {
   fetchSharedFiles(): void
 }
 
 interface PropsState {
-  sharedFiles: FsNode[]
+  sharings: SharingItem[],
+  error?: ApiError,
+  loading: boolean,
 }
 
 type Props = DispatchProps & PropsState
@@ -29,13 +32,13 @@ export class SharedFiles extends React.PureComponent<Props> {
   }
 
   render() {
-    const { sharedFiles } = this.props
-    console.log("sharedFiles", sharedFiles)
+    const { sharings } = this.props
+    console.log("sharedFiles", sharings)
     return (
       <div className={styles.sharedFiles}>
         <LeftPanel />
         <div className={styles.mainContainer}>
-          <AppBar />
+          <AppBarContainer />
           <InAppNotifContainer />
           <PreviewContainer />
           <div className={styles.filesContainer}>
@@ -52,7 +55,9 @@ export class SharedFiles extends React.PureComponent<Props> {
 
 const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string[]> }): PropsState => {
   return {
-    sharedFiles: state.sharedFiles.sharedFiles
+    sharings: state.sharedFiles.sharings,
+    error: state.sharedFiles.error,
+    loading: state.sharedFiles.loading,
   }
 }
 
