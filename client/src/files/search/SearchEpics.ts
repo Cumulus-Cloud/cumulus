@@ -1,18 +1,31 @@
+import { MiddlewareAPI } from "redux"
+import { Observable } from "rxjs/Observable"
 import { Epic, combineEpics, ActionsObservable } from "redux-observable"
-import { GlobalState } from "store"
-import * as Api from "services/Api"
-import { FsNodeSearch, SearchError, onSearchSuccess, onSearchError, SearchAction } from "files/search/SearchActions"
+import { Actions } from "actions"
+import { GlobalState, Dependencies } from "store"
+import { FsNodeSearch, SearchError, onSearchSuccess, onSearchError } from "files/search/SearchActions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
+import { ApiError } from "models/ApiError"
 
-export const searchEpic: Epic<SearchAction, GlobalState> = (action$: ActionsObservable<FsNodeSearch>) => action$.ofType("FsNodeSearch")
-    .mergeMap(action =>
-      Api.search(action.query)
-        .then(onSearchSuccess)
-        .catch(onSearchError)
+type EpicType = Epic<Actions, GlobalState, Dependencies>
+
+export const searchEpic: EpicType = (
+  action$: ActionsObservable<FsNodeSearch>,
+  store: MiddlewareAPI<GlobalState>,
+  dependencies: Dependencies,
+) => {
+  return action$.ofType("FsNodeSearch")
+    .mergeMap(({ query }) =>
+      dependencies.requests.search(query)
+        .map(onSearchSuccess)
+        .catch((error: ApiError) => Observable.of(onSearchError(error)))
     )
+}
 
-export const searchErrorEpic: Epic<any, GlobalState> = (action$: ActionsObservable<SearchError>) => action$.ofType("SearchError")
+export const searchErrorEpic: EpicType = (action$: ActionsObservable<SearchError>) => {
+  return action$.ofType("SearchError")
     .map(action => showApiErrorNotif(action.error))
+}
 
 export const searchEpics = combineEpics(
   searchEpic, searchErrorEpic,

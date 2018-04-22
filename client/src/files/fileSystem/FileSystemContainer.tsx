@@ -4,6 +4,7 @@ import { connect, Dispatch } from "react-redux"
 import { match as RouterMatch } from "react-router"
 import * as FileSystemActions from "./FileSystemActions"
 import * as MoveActions from "files/move/MoveActions"
+import * as AuthActions from "auth/AuthActions"
 import * as RenameActions from "files/rename/RenameActions"
 import { GlobalState, history } from "store"
 import { FileSystemState } from "./FileSystemReducer"
@@ -33,6 +34,7 @@ interface DispatchProps {
   onWantMove(fsNodes: FsNode[], target: FsDirectory): void
   onWantRename(fsNode: FsNode): void
   onCloseShare(): void
+  onLogout(): void
 }
 
 interface PropsState extends FileSystemState {
@@ -59,12 +61,12 @@ class FileSystemContainer extends React.PureComponent<Props> {
   }
 
   render() {
-    const { directory, share, wantMove, sharedFsNode } = this.props
+    const { directory, share, wantMove, sharedFsNode, onLogout } = this.props
     return (
       <DropUploaderContainer className={styles.fileSystemContainer}>
         <LeftPanel />
         <div className={styles.mainContainer}>
-          <AppBar />
+          <AppBar onLogout={onLogout} />
           <InAppNotifContainer />
           <div className={styles.filesContainer}>
             <div className={styles.content}>
@@ -179,6 +181,7 @@ const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
     onSelectFsNode: fsNode => dispatch(FileSystemActions.selectFsNode(fsNode)),
     onWantMove: (fsNodes, target) => dispatch(MoveActions.wantMove(fsNodes, target)),
     onWantRename: fsNode => dispatch(RenameActions.wantRename(fsNode)),
+    onLogout: () => dispatch(AuthActions.logout()),
   }
 }
 

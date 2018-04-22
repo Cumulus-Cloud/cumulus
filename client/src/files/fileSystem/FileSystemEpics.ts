@@ -1,6 +1,6 @@
 import { Epic, combineEpics, ActionsObservable } from "redux-observable"
-import { GlobalState } from "store"
-import * as Api from "services/Api"
+import { MiddlewareAPI } from "redux"
+import { GlobalState, Dependencies } from "store"
 import {
   FetchDirectory,
   fetchDirectorySuccess,
@@ -14,53 +14,67 @@ import {
   onSharingError,
   SharingError,
   DeleteFsNodeError,
-  FileSystemAction
 } from "files/fileSystem/FileSystemActions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
+import { Observable } from "rxjs/Observable"
+import { Actions } from "actions"
+import { ApiError } from "models/ApiError"
 
-export const fetchDirectoryEpic: Epic<FileSystemAction, GlobalState> = (action$: ActionsObservable<FetchDirectory>) => {
+export const fetchDirectoryEpic: Epic<Actions, GlobalState, Dependencies> = (
+  action$: ActionsObservable<FetchDirectory>,
+  store: MiddlewareAPI<GlobalState>,
+  dependencies: Dependencies,
+) => {
   return action$
     .ofType("FetchDirectory")
-    .mergeMap(action =>
-      Api.fetchDirectory(action.path)
-        .then(fetchDirectorySuccess)
-        .catch(fetchDirectoryError)
+    .concatMap(({ path }) =>
+      dependencies.requests.fetchDirectory(path)
+        .map(fetchDirectorySuccess)
+        .catch((error: ApiError) => Observable.of(fetchDirectoryError(error)))
     )
 }
 
-export const fetchDirectoryErrorEpic: Epic<any, GlobalState> = (action$: ActionsObservable<FetchDirectoryError>) => {
+export const fetchDirectoryErrorEpic: Epic<Actions, GlobalState> = (action$: ActionsObservable<FetchDirectoryError>) => {
   return action$
     .ofType("FetchDirectoryError")
     .map(action => showApiErrorNotif(action.error))
 }
 
-export const onDeleteFsNodeEpic: Epic<FileSystemAction, GlobalState> = (action$: ActionsObservable<DeleteFsNode>) => {
+export const onDeleteFsNodeEpic: Epic<Actions, GlobalState> = (
+  action$: ActionsObservable<DeleteFsNode>,
+  store: MiddlewareAPI<GlobalState>,
+  dependencies: Dependencies,
+) => {
   return action$
     .ofType("DeleteFsNode")
-    .mergeMap(action =>
-      Api.deleteFsNode(action.fsNode)
-        .then(() => deleteFsNodeSuccess(action.fsNode))
-        .catch(deleteFsNodeError)
+    .mergeMap(({ fsNode }) =>
+      dependencies.requests.deleteFsNode(fsNode)
+        .map(() => deleteFsNodeSuccess(fsNode))
+        .catch((error: ApiError) => Observable.of(deleteFsNodeError(error)))
     )
 }
 
-export const onDeleteFsNodeErrorEpic: Epic<any, GlobalState> = (action$: ActionsObservable<DeleteFsNodeError>) => {
+export const onDeleteFsNodeErrorEpic: Epic<Actions, GlobalState> = (action$: ActionsObservable<DeleteFsNodeError>) => {
   return action$
     .ofType("DeleteFsNodeError")
     .map(action => showApiErrorNotif(action.error))
 }
 
-export const sharingEpic: Epic<FileSystemAction, GlobalState> = (action$: ActionsObservable<Sharing>) => {
+export const sharingEpic: Epic<Actions, GlobalState> = (
+  action$: ActionsObservable<Sharing>,
+  store: MiddlewareAPI<GlobalState>,
+  dependencies: Dependencies,
+) => {
   return action$
     .ofType("Sharing")
-    .mergeMap(action =>
-      Api.share(action.fsNode)
-        .then(share => onSharingSuccess(share, action.fsNode))
-        .catch(onSharingError)
+    .mergeMap(({ fsNode }) =>
+      dependencies.requests.share(fsNode)
+        .map(share => onSharingSuccess(share, fsNode))
+        .catch((error: ApiError) => Observable.of(onSharingError(error)))
     )
 }
 
-export const sharingErrorEpic: Epic<any, GlobalState> = (action$: ActionsObservable<SharingError>) => {
+export const sharingErrorEpic: Epic<Actions, GlobalState> = (action$: ActionsObservable<SharingError>) => {
   return action$
     .ofType("SharingError")
     .map(action => showApiErrorNotif(action.error))

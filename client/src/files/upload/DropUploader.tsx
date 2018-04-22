@@ -43,4 +43,4 @@ class DropUploader extends React.PureComponent<Props> {
   }
 }
 
-export default DropTarget<OwnProps>(NativeTypes.FILE, boxTarget, collect)(DropUploader as any)
+export default DropTarget<OwnProps>(NativeTypes.FILE, boxTarget, collect)(DropUploader)

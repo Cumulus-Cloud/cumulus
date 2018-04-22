@@ -68,7 +68,6 @@ export class FsNodeName extends React.PureComponent<Props> {
 
   handleOnKeydown = (e: KeyboardEvent) => {
     const { newName, fsNodeToRename, onRename, onCancelRename } = this.props
-    console.log(e)
     if (e.code === "Enter") {
       onRename(newName, fsNodeToRename!)
     } else if (e.code === "Escape") {

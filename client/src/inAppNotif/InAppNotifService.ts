@@ -2,8 +2,7 @@ import { store } from "store"
 import * as InAppNotifActions from "inAppNotif/InAppNotifActions"
 import { InAppNotif } from "inAppNotif/InAppNotif"
 
-// tslint:disable-next-line:no-any
-let timeoutId: any | undefined
+let timeoutId: NodeJS.Timer | undefined
 
 const timeout = 3000
 

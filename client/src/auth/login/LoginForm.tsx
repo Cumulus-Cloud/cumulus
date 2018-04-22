@@ -2,8 +2,8 @@ import * as React from "react"
 import * as styles from "./LoginForm.css"
 import Input from "components/inputs/Input"
 import Button from "components/buttons/Button"
-import { ApiError } from "services/Api"
 import KeyDownAction from "components/KeyDownAction"
+import { ApiError } from "models/ApiError"
 
 interface Props {
   login: string

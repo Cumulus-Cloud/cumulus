@@ -1,10 +1,11 @@
 import { Reducer, createStore, combineReducers, applyMiddleware } from "redux"
+import { persistStore, persistReducer } from "redux-persist"
+import storage from "redux-persist/lib/storage"
 import { composeWithDevTools } from "redux-devtools-extension"
 import createHashHistory from "history/createHashHistory"
 import { RouterState, routerReducer, routerMiddleware } from "react-router-redux"
 import { createEpicMiddleware } from "redux-observable"
-import { LoginState, LoginReducer } from "auth/login/LoginReducer"
-import { SignupState, SignupReducer } from "auth/signup/SignupReducer"
+import { AuthState, AuthReducer } from "auth/AuthReducer"
 import { FileSystemState, FileSystemReducer } from "files/fileSystem/FileSystemReducer"
 import { NewFolderState, NewFolderReducer } from "files/newFolder/NewFolderReducer"
 import { UploadState, UploadReducer } from "files/upload/UploadReducer"
@@ -14,10 +15,10 @@ import { RenameState, RenameReducer } from "files/rename/RenameReducer"
 import { InAppNotifState, InAppNotifReducer } from "inAppNotif/InAppNotifReducer"
 import { SharedFilesState, SharedFilesReducer } from "share/SharedFilesReducer"
 import RootEpic from "RootEpic"
+import { createApiInstance, Requests } from "services/Api"
 
 export interface GlobalState {
-  login: LoginState
-  signup: SignupState
+  auth: AuthState
   newFolder: NewFolderState
   upload: UploadState
   fileSystem: FileSystemState
@@ -29,13 +30,20 @@ export interface GlobalState {
   router: Reducer<RouterState>
 }
 
+export interface Dependencies {
+  requests: Requests
+}
+
 export const history = createHashHistory()
 const middleware = routerMiddleware(history)
-const epicMiddleware = createEpicMiddleware(RootEpic)
+
+const dependencies: Dependencies = {
+  requests: createApiInstance()
+}
+const epicMiddleware = createEpicMiddleware(RootEpic, { dependencies })
 
 const reducers = combineReducers({
-  login: LoginReducer,
-  signup: SignupReducer,
+  auth: AuthReducer,
   newFolder: NewFolderReducer,
   upload: UploadReducer,
   fileSystem: FileSystemReducer,
@@ -50,4 +58,14 @@ const enhancer = composeWithDevTools(
   applyMiddleware(epicMiddleware),
   applyMiddleware(middleware),
 )
-export const store = createStore(reducers, enhancer)
+
+const persistConfig = {
+  key: "root",
+  storage,
+  whitelist: ["auth"]
+}
+
+const persistedReducer = persistReducer(persistConfig, reducers)
+
+export const store = createStore(persistedReducer, enhancer)
+export const persistor = persistStore(store)

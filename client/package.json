@@ -20,9 +20,10 @@
     "build": "parcel build src/main.tsx --out-dir ../server/src/main/resources/public --public-url assets",
     "watch": "parcel watch src/main.tsx --out-dir ../server/src/main/resources/public --public-url assets --no-hmr",
     "watch-hot": "parcel watch src/main.tsx --out-dir ../server/src/main/resources/public --public-url assets",
-    "test": "echo 'soon'"
+    "lint": "tslint --project tsconfig.json"
   },
   "dependencies": {
+    "axios": "0.18.0",
     "date-fns": "1.29.0",
     "es6-promise": "4.2.4",
     "es6-shim": "0.35.3",
@@ -37,8 +38,10 @@
     "redux": "3.7.2",
     "redux-devtools-extension": "2.13.2",
     "redux-observable": "0.18.0",
+    "redux-persist": "5.9.1",
     "reset-css": "3.0.0",
     "rxjs": "5.5.10",
+    "ts-debounce": "0.2.0",
     "validation.ts": "0.0.17"
   },
   "devDependencies": {

@@ -4,7 +4,7 @@ import { GlobalState } from "store"
 import { FsNode } from "models/FsNode"
 import * as SearchActions from "./SearchActions"
 import { SearchState } from "./SearchReducer"
-import debounce from "utils/debounce"
+import { debounce } from "ts-debounce"
 import SearchBar from "components/search/SearchBar"
 
 interface DispatchProps {

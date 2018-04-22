@@ -1,11 +1,11 @@
 import { FileSystemAction, DeleteFsNodeSuccess, ShowFsNodeInfos, SelectFsNode } from "./FileSystemActions"
 import { FsNode, FsFile, isDirectory, FsDirectory } from "models/FsNode"
 import { Share } from "models/Share"
-import { ApiError } from "services/Api"
 import { CreateNewFolderSuccess } from "files/newFolder/NewFolderActions"
 import { UploadFileSuccess } from "files/upload/UploadActions"
 import { MoveSuccess } from "files/move/MoveActions"
 import { RenameSuccess } from "files/rename/RenameActions"
+import { ApiError } from "models/ApiError"
 
 export interface FileSystemState {
   directory?: FsDirectory

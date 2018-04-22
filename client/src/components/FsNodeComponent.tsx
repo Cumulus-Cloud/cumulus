@@ -1,7 +1,6 @@
 import * as styles from "./FsNodeComponent.css"
 import * as React from "react"
 import { FsFile, getExtention, FsNode, isFile, FsDirectory, isPreviewAvailable } from "models/FsNode"
-import * as Api from "services/Api"
 import FileIcon from "icons/FileIcon"
 import IconButton from "components/buttons/IconButton"
 import DeleteIcon from "icons/DeleteIcon"
@@ -52,7 +51,7 @@ export default class FsNodeComponent extends React.PureComponent<Props> {
     const { fsNode, renameMode } = this.props
     if (isFile(fsNode) && !isPreviewAvailable(fsNode) && !renameMode) {
       return (
-        <a className={styles.infos} href={Api.getDownloadUrl(fsNode)}>
+        <a className={styles.infos} href={`/api/download${encodeURI(fsNode.path)}`}>
           <FsNodeName fsNode={fsNode} />
         </a>
       )
@@ -87,7 +86,7 @@ export default class FsNodeComponent extends React.PureComponent<Props> {
     return (
       <Dropdown right renderAction={ActionButton}>
         <DropdownLink
-          href={Api.getDownloadUrl(fsFile)}
+          href={`/api/download${encodeURI(fsFile.path)}`}
           name={Messages("ui.download")}
           icon={<FileDownloadIcon />}
         />

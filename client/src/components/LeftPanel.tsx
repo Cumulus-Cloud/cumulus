@@ -2,7 +2,7 @@ import * as React from "react"
 import * as styles from "./LeftPanel.css"
 import classNames from "utils/ClassNames"
 
-export default class LeftPanel extends React.PureComponent<{}> {
+export default class LeftPanel extends React.PureComponent {
   render() {
     const activeStyle = classNames({
       [styles.link]: true,
