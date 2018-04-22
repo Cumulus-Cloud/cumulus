@@ -1,50 +1,13 @@
-import { Action } from "redux"
+import { buildAction, ActionsUnion } from "typesafe-actions"
 import { FsNode } from "models/FsNode"
 import { ApiError } from "models/ApiError"
 
-export type NewFolderAction =
-  NewFolderNameChange |
-  WantCreateNewFolder |
-  CreateNewFolder |
-  CreateNewFolderError |
-  CreateNewFolderSuccess
-
-export interface NewFolderNameChange extends Action {
-  type: "NewFolderNameChange"
-  newFolderName: string
-}
-export function newFolderNameChange(newFolderName: string): NewFolderNameChange {
-  return { type: "NewFolderNameChange", newFolderName }
+export const NewFolderActions = {
+  newFolderNameChange: buildAction("NewFolderNameChange").payload<{ newFolderName: string }>(),
+  wantCreateNewFolder: buildAction("WantCreateNewFolder").empty(),
+  createNewFolder: buildAction("CreateNewFolder").payload<{ currentDirectory: FsNode, newFolderName: string }>(),
+  createNewFolderSuccess: buildAction("CreateNewFolderSuccess").payload<{ newFolder: FsNode }>(),
+  createNewFolderError: buildAction("CreateNewFolderError").payload<{ error: ApiError }>(),
 }
 
-export interface WantCreateNewFolder extends Action {
-  type: "WantCreateNewFolder"
-}
-export function wantCreateNewFolder(): WantCreateNewFolder {
-  return { type: "WantCreateNewFolder" }
-}
-
-export interface CreateNewFolder extends Action {
-  type: "CreateNewFolder"
-  currentDirectory: FsNode
-  newFolderName: string
-}
-export function createNewFolder(currentDirectory: FsNode, newFolderName: string): CreateNewFolder {
-  return { type: "CreateNewFolder", currentDirectory, newFolderName }
-}
-
-export interface CreateNewFolderSuccess extends Action {
-  type: "CreateNewFolderSuccess"
-  newFolder: FsNode
-}
-export function createNewFolderSuccess(newFolder: FsNode): CreateNewFolderSuccess {
-  return { type: "CreateNewFolderSuccess", newFolder }
-}
-
-export interface CreateNewFolderError extends Action {
-  type: "CreateNewFolderError"
-  error: ApiError
-}
-export function createNewFolderError(error: ApiError): CreateNewFolderError {
-  return { type: "CreateNewFolderError", error }
-}
+export type NewFolderAction = ActionsUnion<typeof NewFolderActions>

@@ -2,7 +2,7 @@ import { getType } from "typesafe-actions"
 import { FileSystemActions } from "files/fileSystem/FileSystemActions"
 import { FsNode, FsFile, isDirectory, FsDirectory } from "models/FsNode"
 import { Share } from "models/Share"
-import { CreateNewFolderSuccess } from "files/newFolder/NewFolderActions"
+import { NewFolderActions } from "files/newFolder/NewFolderActions"
 import { UploadFileSuccess } from "files/upload/UploadActions"
 import { MoveActions } from "files/move/MoveActions"
 import { RenameSuccess } from "files/rename/RenameActions"
@@ -82,7 +82,13 @@ export const FileSystemReducer = (state: FileSystemState = initState, action: Ac
     }
     case getType(FileSystemActions.canselSelectionOfFsNode): return { ...state, selectedFsNodes: [], fsNodeInfosToShow: undefined }
     case "UploadFileSuccess": return uploadFileSuccessReducer(state, action)
-    case "CreateNewFolderSuccess": return createNewFolderSuccessReduce(state, action)
+    case getType(NewFolderActions.createNewFolderSuccess): {
+      if (state.directory && isDirectory(state.directory)) {
+        return { ...state, directory: { ...state.directory, content: [...state.directory.content, action.payload.newFolder] } }
+      } else {
+        return state
+      }
+    }
     case getType(MoveActions.moveSuccess): {
       const newDirectory = { ...state.directory!, content: state.directory!.content.filter(n => n.id !== action.payload.fsNodeToMove.id) }
       return {
@@ -104,14 +110,6 @@ function renameSuccessReducer(state: FileSystemState, action: RenameSuccess): Fi
     }
   }) }
   return { ...state, directory }
-}
-
-function createNewFolderSuccessReduce(state: FileSystemState, action: CreateNewFolderSuccess): FileSystemState {
-  if (state.directory && isDirectory(state.directory)) {
-    return { ...state, directory: { ...state.directory, content: [...state.directory.content, action.newFolder] } }
-  } else {
-    return state
-  }
 }
 
 function uploadFileSuccessReducer(state: FileSystemState, action: UploadFileSuccess): FileSystemState {
