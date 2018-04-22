@@ -4,10 +4,13 @@ import IconButton from "components/buttons/IconButton"
 import Dropdown, { DropdownItem } from "components/menus/Dropdown"
 import MoreVertiIcon from "icons/MoreVertiIcon"
 import LogoutIcon from "icons/LogoutIcon"
-import * as Api from "services/Api"
 import SearchContainer from "files/search/SearchContainer"
 
-export default class AppBar extends React.PureComponent<{}> {
+interface Props {
+  onLogout(): void
+}
+
+export default class AppBar extends React.PureComponent<Props> {
   render() {
     return (
       <div className={styles.appBar}>
@@ -21,5 +24,5 @@ export default class AppBar extends React.PureComponent<{}> {
     )
   }
 
-  handleOnLogout = () => Api.logout()
+  handleOnLogout = () => this.props.onLogout()
 }

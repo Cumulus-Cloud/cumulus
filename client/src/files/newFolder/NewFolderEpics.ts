@@ -1,24 +1,33 @@
+import { MiddlewareAPI } from "redux"
+import { Observable } from "rxjs/Observable"
 import { Epic, combineEpics, ActionsObservable } from "redux-observable"
-import { GlobalState } from "store"
-import * as Api from "services/Api"
+import { GlobalState, Dependencies } from "store"
+import { Actions } from "actions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 import {
-  CreateNewFolder, createNewFolderSuccess, createNewFolderError, CreateNewFolderError, NewFolderAction
+  CreateNewFolder, createNewFolderSuccess, createNewFolderError, CreateNewFolderError
 } from "files/newFolder/NewFolderActions"
+import { ApiError } from "models/ApiError"
 
-export const createNewFolderEpic: Epic<NewFolderAction, GlobalState> = (action$: ActionsObservable<CreateNewFolder>) => {
+type EpicType = Epic<Actions, GlobalState, Dependencies>
+
+export const createNewFolderEpic: EpicType = (
+  action$: ActionsObservable<CreateNewFolder>,
+  store: MiddlewareAPI<GlobalState>,
+  dependencies: Dependencies,
+) => {
   return action$.ofType("CreateNewFolder")
-    .mergeMap(action =>
-      Api.createFnNode(action.currentDirectory, action.newFolderName, "DIRECTORY")
-        .then(createNewFolderSuccess)
-        .catch(createNewFolderError)
+    .mergeMap(({ currentDirectory, newFolderName }) =>
+      dependencies.requests.createFnNode(currentDirectory, newFolderName, "DIRECTORY")
+        .map(createNewFolderSuccess)
+        .catch((error: ApiError) => Observable.of(createNewFolderError(error)))
     )
 }
 
-export const createNewFolderErrorEpic: Epic<any, GlobalState> = (action$: ActionsObservable<CreateNewFolderError>) => {
-    return action$
-        .ofType("CreateNewFolderError")
-        .map(action => showApiErrorNotif(action.error));
+export const createNewFolderErrorEpic: EpicType = (action$: ActionsObservable<CreateNewFolderError>) => {
+  return action$
+    .ofType("CreateNewFolderError")
+    .map(action => showApiErrorNotif(action.error))
 }
 
 export const createNewFolderEpics = combineEpics(

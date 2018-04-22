@@ -1,18 +1,31 @@
+import { MiddlewareAPI } from "redux"
 import { Epic, combineEpics, ActionsObservable } from "redux-observable"
-import { GlobalState } from "store"
-import * as Api from "services/Api"
-import { Rename, RenameError, renameSuccess, renameError, RenameAction } from "files/rename/RenameActions"
+import { GlobalState, Dependencies } from "store"
+import { Actions } from "actions"
+import { Rename, RenameError, renameSuccess, renameError } from "files/rename/RenameActions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
+import { ApiError } from "models/ApiError"
+import { Observable } from "rxjs/Observable"
 
-export const renameEpic: Epic<RenameAction, GlobalState> = (action$: ActionsObservable<Rename>) => action$.ofType("Rename")
+type EpicType = Epic<Actions, GlobalState, Dependencies>
+
+export const renameEpic: EpicType = (
+  action$: ActionsObservable<Rename>,
+  store: MiddlewareAPI<GlobalState>,
+  dependencies: Dependencies,
+) => {
+  return action$.ofType("Rename")
     .mergeMap(action =>
-      Api.move(action.fsNode.path, `${action.fsNode.path.replace(action.fsNode.name, "")}${action.newName}`)
-        .then(renameSuccess)
-        .catch(renameError)
+      dependencies.requests.move(action.fsNode.path, `${action.fsNode.path.replace(action.fsNode.name, "")}${action.newName}`)
+        .map(renameSuccess)
+        .catch((error: ApiError) => Observable.of(renameError(error)))
     )
+}
 
-export const renameErrorEpic: Epic<any, GlobalState> = (action$: ActionsObservable<RenameError>) => action$.ofType("RenameError")
+export const renameErrorEpic: EpicType = (action$: ActionsObservable<RenameError>) => {
+  return action$.ofType("RenameError")
     .map(action => showApiErrorNotif(action.error))
+}
 
 export const renameEpics = combineEpics(
   renameEpic, renameErrorEpic,

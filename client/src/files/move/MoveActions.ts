@@ -1,6 +1,6 @@
 import { Action } from "redux"
-import { ApiError } from "services/Api"
 import { FsNode, FsDirectory } from "models/FsNode"
+import { ApiError } from "models/ApiError"
 
 export type MoveAction =
   WantMove |

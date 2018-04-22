@@ -1,6 +1,6 @@
-import { ApiError } from "services/Api"
 import { SearchAction } from "./SearchActions"
 import { SearchResult } from "models/Search"
+import { ApiError } from "models/ApiError"
 
 export interface SearchState {
   query: string

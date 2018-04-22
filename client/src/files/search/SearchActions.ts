@@ -1,6 +1,6 @@
-import { ApiError } from "services/Api"
-import { SearchResult } from "models/Search"
 import { Action } from "redux"
+import { SearchResult } from "models/Search"
+import { ApiError } from "models/ApiError"
 
 export type SearchAction =
   QueryChange |

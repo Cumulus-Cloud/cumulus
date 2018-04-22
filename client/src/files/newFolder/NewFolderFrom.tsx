@@ -1,7 +1,7 @@
 import * as styles from "./NewFolderFrom.css"
 import * as React from "react"
 import Input from "components/inputs/Input"
-import { ApiError } from "services/Api"
+import { ApiError } from "models/ApiError"
 
 interface Props {
   name: string

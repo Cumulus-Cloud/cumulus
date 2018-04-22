@@ -1,20 +1,29 @@
-import { Epic, combineEpics, ActionsObservable } from "redux-observable"
-import { GlobalState } from "store"
-import * as Api from "services/Api"
-import { UploadAction, UploadFile, UploadFileError, uploadFileSuccess, uploadFileError, progressUpload } from "files/upload/UploadActions"
-import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
+import { MiddlewareAPI } from "redux"
 import { Observable } from "rxjs/Observable"
 import { Observer } from "rxjs/Observer"
-import debounce from "utils/debounce"
+import { Epic, combineEpics, ActionsObservable } from "redux-observable"
+import { GlobalState, Dependencies } from "store"
+import { UploadAction, UploadFile, UploadFileError, uploadFileSuccess, uploadFileError, progressUpload } from "files/upload/UploadActions"
+import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
+import { debounce } from "ts-debounce"
+import { Actions } from "actions"
 
-export const uploadEpic: Epic<UploadAction, GlobalState> = (action$: ActionsObservable<UploadFile>) => action$.ofType("UploadFile")
+type EpicType = Epic<Actions, GlobalState, Dependencies>
+
+export const uploadEpic: EpicType = (
+  action$: ActionsObservable<UploadFile>,
+  store: MiddlewareAPI<GlobalState>,
+  dependencies: Dependencies,
+) => {
+  return action$.ofType("UploadFile")
     .mergeMap(action => {
       return Observable.create((observer: Observer<UploadAction>) => {
         const progress = (e: ProgressEvent) => {
           const progressed = Math.round(e.loaded * 100 / e.total)
           observer.next(progressUpload(progressed, action.fileToUpload))
         }
-        Api.upload(action.path, action.fileToUpload, debounce(progress, 30))
+        dependencies.requests.upload(action.path, action.fileToUpload, debounce(progress, 30))
+          .toPromise()
           .then(fsNode => {
             observer.next(uploadFileSuccess(fsNode, action.fileToUpload))
             observer.complete()
@@ -23,10 +32,11 @@ export const uploadEpic: Epic<UploadAction, GlobalState> = (action$: ActionsObse
             observer.next(uploadFileError(error, action.fileToUpload))
             observer.complete()
           })
-        })
+      })
     })
+}
 
-export const uploadErrorEpic: Epic<any, GlobalState> = (action$: ActionsObservable<UploadFileError>) => {
+export const uploadErrorEpic: EpicType = (action$: ActionsObservable<UploadFileError>) => {
   return action$
     .ofType("UploadFileError")
     .map(action => showApiErrorNotif(action.error))

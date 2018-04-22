@@ -28,6 +28,7 @@ export default class Dropdown extends React.Component<Props, State> {
   }
 
   handleOnOusideClick = (e: Event) => {
+    // tslint:disable-next-line:no-any
     const isContains = this.itemsRef && this.itemsRef.contains((e as any).target)
     if (!isContains) {
       this.onClose()
@@ -64,12 +65,12 @@ interface DropdownItemProps {
   onClick?(): void
 }
 
-export function DropdownItem(props: DropdownItemProps) {
+export function DropdownItem({ name, icon, onClick }: DropdownItemProps) {
   return (
-    <li className={styles.item} onClick={props.onClick}>
-      {props.icon}
+    <li className={styles.item} onClick={onClick}>
+      {icon}
       <div className={styles.label}>
-        {props.name}
+        {name}
       </div>
     </li>
   )

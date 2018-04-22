@@ -94,7 +94,7 @@ export const FsNodeValidator = union(FsDirectoryValidator, FsFileValidator)
 export type FsNode = typeof FsNodeValidator.T
 
 export function isFile(fsNode: FsNode): fsNode is FsFile {
-  return (fsNode as FsFile).nodeType === "FILE"
+  return fsNode.nodeType === "FILE"
 }
 
 export function isDirectory(fsNode: FsNode): fsNode is FsDirectory {
@@ -117,10 +117,6 @@ export function getExtention(name: string): string {
   return name.split(".").pop() || ""
 }
 
-export function isPreviewAvailable(fsFile: FsFile): boolean {
-  return videosPreviewAvailable.concat(imagesPreviewAvailable).filter(a => fsFile.name.toLowerCase().endsWith(a)).length > 0
-}
-
 export const videosPreviewAvailable = [
   ".mp4",
   ".mkv"
@@ -132,3 +128,6 @@ export const imagesPreviewAvailable = [
   ".gif",
   ".bmp"
 ]
+export function isPreviewAvailable(fsFile: FsFile): boolean {
+  return videosPreviewAvailable.concat(imagesPreviewAvailable).filter(a => fsFile.name.toLowerCase().endsWith(a)).length > 0
+}

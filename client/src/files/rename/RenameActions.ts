@@ -1,6 +1,6 @@
 import { Action } from "redux"
-import { ApiError } from "services/Api"
 import { FsNode } from "models/FsNode"
+import { ApiError } from "models/ApiError"
 
 export type RenameAction =
   WantRename |
