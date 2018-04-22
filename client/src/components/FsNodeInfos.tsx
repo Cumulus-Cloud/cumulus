@@ -16,7 +16,7 @@ interface Props {
 
 const dateFormat = "HH:mm:ss DD/MM/YYYY"
 
-export default class FsNodeInfo extends React.PureComponent<Props> {
+export default class FsNodeInfos extends React.PureComponent<Props> {
   render() {
     const { fsNode } = this.props
     return (

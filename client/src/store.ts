@@ -1,6 +1,6 @@
 import { Reducer, createStore, combineReducers, applyMiddleware } from "redux"
-import { persistStore, persistReducer } from 'redux-persist'
-import storage from 'redux-persist/lib/storage'
+import { persistStore, persistReducer } from "redux-persist"
+import storage from "redux-persist/lib/storage"
 import { composeWithDevTools } from "redux-devtools-extension"
 import createHashHistory from "history/createHashHistory"
 import { RouterState, routerReducer, routerMiddleware } from "react-router-redux"
@@ -32,12 +32,11 @@ export interface Dependencies {
   requests: Requests
 }
 
-const requests = createApiInstance("http://localhost:9000")
-
 export const history = createHashHistory()
 const middleware = routerMiddleware(history)
+
 const dependencies: Dependencies = {
-  requests
+  requests: createApiInstance()
 }
 const epicMiddleware = createEpicMiddleware(RootEpic, { dependencies })
 

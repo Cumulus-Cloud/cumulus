@@ -5,7 +5,7 @@ import { Epic, combineEpics, ActionsObservable } from "redux-observable"
 import { GlobalState, Dependencies } from "store"
 import { UploadAction, UploadFile, UploadFileError, uploadFileSuccess, uploadFileError, progressUpload } from "files/upload/UploadActions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
-import debounce from "utils/debounce"
+import { debounce } from "ts-debounce"
 import { Actions } from "actions"
 
 type EpicType = Epic<Actions, GlobalState, Dependencies>

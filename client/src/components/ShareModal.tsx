@@ -10,7 +10,7 @@ import FlatButton from "components/buttons/FlatButton"
 interface Props {
   share: Share,
   sharedFsNode: FsNode
-  onClose: () => void
+  onClose(): void
 }
 
 export default function ShareModal({ share, sharedFsNode, onClose }: Props) {

@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from "axios"
+import Axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from "axios"
 import { Observer } from "rxjs/Observer"
 import { Observable } from "rxjs/Observable"
 import { Validator } from "validation.ts"
@@ -9,6 +9,7 @@ import { FileToUpload } from "models/FileToUpload"
 import { Share, ShareValidator } from "models/Share"
 import { SearchResult, SearchResultValidator } from "models/Search"
 import querystring from "utils/querystring"
+import { history } from "store"
 
 export interface Requests {
   signup(login: string, email: string, password: string): Observable<AuthApiResponse>
@@ -95,8 +96,8 @@ export function createRequests(request: Request): Requests {
   }
 }
 
-export function createApiInstance(baseURL: string): Requests {
-  const instance = axios.create({
+export function createApiInstance(baseURL?: string): Requests {
+  const instance = Axios.create({
     baseURL,
     timeout: 5 * 60 * 1000,
     headers: {
@@ -110,7 +111,7 @@ export function createApiInstance(baseURL: string): Requests {
 export function createRequest(instance: AxiosInstance): Request {
   return <T>(config: AxiosRequestConfig, validator?: Validator<T>) => {
     return Observable.create((observer: Observer<T>) => {
-      const source = axios.CancelToken.source()
+      const source = Axios.CancelToken.source()
       const cancelToken = source.token
       instance.request<T>({ ...config, cancelToken })
         .then(response => {
@@ -123,7 +124,10 @@ export function createRequest(instance: AxiosInstance): Request {
           observer.complete()
         })
         .catch((error: AxiosError) => {
-          if (error.response && error.response.status) {
+          if (error.response && error.response.status === 400) {
+            observer.error(error.response.data)
+          } else if (error.response && error.response.status === 401) {
+            history.replace("/login")
             observer.error(error.response.data)
           } else {
             observer.error(error)
