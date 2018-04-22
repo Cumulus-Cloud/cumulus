@@ -20,7 +20,9 @@ import { Observable } from "rxjs/Observable"
 import { Actions } from "actions"
 import { ApiError } from "models/ApiError"
 
-export const fetchDirectoryEpic: Epic<Actions, GlobalState, Dependencies> = (
+type EpicType = Epic<Actions, GlobalState, Dependencies>
+
+export const fetchDirectoryEpic: EpicType = (
   action$: ActionsObservable<FetchDirectory>,
   store: MiddlewareAPI<GlobalState>,
   dependencies: Dependencies,
@@ -34,13 +36,13 @@ export const fetchDirectoryEpic: Epic<Actions, GlobalState, Dependencies> = (
     )
 }
 
-export const fetchDirectoryErrorEpic: Epic<Actions, GlobalState> = (action$: ActionsObservable<FetchDirectoryError>) => {
+export const fetchDirectoryErrorEpic: EpicType = (action$: ActionsObservable<FetchDirectoryError>) => {
   return action$
     .ofType("FetchDirectoryError")
     .map(action => showApiErrorNotif(action.error))
 }
 
-export const onDeleteFsNodeEpic: Epic<Actions, GlobalState> = (
+export const onDeleteFsNodeEpic: EpicType = (
   action$: ActionsObservable<DeleteFsNode>,
   store: MiddlewareAPI<GlobalState>,
   dependencies: Dependencies,
@@ -54,13 +56,13 @@ export const onDeleteFsNodeEpic: Epic<Actions, GlobalState> = (
     )
 }
 
-export const onDeleteFsNodeErrorEpic: Epic<Actions, GlobalState> = (action$: ActionsObservable<DeleteFsNodeError>) => {
+export const onDeleteFsNodeErrorEpic: EpicType = (action$: ActionsObservable<DeleteFsNodeError>) => {
   return action$
     .ofType("DeleteFsNodeError")
     .map(action => showApiErrorNotif(action.error))
 }
 
-export const sharingEpic: Epic<Actions, GlobalState> = (
+export const sharingEpic: EpicType = (
   action$: ActionsObservable<Sharing>,
   store: MiddlewareAPI<GlobalState>,
   dependencies: Dependencies,
@@ -74,7 +76,7 @@ export const sharingEpic: Epic<Actions, GlobalState> = (
     )
 }
 
-export const sharingErrorEpic: Epic<Actions, GlobalState> = (action$: ActionsObservable<SharingError>) => {
+export const sharingErrorEpic: EpicType = (action$: ActionsObservable<SharingError>) => {
   return action$
     .ofType("SharingError")
     .map(action => showApiErrorNotif(action.error))

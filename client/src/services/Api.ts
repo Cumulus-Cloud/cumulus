@@ -124,10 +124,10 @@ export function createRequest(instance: AxiosInstance): Request {
           observer.complete()
         })
         .catch((error: AxiosError) => {
-          if (error.response && error.response.status === 400) {
-            observer.error(error.response.data)
-          } else if (error.response && error.response.status === 401) {
+          if (error.response && error.response.status === 401) {
             history.replace("/login")
+            observer.error(error.response.data)
+          } else if (error.response && error.response.data) {
             observer.error(error.response.data)
           } else {
             observer.error(error)
