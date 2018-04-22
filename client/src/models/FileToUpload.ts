@@ -1,4 +1,5 @@
 import { Compression, Cipher, FsDirectory } from "models/FsNode"
+import { ApiError } from "models/ApiError"
 
 export type FileToUploadStatus = "Ready" | "Loading" | "Done"
 
@@ -11,6 +12,7 @@ export interface FileToUpload {
   directory: FsDirectory
   compression?: Compression
   cipher?: Cipher
+  error?: ApiError
 }
 
 export function fileListToArray(filesList: FileList): File[] {

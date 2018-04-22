@@ -25,7 +25,10 @@ export default class UploadFile extends React.PureComponent<Props> {
     return (
       <ProgressBlock className={styles.uploadFile} indeterminate={indeterminate} progress={fileToUpload.progress}>
         <div className={styles.infos}>
-          <div className={styles.name}>{fileToUpload.name}</div>
+          <div className={styles.info}>
+            <div className={styles.name}>{fileToUpload.name}</div>
+            {fileToUpload.error ? <div className={styles.error}>{fileToUpload.error.message}</div> : null}
+          </div>
           <div className={styles.parametres}>
             <div className={styles.parametre}>
               <IconButton onClick={this.handleOnSelectCipher} title={Messages("ui.secure")} disable={loading}>
