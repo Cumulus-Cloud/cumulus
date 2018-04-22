@@ -1,33 +1,23 @@
-import { Action } from "redux"
+import { buildAction, ActionsUnion } from "typesafe-actions"
 import { InAppNotif } from "inAppNotif/InAppNotif"
 import { ApiError, getErrorMessage } from "models/ApiError"
 
-export type InAppNotifAction = ShowInAppNotif | HideInAppNotif
-
-export interface ShowInAppNotif extends Action {
-  type: "ShowInAppNotif"
-  inAppNotif: InAppNotif
-}
-export function showInAppNotif(inAppNotif: InAppNotif): ShowInAppNotif {
-  return { type: "ShowInAppNotif", inAppNotif }
+export const InAppNotifActions = {
+  showInAppNotif: buildAction("ShowInAppNotif").payload<{ inAppNotif: InAppNotif }>(),
+  hideInAppNotif: buildAction("HideInAppNotif").empty(),
 }
 
-export function showErrorNotif(message: string): ShowInAppNotif {
-  return showInAppNotif({ type: "error", message })
+export type InAppNotifAction = ActionsUnion<typeof InAppNotifActions>
+
+export function showErrorNotif(message: string) {
+  return InAppNotifActions.showInAppNotif({ inAppNotif: { type: "error", message } })
 }
 
-export function showApiErrorNotif(error: ApiError): ShowInAppNotif {
+export function showApiErrorNotif(error: ApiError) {
   const message = getErrorMessage(error)
-  return showInAppNotif({ type: "error", message })
+  return InAppNotifActions.showInAppNotif({ inAppNotif: { type: "error", message } })
 }
 
-export function showSuccessNotif(message: string): ShowInAppNotif {
-  return showInAppNotif({ type: "success", message })
-}
-
-export interface HideInAppNotif extends Action {
-  type: "HideInAppNotif"
-}
-export function hideInAppNotif(): HideInAppNotif {
-  return { type: "HideInAppNotif" }
+export function showSuccessNotif(message: string) {
+  return InAppNotifActions.showInAppNotif({ inAppNotif: { type: "success", message } })
 }

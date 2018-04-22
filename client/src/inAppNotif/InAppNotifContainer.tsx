@@ -3,7 +3,7 @@ import * as styles from "inAppNotif/InAppNotifContainer.css"
 import { connect, Dispatch } from "react-redux"
 import { GlobalState } from "store"
 import { InAppNotif } from "inAppNotif/InAppNotif"
-import { hideInAppNotif } from "inAppNotif/InAppNotifActions"
+import { InAppNotifActions } from "inAppNotif/InAppNotifActions"
 import classNames from "utils/ClassNames"
 
 interface PropsState {
@@ -43,7 +43,7 @@ const mapStateToProps = (state: GlobalState): PropsState => {
 
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onHide: () => dispatch(hideInAppNotif())
+    onHide: () => dispatch(InAppNotifActions.hideInAppNotif())
   }
 }
 
