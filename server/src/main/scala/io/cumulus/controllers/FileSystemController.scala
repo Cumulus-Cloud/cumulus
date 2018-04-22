@@ -2,7 +2,7 @@ package io.cumulus.controllers
 
 import scala.concurrent.{ExecutionContext, Future}
 
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import cats.data.EitherT
 import cats.implicits._
@@ -140,32 +140,7 @@ class FileSystemController(
   def upload(path: Path, cipherName: Option[String], compressionName: Option[String]): Action[Source[ByteString, _]] =
     AuthenticatedAction.async(streamBody) { implicit request =>
       ApiResponse {
-        /*
-        val modifications = for {
-          // Get the cipher and compression from the request
-          cipher <- EitherT.fromEither[Future](ciphers.get(cipherName))
-          compression <- EitherT.fromEither[Future](compressions.get(compressionName))
-        } yield cipher -> compression
-
-        modifications
-          .flatMap { case (cipher, compression) =>
-            EitherT(storageService.uploadFile(path, cipher, compression, request.body))
-          }
-          .leftMap { error =>
-            request.body.runWith(Sink.ignore)
-            error
-          }
-        */
-
-        for {
-          // Get the cipher and compression from the request
-          cipher      <- EitherT.fromEither[Future](ciphers.get(cipherName))
-          compression <- EitherT.fromEither[Future](compressions.get(compressionName))
-
-          // Upload & create the file
-          file <- EitherT(storageService.uploadFile(path, cipher, compression, request.body))
-
-        } yield file
+        storageService.uploadFile(path, cipherName, compressionName, request.body)
       }
     }
 

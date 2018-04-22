@@ -34,33 +34,44 @@ class StorageService(
 ) extends Logging {
 
   /**
-    * Upload the provided file (with its content), uploading the data using the implicit storage engine and creating
+    * Uploads the provided file (with its content), uploading the data using the implicit storage engine and creating
     * the metadata related object in the database.
     * <br/><br/>
     * This method will also try to extract metadata from the file (if available) and to generate a thumbnail (if
     * available).
     *
     * @param path The path of the file to upload to.
-    * @param cipher The cipher to use on the file.
-    * @param compression The compression to use on the file.
+    * @param cipherName The name of the cipher to use on the file.
+    * @param compressionName The name of the compression to use on the file.
     * @param content The stream of the content of the file.
     * @param session The user performing the operation.
     */
   def uploadFile(
     path: Path,
-    cipher: Option[CipherStage],
-    compression: Option[CompressionStage],
+    cipherName: Option[String],
+    compressionName: Option[String],
     content: Source[ByteString, _]
   )(implicit session: UserSession): Future[Either[AppError, File]] = {
     implicit val user = session.user
 
-    EitherT(fsNodeService.checkForNewNode(path))
+    // Operations to perform before the upload process starts
+    val preUpload = for {
+      // Get the cipher and compression from the request
+      cipher      <- EitherT.fromEither[Future](ciphers.get(cipherName))
+      compression <- EitherT.fromEither[Future](compressions.get(compressionName))
+
+      // Check that no other file already exists at the same path
+      _ <- EitherT(fsNodeService.checkForNewNode(path))
+    } yield cipher -> compression
+
+
+    preUpload
       .leftSemiflatMap { error =>
         // In case we get any error here, we still need to empty the body otherwise chrome or firefox
         // will think that a network error has occurred
         content.runWith(Sink.ignore).map(_ => error)
       }
-      .flatMap { _ =>
+      .flatMap { case (cipher, compression) =>
         // Define the file writer from this information
         val fileWriter =
           StorageReferenceWriter.writer(
@@ -131,7 +142,7 @@ class StorageService(
   }.value
 
   /**
-    * Delete a file's reference and content by its reference. Safe to use on both directory and file. In case of a
+    * Deletes a file's reference and content by its reference. Safe to use on both directory and file. In case of a
     * file, the file's content will also be deleted.
     *
     * @see [[io.cumulus.persistence.services.FsNodeService#deleteNode FsNodeService.deleteNode]]
@@ -148,7 +159,7 @@ class StorageService(
     })
   }
 
-  /** Extract the metadata of the provided file. Will suppress and log any error. */
+  /** Extracts the metadata of the provided file. Will suppress and log any error. */
   private def extractMetadata(file: File)(implicit session: UserSession): FileMetadata = {
     val metadataExtractor = metadataExtractors.get(file.mimeType)
 
@@ -169,7 +180,7 @@ class StorageService(
     }
   }
 
-  /** Generate a thumbnail of the provided file. */
+  /** Generates a thumbnail of the provided file. */
   private def generateThumbnail(file: File)(implicit session: UserSession): Future[Option[StorageReference]] = {
     val thumbnailGenerator = thumbnailGenerators.get(file.mimeType)
 
