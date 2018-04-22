@@ -11,6 +11,7 @@ import RightPanel from "components/RightPanel"
 import * as SbaredFilesActions from "share/SbaredFilesActions"
 import { SharingItem } from "models/Sharing"
 import { ApiError } from "models/ApiError"
+import SharedFile from "share/SharedFile"
 
 interface DispatchProps {
   fetchSharedFiles(): void
@@ -43,12 +44,18 @@ export class SharedFiles extends React.PureComponent<Props> {
           <PreviewContainer />
           <div className={styles.filesContainer}>
             <div className={styles.content}>
-
+              {sharings.map(sharedFile => <SharedFile key={sharedFile.sharing.id} sharedFile={sharedFile} />)}
             </div>
             <RightPanel />
           </div>
         </div>
       </div>
+    )
+  }
+
+  renderSharedFiles = () => {
+    return (
+      <div></div>
     )
   }
 }
