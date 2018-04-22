@@ -3,7 +3,7 @@ import * as styles from "./FileSystemContainer.css"
 import { connect, Dispatch } from "react-redux"
 import { match as RouterMatch } from "react-router"
 import { FileSystemActions } from "files/fileSystem/FileSystemActions"
-import * as MoveActions from "files/move/MoveActions"
+import { MoveActions } from "files/move/MoveActions"
 import { AuthActions } from "auth/AuthActions"
 import * as RenameActions from "files/rename/RenameActions"
 import { GlobalState, history } from "store"
@@ -179,7 +179,7 @@ const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
     onCloseShare: () => dispatch(FileSystemActions.closeShare()),
     onShowFsNodeInfos: fsNode => dispatch(FileSystemActions.showFsNodeInfos({ fsNode })),
     onSelectFsNode: fsNode => dispatch(FileSystemActions.selectFsNode({ fsNode })),
-    onWantMove: (fsNodes, target) => dispatch(MoveActions.wantMove(fsNodes, target)),
+    onWantMove: (fsNodes, target) => dispatch(MoveActions.wantMove({ fsNodes, target })),
     onWantRename: fsNode => dispatch(RenameActions.wantRename(fsNode)),
     onLogout: () => dispatch(AuthActions.logout()),
   }

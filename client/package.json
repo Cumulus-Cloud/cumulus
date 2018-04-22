@@ -17,7 +17,7 @@
     "url": "https://github.com/Cumulus-Cloud/cumulus/issues"
   },
   "scripts": {
-    "build": "rm -rf .cache && parcel build src/main.tsx --out-dir ../server/src/main/resources/public --public-url assets",
+    "build": "parcel build src/main.tsx --out-dir ../server/src/main/resources/public --public-url assets --no-cache",
     "watch": "parcel watch src/main.tsx --out-dir ../server/src/main/resources/public --public-url assets --no-hmr",
     "watch-hot": "parcel watch src/main.tsx --out-dir ../server/src/main/resources/public --public-url assets",
     "lint": "tslint --project tsconfig.json"

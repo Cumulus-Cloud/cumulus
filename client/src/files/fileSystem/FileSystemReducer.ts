@@ -4,7 +4,7 @@ import { FsNode, FsFile, isDirectory, FsDirectory } from "models/FsNode"
 import { Share } from "models/Share"
 import { CreateNewFolderSuccess } from "files/newFolder/NewFolderActions"
 import { UploadFileSuccess } from "files/upload/UploadActions"
-import { MoveSuccess } from "files/move/MoveActions"
+import { MoveActions } from "files/move/MoveActions"
 import { RenameSuccess } from "files/rename/RenameActions"
 import { ApiError } from "models/ApiError"
 import { Actions } from "actions";
@@ -83,17 +83,15 @@ export const FileSystemReducer = (state: FileSystemState = initState, action: Ac
     case getType(FileSystemActions.canselSelectionOfFsNode): return { ...state, selectedFsNodes: [], fsNodeInfosToShow: undefined }
     case "UploadFileSuccess": return uploadFileSuccessReducer(state, action)
     case "CreateNewFolderSuccess": return createNewFolderSuccessReduce(state, action)
-    case "MoveSuccess": return moveSuccessReducer(state, action)
+    case getType(MoveActions.moveSuccess): {
+      const newDirectory = { ...state.directory!, content: state.directory!.content.filter(n => n.id !== action.payload.fsNodeToMove.id) }
+      return {
+        ...state,
+        directory: newDirectory
+      }
+    }
     case "RenameSuccess": return renameSuccessReducer(state, action)
     default: return state
-  }
-}
-
-function moveSuccessReducer(state: FileSystemState, action: MoveSuccess): FileSystemState {
-  const newDirectory = { ...state.directory!, content: state.directory!.content.filter(n => n.id !== action.movedFsNode.id) }
-  return {
-    ...state,
-    directory: newDirectory
   }
 }
 
