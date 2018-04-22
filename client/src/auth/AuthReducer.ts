@@ -57,6 +57,7 @@ export const AuthReducer = (state: AuthState = initState, action: AuthAction) =>
       token: action.payload.auth.token,
       user: action.payload.auth.user
     }
+    case getType(AuthActions.logout): return initState
     default: return state
   }
 }

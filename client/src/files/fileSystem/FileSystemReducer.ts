@@ -6,6 +6,7 @@ import { NewFolderActions } from "files/newFolder/NewFolderActions"
 import { UploadActions } from "files/upload/UploadActions"
 import { MoveActions } from "files/move/MoveActions"
 import { RenameActions } from "files/rename/RenameActions"
+import { AuthActions } from "auth/AuthActions"
 import { ApiError } from "models/ApiError"
 import { Actions } from "actions";
 
@@ -113,6 +114,7 @@ export const FileSystemReducer = (state: FileSystemState = initState, action: Ac
       }) }
       return { ...state, directory }
     }
+    case getType(AuthActions.logout): return initState
     default: return state
   }
 }
