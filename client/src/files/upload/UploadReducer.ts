@@ -1,6 +1,8 @@
-import { UploadAction } from "files/upload/UploadActions"
+import { getType } from "typesafe-actions"
+import { UploadActions } from "files/upload/UploadActions"
 import { FileToUpload } from "models/FileToUpload"
 import { UploadModalStatus } from "models/UploadModalStatus"
+import { Actions } from "actions"
 
 export interface UploadState {
   status: UploadModalStatus
@@ -12,18 +14,25 @@ const initState: UploadState = {
   filesToUpload: [],
 }
 
-export const UploadReducer = (state: UploadState = initState, action: UploadAction): UploadState => {
+export const UploadReducer = (state: UploadState = initState, action: Actions): UploadState => {
   switch (action.type) {
-    case "UploaderModalStatus": return { ...state, status: action.status, filesToUpload: action.status === "None" ? [] : state.filesToUpload  }
-    case "AddFiles": {
+    case getType(UploadActions.uploaderModalStatus): return {
+      ...state,
+      status: action.payload.status,
+      filesToUpload: action.payload.status === "None" ? [] : state.filesToUpload
+    }
+    case getType(UploadActions.addFiles): {
       return {
         ...state,
-        filesToUpload: [...state.filesToUpload, ...action.filesToUpload],
+        filesToUpload: [...state.filesToUpload, ...action.payload.files],
         status: "Open",
       }
     }
-    case "RemoveFileToUpload": return { ...state, filesToUpload: state.filesToUpload.filter(f => f.id !== action.fileToUpload.id) }
-    case "UploadFile": {
+    case getType(UploadActions.removeFileToUpload): return {
+      ...state,
+      filesToUpload: state.filesToUpload.filter(f => f.id !== action.payload.fileToUpload.id)
+    }
+    case getType(UploadActions.uploadFile): {
       return {
         ...state,
         filesToUpload: state.filesToUpload.map(fileToUpload => {
@@ -35,9 +44,9 @@ export const UploadReducer = (state: UploadState = initState, action: UploadActi
         })
       }
     }
-    case "UploadFileSuccess": {
+    case getType(UploadActions.uploadFileSuccess): {
       const filesToUpload = state.filesToUpload.map(fileToUpload => {
-        if (fileToUpload.id === action.fileToUpload.id) {
+        if (fileToUpload.id === action.payload.fileToUpload.id) {
           return { ...fileToUpload, status: "Done", progress: 100, error: undefined } as FileToUpload
         } else {
           return fileToUpload
@@ -45,40 +54,40 @@ export const UploadReducer = (state: UploadState = initState, action: UploadActi
       })
       return { ...state, filesToUpload }
     }
-    case "UploadFileError": {
+    case getType(UploadActions.uploadFileError): {
       const filesToUpload = state.filesToUpload.map(fileToUpload => {
-        if (fileToUpload.id === action.fileToUpload.id) {
-          return { ...fileToUpload, progress: 0, status: "Ready", error: action.error } as FileToUpload
+        if (fileToUpload.id === action.payload.fileToUpload.id) {
+          return { ...fileToUpload, progress: 0, status: "Ready", error: action.payload.error } as FileToUpload
         } else {
           return fileToUpload
         }
       })
       return { ...state, filesToUpload }
     }
-    case "ProgressUpload": {
+    case getType(UploadActions.progressUpload): {
       const filesToUpload = state.filesToUpload.map(fileToUpload => {
-        if (fileToUpload.id === action.fileToUpload.id) {
-          return { ...fileToUpload, progress: action.progress }
+        if (fileToUpload.id === action.payload.fileToUpload.id) {
+          return { ...fileToUpload, progress: action.payload.progress }
         } else {
           return fileToUpload
         }
       })
       return { ...state, filesToUpload }
     }
-    case "SelectCipher": {
+    case getType(UploadActions.selectCipher): {
       const filesToUpload = state.filesToUpload.map(fileToUpload => {
-        if (fileToUpload.id === action.fileToUpload.id) {
-          return { ...fileToUpload, cipher: action.cipher } as FileToUpload
+        if (fileToUpload.id === action.payload.fileToUpload.id) {
+          return { ...fileToUpload, cipher: action.payload.cipher } as FileToUpload
         } else {
           return fileToUpload
         }
       })
       return { ...state, filesToUpload }
     }
-    case "SelectCompression": {
+    case getType(UploadActions.selectCompression): {
       const filesToUpload = state.filesToUpload.map(fileToUpload => {
-        if (fileToUpload.id === action.fileToUpload.id) {
-          return { ...fileToUpload, compression: action.compression } as FileToUpload
+        if (fileToUpload.id === action.payload.fileToUpload.id) {
+          return { ...fileToUpload, compression: action.payload.compression } as FileToUpload
         } else {
           return fileToUpload
         }

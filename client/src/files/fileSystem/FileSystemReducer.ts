@@ -3,7 +3,7 @@ import { FileSystemActions } from "files/fileSystem/FileSystemActions"
 import { FsNode, FsFile, isDirectory, FsDirectory } from "models/FsNode"
 import { Share } from "models/Share"
 import { NewFolderActions } from "files/newFolder/NewFolderActions"
-import { UploadFileSuccess } from "files/upload/UploadActions"
+import { UploadActions } from "files/upload/UploadActions"
 import { MoveActions } from "files/move/MoveActions"
 import { RenameActions } from "files/rename/RenameActions"
 import { ApiError } from "models/ApiError"
@@ -81,7 +81,14 @@ export const FileSystemReducer = (state: FileSystemState = initState, action: Ac
       selectedFsNodes: state.selectedFsNodes.filter(n => n.id !== action.payload.fsNode.id)
     }
     case getType(FileSystemActions.canselSelectionOfFsNode): return { ...state, selectedFsNodes: [], fsNodeInfosToShow: undefined }
-    case "UploadFileSuccess": return uploadFileSuccessReducer(state, action)
+    case getType(UploadActions.uploadFileSuccess): {
+      if (state.directory && isDirectory(state.directory)) {
+        const newFsNode = { ...state.directory, content: [...state.directory.content, action.payload.fsNode] }
+        return { ...state, directory: newFsNode }
+      } else {
+        return state
+      }
+    }
     case getType(NewFolderActions.createNewFolderSuccess): {
       if (state.directory && isDirectory(state.directory)) {
         return { ...state, directory: { ...state.directory, content: [...state.directory.content, action.payload.newFolder] } }
@@ -107,14 +114,5 @@ export const FileSystemReducer = (state: FileSystemState = initState, action: Ac
       return { ...state, directory }
     }
     default: return state
-  }
-}
-
-function uploadFileSuccessReducer(state: FileSystemState, action: UploadFileSuccess): FileSystemState {
-  if (state.directory && isDirectory(state.directory)) {
-    const newFsNode = { ...state.directory, content: [...state.directory.content, action.fsNode] }
-    return { ...state, directory: newFsNode }
-  } else {
-    return state
   }
 }
