@@ -3,8 +3,7 @@ import { Observable } from "rxjs/Observable"
 import { Observer } from "rxjs/Observer"
 import { Epic, combineEpics, ActionsObservable } from "redux-observable"
 import { GlobalState, Dependencies } from "store"
-import { UploadAction, UploadFile, UploadFileError, uploadFileSuccess, uploadFileError, progressUpload } from "files/upload/UploadActions"
-import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
+import { UploadAction, UploadFile, uploadFileSuccess, uploadFileError, progressUpload } from "files/upload/UploadActions"
 import { debounce } from "ts-debounce"
 import { Actions } from "actions"
 
@@ -36,12 +35,6 @@ export const uploadEpic: EpicType = (
     })
 }
 
-export const uploadErrorEpic: EpicType = (action$: ActionsObservable<UploadFileError>) => {
-  return action$
-    .ofType("UploadFileError")
-    .map(action => showApiErrorNotif(action.error))
-}
-
 export const uploadEpics = combineEpics(
-  uploadEpic, uploadErrorEpic,
+  uploadEpic
 )

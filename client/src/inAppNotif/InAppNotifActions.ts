@@ -1,6 +1,6 @@
 import { Action } from "redux"
 import { InAppNotif } from "inAppNotif/InAppNotif"
-import { ApiError } from "models/ApiError"
+import { ApiError, getErrorMessage } from "models/ApiError"
 
 export type InAppNotifAction = ShowInAppNotif | HideInAppNotif
 
@@ -17,19 +17,8 @@ export function showErrorNotif(message: string): ShowInAppNotif {
 }
 
 export function showApiErrorNotif(error: ApiError): ShowInAppNotif {
-  if (error.errors) {
-    const firstKey = Object.keys(error.errors).pop()
-    if (firstKey && error.errors[firstKey].length > 0) {
-      const message = error.errors[firstKey][0].message
-      return showInAppNotif({ type: "error", message })
-    } else {
-      const message = error.message
-      return showInAppNotif({ type: "error", message })
-    }
-  } else {
-    const message = error.message
-    return showInAppNotif({ type: "error", message })
-  }
+  const message = getErrorMessage(error)
+  return showInAppNotif({ type: "error", message })
 }
 
 export function showSuccessNotif(message: string): ShowInAppNotif {

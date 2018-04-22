@@ -140,15 +140,7 @@ class FileSystemController(
   def upload(path: Path, cipherName: Option[String], compressionName: Option[String]): Action[Source[ByteString, _]] =
     AuthenticatedAction.async(streamBody) { implicit request =>
       ApiResponse {
-        for {
-          // Get the cipher and compression from the request
-          cipher      <- EitherT.fromEither[Future](ciphers.get(cipherName))
-          compression <- EitherT.fromEither[Future](compressions.get(compressionName))
-
-          // Upload & create the file
-          file <- EitherT(storageService.uploadFile(path, cipher, compression, request.body))
-
-        } yield file
+        storageService.uploadFile(path, cipherName, compressionName, request.body)
       }
     }
 
