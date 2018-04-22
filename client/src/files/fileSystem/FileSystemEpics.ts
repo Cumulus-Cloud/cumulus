@@ -1,20 +1,7 @@
-import { Epic, combineEpics, ActionsObservable } from "redux-observable"
-import { MiddlewareAPI } from "redux"
+import { Epic, combineEpics } from "redux-observable"
 import { GlobalState, Dependencies } from "store"
-import {
-  FetchDirectory,
-  fetchDirectorySuccess,
-  fetchDirectoryError,
-  FetchDirectoryError,
-  DeleteFsNode,
-  deleteFsNodeSuccess,
-  deleteFsNodeError,
-  Sharing,
-  onSharingSuccess,
-  onSharingError,
-  SharingError,
-  DeleteFsNodeError,
-} from "files/fileSystem/FileSystemActions"
+import { isActionOf } from "typesafe-actions"
+import { FileSystemActions } from "files/fileSystem/FileSystemActions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 import { Observable } from "rxjs/Observable"
 import { Actions } from "actions"
@@ -22,64 +9,53 @@ import { ApiError } from "models/ApiError"
 
 type EpicType = Epic<Actions, GlobalState, Dependencies>
 
-export const fetchDirectoryEpic: EpicType = (
-  action$: ActionsObservable<FetchDirectory>,
-  store: MiddlewareAPI<GlobalState>,
-  dependencies: Dependencies,
-) => {
+export const fetchDirectoryEpic: EpicType = (action$, _, dependencies) => {
   return action$
-    .ofType("FetchDirectory")
-    .concatMap(({ path }) =>
+    .filter(isActionOf(FileSystemActions.fetchDirectory))
+    .concatMap(({ payload: { path } }) =>
       dependencies.requests.fetchDirectory(path)
-        .map(fetchDirectorySuccess)
-        .catch((error: ApiError) => Observable.of(fetchDirectoryError(error)))
+        .map(directory => FileSystemActions.fetchDirectorySuccess({ directory }))
+        .catch((error: ApiError) => Observable.of(FileSystemActions.fetchDirectoryError({ error })))
     )
 }
 
-export const fetchDirectoryErrorEpic: EpicType = (action$: ActionsObservable<FetchDirectoryError>) => {
+export const fetchDirectoryErrorEpic: EpicType = action$ => {
   return action$
-    .ofType("FetchDirectoryError")
-    .map(action => showApiErrorNotif(action.error))
+    .filter(isActionOf(FileSystemActions.fetchDirectoryError))
+    .map(({ payload: { error } }) => showApiErrorNotif(error))
 }
 
-export const onDeleteFsNodeEpic: EpicType = (
-  action$: ActionsObservable<DeleteFsNode>,
-  store: MiddlewareAPI<GlobalState>,
-  dependencies: Dependencies,
-) => {
+export const onDeleteFsNodeEpic: EpicType = (action$, _, dependencies) => {
   return action$
-    .ofType("DeleteFsNode")
-    .mergeMap(({ fsNode }) =>
+    .filter(isActionOf(FileSystemActions.deleteFsNode))
+    .mergeMap(({ payload: { fsNode } }) =>
       dependencies.requests.deleteFsNode(fsNode)
-        .map(() => deleteFsNodeSuccess(fsNode))
-        .catch((error: ApiError) => Observable.of(deleteFsNodeError(error)))
+        .map(() => FileSystemActions.deleteFsNodeSuccess({ fsNode }))
+        .catch((error: ApiError) => Observable.of(FileSystemActions.deleteFsNodeError({ error })))
     )
 }
 
-export const onDeleteFsNodeErrorEpic: EpicType = (action$: ActionsObservable<DeleteFsNodeError>) => {
+export const onDeleteFsNodeErrorEpic: EpicType = action$ => {
   return action$
-    .ofType("DeleteFsNodeError")
-    .map(action => showApiErrorNotif(action.error))
+    .filter(isActionOf(FileSystemActions.deleteFsNodeError))
+    .map(({ payload: { error } }) => showApiErrorNotif(error))
 }
 
-export const sharingEpic: EpicType = (
-  action$: ActionsObservable<Sharing>,
-  store: MiddlewareAPI<GlobalState>,
-  dependencies: Dependencies,
-) => {
+export const sharingEpic: EpicType = (action$, _, dependencies) => {
   return action$
-    .ofType("Sharing")
-    .mergeMap(({ fsNode }) =>
+    .filter(isActionOf(FileSystemActions.sharing))
+    .mergeMap(({ payload: { fsNode } }) =>
       dependencies.requests.share(fsNode)
-        .map(share => onSharingSuccess(share, fsNode))
-        .catch((error: ApiError) => Observable.of(onSharingError(error)))
+        .map(share => FileSystemActions.sharingSuccess({ share, fsNode }))
+        .catch((error: ApiError) => Observable.of(FileSystemActions.sharingError({ error })))
     )
 }
 
-export const sharingErrorEpic: EpicType = (action$: ActionsObservable<SharingError>) => {
+export const sharingErrorEpic: EpicType = action$ => {
   return action$
     .ofType("SharingError")
-    .map(action => showApiErrorNotif(action.error))
+    .filter(isActionOf(FileSystemActions.sharingError))
+    .map(({ payload: { error } }) => showApiErrorNotif(error))
 }
 
 export const fileSystemEpics = combineEpics(

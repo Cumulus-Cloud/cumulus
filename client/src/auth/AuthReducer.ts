@@ -1,3 +1,4 @@
+import { getType } from "typesafe-actions"
 import { AuthAction, AuthActions } from "auth/AuthActions"
 import { ApiError } from "models/ApiError"
 import { User } from "models/User"
@@ -35,8 +36,6 @@ const initState: AuthState = {
     formErrors: undefined
   }
 }
-
-import { getType } from "typesafe-actions"
 
 export const AuthReducer = (state: AuthState = initState, action: AuthAction) => {
   switch (action.type) {

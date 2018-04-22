@@ -1,4 +1,5 @@
-import { FileSystemAction, DeleteFsNodeSuccess, ShowFsNodeInfos, SelectFsNode } from "./FileSystemActions"
+import { getType } from "typesafe-actions"
+import { FileSystemActions } from "files/fileSystem/FileSystemActions"
 import { FsNode, FsFile, isDirectory, FsDirectory } from "models/FsNode"
 import { Share } from "models/Share"
 import { CreateNewFolderSuccess } from "files/newFolder/NewFolderActions"
@@ -6,6 +7,7 @@ import { UploadFileSuccess } from "files/upload/UploadActions"
 import { MoveSuccess } from "files/move/MoveActions"
 import { RenameSuccess } from "files/rename/RenameActions"
 import { ApiError } from "models/ApiError"
+import { Actions } from "actions";
 
 export interface FileSystemState {
   directory?: FsDirectory
@@ -28,26 +30,59 @@ const initState: FileSystemState = {
 }
 
 // tslint:disable-next-line:cyclomatic-complexity
-export const FileSystemReducer = (state: FileSystemState = initState, action: FileSystemAction) => {
+export const FileSystemReducer = (state: FileSystemState = initState, action: Actions) => {
   switch (action.type) {
-    case "FetchDirectory": return { ...state, loading: true }
-    case "FetchDirectorySuccess": return { ...state, directory: action.directory, loading: false }
-    case "FetchDirectoryError": return { ...state, error: action.error, loading: false }
-    case "CreateNewFolderSuccess": return createNewFolderSuccessReduce(state, action)
-    case "DeleteFsNode": return { ...state, deleteLoading: action.fsNode.id }
-    case "DeleteFsNodeSuccess": return deleteFsNodeSuccessReducer(state, action)
-    case "DeleteFsNodeError": return { ...state, error: action.error, deleteLoading: undefined }
+    case getType(FileSystemActions.fetchDirectory): return { ...state, loading: true }
+    case getType(FileSystemActions.fetchDirectorySuccess): return { ...state, directory: action.payload.directory, loading: false }
+    case getType(FileSystemActions.fetchDirectoryError): return { ...state, error: action.payload.error, loading: false }
+    case getType(FileSystemActions.deleteFsNode): return { ...state, deleteLoading: action.payload.fsNode.id }
+    case getType(FileSystemActions.deleteFsNodeSuccess): {
+      if (state.directory && isDirectory(state.directory)) {
+        const newFsNode = { ...state.directory, content: state.directory.content.filter(fsNode => fsNode.id !== action.payload.fsNode.id) }
+        return { ...state, directory: newFsNode, deleteLoading: undefined }
+      } else {
+        return { ...state, deleteLoading: undefined }
+      }
+    }
+    case getType(FileSystemActions.deleteFsNodeError): return { ...state, error: action.payload.error, deleteLoading: undefined }
+    case getType(FileSystemActions.showPreview): return { ...state, previewFsFile: action.payload.fsFile }
+    case getType(FileSystemActions.sharing): return { ...state, sharingLoader: true }
+    case getType(FileSystemActions.sharingSuccess): return {
+      ...state,
+      sharingLoader: false,
+      sharedFsNode: action.payload.fsNode,
+      share: action.payload.share
+    }
+    case getType(FileSystemActions.sharingError): return {
+      ...state,
+      sharingLoader: false,
+      error: action.payload.error,
+      sharedFsNode: undefined,
+      share: undefined
+    }
+    case getType(FileSystemActions.closeShare): return { ...state, sharedFsNode: undefined, share: undefined }
+    case getType(FileSystemActions.showFsNodeInfos): {
+      if (state.fsNodeInfosToShow && state.fsNodeInfosToShow.id === action.payload.fsNode.id) {
+        return { ...state, fsNodeInfosToShow: undefined }
+      } else {
+        return { ...state, fsNodeInfosToShow: action.payload.fsNode }
+      }
+    }
+    case getType(FileSystemActions.hideFsNodeInfos): return { ...state, fsNodeInfosToShow: undefined, selectedFsNodes: [] }
+    case getType(FileSystemActions.selectFsNode): {
+      if (state.selectedFsNodes.find(n => n.id === action.payload.fsNode.id) === undefined) {
+        return { ...state, selectedFsNodes: [...state.selectedFsNodes, action.payload.fsNode] }
+      } else {
+        return { ...state, selectedFsNodes: state.selectedFsNodes.filter(n => n.id !== action.payload.fsNode.id) }
+      }
+    }
+    case getType(FileSystemActions.deselectFsNode): return {
+      ...state,
+      selectedFsNodes: state.selectedFsNodes.filter(n => n.id !== action.payload.fsNode.id)
+    }
+    case getType(FileSystemActions.canselSelectionOfFsNode): return { ...state, selectedFsNodes: [], fsNodeInfosToShow: undefined }
     case "UploadFileSuccess": return uploadFileSuccessReducer(state, action)
-    case "ShowPreview": return { ...state, previewFsFile: action.fsFile }
-    case "Sharing": return { ...state, sharingLoader: true }
-    case "SharingSuccess": return { ...state, sharingLoader: false, sharedFsNode: action.fsNode, share: action.share }
-    case "SharingError": return { ...state, sharingLoader: false, error: action.error, sharedFsNode: undefined, share: undefined }
-    case "CloseShare": return { ...state, sharedFsNode: undefined, share: undefined }
-    case "ShowFsNodeInfos": return showFsNodeInfosReducer(state, action)
-    case "HideFsNodeInfos": return { ...state, fsNodeInfosToShow: undefined, selectedFsNodes: [] }
-    case "SelectFsNode": return selectFsNodeReducer(state, action)
-    case "DeselectFsNode": return { ...state, selectedFsNodes: state.selectedFsNodes.filter(n => n.id !== action.fsNode.id) }
-    case "CanselSelectionOfFsNode": return { ...state, selectedFsNodes: [], fsNodeInfosToShow: undefined }
+    case "CreateNewFolderSuccess": return createNewFolderSuccessReduce(state, action)
     case "MoveSuccess": return moveSuccessReducer(state, action)
     case "RenameSuccess": return renameSuccessReducer(state, action)
     default: return state
@@ -73,22 +108,6 @@ function renameSuccessReducer(state: FileSystemState, action: RenameSuccess): Fi
   return { ...state, directory }
 }
 
-function selectFsNodeReducer(state: FileSystemState, action: SelectFsNode): FileSystemState {
-  if (state.selectedFsNodes.find(n => n.id === action.fsNode.id) === undefined) {
-    return { ...state, selectedFsNodes: [...state.selectedFsNodes, action.fsNode] }
-  } else {
-    return { ...state, selectedFsNodes: state.selectedFsNodes.filter(n => n.id !== action.fsNode.id) }
-  }
-}
-
-function showFsNodeInfosReducer(state: FileSystemState, action: ShowFsNodeInfos): FileSystemState {
-  if (state.fsNodeInfosToShow && state.fsNodeInfosToShow.id === action.fsNode.id) {
-    return { ...state, fsNodeInfosToShow: undefined }
-  } else {
-    return { ...state, fsNodeInfosToShow: action.fsNode }
-  }
-}
-
 function createNewFolderSuccessReduce(state: FileSystemState, action: CreateNewFolderSuccess): FileSystemState {
   if (state.directory && isDirectory(state.directory)) {
     return { ...state, directory: { ...state.directory, content: [...state.directory.content, action.newFolder] } }
@@ -103,14 +122,5 @@ function uploadFileSuccessReducer(state: FileSystemState, action: UploadFileSucc
     return { ...state, directory: newFsNode }
   } else {
     return state
-  }
-}
-
-function deleteFsNodeSuccessReducer(state: FileSystemState, action: DeleteFsNodeSuccess): FileSystemState {
-  if (state.directory && isDirectory(state.directory)) {
-    const newFsNode = { ...state.directory, content: state.directory.content.filter(fsNode => fsNode.id !== action.fsNode.id) }
-    return { ...state, directory: newFsNode, deleteLoading: undefined }
-  } else {
-    return { ...state, deleteLoading: undefined }
   }
 }

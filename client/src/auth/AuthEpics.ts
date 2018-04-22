@@ -9,8 +9,9 @@ import { ApiError } from "models/ApiError"
 
 type EpicType = Epic<Actions, GlobalState, Dependencies>
 
-export const loginEpic: EpicType = (action$, store, dependencies) => {
-  return action$.filter(isActionOf(AuthActions.loginSubmit))
+export const loginEpic: EpicType = (action$, _, dependencies) => {
+  return action$
+    .filter(isActionOf(AuthActions.loginSubmit))
     .concatMap(({ payload: { login, password } }) =>
       dependencies.requests.login(login, password)
         .map(auth => {
@@ -27,7 +28,7 @@ export const loginErrorEpic: EpicType = action$ => {
     .map(({ payload: { error } }) => showApiErrorNotif(error))
 }
 
-export const signupEpic: EpicType = (action$, store, dependencies) => {
+export const signupEpic: EpicType = (action$, _, dependencies) => {
   return action$
     .filter(isActionOf(AuthActions.signupSubmit))
     .concatMap(({ payload: { email, login, password } }) =>
