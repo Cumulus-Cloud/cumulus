@@ -8,13 +8,14 @@ import InAppNotifContainer from "inAppNotif/InAppNotifContainer"
 import PreviewContainer from "files/fileSystem/PreviewContainer"
 import LeftPanel from "components/LeftPanel"
 import RightPanel from "components/RightPanel"
-import * as SbaredFilesActions from "share/SbaredFilesActions"
+import * as SharedFilesActions from "share/SharedFilesActions"
 import { SharingItem } from "models/Sharing"
 import { ApiError } from "models/ApiError"
 import SharedFile from "share/SharedFile"
 
 interface DispatchProps {
   fetchSharedFiles(): void
+  onDeleteSharingItem(sharingItem: SharingItem): void
 }
 
 interface PropsState {
@@ -33,8 +34,7 @@ export class SharedFiles extends React.PureComponent<Props> {
   }
 
   render() {
-    const { sharings } = this.props
-    console.log("sharedFiles", sharings)
+    const { sharings, onDeleteSharingItem } = this.props
     return (
       <div className={styles.sharedFiles}>
         <LeftPanel />
@@ -44,7 +44,7 @@ export class SharedFiles extends React.PureComponent<Props> {
           <PreviewContainer />
           <div className={styles.filesContainer}>
             <div className={styles.content}>
-              {sharings.map(sharedFile => <SharedFile key={sharedFile.sharing.id} sharedFile={sharedFile} />)}
+              {sharings.map(sharedFile => <SharedFile key={sharedFile.sharing.id} sharedFile={sharedFile} onDelete={onDeleteSharingItem} />)}
             </div>
             <RightPanel />
           </div>
@@ -70,7 +70,8 @@ const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string
 
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    fetchSharedFiles: () => dispatch(SbaredFilesActions.fetchSharedFiles())
+    fetchSharedFiles: () => dispatch(SharedFilesActions.fetchSharedFiles()),
+    onDeleteSharingItem: sharingItem => dispatch(SharedFilesActions.deleteSharedFile(sharingItem))
   }
 }
 

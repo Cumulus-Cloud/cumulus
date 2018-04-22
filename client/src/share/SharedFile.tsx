@@ -5,6 +5,7 @@ import FsNodeComponent from "components/FsNodeComponent"
 
 interface Props {
   sharedFile: SharingItem
+  onDelete(sharingItem: SharingItem): void
 }
 
 export default class SharedFile extends React.PureComponent<Props> {
@@ -19,12 +20,13 @@ export default class SharedFile extends React.PureComponent<Props> {
           onSelect={() => {}}
           onOpen={() => {}}
           onShowInfo={() => {}}
-          onDelete={() => {}}
-          onSharing={() => {}}
+          onDelete={this.handleOnDelete}
           onWantMove={() => {}}
           onWantRename={() => {}}
         />
       </div>
     )
   }
+
+  handleOnDelete = () => this.props.onDelete(this.props.sharedFile)
 }

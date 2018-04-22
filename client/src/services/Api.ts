@@ -10,7 +10,7 @@ import { Share, ShareValidator } from "models/Share"
 import { SearchResult, SearchResultValidator } from "models/Search"
 import querystring from "utils/querystring"
 import { history } from "store"
-import { SharingApiResponse, SharingApiResponseValidator } from "models/Sharing"
+import { SharingApiResponse, SharingApiResponseValidator, SharingItem } from "models/Sharing"
 
 export interface Requests {
   signup(login: string, email: string, password: string): Observable<AuthApiResponse>
@@ -25,6 +25,7 @@ export interface Requests {
   search(query: string, current?: FsDirectory, nodeType?: NodeType, type?: string): Observable<SearchResult>
   upload(path: string, fileToUpload: FileToUpload, progression?: (e: ProgressEvent) => void): Observable<FsNode>
   sharings(): Observable<SharingApiResponse>
+  deleteSharing(ref: string): Observable<SharingItem>
 }
 
 type Request = <T>(config: AxiosRequestConfig, validator?: Validator<T>) => Observable<T>
@@ -79,7 +80,7 @@ export function createRequests(request: Request): Requests {
         type
       })
       return request({
-        url: `/api/search${current ? current.path : "/"}${qs}`,
+        url: `/api/search${encodeURI(current ? current.path : "/")}${qs}`,
         method: "GET",
       }, SearchResultValidator)
     },
@@ -98,7 +99,11 @@ export function createRequests(request: Request): Requests {
     sharings: () => request({
       url: `/api/sharings`,
       method: "GET",
-    }, SharingApiResponseValidator)
+    }, SharingApiResponseValidator),
+    deleteSharing: ref => request({
+      url: `/api/sharings/${encodeURI(ref)}`,
+      method: "DELETE",
+    })
   }
 }
 
