@@ -1,10 +1,11 @@
 package io.cumulus.persistence.services
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 import akka.actor.ActorRef
 import akka.stream.Materializer
-import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
 import cats.data.EitherT
 import cats.implicits._
@@ -12,7 +13,7 @@ import io.cumulus.core.stream.storage.{StorageReferenceReader, StorageReferenceW
 import io.cumulus.core.utils.Range
 import io.cumulus.core.validation.AppError
 import io.cumulus.core.{Logging, Settings}
-import io.cumulus.models.fs.{File, FileMetadata}
+import io.cumulus.models.fs.{DefaultMetadata, File, FileMetadata}
 import io.cumulus.models.{Path, Session, UserSession}
 import io.cumulus.persistence.storage.{StorageEngines, StorageReference}
 import io.cumulus.stages._
@@ -53,35 +54,39 @@ class StorageService(
   )(implicit session: UserSession): Future[Either[AppError, File]] = {
     implicit val user = session.user
 
-    for {
-      // Check that the file can be uploaded
-      _ <- EitherT(fsNodeService.checkForNewNode(path))
-
-      // Define the file writer from this information
-      fileWriter = {
-        StorageReferenceWriter.writer(
-          storageEngines.default, // Always use the default storage engine during upload
-          cipher,
-          compression,
-          path
-        )
+    EitherT(fsNodeService.checkForNewNode(path))
+      .leftSemiflatMap { error =>
+        // In case we get any error here, we still need to empty the body otherwise chrome or firefox
+        // will think that a network error has occurred
+        content.runWith(Sink.ignore).map(_ => error)
       }
+      .flatMap { _ =>
+        // Define the file writer from this information
+        val fileWriter =
+          StorageReferenceWriter.writer(
+            storageEngines.default, // Always use the default storage engine during upload
+            cipher,
+            compression,
+            path
+          )
 
-      // Store the file's content
-      uploadedFile <- EitherT.liftF(content.runWith(fileWriter))
+        for {
+          // Store the file's content
+          uploadedFile <- EitherT.liftF(content.runWith(fileWriter))
 
-      // Extract metadata
-      metadata          <- EitherT.fromEither[Future](extractMetadata(uploadedFile))
-      fileWithMetadata  =  uploadedFile.copy(metadata = metadata)
+          // Extract metadata
+          metadata         = extractMetadata(uploadedFile)
+          fileWithMetadata = uploadedFile.copy(metadata = metadata)
 
-      // Generate a thumbnail (if possible)
-      maybeThumbnail    <- EitherT(generateThumbnail(fileWithMetadata))
-      fileWithThumbnail =  fileWithMetadata.copy(thumbnailStorageReference = maybeThumbnail)
+          // Generate a thumbnail (if possible)
+          maybeThumbnail    <- EitherT.right(generateThumbnail(fileWithMetadata))
+          fileWithThumbnail =  fileWithMetadata.copy(thumbnailStorageReference = maybeThumbnail)
 
-      // Create an entry in the database for the file
-      file <- EitherT(fsNodeService.createFile(fileWithThumbnail))
+          // Create an entry in the database for the file
+          file <- EitherT(fsNodeService.createFile(fileWithThumbnail))
 
-    } yield file
+        } yield file
+      }
 
   }.value
 
@@ -143,23 +148,55 @@ class StorageService(
     })
   }
 
-  /** Extract the metadata of the provided file. */
-  private def extractMetadata(file: File)(implicit session: UserSession): Either[AppError, FileMetadata] = {
+  /** Extract the metadata of the provided file. Will suppress and log any error. */
+  private def extractMetadata(file: File)(implicit session: UserSession): FileMetadata = {
     val metadataExtractor = metadataExtractors.get(file.mimeType)
 
-    metadataExtractor.extract(file)
+    Try {
+      metadataExtractor.extract(file)
+    } match {
+      case Success(metadata) =>
+        metadata.left.map { appError =>
+          // Do not fail the upload if the metadata extraction failed
+          logger.info(s"Failed to extract metadata of file ${file.path}: $appError")
+          DefaultMetadata.empty
+        }
+        .merge
+      case Failure(error) =>
+        // Handle unexpected error if the metadata generation failed
+        logger.warn(s"Failed to extract metadata of file ${file.path} with an unexpected error", error)
+        DefaultMetadata.empty
+    }
   }
 
   /** Generate a thumbnail of the provided file. */
-  private def generateThumbnail(file: File)(implicit session: UserSession): Future[Either[AppError, Option[StorageReference]]] = {
+  private def generateThumbnail(file: File)(implicit session: UserSession): Future[Option[StorageReference]] = {
     val thumbnailGenerator = thumbnailGenerators.get(file.mimeType)
 
-    thumbnailGenerator match {
-      case Some(generator) =>
-        generator.generate(file).map(_.map(Some(_)))
-      case None =>
-        Future.successful(Right(None))
+    Try {
+      thumbnailGenerator match {
+        case Some(generator) =>
+          generator.generate(file).map(_.map(Some(_)))
+        case None =>
+          Future.successful(Right(None))
+      }
+    } match {
+      case Success(thumbnail) =>
+        thumbnail.map { result =>
+          result
+            .left.map { appError =>
+              // Do not fail the upload if the metadata extraction failed
+              logger.info(s"Failed to generate thumbnail of file ${file.path}: $appError")
+              None
+            }
+            .merge
+        }
+      case Failure(error) =>
+        // Handle unexpected error if the metadata generation failed
+        logger.warn(s"Failed to create a thumbnail of the file ${file.path} with an unexpected error", error)
+        Future.successful(None)
     }
+
   }
 
 }
