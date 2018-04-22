@@ -1,6 +1,9 @@
 package io.cumulus
 
+import scala.util.{Failure, Success, Try}
+
 import io.cumulus.core.Logging
+import io.cumulus.core.validation.AppError
 import play.core.server.{Server, ServerComponents}
 
 /**
@@ -15,21 +18,36 @@ object CumulusWatchdog extends Logging {
     new CumulusServer()
   }
 
+  private def createRecoveryServer(error: Throwable): ServerComponents = {
+    new CumulusRecoveryServer(error)
+  }
+
   private def internalStart(): Unit = {
     server = Some(createServer.server)
   }
-
 
   private def internalStop(): Unit = {
     server.foreach(_.stop())
     server = None
   }
 
+  private def internalStartRecoveryServer(error: Throwable): Unit = {
+    server = Some(createRecoveryServer(error).server)
+  }
+
   /** Start the web server is not already started. */
   def start(): Unit = {
     if(server.isEmpty) {
       logger.info("Starting the Cumulus web server...")
-      internalStart()
+      Try {
+        internalStart()
+      } match {
+        case Success(_) =>
+          logger.info("Cumulus web server successfully started")
+        case Failure(error) =>
+          logger.warn("Cumulus web server failed to start", error)
+          internalStartRecoveryServer(error)
+      }
       logger.info("Cumulus web server successfully started")
     } else
       logger.info("Cumulus web server already started")
