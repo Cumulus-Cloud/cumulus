@@ -2,7 +2,7 @@ import * as React from "react"
 import { connect, Dispatch } from "react-redux"
 import { GlobalState } from "store"
 import { Compression, Cipher, FsDirectory } from "models/FsNode"
-import * as UploadActions from "files/upload/UploadActions"
+import { UploadActions } from "files/upload/UploadActions"
 import { UploadState } from "./UploadReducer"
 import { FileToUpload } from "models/FileToUpload"
 import GhostButton from "components/buttons/GhostButton"
@@ -48,12 +48,12 @@ const mapStateToProps = (state: GlobalState): PropsState => {
 }
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onUploaderModalStatus: status => dispatch(UploadActions.uploaderModalStatus(status)),
-    onAddFiles: (files) => dispatch(UploadActions.addFiles(files)),
-    onUploadFile: (path, file) => dispatch(UploadActions.uploadFile(path, file)),
-    onRemoveFileToUpload: fileToUpload => dispatch(UploadActions.removeFileToUpload(fileToUpload)),
-    onSelectCipher: (fileToUpload, cipher) => dispatch(UploadActions.onSelectCipher(fileToUpload, cipher)),
-    onSelectCompression: (fileToUpload, compression) => dispatch(UploadActions.onSelectCompression(fileToUpload, compression)),
+    onUploaderModalStatus: status => dispatch(UploadActions.uploaderModalStatus({ status })),
+    onAddFiles: (files) => dispatch(UploadActions.addFiles({ files })),
+    onUploadFile: (path, fileToUpload) => dispatch(UploadActions.uploadFile({ path, fileToUpload })),
+    onRemoveFileToUpload: fileToUpload => dispatch(UploadActions.removeFileToUpload({ fileToUpload })),
+    onSelectCipher: (fileToUpload, cipher) => dispatch(UploadActions.selectCipher({ fileToUpload, cipher })),
+    onSelectCompression: (fileToUpload, compression) => dispatch(UploadActions.selectCompression({ fileToUpload, compression })),
   }
 }
 

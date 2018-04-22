@@ -1,6 +1,6 @@
 import * as React from "react"
 import { connect, Dispatch } from "react-redux"
-import * as AuthActions from "auth/AuthActions"
+import { AuthActions } from "auth/AuthActions"
 import { GlobalState } from "store"
 import SignupForm from "auth/signup/SignupForm"
 import AuthLayout from "auth/AuthLayout"
@@ -48,8 +48,8 @@ const mapStateToProps = (state: GlobalState): PropsState => {
 
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onChange: (field, value) => dispatch(AuthActions.signupChange(field, value)),
-    onSubmit: (login, email, password) => dispatch(AuthActions.signupSubmit(login, email, password))
+    onChange: (field, value) => dispatch(AuthActions.signupChange({ field, value })),
+    onSubmit: (login, email, password) => dispatch(AuthActions.signupSubmit({ login, email, password }))
   }
 }
 

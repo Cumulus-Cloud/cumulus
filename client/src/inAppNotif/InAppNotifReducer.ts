@@ -1,5 +1,7 @@
+import { getType } from "typesafe-actions"
 import { InAppNotif } from "inAppNotif/InAppNotif"
-import { InAppNotifAction } from "inAppNotif/InAppNotifActions"
+import { InAppNotifActions } from "inAppNotif/InAppNotifActions"
+import { Actions } from "actions"
 
 export interface InAppNotifState {
   inAppNotif?: InAppNotif
@@ -7,10 +9,10 @@ export interface InAppNotifState {
 
 const initState: InAppNotifState = {}
 
-export const InAppNotifReducer = (state: InAppNotifState = initState, action: InAppNotifAction) => {
+export const InAppNotifReducer = (state: InAppNotifState = initState, action: Actions) => {
   switch (action.type) {
-    case "ShowInAppNotif": return { ...state, inAppNotif: action.inAppNotif }
-    case "HideInAppNotif": return { ...state, inAppNotif: undefined }
+    case getType(InAppNotifActions.showInAppNotif): return { ...state, inAppNotif: action.payload.inAppNotif }
+    case getType(InAppNotifActions.hideInAppNotif): return { ...state, inAppNotif: undefined }
     default: return state
   }
 }

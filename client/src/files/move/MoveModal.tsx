@@ -2,7 +2,7 @@ import * as React from "react"
 import * as styles from "./MoveModal.css"
 import { connect, Dispatch } from "react-redux"
 import { GlobalState } from "store"
-import * as MoveActions from "files/move/MoveActions"
+import { MoveActions } from "files/move/MoveActions"
 
 import Modal from "components/modals/Modal"
 import ModalActions from "components/modals/ModalActions"
@@ -99,8 +99,8 @@ const mapStateToProps = (state: GlobalState): PropsState => {
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
     onCancelMove: () => dispatch(MoveActions.cancelMove()),
-    onMove: (fsNodeToMove, target) => dispatch(MoveActions.move(fsNodeToMove, target)),
-    onChangeTarget: path => dispatch(MoveActions.changeMoveTarget(path))
+    onMove: (fsNodeToMove, target) => dispatch(MoveActions.move({ fsNodeToMove, target })),
+    onChangeTarget: path => dispatch(MoveActions.changeMoveTarget({ path }))
   }
 }
 

@@ -5,7 +5,7 @@ import DropUploader from "files/upload/DropUploader"
 import { FileToUpload } from "models/FileToUpload"
 import { Dispatch, connect } from "react-redux"
 import { GlobalState } from "store"
-import * as UploadActions from "files/upload/UploadActions"
+import { UploadActions } from "files/upload/UploadActions"
 import { FsDirectory } from "models/FsNode"
 
 interface OwnProps {
@@ -40,7 +40,7 @@ const mapStateToProps = (state: GlobalState): PropsState => {
 
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onAddFilesToUpload: files => dispatch(UploadActions.addFiles(files))
+    onAddFilesToUpload: files => dispatch(UploadActions.addFiles({ files }))
   }
 }
 

@@ -1,34 +1,31 @@
-import { MiddlewareAPI } from "redux"
+import { isActionOf } from "typesafe-actions"
 import { Observable } from "rxjs/Observable"
 import { Observer } from "rxjs/Observer"
-import { Epic, combineEpics, ActionsObservable } from "redux-observable"
+import { Epic, combineEpics } from "redux-observable"
 import { GlobalState, Dependencies } from "store"
-import { UploadAction, UploadFile, uploadFileSuccess, uploadFileError, progressUpload } from "files/upload/UploadActions"
+import { UploadActions } from "files/upload/UploadActions"
 import { debounce } from "ts-debounce"
 import { Actions } from "actions"
 
 type EpicType = Epic<Actions, GlobalState, Dependencies>
 
-export const uploadEpic: EpicType = (
-  action$: ActionsObservable<UploadFile>,
-  store: MiddlewareAPI<GlobalState>,
-  dependencies: Dependencies,
-) => {
-  return action$.ofType("UploadFile")
-    .mergeMap(action => {
-      return Observable.create((observer: Observer<UploadAction>) => {
+export const uploadEpic: EpicType = (action$, _, dependencies) => {
+  return action$
+    .filter(isActionOf(UploadActions.uploadFile))
+    .mergeMap(({ payload: { path, fileToUpload } }) => {
+      return Observable.create((observer: Observer<Actions>) => {
         const progress = (e: ProgressEvent) => {
           const progressed = Math.round(e.loaded * 100 / e.total)
-          observer.next(progressUpload(progressed, action.fileToUpload))
+          observer.next(UploadActions.progressUpload({ progress: progressed, fileToUpload }))
         }
-        dependencies.requests.upload(action.path, action.fileToUpload, debounce(progress, 30))
+        dependencies.requests.upload(path, fileToUpload, debounce(progress, 30))
           .toPromise()
           .then(fsNode => {
-            observer.next(uploadFileSuccess(fsNode, action.fileToUpload))
+            observer.next(UploadActions.uploadFileSuccess({ fsNode, fileToUpload }))
             observer.complete()
           })
           .catch(error => {
-            observer.next(uploadFileError(error, action.fileToUpload))
+            observer.next(UploadActions.uploadFileError({ error, fileToUpload }))
             observer.complete()
           })
       })

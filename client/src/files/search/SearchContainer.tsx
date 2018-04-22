@@ -2,8 +2,8 @@ import * as React from "react"
 import { connect, Dispatch } from "react-redux"
 import { GlobalState } from "store"
 import { FsNode } from "models/FsNode"
-import * as SearchActions from "./SearchActions"
-import { SearchState } from "./SearchReducer"
+import { SearchActions } from "files/search/SearchActions"
+import { SearchState } from "files/search/SearchReducer"
 import { debounce } from "ts-debounce"
 import SearchBar from "components/search/SearchBar"
 
@@ -45,9 +45,9 @@ const mapStateToProps = (state: GlobalState): PropsState => {
 }
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onQueryChange: query => dispatch(SearchActions.onQueryChange(query)),
-    onFsNodeSearch: query => dispatch(SearchActions.onFsNodeSearch(query)),
-    onCancelSearch: () => dispatch(SearchActions.onCancelSearch())
+    onQueryChange: query => dispatch(SearchActions.queryChange({ query })),
+    onFsNodeSearch: query => dispatch(SearchActions.fsNodeSearch({ query })),
+    onCancelSearch: () => dispatch(SearchActions.cancelSearch())
   }
 }
 

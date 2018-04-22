@@ -2,7 +2,7 @@ import * as React from "react"
 import { connect, Dispatch } from "react-redux"
 import { GlobalState } from "store"
 import { NewFolderState } from "files/newFolder/NewFolderReducer"
-import * as NewFolderActions from "files/newFolder/NewFolderActions"
+import { NewFolderActions } from "files/newFolder/NewFolderActions"
 import { FsNode } from "models/FsNode"
 import NewFolderModal from "files/newFolder/NewFolderModal"
 import GhostButton from "components/buttons/GhostButton"
@@ -10,7 +10,7 @@ import GhostButton from "components/buttons/GhostButton"
 interface DispatchProps {
   onNewFolderNameChange(newFolderName: string): void
   onWantCreateNewFolder(): void
-  onCreateNewFolder(directory: FsNode, newFolderName: string): void
+  onCreateNewFolder(currentDirectory: FsNode, newFolderName: string): void
 }
 
 interface PropsState extends NewFolderState {
@@ -24,8 +24,8 @@ class NewFolderContainer extends React.PureComponent<Props> {
     const { wantCreateNewFolder, onWantCreateNewFolder } = this.props
     return (
       <>
-      <GhostButton label={Messages("ui.newFolder")} onClick={onWantCreateNewFolder} matchParent />
-      {wantCreateNewFolder ? this.renderModal() : null}
+        <GhostButton label={Messages("ui.newFolder")} onClick={onWantCreateNewFolder} matchParent />
+        {wantCreateNewFolder ? this.renderModal() : null}
       </>
     )
   }
@@ -57,9 +57,9 @@ const mapStateToProps = (state: GlobalState): PropsState => {
 }
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onNewFolderNameChange: newFolderName => dispatch(NewFolderActions.newFolderNameChange(newFolderName)),
+    onNewFolderNameChange: newFolderName => dispatch(NewFolderActions.newFolderNameChange({ newFolderName })),
     onWantCreateNewFolder: () => dispatch(NewFolderActions.wantCreateNewFolder()),
-    onCreateNewFolder: (directory, newFolderName) => dispatch(NewFolderActions.createNewFolder(directory, newFolderName)),
+    onCreateNewFolder: (currentDirectory, newFolderName) => dispatch(NewFolderActions.createNewFolder({ currentDirectory, newFolderName })),
   }
 }
 

@@ -1,33 +1,28 @@
-import { MiddlewareAPI } from "redux"
+import { isActionOf } from "typesafe-actions"
 import { Observable } from "rxjs/Observable"
-import { Epic, combineEpics, ActionsObservable } from "redux-observable"
+import { Epic, combineEpics } from "redux-observable"
 import { GlobalState, Dependencies } from "store"
 import { Actions } from "actions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
-import {
-  CreateNewFolder, createNewFolderSuccess, createNewFolderError, CreateNewFolderError
-} from "files/newFolder/NewFolderActions"
+import { NewFolderActions } from "files/newFolder/NewFolderActions"
 import { ApiError } from "models/ApiError"
 
 type EpicType = Epic<Actions, GlobalState, Dependencies>
 
-export const createNewFolderEpic: EpicType = (
-  action$: ActionsObservable<CreateNewFolder>,
-  store: MiddlewareAPI<GlobalState>,
-  dependencies: Dependencies,
-) => {
-  return action$.ofType("CreateNewFolder")
-    .mergeMap(({ currentDirectory, newFolderName }) =>
+export const createNewFolderEpic: EpicType = (action$, _, dependencies) => {
+  return action$
+    .filter(isActionOf(NewFolderActions.createNewFolder))
+    .mergeMap(({ payload: { currentDirectory, newFolderName } }) =>
       dependencies.requests.createFnNode(currentDirectory, newFolderName, "DIRECTORY")
-        .map(createNewFolderSuccess)
-        .catch((error: ApiError) => Observable.of(createNewFolderError(error)))
+        .map(newFolder => NewFolderActions.createNewFolderSuccess({ newFolder }))
+        .catch((error: ApiError) => Observable.of(NewFolderActions.createNewFolderError({ error })))
     )
 }
 
-export const createNewFolderErrorEpic: EpicType = (action$: ActionsObservable<CreateNewFolderError>) => {
+export const createNewFolderErrorEpic: EpicType = action$ => {
   return action$
-    .ofType("CreateNewFolderError")
-    .map(action => showApiErrorNotif(action.error))
+    .filter(isActionOf(NewFolderActions.createNewFolderError))
+    .map(({ payload: { error } }) => showApiErrorNotif(error))
 }
 
 export const createNewFolderEpics = combineEpics(

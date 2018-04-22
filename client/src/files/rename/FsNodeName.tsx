@@ -3,7 +3,7 @@ import * as styles from "./FsNodeName.css"
 import { Dispatch, connect } from "react-redux"
 import { GlobalState } from "store"
 import { FsNode } from "models/FsNode"
-import * as RenameActions from "files/rename/RenameActions"
+import { RenameActions } from "files/rename/RenameActions"
 import IconButton from "components/buttons/IconButton"
 import DoneIcon from "icons/DoneIcon"
 import CloseIcon from "icons/CloseIcon"
@@ -99,8 +99,8 @@ const mapStateToProps = (state: GlobalState, props: OwnProps): OwnProps & StateP
 
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onNameChange: name => dispatch(RenameActions.changeName(name)),
-    onRename: (newName, fsNode) => dispatch(RenameActions.rename(newName, fsNode)),
+    onNameChange: name => dispatch(RenameActions.changeName({ name })),
+    onRename: (newName, fsNode) => dispatch(RenameActions.rename({ newName, fsNode })),
     onCancelRename: () => dispatch(RenameActions.cancelRename()),
   }
 }
