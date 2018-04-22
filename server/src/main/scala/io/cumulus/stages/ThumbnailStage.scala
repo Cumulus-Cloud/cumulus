@@ -1,7 +1,6 @@
 package io.cumulus.stages
 
 import javax.imageio.ImageIO
-
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Keep, StreamConverters}
 import com.sksamuel.scrimage.Image
@@ -14,23 +13,10 @@ import io.cumulus.models.fs.File
 import io.cumulus.persistence.storage.{StorageEngines, StorageReference}
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.{ImageType, PDFRenderer}
-
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 trait ThumbnailGenerator extends Logging {
-
-  /** Generate the preview image of the file. Note that the preview can be of any size. */
-  def generatePreview(
-    file: File
-  )(implicit
-    ec: ExecutionContext,
-    materializer: Materializer,
-    ciphers: Ciphers,
-    compressions: Compressions,
-    storageEngines: StorageEngines,
-    userSession: UserSession,
-    settings: Settings
-  ): Either[AppError, java.awt.Image]
 
   /** JPEG writer at 50% quality */
   implicit private val writer = JpegWriter().withCompression(50)
@@ -55,7 +41,17 @@ trait ThumbnailGenerator extends Logging {
     } yield {
 
       // Generate a thumbnail from the preview
-      val image = Image.fromAwt(preview).fit(200, 200)
+      val image =
+        Try(Image.fromAwt(preview)) match {
+          case Failure(error) =>
+            throw new Exception(
+              "Image.fromAwt could not decode the image. The image may be in a non-standard format " +
+              "or simply not an image but another file type with an image's extension.",
+              error
+            )
+          case Success(readImage) =>
+            readImage.fit(200, 200)
+        }
 
       // Write the image
       val thumbnailWriter =
@@ -80,6 +76,19 @@ trait ThumbnailGenerator extends Logging {
     }
 
   }
+
+  /** Generate the preview image of the file. Note that the preview can be of any size. */
+  protected def generatePreview(
+    file: File
+  )(implicit
+    ec: ExecutionContext,
+    materializer: Materializer,
+    ciphers: Ciphers,
+    compressions: Compressions,
+    storageEngines: StorageEngines,
+    userSession: UserSession,
+    settings: Settings
+  ): Either[AppError, java.awt.Image]
 
   def maxSize: Long = 1048576 // 10Mo
 

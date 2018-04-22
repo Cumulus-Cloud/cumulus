@@ -300,9 +300,9 @@ class FsNodeService(
         case Some(_: Directory) =>
           Left(AppError.validation(__ \ "path", "validation.fs-node.directory-already-exists", path))
         case Some(_: File) =>
-          Left(AppError.validation(__ \ "path", "validation.fs-node.file-already-exists", path))
+          Left(AppError.validation("validation.fs-node.file-already-exists", path))
         case Some(_) =>
-          Left(AppError.validation(__ \ "path", "validation.fs-node.node-already-exists", path))
+          Left(AppError.validation("validation.fs-node.node-already-exists", path))
         case None =>
           Right(())
       }
