@@ -1,7 +1,7 @@
 import * as React from "react"
 import * as styles from "./PreviewContainer.css"
 import { connect, Dispatch } from "react-redux"
-import * as FileSystemActions from "./FileSystemActions"
+import { FileSystemActions } from "files/fileSystem/FileSystemActions"
 import { GlobalState } from "store"
 import { FsFile, videosPreviewAvailable, imagesPreviewAvailable } from "models/FsNode"
 import Modal from "components/modals/Modal"
@@ -11,7 +11,7 @@ import VideoPlayer from "components/preview/VideoPlayer"
 import ImagePreview from "components/preview/ImagePreview"
 
 interface DispatchProps {
-  onShowPreview(fsNode?: FsFile): void
+  onShowPreview(fsFile?: FsFile): void
 }
 
 interface PropsState {
@@ -56,7 +56,7 @@ const mapStateToProps = (state: GlobalState): PropsState => {
 }
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onShowPreview: fsNode => dispatch(FileSystemActions.onShowPreview(fsNode)),
+    onShowPreview: fsFile => dispatch(FileSystemActions.showPreview({ fsFile })),
   }
 }
 

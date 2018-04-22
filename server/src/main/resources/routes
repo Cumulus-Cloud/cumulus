@@ -1,8 +1,8 @@
 
 # App entrypoint
 GET     /                             io.cumulus.controllers.HomeController.index
-GET     /api/admin/management/reload  io.cumulus.controllers.HomeController.reload
-GET     /api/admin/management/stop    io.cumulus.controllers.HomeController.stop
+GET     /api/admin/management/reload  io.cumulus.controllers.ManagementController.reload
+GET     /api/admin/management/stop    io.cumulus.controllers.ManagementController.stop
 
 # User management routes
 POST    /api/users/login              io.cumulus.controllers.UserController.login

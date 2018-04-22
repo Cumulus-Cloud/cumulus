@@ -1,6 +1,8 @@
-import { SearchAction } from "./SearchActions"
+import { getType } from "typesafe-actions"
+import { SearchActions } from "./SearchActions"
 import { SearchResult } from "models/Search"
 import { ApiError } from "models/ApiError"
+import { Actions } from "actions"
 
 export interface SearchState {
   query: string
@@ -14,13 +16,17 @@ const initState: SearchState = {
   query: "",
 }
 
-export const SearchReducer = (state: SearchState = initState, action: SearchAction): SearchState => {
+export const SearchReducer = (state: SearchState = initState, action: Actions): SearchState => {
   switch (action.type) {
-    case "QueryChange": return { ...state, query: action.query }
-    case "SearchSuccess": return { ...state, searchResult: state.query ? action.searchResult : undefined, loading: false }
-    case "SearchError": return { ...state, error: action.error, loading: false }
-    case "CancelSearch": return { ...state, searchResult: undefined }
-    case "FsNodeSearch": return { ...state, loading: true }
+    case getType(SearchActions.queryChange): return { ...state, query: action.payload.query }
+    case getType(SearchActions.searchSuccess): return {
+      ...state,
+      searchResult: state.query ? action.payload.searchResult : undefined,
+      loading: false
+    }
+    case getType(SearchActions.searchError): return { ...state, error: action.payload.error, loading: false }
+    case getType(SearchActions.cancelSearch): return { ...state, searchResult: undefined }
+    case getType(SearchActions.fsNodeSearch): return { ...state, loading: true }
     default: return state
   }
 }

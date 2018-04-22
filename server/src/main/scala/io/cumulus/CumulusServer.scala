@@ -20,7 +20,6 @@ import io.cumulus.persistence.storage.{ChunkRemover, StorageEngines}
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore, UserStore}
 import io.cumulus.stages._
 import jsmessages.{JsMessages, JsMessagesFactory}
-import play.api
 import play.api._
 import play.api.db.evolutions.EvolutionsComponents
 import play.api.db.{DBComponents, Database, HikariCPComponents}
@@ -28,36 +27,15 @@ import play.api.i18n.MessagesApi
 import play.api.libs.mailer.MailerComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
-import play.core.server.{AkkaHttpServerComponents, ServerConfig}
 
 import router.Routes
 
 /**
   * Create an embed (programmatically managed) play server using the Cumulus web app components and a default context.
   */
-class CumulusServer extends AkkaHttpServerComponents {
+class CumulusServer extends CumulusAkkaServer {
 
-  val env = Environment.simple()
-
-  val port    = Configuration.load(env).get[Int]("play.http.port")
-  val address = Configuration.load(env).get[String]("play.http.address")
-  val modeRaw = Configuration.load(env).get[String]("play.http.mode")
-
-  val mode = modeRaw.toUpperCase match {
-    case "DEV"  => Mode.Dev
-    case "TEST" => Mode.Test
-    case "PROD" => Mode.Prod
-    case _      => throw new Exception(s"Invalid mode type '$modeRaw' ; can only be 'DEV', 'TEST' or 'PROD'")
-  }
-
-  override lazy val serverConfig =
-    ServerConfig(
-      port = Some(port),
-      mode = mode,
-      address = address
-    )
-
-  val application: api.Application = {
+  val application: Application = {
     // Create the default context of the application
     val context: ApplicationLoader.Context = ApplicationLoader.createContext(env)
 
@@ -69,6 +47,7 @@ class CumulusServer extends AkkaHttpServerComponents {
     // Instantiate all the components of the application
     new CumulusComponents(context).application
   }
+
 }
 
 /**
@@ -130,7 +109,7 @@ class CumulusComponents(
   implicit lazy val database: Database = dbApi.database("default")
   implicit lazy val welcomeQB: QueryBuilder[CumulusDB] = QueryBuilder(CumulusDB(database), databaseEc)
 
-  // executionContexts
+  // Execution contexts
   implicit lazy val defaultEc: ExecutionContextExecutor = actorSystem.dispatcher
   lazy val databaseEc: ExecutionContextExecutor         = actorSystem.dispatchers.lookup("db-context")
   lazy val tasksEc: ExecutionContextExecutor            = actorSystem.dispatchers.lookup("task-context")
@@ -160,6 +139,7 @@ class CumulusComponents(
 
   // Controllers
   lazy val homeController: HomeController                 = wire[HomeController]
+  lazy val managementController: ManagementController     = wire[ManagementController]
   lazy val userController: UserController                 = wire[UserController]
   lazy val fsController: FileSystemController             = wire[FileSystemController]
   lazy val sharingController: SharingPublicController     = wire[SharingPublicController]

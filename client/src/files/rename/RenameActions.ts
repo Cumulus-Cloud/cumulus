@@ -1,59 +1,14 @@
-import { Action } from "redux"
+import { buildAction, ActionsUnion } from "typesafe-actions"
 import { FsNode } from "models/FsNode"
 import { ApiError } from "models/ApiError"
 
-export type RenameAction =
-  WantRename |
-  ChangeName |
-  CancelRename |
-  Rename |
-  RenameSuccess |
-  RenameError
-
-export interface WantRename extends Action {
-  type: "WantRename"
-  fsNode: FsNode
-}
-export function wantRename(fsNode: FsNode): WantRename {
-  return { type: "WantRename", fsNode }
+export const RenameActions = {
+  wantRename: buildAction("WantRename").payload<{ fsNode: FsNode }>(),
+  cancelRename: buildAction("CancelRename").empty(),
+  changeName: buildAction("ChangeName").payload<{ name: string }>(),
+  rename: buildAction("Rename").payload<{ newName: string, fsNode: FsNode }>(),
+  renameSuccess: buildAction("RenameSuccess").payload<{ fsNode: FsNode }>(),
+  renameError: buildAction("RenameError").payload<{ error: ApiError }>(),
 }
 
-export interface CancelRename extends Action {
-  type: "CancelRename"
-}
-export function cancelRename(): CancelRename {
-  return { type: "CancelRename" }
-}
-
-export interface ChangeName extends Action {
-  type: "ChangeName"
-  name: string
-}
-export function changeName(name: string): ChangeName {
-  return { type: "ChangeName", name }
-}
-
-export interface Rename extends Action {
-  type: "Rename"
-  newName: string
-  fsNode: FsNode
-}
-export function rename(newName: string, fsNode: FsNode): Rename {
-  return { type: "Rename", newName, fsNode }
-}
-
-export interface RenameSuccess extends Action {
-  type: "RenameSuccess"
-  fsNode: FsNode
-}
-export function renameSuccess(fsNode: FsNode): RenameSuccess {
-  return { type: "RenameSuccess", fsNode }
-}
-
-export interface RenameError extends Action {
-  type: "RenameError"
-  error: ApiError
-}
-export function renameError(error: ApiError): RenameError {
-  return { type: "RenameError", error }
-}
+export type RenameAction = ActionsUnion<typeof RenameActions>

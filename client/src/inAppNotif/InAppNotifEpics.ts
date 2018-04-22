@@ -1,9 +1,16 @@
+import { isActionOf } from "typesafe-actions"
 import { Epic, combineEpics } from "redux-observable"
-import { GlobalState } from "store"
+import { GlobalState, Dependencies } from "store"
 import { Observable } from "rxjs/Observable"
-import { InAppNotifAction, hideInAppNotif } from "inAppNotif/InAppNotifActions"
+import { InAppNotifActions } from "inAppNotif/InAppNotifActions"
+import { Actions } from "actions"
 
-export const hideInAppNotifEpic: Epic<InAppNotifAction, GlobalState> = (action$, state) => action$.ofType("ShowInAppNotif")
-  .switchMap(() => Observable.of(hideInAppNotif()).delay(3000))
+type EpicType = Epic<Actions, GlobalState, Dependencies>
+
+export const hideInAppNotifEpic: EpicType = action$ => {
+  return action$
+    .filter(isActionOf(InAppNotifActions.showInAppNotif))
+    .switchMap(() => Observable.of(InAppNotifActions.hideInAppNotif()).delay(3000))
+}
 
 export const hideInAppNotifEpics = combineEpics(hideInAppNotifEpic)

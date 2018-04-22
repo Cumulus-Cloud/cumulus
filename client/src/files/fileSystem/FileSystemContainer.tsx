@@ -2,9 +2,10 @@ import * as React from "react"
 import * as styles from "./FileSystemContainer.css"
 import { connect, Dispatch } from "react-redux"
 import { match as RouterMatch } from "react-router"
-import * as FileSystemActions from "./FileSystemActions"
-import * as MoveActions from "files/move/MoveActions"
-import * as RenameActions from "files/rename/RenameActions"
+import { FileSystemActions } from "files/fileSystem/FileSystemActions"
+import { MoveActions } from "files/move/MoveActions"
+import { AuthActions } from "auth/AuthActions"
+import { RenameActions } from "files/rename/RenameActions"
 import { GlobalState, history } from "store"
 import { FileSystemState } from "./FileSystemReducer"
 import Breadcrumb from "components/breadcrumb/Breadcrumb"
@@ -170,15 +171,16 @@ const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string
 
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
-    onFetchDirectory: path => dispatch(FileSystemActions.fetchDirectory(path)),
-    onDeleteFsNode: fsNode => dispatch(FileSystemActions.deleteFsNode(fsNode)),
-    onShowPreview: fsFile => dispatch(FileSystemActions.onShowPreview(fsFile)),
-    onSharing: fsNode => dispatch(FileSystemActions.onSharing(fsNode)),
-    onCloseShare: () => dispatch(FileSystemActions.onCloseShare()),
-    onShowFsNodeInfos: fsNode => dispatch(FileSystemActions.showFsNodeInfos(fsNode)),
-    onSelectFsNode: fsNode => dispatch(FileSystemActions.selectFsNode(fsNode)),
-    onWantMove: (fsNodes, target) => dispatch(MoveActions.wantMove(fsNodes, target)),
-    onWantRename: fsNode => dispatch(RenameActions.wantRename(fsNode)),
+    onFetchDirectory: path => dispatch(FileSystemActions.fetchDirectory({ path })),
+    onDeleteFsNode: fsNode => dispatch(FileSystemActions.deleteFsNode({ fsNode })),
+    onShowPreview: fsFile => dispatch(FileSystemActions.showPreview({ fsFile })),
+    onSharing: fsNode => dispatch(FileSystemActions.sharing({ fsNode })),
+    onCloseShare: () => dispatch(FileSystemActions.closeShare()),
+    onShowFsNodeInfos: fsNode => dispatch(FileSystemActions.showFsNodeInfos({ fsNode })),
+    onSelectFsNode: fsNode => dispatch(FileSystemActions.selectFsNode({ fsNode })),
+    onWantMove: (fsNodes, target) => dispatch(MoveActions.wantMove({ fsNodes, target })),
+    onWantRename: fsNode => dispatch(RenameActions.wantRename({ fsNode })),
+    onLogout: () => dispatch(AuthActions.logout()),
   }
 }
 

@@ -1,4 +1,5 @@
-import { AuthAction } from "auth/AuthActions"
+import { getType } from "typesafe-actions"
+import { AuthAction, AuthActions } from "auth/AuthActions"
 import { ApiError } from "models/ApiError"
 import { User } from "models/User"
 
@@ -38,26 +39,27 @@ const initState: AuthState = {
 
 export const AuthReducer = (state: AuthState = initState, action: AuthAction) => {
   switch (action.type) {
-    case "LoginChange": return { ...state, login: { ...state.login, [action.field]: action.value } }
-    case "LoginSubmit": return { ...state, login: { ...state.login, loading: true, formErrors: {} } }
-    case "LoginSubmitError": return { ...state, login: { ...state.login, formErrors: action.error, loading: false  }}
-    case "LoginSubmitSuccess": return {
+    case getType(AuthActions.loginChange): return { ...state, login: { ...state.login, [action.payload.field]: action.payload.value } }
+    case getType(AuthActions.loginSubmit): return { ...state, login: { ...state.login, loading: true, formErrors: {} } }
+    case getType(AuthActions.loginSubmitError): return { ...state, login: { ...state.login, formErrors: action.payload.error, loading: false  }}
+    case getType(AuthActions.loginSubmitSuccess): return {
       ...state,
       login: initState.login,
-      token: action.auth.token,
-      user: action.auth.user,
+      token: action.payload.auth.token,
+      user: action.payload.auth.user,
       loading: false
     }
-    case "SignupChange": return { ...state, signup: { ...state.signup, [action.field]: action.value } }
-    case "SignupSubmit": return { ...state, signup: { ...state.signup, loading: true, formErrors: {} } }
-    case "SignupSubmitError": return { ...state, signup: { ...state.signup, formErrors: action.error, loading: false } }
-    case "SignupSubmitSuccess": return {
+    case getType(AuthActions.signupChange): return { ...state, signup: { ...state.signup, [action.payload.field]: action.payload.value } }
+    case getType(AuthActions.signupSubmit): return { ...state, signup: { ...state.signup, loading: true, formErrors: {} } }
+    case getType(AuthActions.signupSubmitError): return { ...state, signup: { ...state.signup, formErrors: action.payload.error, loading: false } }
+    case getType(AuthActions.signupSubmitSuccess): return {
       ...state,
       signup: initState.signup,
-      token: action.auth.token,
-      user: action.auth.user,
+      token: action.payload.auth.token,
+      user: action.payload.auth.user,
       loading: false
     }
+    case getType(AuthActions.logout): return initState
     default: return state
   }
 }
