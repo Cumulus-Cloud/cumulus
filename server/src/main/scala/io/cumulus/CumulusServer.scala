@@ -109,7 +109,7 @@ class CumulusComponents(
   implicit lazy val database: Database = dbApi.database("default")
   implicit lazy val welcomeQB: QueryBuilder[CumulusDB] = QueryBuilder(CumulusDB(database), databaseEc)
 
-  // executionContexts
+  // Execution contexts
   implicit lazy val defaultEc: ExecutionContextExecutor = actorSystem.dispatcher
   lazy val databaseEc: ExecutionContextExecutor         = actorSystem.dispatchers.lookup("db-context")
   lazy val tasksEc: ExecutionContextExecutor            = actorSystem.dispatchers.lookup("task-context")
@@ -139,6 +139,7 @@ class CumulusComponents(
 
   // Controllers
   lazy val homeController: HomeController                 = wire[HomeController]
+  lazy val managementController: ManagementController     = wire[ManagementController]
   lazy val userController: UserController                 = wire[UserController]
   lazy val fsController: FileSystemController             = wire[FileSystemController]
   lazy val sharingController: SharingPublicController     = wire[SharingPublicController]

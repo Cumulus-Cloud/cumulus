@@ -48,7 +48,6 @@ object CumulusWatchdog extends Logging {
           logger.warn("Cumulus web server failed to start", error)
           internalStartRecoveryServer(error)
       }
-      logger.info("Cumulus web server successfully started")
     } else
       logger.info("Cumulus web server already started")
 
@@ -73,8 +72,15 @@ object CumulusWatchdog extends Logging {
     if(server.isDefined)
       internalStop()
 
-    internalStart()
-    logger.info("Cumulus web server successfully reloaded")
+    Try {
+      internalStart()
+    } match {
+      case Success(_) =>
+        logger.info("Cumulus web server successfully reloaded")
+      case Failure(error) =>
+        logger.warn("Cumulus web server failed to reload", error)
+        internalStartRecoveryServer(error)
+    }
   }
 
 }

@@ -1,16 +1,18 @@
 package io.cumulus
 
+import scala.concurrent.ExecutionContextExecutor
+
 import _root_.controllers.AssetsComponents
+import akka.actor.Scheduler
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
-import com.softwaremill.macwire.wire
-import io.cumulus.controllers.utils.LoggingFilter
+import com.softwaremill.macwire._
+import io.cumulus.controllers.RecoveryController
+import io.cumulus.controllers.utils.{Assets, LoggingFilter}
 import io.cumulus.core.controllers.utils.api.{ApiUtils, HttpErrorHandler}
-import io.cumulus.core.validation.AppError
 import jsmessages.{JsMessages, JsMessagesFactory}
 import play.api
 import play.api.i18n.MessagesApi
-import play.api.libs.json.Json
-import play.api.mvc.{EssentialFilter, Results}
+import play.api.mvc.EssentialFilter
 import play.api.routing.Router
 import play.api.routing.sird._
 import play.api.{ApplicationLoader, BuiltInComponentsFromContext, LoggerConfigurator}
@@ -42,24 +44,32 @@ class CumulusRecoveryComponents(
   with ApiUtils {
 
   lazy val router = Router.from {
-    case GET(p"/hello/$to") => Action {
-      Results.Ok(s"Hello $to")
-    }
-    case GET(p"/$path*") => Action {
-      println(path)
-      // TODO show error within a twirl page
-      Results.Ok(error.getStackTrace.map(_.toString).mkString("\n"))
-    }
-    // TODO add reload commands
+    case GET(p"/api/admin/management/reload") =>
+      controller.reload
+    case GET(p"/api/admin/management/stop") =>
+      controller.stop
+    case GET(p"/assets/$file*") =>
+      assetController.versioned(path = "/src/main/resources/public", file)
+    case GET(p"/$path*") =>
+      controller.index
   }
 
   // Override messagesApi to use Hocon config
   override implicit lazy val messagesApi: MessagesApi = wire[HoconMessagesApiProvider].get
   lazy val jsMessages: JsMessages                     = wire[JsMessagesFactory].all
 
+  // Execution contexts
+  implicit lazy val defaultEc: ExecutionContextExecutor = actorSystem.dispatcher
+  lazy val scheduler: Scheduler                         = actorSystem.scheduler
+
   // HTTP components
   lazy val loggingFilter: LoggingFilter                = wire[LoggingFilter]
   override lazy val httpFilters: Seq[EssentialFilter]  = Seq(loggingFilter)
   override lazy val httpErrorHandler: HttpErrorHandler = wire[HttpErrorHandler]
+
+  // Controllers
+  lazy val controller: RecoveryController = wire[RecoveryController]
+  lazy val assetController: Assets        = wire[Assets]
+
 
 }
