@@ -9,7 +9,7 @@ object RoutesCompilation extends AutoPlugin {
     val routesGeneratorClass = settingKey[RoutesGenerator]("RoutesGenerator used to generated all the routes.")
     val routesFile           = settingKey[String]("File containing all the routes.")
 
-    val compileRoutes = taskKey[Seq[File]]("Compile the routes of the server.")
+    val compileRoutes = taskKey[Set[File]]("Compile the routes of the server.")
   }
 
   import autoImport._
@@ -23,8 +23,7 @@ object RoutesCompilation extends AutoPlugin {
     routesFile           := "routes",
     compileRoutes        := compileRoutesTask.value,
 
-    // TODO avoid recompiling the route file if no changes have been detected
-    sourceGenerators in Compile += compileRoutes
+    sourceGenerators in Compile += compileRoutes.map(_.toSeq)
   )
 
   lazy val compileRoutesTask =
@@ -33,22 +32,41 @@ object RoutesCompilation extends AutoPlugin {
 
       val inputFile = (resourceDirectory in Compile).value.listFiles.find(f => f.name == routesFile.value).get
       val outputDirectory = (sourceManaged in Compile).value
+      val cacheDir = (target in Compile).value / "generated-routes-cache"
 
+      val cached =
+        FileFunction.cached(cacheDir, FilesInfo.lastModified, FilesInfo.exists) {(inputFiles: Set[File]) =>
+          compileRoutesImpl(inputFiles, outputDirectory, routesAddImport.value, routesGeneratorClass.value, log)
+        }
+
+      cached(Set(inputFile))
+    }
+
+  def compileRoutesImpl(
+    inputFiles: Set[File],
+    outputDirectory: File,
+    imports: Seq[String],
+    routesGenerator: RoutesGenerator,
+    log: Logger
+  ): Set[File] = {
+    inputFiles.flatMap { inputFile =>
       play.routes.compiler.RoutesCompiler.compile(
         play.routes.compiler.RoutesCompiler.RoutesCompilerTask(
           inputFile,
-          routesAddImport.value,
+          imports,
           forwardsRouter = true,
           reverseRouter = true,
           namespaceReverseRouter = false
         ),
-        routesGeneratorClass.value,
+        routesGenerator,
         outputDirectory
       ).left.map { e: Seq[play.routes.compiler.RoutesCompilationError] =>
         throw new Exception(s"Routes compilation failed: ${e.toString}")
       }.right.map { r =>
         log.success("Compiled routes files successfully!")
         r
-      }.right.get
+      }.right.get.toSet
     }
+  }
+
 }
