@@ -5,7 +5,7 @@ import { match as RouterMatch } from "react-router"
 import { FileSystemActions } from "files/fileSystem/FileSystemActions"
 import { MoveActions } from "files/move/MoveActions"
 import { AuthActions } from "auth/AuthActions"
-import * as RenameActions from "files/rename/RenameActions"
+import { RenameActions } from "files/rename/RenameActions"
 import { GlobalState, history } from "store"
 import { FileSystemState } from "./FileSystemReducer"
 import AppBar from "components/AppBar"
@@ -180,7 +180,7 @@ const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
     onShowFsNodeInfos: fsNode => dispatch(FileSystemActions.showFsNodeInfos({ fsNode })),
     onSelectFsNode: fsNode => dispatch(FileSystemActions.selectFsNode({ fsNode })),
     onWantMove: (fsNodes, target) => dispatch(MoveActions.wantMove({ fsNodes, target })),
-    onWantRename: fsNode => dispatch(RenameActions.wantRename(fsNode)),
+    onWantRename: fsNode => dispatch(RenameActions.wantRename({ fsNode })),
     onLogout: () => dispatch(AuthActions.logout()),
   }
 }

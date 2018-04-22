@@ -5,7 +5,7 @@ import { Share } from "models/Share"
 import { NewFolderActions } from "files/newFolder/NewFolderActions"
 import { UploadFileSuccess } from "files/upload/UploadActions"
 import { MoveActions } from "files/move/MoveActions"
-import { RenameSuccess } from "files/rename/RenameActions"
+import { RenameActions } from "files/rename/RenameActions"
 import { ApiError } from "models/ApiError"
 import { Actions } from "actions";
 
@@ -96,20 +96,18 @@ export const FileSystemReducer = (state: FileSystemState = initState, action: Ac
         directory: newDirectory
       }
     }
-    case "RenameSuccess": return renameSuccessReducer(state, action)
+    case getType(RenameActions.renameSuccess): {
+      const directory = { ...state.directory!, content: state.directory!.content.map(n => {
+        if (n.id === action.payload.fsNode.id) {
+          return action.payload.fsNode
+        } else {
+          return n
+        }
+      }) }
+      return { ...state, directory }
+    }
     default: return state
   }
-}
-
-function renameSuccessReducer(state: FileSystemState, action: RenameSuccess): FileSystemState {
-  const directory = { ...state.directory!, content: state.directory!.content.map(n => {
-    if (n.id === action.fsNode.id) {
-      return action.fsNode
-    } else {
-      return n
-    }
-  }) }
-  return { ...state, directory }
 }
 
 function uploadFileSuccessReducer(state: FileSystemState, action: UploadFileSuccess): FileSystemState {

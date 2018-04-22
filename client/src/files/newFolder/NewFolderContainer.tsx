@@ -24,8 +24,8 @@ class NewFolderContainer extends React.PureComponent<Props> {
     const { wantCreateNewFolder, onWantCreateNewFolder } = this.props
     return (
       <>
-      <GhostButton label={Messages("ui.newFolder")} onClick={onWantCreateNewFolder} matchParent />
-      {wantCreateNewFolder ? this.renderModal() : null}
+        <GhostButton label={Messages("ui.newFolder")} onClick={onWantCreateNewFolder} matchParent />
+        {wantCreateNewFolder ? this.renderModal() : null}
       </>
     )
   }
