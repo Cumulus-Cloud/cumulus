@@ -21,6 +21,9 @@ import io.cumulus.stages._
 import play.api.libs.json.{JsString, Json}
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 
+/**
+  * Controller for all the operations on the filesystem.
+  */
 class FileSystemController(
   cc: ControllerComponents,
   fsNodeService: FsNodeService,
