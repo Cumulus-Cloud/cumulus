@@ -69,6 +69,8 @@ class SharingStore(
       SQL"""
           SELECT #$selectAllWithFsNode
           FROM #$table
+          INNER JOIN #${FsNodeStore.table}
+          ON #$table.#$fsNodeField = #${FsNodeStore.table}.#${FsNodeStore.pkField}
           WHERE #$referenceField = $reference
         """.as(withFsNodeRowParser.singleOpt)
     }
