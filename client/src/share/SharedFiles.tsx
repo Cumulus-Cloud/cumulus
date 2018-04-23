@@ -8,7 +8,7 @@ import InAppNotifContainer from "inAppNotif/InAppNotifContainer"
 import PreviewContainer from "files/fileSystem/PreviewContainer"
 import LeftPanel from "components/LeftPanel"
 import RightPanel from "components/RightPanel"
-import * as SharedFilesActions from "share/SharedFilesActions"
+import { SharedFilesActions } from "share/SharedFilesActions"
 import { SharingItem } from "models/Sharing"
 import { ApiError } from "models/ApiError"
 import SharedFile from "share/SharedFile"
@@ -71,7 +71,7 @@ const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
   return {
     fetchSharedFiles: () => dispatch(SharedFilesActions.fetchSharedFiles()),
-    onDeleteSharingItem: sharingItem => dispatch(SharedFilesActions.deleteSharedFile(sharingItem))
+    onDeleteSharingItem: sharing => dispatch(SharedFilesActions.deleteSharedFile({ sharing }))
   }
 }
 

@@ -1,58 +1,14 @@
-import { Action } from "redux"
+import { buildAction, ActionsUnion } from "typesafe-actions"
 import { ApiError } from "models/ApiError"
 import { SharingApiResponse, SharingItem } from "models/Sharing"
 
-export type SharedFilesAction =
-  FetchSharedFiles |
-  FetchSharedFilesSuccess |
-  FetchSharedFilesError |
-  DeleteSharedFile |
-  DeleteSharedFileSuccess |
-  DeleteSharedFileError
-
-export interface FetchSharedFiles extends Action {
-  type: "FetchSharedFiles"
-}
-export function fetchSharedFiles(): FetchSharedFiles {
-  return { type: "FetchSharedFiles" }
+export const SharedFilesActions = {
+  fetchSharedFiles: buildAction("FetchSharedFiles").empty(),
+  fetchSharedFilesSuccess: buildAction("FetchSharedFilesSuccess").payload<{ sharingApiResponse: SharingApiResponse }>(),
+  fetchSharedFilesError: buildAction("FetchSharedFilesError").payload<{ error: ApiError }>(),
+  deleteSharedFile: buildAction("DeleteSharedFile").payload<{ sharing: SharingItem }>(),
+  deleteSharedFileSuccess: buildAction("DeleteSharedFileSuccess").payload<{ sharing: SharingItem }>(),
+  deleteSharedFileError: buildAction("DeleteSharedFileError").payload<{ error: ApiError }>(),
 }
 
-export interface FetchSharedFilesSuccess extends Action {
-  type: "FetchSharedFilesSuccess"
-  sharingApiResponse: SharingApiResponse
-}
-export function fetchSharedFilesSuccess(sharingApiResponse: SharingApiResponse): FetchSharedFilesSuccess {
-  return { type: "FetchSharedFilesSuccess", sharingApiResponse }
-}
-
-export interface FetchSharedFilesError extends Action {
-  type: "FetchSharedFilesError"
-  error: ApiError
-}
-export function fetchSharedFilesError(error: ApiError): FetchSharedFilesError {
-  return { type: "FetchSharedFilesError", error }
-}
-
-export interface DeleteSharedFile {
-  type: "DeleteSharedFile"
-  sharing: SharingItem
-}
-export function deleteSharedFile(sharing: SharingItem): DeleteSharedFile {
-  return { type: "DeleteSharedFile", sharing }
-}
-
-export interface DeleteSharedFileSuccess {
-  type: "DeleteSharedFileSuccess"
-  sharing: SharingItem
-}
-export function deleteSharedFileSuccess(sharing: SharingItem): DeleteSharedFileSuccess {
-  return { type: "DeleteSharedFileSuccess", sharing }
-}
-
-export interface DeleteSharedFileError {
-  type: "DeleteSharedFileError"
-  error: ApiError
-}
-export function deleteSharedFileError(error: ApiError): DeleteSharedFileError {
-  return { type: "DeleteSharedFileError", error }
-}
+export type SharedFilesAction = ActionsUnion<typeof SharedFilesActions>

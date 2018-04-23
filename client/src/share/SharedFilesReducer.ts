@@ -1,6 +1,8 @@
-import { SharedFilesAction } from "share/SharedFilesActions"
+import { getType } from "typesafe-actions"
+import { SharedFilesActions } from "share/SharedFilesActions"
 import { SharingItem } from "models/Sharing"
 import { ApiError } from "models/ApiError"
+import { Actions } from "actions"
 
 export interface SharedFilesState {
   loading: boolean
@@ -14,18 +16,18 @@ const initState: SharedFilesState = {
   sharings: []
 }
 
-export const SharedFilesReducer = (state: SharedFilesState = initState, action: SharedFilesAction) => {
+export const SharedFilesReducer = (state: SharedFilesState = initState, action: Actions) => {
   switch (action.type) {
-    case "FetchSharedFiles": return { ...state, loading: true }
-    case "FetchSharedFilesSuccess": return { ...state, loading: false, sharings: action.sharingApiResponse.items }
-    case "FetchSharedFilesError": return { ...state, loading: false, error: action.error }
-    case "DeleteSharedFile": return { ...state, sharedFilesLoading: action.sharing.sharing.id }
-    case "DeleteSharedFileSuccess": return {
+    case getType(SharedFilesActions.fetchSharedFiles): return { ...state, loading: true }
+    case getType(SharedFilesActions.fetchSharedFilesSuccess): return { ...state, loading: false, sharings: action.payload.sharingApiResponse.items }
+    case getType(SharedFilesActions.fetchSharedFilesError): return { ...state, loading: false, error: action.payload.error }
+    case getType(SharedFilesActions.deleteSharedFile): return { ...state, sharedFilesLoading: action.payload.sharing.sharing.id }
+    case getType(SharedFilesActions.deleteSharedFileSuccess): return {
       ...state,
       sharedFilesLoading: undefined,
-      sharings: state.sharings.filter(s => s.sharing.id !== action.sharing.sharing.id)
+      sharings: state.sharings.filter(s => s.sharing.id !== action.payload.sharing.sharing.id)
     }
-    case "DeleteSharedFileError": return { ...state, sharedFilesLoading: undefined }
+    case getType(SharedFilesActions.deleteSharedFileError): return { ...state, sharedFilesLoading: undefined }
     default: return state
   }
 }

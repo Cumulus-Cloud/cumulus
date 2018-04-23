@@ -6,7 +6,7 @@ import { NewFolderAction } from "files/newFolder/NewFolderActions"
 import { RenameAction } from "files/rename/RenameActions"
 import { SearchAction } from "files/search/SearchActions"
 import { UploadAction } from "files/upload/UploadActions"
-import { SharedFilesAction } from "share/SbaredFilesActions"
+import { SharedFilesAction } from "share/SharedFilesActions"
 
 export type Actions =
   AuthAction |

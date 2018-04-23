@@ -1,55 +1,47 @@
-import { MiddlewareAPI } from "redux"
+import { isActionOf } from "typesafe-actions"
 import { Observable } from "rxjs/Observable"
-import { Epic, combineEpics, ActionsObservable } from "redux-observable"
+import { Epic, combineEpics } from "redux-observable"
 import { GlobalState, Dependencies } from "store"
 import { Actions } from "actions"
-import {
-  FetchSharedFiles, FetchSharedFilesError, fetchSharedFilesSuccess, fetchSharedFilesError,
-  DeleteSharedFile, deleteSharedFileSuccess, deleteSharedFileError, DeleteSharedFileError
-} from "share/SharedFilesActions"
+import { SharedFilesActions } from "share/SharedFilesActions"
 import { showApiErrorNotif } from "inAppNotif/InAppNotifActions"
 import { ApiError } from "models/ApiError"
 
 type EpicType = Epic<Actions, GlobalState, Dependencies>
 
 export const fetchSharedFilesEpic: EpicType = (
-  action$: ActionsObservable<FetchSharedFiles>,
-  store: MiddlewareAPI<GlobalState>,
-  dependencies: Dependencies,
+  action$, _, dependencies
 ) => {
   return action$
-    .ofType("FetchSharedFiles")
-    .mergeMap(action =>
+    .filter(isActionOf(SharedFilesActions.fetchSharedFiles))
+    .mergeMap(() =>
       dependencies.requests.sharings()
-        .map(fetchSharedFilesSuccess)
-        .catch((error: ApiError) => Observable.of(fetchSharedFilesError(error)))
+        .map(sharingApiResponse => SharedFilesActions.fetchSharedFilesSuccess({ sharingApiResponse }))
+        .catch((error: ApiError) => Observable.of(SharedFilesActions.fetchSharedFilesError({ error })))
     )
 }
 
-export const fetchSharedFilesErrorEpic: EpicType = (action$: ActionsObservable<FetchSharedFilesError>) => {
+export const fetchSharedFilesErrorEpic: EpicType = action$ => {
   return action$
-    .ofType("FetchSharedFilesError")
-    .map(action => showApiErrorNotif(action.error))
+    .filter(isActionOf(SharedFilesActions.fetchSharedFilesError))
+    .map(({ payload: { error } }) => showApiErrorNotif(error))
 }
 
-export const deleteSharedFileEpic: EpicType = (
-  action$: ActionsObservable<DeleteSharedFile>,
-  store: MiddlewareAPI<GlobalState>,
-  dependencies: Dependencies,
-) => {
+export const deleteSharedFileEpic: EpicType = (action$, _, dependencies) => {
   return action$
-    .ofType("DeleteSharedFile")
-    .mergeMap(action =>
-      dependencies.requests.deleteSharing(action.sharing.sharing.reference)
-        .map(deleteSharedFileSuccess)
-        .catch((error: ApiError) => Observable.of(deleteSharedFileError(error)))
+    .filter(isActionOf(SharedFilesActions.deleteSharedFile))
+    .mergeMap(({ payload: { sharing } }) =>
+      dependencies.requests.deleteSharing(sharing.sharing.reference)
+        .map(share => SharedFilesActions.deleteSharedFileSuccess({ sharing: share }))
+        .catch((error: ApiError) => Observable.of(SharedFilesActions.deleteSharedFileError({ error })))
     )
 }
 
-export const deleteSharedFileErrorEpic: EpicType = (action$: ActionsObservable<DeleteSharedFileError>) => {
+export const deleteSharedFileErrorEpic: EpicType = action$ => {
   return action$
     .ofType("DeleteSharedFileError")
-    .map(action => showApiErrorNotif(action.error))
+    .filter(isActionOf(SharedFilesActions.deleteSharedFileError))
+    .map(({ payload: { error } }) => showApiErrorNotif(error))
 }
 
 export const sharedFilesEpics = combineEpics(
