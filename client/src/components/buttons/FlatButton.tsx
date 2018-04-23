@@ -2,10 +2,7 @@ import * as React from "react"
 import * as styles from "./FlatButton.css"
 import BaseButton from "components/buttons/BaseButton"
 
-export type FlatButtonType = "default" | "primary" | "accent" | "link"
-
 interface Props {
-  type?: FlatButtonType
   label: string
   loading?: boolean
   onClick?(): void
