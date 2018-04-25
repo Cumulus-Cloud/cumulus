@@ -51,7 +51,7 @@
     "@types/react-dnd": "2.0.36",
     "@types/react-dnd-html5-backend": "2.1.9",
     "@types/react-dom": "16.0.5",
-    "@types/react-redux": "5.0.16",
+    "@types/react-redux": "5.0.18",
     "@types/react-router": "4.0.23",
     "@types/react-router-redux": "5.0.13",
     "autoprefixer": "8.3.0",
