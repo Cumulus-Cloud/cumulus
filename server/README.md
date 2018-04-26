@@ -27,27 +27,18 @@ You may also simply build the server:
 ```
 $ sbt compile
 ```
-> Both command will also compile the `routes` file and the twirls templates. Note that since this project is using an embed Pay! server, there is unfortunately no Play!'s like hot-reload mecanism ; but `~run` can still be used. 
+> Both command will also compile the `routes` file and the twirls templates. Note that since this project is using an embed Play! server, there is unfortunately no Play!'s like hot-reload mecanism ; but `~run` can still be used. 
 
 #### Production
-Both **sbt-native-packager** and **sbt-assembly** are available as sbt commands.
+The SBT plugin **sbt-native-packager** (which is used by default by Play! as the build plugin) is used to generate the build packages.
 
-If you wish to generate a standalone Jar file containing everything needed to run the project (a.k.a. a fat Jar) , you can use **sbt-assembly**:
-```
-$ sbt assembly
-```
-The generated fat Jar will be available in the `target/scala-2.12` directory, and can be directly used:
-```
-$ java -jar /target/scala-2.12/cumulus-server-assembly-0.1-SNAPSHOT.jar
-```
-For more informations, refers to the [own projet page](https://github.com/sbt/sbt-assembly).
+> While we would be happy to also use **sbt-assembly** to generate a standalone Jar file containing everything needed to run the project (a.k.a. a fat Jar), this is not possible due to the fact that we use Bouncy Castle as a security provider. As a security provider, the Bouncy Castle's Jar file is signed and thus cannot be unzipped like the other Jars.
 
-If instead you want to create an installer or a launching app, you  can use **sbt-native-packager** (which is used by default by Play! as the build plugin):
+For example, to generate a non-compressed app ready to run:
 ```
-$ sbt universal:packageBin # To generate a zip
 $ sbt stage                # To generate a non-compressed app ready to run
 ```
-Once generated, the app can also be directly used:
+Once generated, the app can be directly used:
 ```
 $ ./target/universal/stage/bin/cumulus-server
 ```
@@ -66,10 +57,10 @@ You'll need :
 > Even if we recommend to use docker, you still can configure the server to use your own services. The development configuration override should be done inside the custom configuration file `local.conf`, based on `local.example.conf`.
 
 #### With docker
-A docker compose file in `server/devtools/docker` is already defined, mounting the storage point and starting a PostgreSQL server (and also a mail server, not used for now).
+A docker compose file in `devtools/docker` is already defined, mounting the storage point and starting a PostgreSQL server (and also a mail server, not used for now).
 
 ```
-$ cd server/devtools/docker
+$ cd devtools/docker
 $ docker-compose up -d
 ```
 
