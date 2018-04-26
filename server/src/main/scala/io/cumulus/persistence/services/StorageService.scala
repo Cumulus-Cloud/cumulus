@@ -72,16 +72,17 @@ class StorageService(
         content.runWith(Sink.ignore).map(_ => error)
       }
       .flatMap { case (cipher, compression) =>
-        // Define the file writer from this information
-        val fileWriter =
-          StorageReferenceWriter.writer(
-            storageEngines.default, // Always use the default storage engine during upload
-            cipher,
-            compression,
-            path
-          )
-
         for {
+          // Define the file writer from this information
+          fileWriter <- EitherT.fromEither[Future] {
+            StorageReferenceWriter.writer(
+              storageEngines.default, // Always use the default storage engine during upload
+              cipher,
+              compression,
+              path
+            )
+          }
+
           // Store the file's content
           uploadedFile <- EitherT.liftF(content.runWith(fileWriter))
 

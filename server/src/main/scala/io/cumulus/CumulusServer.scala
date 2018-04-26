@@ -1,5 +1,6 @@
 package io.cumulus
 
+import java.security.Security
 import scala.concurrent.ExecutionContextExecutor
 
 import _root_.controllers.AssetsComponents
@@ -20,6 +21,7 @@ import io.cumulus.persistence.storage.{ChunkRemover, StorageEngines}
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore, UserStore}
 import io.cumulus.stages._
 import jsmessages.{JsMessages, JsMessagesFactory}
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import play.api._
 import play.api.db.evolutions.EvolutionsComponents
 import play.api.db.{DBComponents, Database, HikariCPComponents}
@@ -92,6 +94,9 @@ class CumulusComponents(
   implicit val storageEngines = StorageEngines(Seq(
     LocalStorage
   ))
+
+  // Security provider
+  Security.addProvider(new BouncyCastleProvider)
 
   // Compile time generated router
   val routerPrefix: String = "/"

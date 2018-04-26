@@ -1,16 +1,13 @@
 package io.cumulus.models
 
-import java.security.Security
 import java.time.LocalDateTime
 import java.util.UUID
 
 import akka.util.ByteString
 import io.cumulus.core.json.JsonFormat._
 import io.cumulus.core.utils.Crypto
-import io.cumulus.core.utils.Crypto._
-import org.bouncycastle.jce.provider.BouncyCastleProvider
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{Format, Json, OWrites, __}
+import play.api.libs.json._
 
 case class Sharing(
   id: UUID,
@@ -18,18 +15,18 @@ case class Sharing(
   expiration: Option[LocalDateTime],
   owner: UUID,
   fsNode: UUID,
-  security: SharingSecurity
+  security: SharingSecurity,
+  fileSecurity: Map[UUID, FileSharingSecurity]
 )
 
 object Sharing {
 
-  def apply(
+  def create(
     expiration: Option[LocalDateTime],
     owner: UUID,
     fsNode: UUID,
-    privateKey: ByteString,
-    privateKeySalt: ByteString,
-    secretCode: ByteString
+    security: SharingSecurity,
+    fileSecurity: Map[UUID, FileSharingSecurity]
   ): Sharing =
     Sharing(
       UUID.randomUUID(),
@@ -37,7 +34,8 @@ object Sharing {
       expiration,
       owner,
       fsNode,
-      SharingSecurity(secretCode, privateKey, privateKeySalt)
+      security,
+      fileSecurity
     )
 
   val apiWrite: OWrites[Sharing] =(
@@ -56,17 +54,17 @@ object Sharing {
     )
   )
 
-  implicit val format: Format[Sharing] =
+  implicit val format: OFormat[Sharing] =
+    OFormat(Json.reads[Sharing], apiWrite)
+
+  val internalFormat: OFormat[Sharing] =
     Json.format[Sharing]
 
 }
 
 case class SharingSecurity(
-  encryptedPrivateKey: ByteString,
-  privateKeySalt: ByteString ,
-  salt1: ByteString,
-  iv: ByteString,
   secretCodeHash: ByteString,
+  salt1: ByteString,
   salt2: ByteString
 ) {
 
@@ -81,21 +79,51 @@ case class SharingSecurity(
     toTestHashHash == secretCodeHash
   }
 
+}
+
+object SharingSecurity {
+
+  def create(secretCode: ByteString): SharingSecurity = {
+    // Hash of the secret code to get a 256Bit AES key
+    val salt = Crypto.randomBytes(16)
+    val secretCodeHash = Crypto.scrypt(secretCode, salt)
+
+    // Hash the hash of the secret code
+    val salt2 = Crypto.randomBytes(16)
+    val secretCodeHashHash = Crypto.scrypt(secretCodeHash, salt2)
+
+    SharingSecurity(
+      secretCodeHash = secretCodeHashHash,
+      salt1          = salt,
+      salt2          = salt2
+    )
+  }
+
+  implicit val format: Format[SharingSecurity] =
+    Json.format[SharingSecurity]
+
+}
+
+case class FileSharingSecurity(
+  encryptedPrivateKey: ByteString,
+  privateKeySalt: ByteString ,
+  salt: ByteString,
+  iv: ByteString,
+) {
+
   /**
     * Decode the private key using the provided secret code.
     */
   def privateKey(secredCode: ByteString): ByteString = {
-    val hash = Crypto.scrypt(secredCode, salt1)
+    val hash = Crypto.scrypt(secredCode, salt)
     Crypto.AESDecrypt(hash, iv, encryptedPrivateKey)
   }
 
 }
 
-object SharingSecurity {
+object FileSharingSecurity {
 
-  def apply(secretCode: ByteString, privateKey: ByteString, privateKeySalt: ByteString): SharingSecurity = {
-    Security.addProvider(new BouncyCastleProvider)
-
+  def create(secretCode: ByteString, privateKey: ByteString, privateKeySalt: ByteString): FileSharingSecurity = {
     // Hash of the secret code to get a 256Bit AES key
     val salt = Crypto.randomBytes(16)
     val secretCodeHash = Crypto.scrypt(secretCode, salt)
@@ -104,21 +132,15 @@ object SharingSecurity {
     val iv = Crypto.randomBytes(16)
     val encryptedPrivateKey = Crypto.AESEncrypt(secretCodeHash, iv, privateKey)
 
-    // Hash the hash of the secret code
-    val salt2 = Crypto.randomBytes(16)
-    val secretCodeHashHash = Crypto.scrypt(secretCodeHash, salt2)
-
-    SharingSecurity(
+    FileSharingSecurity(
       encryptedPrivateKey = encryptedPrivateKey,
       privateKeySalt      = privateKeySalt,
-      salt1               = salt,
-      iv                  = iv,
-      secretCodeHash      = secretCodeHashHash,
-      salt2               = salt2
+      salt                = salt,
+      iv                  = iv
     )
   }
 
-  implicit val format: Format[SharingSecurity] =
-    Json.format[SharingSecurity]
+  implicit val format: Format[FileSharingSecurity] =
+    Json.format[FileSharingSecurity]
 
 }

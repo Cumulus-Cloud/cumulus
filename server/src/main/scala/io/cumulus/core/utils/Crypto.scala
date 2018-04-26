@@ -1,11 +1,10 @@
 package io.cumulus.core.utils
 
 import java.security.SecureRandom
-import java.util.Random
-import javax.crypto.{Cipher, SecretKey}
-import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 
 import akka.util.ByteString
+import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
+import javax.crypto.{Cipher, SecretKey}
 import org.bouncycastle.crypto.generators.SCrypt
 
 object Crypto {
@@ -13,7 +12,7 @@ object Crypto {
   /**
     * @see [[https://docs.oracle.com/javase/8/docs/api/java/security/SecureRandom.html#SecureRandom-- SecureRandom]]
     */
-  implicit val random: SecureRandom = new SecureRandom()
+  private val random: SecureRandom = new SecureRandom()
 
   /**
     * Generate a random code of the required size. The code will contains only alphanumerical symbols.
@@ -76,10 +75,9 @@ object Crypto {
     * Generate a random salt.
     *
     * @param size The size (in number of bytes)
-    * @param random The random to use (default is [[https://docs.oracle.com/javase/8/docs/api/java/security/SecureRandom.html#SecureRandom-- SecureRandom]])
     * @return The salt
     */
-  def randomBytes(size: Int)(implicit random: Random): ByteString = {
+  def randomBytes(size: Int): ByteString = {
     val bytes = new Array[Byte](size)
     random.nextBytes(bytes)
     ByteString(bytes)

@@ -13,7 +13,7 @@ object JsonFormat {
   /**
     * UUID JSON format.
     */
-  implicit val UUIDFormat: Format[UUID] = new Format[UUID] {
+  implicit val uuidFormat: Format[UUID] = new Format[UUID] {
 
     override def reads(json: JsValue): JsResult[UUID] =
       Json.fromJson[String](json).flatMap { s =>
@@ -25,6 +25,20 @@ object JsonFormat {
 
     override def writes(o: UUID): JsValue =
       JsString(o.toString)
+
+  }
+
+  implicit def uuidMapFormat[V](implicit format: Format[V]): Format[Map[UUID, V]] = new Format[Map[UUID, V]] {
+
+    override def reads(json: JsValue): JsResult[Map[UUID, V]] =
+      JsSuccess(json.as[Map[String, V]].map { case (k, v) =>
+        UUID.fromString(k) -> v
+      })
+
+    override def writes(o: Map[UUID, V]): JsValue = {
+      val writer = implicitly[Writes[Map[String, V]]]
+      writer.writes(o.map { case (k, v) => k.toString -> v })
+    }
 
   }
 

@@ -1,5 +1,6 @@
 package io.cumulus
 
+import java.security.Security
 import scala.concurrent.ExecutionContextExecutor
 
 import _root_.controllers.AssetsComponents
@@ -10,6 +11,7 @@ import io.cumulus.controllers.RecoveryController
 import io.cumulus.controllers.utils.{Assets, LoggingFilter}
 import io.cumulus.core.controllers.utils.api.{ApiUtils, HttpErrorHandler}
 import jsmessages.{JsMessages, JsMessagesFactory}
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import play.api
 import play.api.i18n.MessagesApi
 import play.api.mvc.EssentialFilter
@@ -43,6 +45,10 @@ class CumulusRecoveryComponents(
   with AssetsComponents
   with ApiUtils {
 
+  // Security provider
+  Security.addProvider(new BouncyCastleProvider)
+
+  // Routes
   lazy val router = Router.from {
     case GET(p"/api/admin/management/reload") =>
       controller.reload

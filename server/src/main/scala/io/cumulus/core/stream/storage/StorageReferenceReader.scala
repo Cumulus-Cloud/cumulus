@@ -11,7 +11,7 @@ import io.cumulus.core.utils.Range
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.Session
 import io.cumulus.models.fs.File
-import io.cumulus.persistence.storage.{StorageEngines, StorageObject}
+import io.cumulus.persistence.storage.{StorageCipher, StorageEngines, StorageObject, StorageReference}
 import io.cumulus.stages.{Ciphers, Compressions}
 
 object StorageReferenceReader extends Logging {
@@ -31,7 +31,7 @@ object StorageReferenceReader extends Logging {
     ec: ExecutionContext
   ): Either[AppError, Source[ByteString, NotUsed]] =
     for {
-      transformation   <- transformationForFile(file)
+      transformation   <- transformationForThumbnail(file)
       storageReference <- file.thumbnailStorageReference.toRight(AppError.notFound("validation.fs-node.no-thumbnail", file.name))
       storageEngine    <- storageEngines.get(storageReference)
       source = {
@@ -156,17 +156,49 @@ object StorageReferenceReader extends Logging {
   }
 
   /** Generate the transformations for a given file. */
-  private def transformationForFile(file: File)(implicit session: Session, ciphers: Ciphers, compressions: Compressions) =
-    for {
-      cipher      <- ciphers.get(file.storageReference.cipher)
-      compression <- compressions.get(file.storageReference.compression)
-    } yield {
-      val (privateKey, salt) = session.privateKeyAndSalt
+  private def transformationForThumbnail(file: File)(implicit session: Session, ciphers: Ciphers, compressions: Compressions) = {
+    file.thumbnailStorageReference.map { storageReference =>
+      for {
+        cipher      <- cipherStageForStorageReference(storageReference)
+        compression <- compressionStageForStorageReference(storageReference)
+      } yield {
+        Flow[ByteString]
+          .via(cipher.getOrElse(Flow[ByteString]))
+          .via(compression.getOrElse(Flow[ByteString]))
+      }
+    }.getOrElse(Right(Flow[ByteString]))
+  }
 
+  /** Generate the transformations for a given file. */
+  private def transformationForFile(file: File)(implicit session: Session, ciphers: Ciphers, compressions: Compressions) = {
+    for {
+      cipher      <- cipherStageForStorageReference(file.storageReference)
+      compression <- compressionStageForStorageReference(file.storageReference)
+    } yield {
       Flow[ByteString]
-        .via(cipher.map(_.decrypt(privateKey, salt)).getOrElse(Flow[ByteString]))
-        .via(compression.map(_.uncompress).getOrElse(Flow[ByteString]))
+        .via(cipher.getOrElse(Flow[ByteString]))
+        .via(compression.getOrElse(Flow[ByteString]))
     }
+  }
+
+  /** Generate the decryption stage for a given file. */
+  private def cipherStageForStorageReference(storageReference: StorageReference)(implicit session: Session, ciphers: Ciphers) =
+    storageReference.cipher match {
+      case None =>
+        Right(None)
+      case Some(StorageCipher(cipherName, _, salt, _)) =>
+        for {
+          cipher     <- ciphers.get(cipherName)
+          privateKey <- session.privateKeyOfFile(storageReference).toRight(AppError.validation("validation.fs-node.unknown-key", storageReference.id.toString))
+        } yield Some(cipher.decrypt(privateKey, salt))
+
+    }
+
+  /** Generate the decompression stage for a given file. */
+  private def compressionStageForStorageReference(storageReference: StorageReference)(implicit compressions: Compressions) =
+    compressions
+      .get(storageReference.compression)
+      .map(_.map(_.uncompress))
 
   /** Custom error handler to log errors */
   private def errorHandler(file: File): PartialFunction[Throwable, ByteString] = {

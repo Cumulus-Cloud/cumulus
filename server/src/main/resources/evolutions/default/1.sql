@@ -1,6 +1,6 @@
 # --- !Ups
 
--- Users
+  -- Users
   CREATE TABLE cumulus_user (
     id                  UUID          PRIMARY KEY,
     email               VARCHAR(255)  NOT NULL,
@@ -18,7 +18,7 @@
   CREATE UNIQUE INDEX user_mail_unique ON cumulus_user (LOWER(email));
   CREATE UNIQUE INDEX user_login_unique ON cumulus_user (LOWER(login));
 
--- File system
+  -- File system
   CREATE TABLE fs_node (
     id           UUID      PRIMARY KEY,
     path         TEXT      NOT NULL,
@@ -38,15 +38,9 @@
   CREATE TABLE sharing (
     id                  UUID          PRIMARY KEY,
     reference           VARCHAR(64)   NOT NULL,
-    expiration          TIMESTAMP             ,
     user_id             UUID          REFERENCES cumulus_user(id), -- Owner
     fsNode_id           UUID          REFERENCES fs_node(id),      -- Node shared
-    encryptedPrivateKey VARCHAR(64)   NOT NULL,
-    privateKeySalt      VARCHAR(64)   NOT NULL,
-    salt1               VARCHAR(64)   NOT NULL,
-    iv                  VARCHAR(64)   NOT NULL,
-    secretCodeHash      VARCHAR(64)   NOT NULL,
-    salt2               VARCHAR(64)   NOT NULL
+    metadata            JSONB         NOT NULL                     -- Contains metadata about the sharing
   );
 
   CREATE UNIQUE INDEX sharing_reference_unique ON sharing (reference);

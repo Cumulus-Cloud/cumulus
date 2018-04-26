@@ -3,6 +3,9 @@ package io.cumulus.persistence.storage
 import java.time.LocalDateTime
 import java.util.UUID
 
+import akka.util.ByteString
+import io.cumulus.core.json.JsonFormat._
+import io.cumulus.core.utils.Crypto
 import play.api.libs.json.{Format, Json}
 
 /**
@@ -22,7 +25,7 @@ case class StorageReference(
   id: UUID,
   size: Long,
   hash: String,
-  cipher: Option[String],
+  cipher: Option[StorageCipher],
   compression: Option[String],
   creation: LocalDateTime,
   storage: Seq[StorageObject]
@@ -33,7 +36,7 @@ object StorageReference {
   def create(
     size: Long,
     hash: String,
-    cipher: Option[String],
+    cipher: Option[StorageCipher],
     compression: Option[String],
     storage: Seq[StorageObject]
   ): StorageReference =
@@ -49,5 +52,45 @@ object StorageReference {
 
   implicit val format: Format[StorageReference] =
     Json.format[StorageReference]
+
+}
+
+case class StorageCipher(
+  cipher: String,
+  encryptedPrivateKey: ByteString,
+  salt: ByteString,
+  iv: ByteString
+) {
+
+  /**
+    * Decode the private key using the provided password.
+    */
+  def privateKey(globalPrivateKey: ByteString): ByteString =
+    Crypto.AESDecrypt(globalPrivateKey, iv, encryptedPrivateKey)
+
+}
+
+object StorageCipher {
+
+  def create(cipher: String, globalPrivateKey: ByteString) = {
+
+    // Generate the file private key
+    val privateKey = Crypto.randomBytes(16)
+    val salt       = Crypto.randomBytes(16)
+
+    // Encrypt the hash of the private key
+    val iv = Crypto.randomBytes(16)
+    val encryptedPrivateKey = Crypto.AESEncrypt(globalPrivateKey, iv, salt)
+
+    StorageCipher(
+      cipher,
+      encryptedPrivateKey,
+      salt,
+      iv
+    )
+  }
+
+  implicit val format: Format[StorageCipher] =
+    Json.format[StorageCipher]
 
 }

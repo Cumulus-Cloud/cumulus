@@ -1,16 +1,18 @@
 package io.cumulus.persistence.services
 
 import java.time.LocalDateTime
+import java.util.UUID
 import scala.concurrent.Future
 
+import akka.util.ByteString
 import io.cumulus.core.Logging
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.{QueryBuilder, QueryE, QueryPagination}
-import io.cumulus.core.utils.Crypto._
 import io.cumulus.core.utils.{Base16, Crypto, PaginatedList}
 import io.cumulus.core.validation.AppError
-import io.cumulus.models._
 import io.cumulus.models.fs.{Directory, File, FsNode}
+import io.cumulus.models.{FileSharingSecurity, _}
+import io.cumulus.persistence.storage.StorageCipher
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore, UserStore}
 
 class SharingService(
@@ -22,39 +24,68 @@ class SharingService(
   qb: QueryBuilder[CumulusDB]
 ) extends Logging {
 
+  /** Generate a sharing for a given file; both for the file itself and for its thumbnail. */
+  private def generateSharingSecurities(secretCode: ByteString, file: File)(implicit session: UserSession): Map[UUID, FileSharingSecurity] = {
+    Seq(
+      file.storageReference.cipher.map(c => file.storageReference.id -> generateSharingSecurity(secretCode, c)),
+      file.thumbnailStorageReference.flatMap(thumbnail => thumbnail.cipher.map(c => thumbnail.id -> generateSharingSecurity(secretCode, c)))
+    ).flatten.toMap
+  }
+
+  /** Generate a sharing for the privded storage cipher */
+  private def generateSharingSecurity(secretCode: ByteString, storageCipher: StorageCipher)(implicit session: UserSession): FileSharingSecurity = {
+    val filePrivateKey     = storageCipher.privateKey(session.security.privateKey(session.password))
+    val filePrivateKeySalt = storageCipher.salt
+
+    FileSharingSecurity.create(
+      secretCode,
+      filePrivateKey,
+      filePrivateKeySalt
+    )
+  }
+
   /**
     * Shares a node.
     *
     * @param path The path of the node to be shared.
-    * @param password The password of the user performing the sharing.
     * @param expiration Optional date of expiration of the sharing.
-    * @param user The user performing the operation.
+    * @param session The session of the user performing the operation.
     */
   def shareNode(
     path: Path,
-    password: String,
     expiration: Option[Int] = None
-  )(implicit user: User): Future[Either[AppError, (Sharing, String)]] = {
+  )(implicit session: UserSession): Future[Either[AppError, (Sharing, String)]] = {
+    val user = session.user
 
     for {
       // Get the node to share
       node <- QueryE.getOrNotFound(fsNodeStore.findAndLockByPathAndUser(path, user))
 
-      // We need the private key
-      (privateKey, salt) = (user.security.privateKey(password), user.security.privateKeySalt)
-
-      // Generate a secret code
+      // Generate a secret code. This secret key won't be kept on the server
       secretCode = Crypto.randomBytes(16)
 
-      // Create the sharing
-      sharing = Sharing(
-        expiration.map(LocalDateTime.now.plusSeconds(_)),
-        user.id,
-        node.id,
-        privateKey,
-        salt,
-        secretCode
-      )
+      // Generate the sharing according to the type of node
+      sharing <- QueryE.pure {
+        node match {
+          case file: File =>
+            // Create the sharing
+            Right(
+              Sharing.create(
+                expiration = expiration.map(LocalDateTime.now.plusSeconds(_)),
+                owner = user.id,
+                fsNode = node.id,
+                security = SharingSecurity.create(secretCode),
+                fileSecurity = generateSharingSecurities(secretCode, file)
+              )
+            )
+
+          case _: Directory =>
+            // TODO iterate through all the file...
+            Left(AppError.validation("validation.sharing.invalid-type"))
+          case _ =>
+            Left(AppError.validation("validation.sharing.invalid-type"))
+        }
+      }
 
       // Save the sharing
       _ <- QueryE.lift(sharingStore.create(sharing))

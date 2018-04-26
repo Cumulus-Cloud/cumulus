@@ -9,9 +9,10 @@ import akka.util.ByteString
 import io.cumulus.core.Settings
 import io.cumulus.core.stream.utils.{Chunker, Counter, DigestCalculator}
 import io.cumulus.core.utils.MimeType
+import io.cumulus.core.validation.AppError
 import io.cumulus.models.fs.File
 import io.cumulus.models.{Path, UserSession}
-import io.cumulus.persistence.storage.{StorageEngine, StorageObject, StorageReference}
+import io.cumulus.persistence.storage.{StorageCipher, StorageEngine, StorageObject, StorageReference}
 import io.cumulus.stages.{CipherStage, CompressionStage}
 
 object StorageReferenceWriter {
@@ -30,15 +31,17 @@ object StorageReferenceWriter {
     cipher: Option[CipherStage],
     compression: Option[CompressionStage],
     path: Path
-  )(implicit user: UserSession, settings: Settings, ec: ExecutionContext): Sink[ByteString, Future[File]] = {
+  )(implicit user: UserSession, settings: Settings, ec: ExecutionContext): Either[AppError, Sink[ByteString, Future[File]]] = {
 
-    val (privateKey, salt) =  user.privateKeyAndSalt
+    // Get the cipher & compression stage
+    val (storageCipher, cipherStage) = cipherForFile(cipher)
+    val compressionStage             = compressionForFile(compression)
 
     // Create the transformation
     val transformation =
       Flow[ByteString]
-        .via(compression.map(_.compress).getOrElse(Flow[ByteString]))
-        .via(cipher.map(_.encrypt(privateKey, salt)).getOrElse(Flow[ByteString]))
+        .via(compressionStage)
+        .via(cipherStage)
 
     // Split the incoming stream of bytes, and writes it to multiple files
     val objectsWriter =
@@ -67,7 +70,7 @@ object StorageReferenceWriter {
             storage = StorageReference.create(
               size = fileSize,
               hash = fileSha1,
-              cipher = cipher.map(_.name),
+              cipher = storageCipher,
               compression = compression.map(_.name),
               storage = storageObjects
             )
@@ -82,9 +85,29 @@ object StorageReferenceWriter {
       FlowShape(broadcast.in, zip.out)
     }
 
-    Flow[ByteString]
-      .via(graph)
-      .toMat(Sink.head)((_, file) => file)
+    Right(
+      Flow[ByteString]
+        .via(graph)
+        .toMat(Sink.head)((_, file) => file)
+    )
   }
+
+  /** Get the compression used to compress the file. */
+  private def compressionForFile(maybeCompression: Option[CompressionStage]) =
+    maybeCompression.map(_.compress).getOrElse(Flow[ByteString])
+
+  /** Get the cipher to crypt the file. */
+  private def cipherForFile(maybeCipher: Option[CipherStage])(implicit session: UserSession) =
+    maybeCipher.map { cipher =>
+      // Retrieve the user's global private key
+      val (privateGlobalKey, _) =  session.privateKeyAndSalt
+
+      // Generate the file's own private key & get the cipher stage
+      val storageCipher =  StorageCipher.create(cipher.name, privateGlobalKey)
+      val cipherStage   =  cipher.encrypt(storageCipher.privateKey(privateGlobalKey), storageCipher.salt)
+
+      (Some(storageCipher), cipherStage)
+    }
+      .getOrElse((None, Flow[ByteString]))
 
 }
