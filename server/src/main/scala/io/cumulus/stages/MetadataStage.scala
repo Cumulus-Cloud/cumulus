@@ -203,7 +203,7 @@ object PDFDocumentMetadataExtractor extends MetadataExtractor {
 
 }
 
-case class MetadataExtractors(extractors: Seq[MetadataExtractor]) {
+case class MetadataExtractors(extractors: MetadataExtractor*) {
 
   def get(name: String): MetadataExtractor =
     extractors

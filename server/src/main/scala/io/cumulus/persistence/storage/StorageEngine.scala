@@ -122,7 +122,7 @@ object StorageEngines {
 
   /** Initializes the storage engines using the configuration. */
   def apply(
-    storageEngineFactories: Seq[StorageEngineFactory]
+    storageEngineFactories: StorageEngineFactory*
   )(implicit configuration: Configuration): StorageEngines = {
 
     val storageEnginesConf =

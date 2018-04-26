@@ -22,7 +22,7 @@ trait CompressionStage {
   * Handler to return a compression by name.
   * @param compressions List of all the compressions available.
   */
-case class Compressions(compressions: Seq[CompressionStage]) {
+case class Compressions(compressions: CompressionStage*) {
 
   def get(name: String): Either[AppError, CompressionStage] =
     compressions
