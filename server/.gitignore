@@ -2,6 +2,7 @@
 # Ignore Play! working directory
 bin/
 tmp/
+conf/
 db
 lib/
 logs/

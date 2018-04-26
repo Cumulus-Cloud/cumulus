@@ -19,7 +19,7 @@ trait CipherStage {
 
 }
 
-case class Ciphers(ciphers: Seq[CipherStage]) {
+case class Ciphers(ciphers: CipherStage*) {
 
   def get(name: String): Either[AppError, CipherStage] =
     ciphers

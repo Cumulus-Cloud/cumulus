@@ -174,7 +174,7 @@ object ImageThumbnailGenerator extends ThumbnailGenerator {
 
 }
 
-case class ThumbnailGenerators(generators: Seq[ThumbnailGenerator]) {
+case class ThumbnailGenerators(generators: ThumbnailGenerator*) {
 
   def get(name: String): Option[ThumbnailGenerator] =
     generators

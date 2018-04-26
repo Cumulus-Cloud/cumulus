@@ -1,5 +1,6 @@
 package io.cumulus
 
+import java.io.File
 import java.security.Security
 import scala.concurrent.ExecutionContextExecutor
 
@@ -8,7 +9,7 @@ import akka.actor.{ActorRef, Scheduler}
 import akka.stream.{ActorMaterializer, Materializer}
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.softwaremill.macwire._
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigFactory}
 import io.cumulus.controllers._
 import io.cumulus.controllers.utils.{Assets, LoggingFilter}
 import io.cumulus.core.Settings
@@ -68,32 +69,37 @@ class CumulusComponents(
   with EvolutionsComponents {
 
   // List of supported ciphers
-  implicit val ciphers = Ciphers(Seq(
-    AESCipherStage
-  ))
+  implicit lazy val ciphers: Ciphers =
+    Ciphers(
+      AESCipherStage
+    )
 
   // List of supported compressors
-  implicit val compressors = Compressions(Seq(
-    GzipStage,
-    DeflateStage
-  ))
+  implicit lazy val compressors: Compressions =
+    Compressions(
+      GzipStage,
+      DeflateStage
+    )
 
   // List of metadata extractors available
-  implicit val metadataExtractors = MetadataExtractors(Seq(
-    ImageMetadataExtractor,
-    PDFDocumentMetadataExtractor
-  ))
+  implicit lazy val metadataExtractors: MetadataExtractors =
+    MetadataExtractors(
+      ImageMetadataExtractor,
+      PDFDocumentMetadataExtractor
+    )
 
   // List of thumbnail generator available
-  implicit val thumbnailGenerators = ThumbnailGenerators(Seq(
-    ImageThumbnailGenerator,
-    PDFDocumentThumbnailGenerator
-  ))
+  implicit lazy val thumbnailGenerators: ThumbnailGenerators =
+    ThumbnailGenerators(
+      ImageThumbnailGenerator,
+      PDFDocumentThumbnailGenerator
+    )
 
   // List of storage engine available
-  implicit val storageEngines = StorageEngines(Seq(
-    LocalStorage
-  ))
+  implicit lazy val storageEngines: StorageEngines =
+    StorageEngines(
+      LocalStorage
+    )
 
   // Security provider
   Security.addProvider(new BouncyCastleProvider)
@@ -102,8 +108,9 @@ class CumulusComponents(
   val routerPrefix: String = "/"
   lazy val router: Routes  = wire[Routes]
 
-  // Configurations
-  implicit lazy val playConfig: Configuration = configuration
+  override implicit lazy val configuration: Configuration =
+    context.initialConfiguration ++ Configuration(ConfigFactory.parseFile(new File("conf/override.conf")))
+
   implicit lazy val config: Config            = configuration.underlying // for MailerComponents
   implicit lazy val settings: Settings        = wire[Settings]
 
