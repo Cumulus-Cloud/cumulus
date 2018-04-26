@@ -108,20 +108,9 @@ class CumulusComponents(
   val routerPrefix: String = "/"
   lazy val router: Routes  = wire[Routes]
 
-  // Configurations
-  /*
-  ConfigurationWriter(Configuration(
-    ("db.default.url", "jdbc:postgresql://localhost/cumulus"),
-    ("db.default.username", "cumulus"),
-    ("db.default.password", "cumulus")
-  )).write(new File("conf/override.conf"))
-    .map(r => println(r))
-    */
-
   override implicit lazy val configuration: Configuration =
     context.initialConfiguration ++ Configuration(ConfigFactory.parseFile(new File("conf/override.conf")))
 
-  //implicit lazy val playConfig: Configuration = configuration
   implicit lazy val config: Config            = configuration.underlying // for MailerComponents
   implicit lazy val settings: Settings        = wire[Settings]
 
