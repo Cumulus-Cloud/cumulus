@@ -109,8 +109,8 @@ class SharingStore(
     implicit def fsNodeColumn: Column[FsNode]   = AnormSupport.column[FsNode](FsNode.internalFormat)
 
     (
-      SqlParser.get[Sharing](metadataField) ~
-      SqlParser.get[FsNode](FsNodeStore.metadataField)
+      SqlParser.get[Sharing](s"$table.$metadataField") ~
+      SqlParser.get[FsNode](s"${FsNodeStore.table}.${FsNodeStore.metadataField}")
     ).map {
       case sharing ~ fsNode =>
         SharingInfo(sharing, fsNode)

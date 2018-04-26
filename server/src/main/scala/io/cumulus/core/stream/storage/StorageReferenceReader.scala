@@ -159,7 +159,7 @@ object StorageReferenceReader extends Logging {
   private def transformationForThumbnail(file: File)(implicit session: Session, ciphers: Ciphers, compressions: Compressions) = {
     file.thumbnailStorageReference.map { storageReference =>
       for {
-        cipher      <- cipherStageFoStorageReference(storageReference)
+        cipher      <- cipherStageForStorageReference(storageReference)
         compression <- compressionStageForStorageReference(storageReference)
       } yield {
         Flow[ByteString]
@@ -172,7 +172,7 @@ object StorageReferenceReader extends Logging {
   /** Generate the transformations for a given file. */
   private def transformationForFile(file: File)(implicit session: Session, ciphers: Ciphers, compressions: Compressions) = {
     for {
-      cipher      <- cipherStageFoStorageReference(file.storageReference)
+      cipher      <- cipherStageForStorageReference(file.storageReference)
       compression <- compressionStageForStorageReference(file.storageReference)
     } yield {
       Flow[ByteString]
@@ -182,7 +182,7 @@ object StorageReferenceReader extends Logging {
   }
 
   /** Generate the decryption stage for a given file. */
-  private def cipherStageFoStorageReference(storageReference: StorageReference)(implicit session: Session, ciphers: Ciphers) =
+  private def cipherStageForStorageReference(storageReference: StorageReference)(implicit session: Session, ciphers: Ciphers) =
     storageReference.cipher match {
       case None =>
         Right(None)
