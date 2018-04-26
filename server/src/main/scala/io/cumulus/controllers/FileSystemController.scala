@@ -31,8 +31,6 @@ class FileSystemController(
   sharingService: SharingService
 )(implicit
   ec: ExecutionContext,
-  ciphers: Ciphers,
-  compressions: Compressions,
   settings: Settings
 ) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with FileDownloaderUtils with BodyParserJson with BodyParserStream {
 
@@ -173,7 +171,7 @@ class FileSystemController(
           ApiResponse(fsNodeService.moveNode(path, to))
         case FsOperationShareLink(_, duration, _) =>
           ApiResponse {
-            sharingService.shareNode(path, request.user.password, duration).map {
+            sharingService.shareNode(path, duration).map {
               case Right((sharing, secretCode)) =>
                 Right(Json.toJsObject(sharing)(Sharing.apiWrite)
                   + ("key" -> Json.toJson(secretCode))

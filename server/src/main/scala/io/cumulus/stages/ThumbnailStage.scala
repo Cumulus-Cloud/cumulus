@@ -35,9 +35,17 @@ trait ThumbnailGenerator extends Logging {
   ): Future[Either[AppError, StorageReference]] = {
 
     val res = for {
-      preview     <- generatePreview(file)
-      cipher      <- ciphers.get(file.storageReference.cipher)
-      compression <- compressions.get(file.storageReference.compression)
+      preview         <- generatePreview(file)
+      cipher          <- ciphers.get(file.storageReference.cipher.map(_.cipher))
+      compression     <- compressions.get(file.storageReference.compression)
+      thumbnailWriter <- {
+        StorageReferenceWriter.writer(
+          storageEngines.default, // Write the thumbnail on the default storage engine
+          cipher,
+          compression,
+          "/not-used" // We need a name, but will just retrieve the storage information
+        )
+      }
     } yield {
 
       // Generate a thumbnail from the preview
@@ -54,15 +62,8 @@ trait ThumbnailGenerator extends Logging {
         }
 
       // Write the image
-      val thumbnailWriter =
-        StorageReferenceWriter.writer(
-          storageEngines.default, // Write the thumbnail on the default storage engine
-          cipher,
-          compression,
-          "/not-used" // We need a name, but will just retrieve the storage information
-        )
-
       StreamConverters.fromInputStream(() => image.stream).toMat(thumbnailWriter)(Keep.right)
+
     }
 
     // Run the upload & return the file

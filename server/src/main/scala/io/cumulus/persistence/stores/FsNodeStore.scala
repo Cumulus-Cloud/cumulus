@@ -95,7 +95,7 @@ class FsNodeStore(
   }
 
   def rowParser: RowParser[FsNode] = {
-    implicit def fsNodeCase: Column[FsNode] = AnormSupport.column[FsNode](FsNode.internalFormat)
+    implicit def fsNodeColumn: Column[FsNode] = AnormSupport.column[FsNode](FsNode.internalFormat)
 
     SqlParser.get[FsNode]("metadata")
   }

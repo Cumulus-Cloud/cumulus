@@ -1,26 +1,26 @@
 package io.cumulus.models
 
-import java.security.Security
 import java.time.LocalDateTime
 import java.util.UUID
+import scala.language.implicitConversions
 
 import akka.util.ByteString
 import io.cumulus.core.json.JsonFormat._
 import io.cumulus.core.utils.Crypto
-import io.cumulus.core.utils.Crypto._
-import org.bouncycastle.jce.provider.BouncyCastleProvider
+import io.cumulus.persistence.storage.StorageReference
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-
-import scala.language.implicitConversions
 
 /**
   * Common trait for both user session and sharing session
   */
 trait Session {
 
+  /** The user of the session. */
   def user: User
-  def privateKeyAndSalt: (ByteString, ByteString)
+
+  /** Retrieves the secret key of the provided storage reference, if any. */
+  def privateKeyOfFile(storageReference: StorageReference): Option[ByteString]
 
 }
 
@@ -36,8 +36,13 @@ case class UserSession(
   password: String
 ) extends Session {
 
+  /** Private key of the user */
   def privateKeyAndSalt: (ByteString, ByteString) =
     (user.security.privateKey(password), user.security.privateKeySalt)
+
+  /** Retrieves the secret key of the provided storage reference, if any. */
+  def privateKeyOfFile(storageReference: StorageReference): Option[ByteString] =
+    storageReference.cipher.map(_.privateKey(user.security.privateKey(password)))
 
 }
 
@@ -59,8 +64,9 @@ case class SharingSession(
   key: ByteString
 ) extends Session {
 
-  def privateKeyAndSalt: (ByteString, ByteString) =
-    (sharing.security.privateKey(key), sharing.security.privateKeySalt)
+  /** Retrieves the secret key of the provided storage reference, if any. */
+  def privateKeyOfFile(storageReference: StorageReference): Option[ByteString] =
+    storageReference.cipher.flatMap(_ => sharing.fileSecurity.get(storageReference.id).map(_.privateKey(key)))
 
 }
 
@@ -103,7 +109,7 @@ object User {
       login,
       UserSecurity(password),
       LocalDateTime.now,
-      Seq[String]("user", "admin") // TODO remove admin :)
+      Seq[String]("user", "admin") // TODO remove admin by default :)
     )
   }
 
@@ -135,6 +141,17 @@ object User {
 
 }
 
+/**
+  * Security of the user, containing his encrypted global private key.
+  * @param encryptedPrivateKey The encrypted global private key.
+  * @param privateKeySalt The salt of the private key. TODO delete ?
+  * @param salt1 The salt used to generate the SCrypt hash used as the encryption key.
+  * @param iv Initialisation vector used with the encryption.
+  * @param passwordHash The hash of the hash of the password, kept to test the password used during login.
+  * @param salt2 Salt used for the hash of the hash of the password. Because we can't keep the hash of the password,
+  *              because this hash is used as the key of the global private key, we keep the hash of the hash of the
+  *              password, and thus need two salt (one for the first hash, another for the second).
+  */
 case class UserSecurity(
   encryptedPrivateKey: ByteString,
   privateKeySalt: ByteString,
@@ -164,7 +181,7 @@ case class UserSecurity(
   }
 
   /**
-    * Change the password
+    * Change the password.
     */
   def changePassword(previousPassword: String, newPassword: String): UserSecurity = {
     // TODO (decrypt, re-encrypt)
@@ -175,9 +192,11 @@ case class UserSecurity(
 
 object UserSecurity {
 
+  /**
+    * Create for a new user using the provided clear password.
+    * @param password The password of the user.
+    */
   def apply(password: String): UserSecurity = {
-    Security.addProvider(new BouncyCastleProvider)
-
     // Generate a random 256Bit key
     val privateKey = Crypto.randomBytes(16)
     val privateKeySalt = Crypto.randomBytes(16)
