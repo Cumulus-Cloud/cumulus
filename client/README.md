@@ -1,15 +1,25 @@
-## Cumulus Web App
+<p align="center"><img src="https://cumulus-cloud.github.io/assets/img/logo3.png" width="280" /></p>
+<p align="center">
+  <span><img src="https://cumulus-cloud.github.io/assets/img/logos/react.png"></span>
+  <span><img src="https://cumulus-cloud.github.io/assets/img/logos/redux.png"></span>
+</p>
+
+# Cumulus Web App
 
 Compress Icon made by [Freepik](http://www.freepik.com)
 
-### Build
+## Installation
+Install using `npm`
 ```sh
-npm install
-npm run build
+$ npm install
 ```
 
-### Dev build
+## Build
 ```sh
-npm install
-npm run watch
+$ npm run build
+```
+
+## Dev build
+```sh
+$ npm run watch
 ```
