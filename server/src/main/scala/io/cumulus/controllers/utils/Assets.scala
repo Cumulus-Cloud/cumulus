@@ -24,13 +24,14 @@ class Assets(
   /**
     * Fixes dev mode assets being served as classloader resources and sometimes being outdated.
     */
-  def versioned(path: String, file: Asset): Action[AnyContent] =
+  def versioned(file: Asset): Action[AnyContent] = {
     if (environment.mode == Mode.Prod)
-      assets.versioned(path, file)
+      assets.versioned(file.name)
     else
-      externalAssets.at(path.drop(1), file.name)
+      assets.at(file = file.name)
+  }
 
-  val favicon: Action[AnyContent] = assets.versioned(path = "/public", "favicon.ico")
+  val favicon: Action[AnyContent] = assets.versioned("favicon.ico")
 
   def messages: Action[Unit] = Action(parse.empty) { implicit req =>
     Ok(jsMessages(Some("window.Messages"))(messagesApi.preferred(req)))

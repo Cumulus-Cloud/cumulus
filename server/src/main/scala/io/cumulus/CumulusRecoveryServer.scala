@@ -55,7 +55,7 @@ class CumulusRecoveryComponents(
     case GET(p"/api/admin/management/stop") =>
       controller.stop
     case GET(p"/assets/$file*") =>
-      assetController.versioned(path = "/src/main/resources/public", file)
+      assetController.versioned(file)
     case GET(p"/$path*") =>
       controller.index
   }

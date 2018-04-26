@@ -28,24 +28,8 @@ scalacOptions in ThisBuild := Seq(
 lazy val commonSettings = Seq(
   version := "0.1-SNAPSHOT",
   organization := "io.cumulus",
-  scalaVersion := "2.12.5",
-  test in assembly := {}
+  scalaVersion := "2.12.5"
 )
-
-// Merge configuration for sbt-assembly
-assemblyMergeStrategy in assembly := {
-  case manifest if manifest.contains("MANIFEST.MF") =>
-    // We don't need manifest files since sbt-assembly will create
-    // one with the given settings
-    MergeStrategy.discard
-  case referenceOverrides if referenceOverrides.contains("reference-overrides.conf") =>
-    // Keep the content for all reference-overrides.conf files
-    MergeStrategy.concat
-  case x =>
-    // For all the other files, use the default sbt-assembly merge strategy
-    val oldStrategy = (assemblyMergeStrategy in assembly).value
-    oldStrategy(x)
-}
 
 // Remove unused warnings for compiled twirl templates
 TwirlKeys.templateImports := Seq()
@@ -59,7 +43,6 @@ lazy val cumulusServer = project
   .settings(commonSettings: _*)
   .settings(
     name := "cumulus-server",
-    mainClass in assembly := Some("io.cumulus.CumulusApp"),
 
     // Allow to use `Path` and `FsNodeType` in route
     routesAddImport += "io.cumulus.models.Path",
@@ -97,7 +80,7 @@ lazy val cumulusServer = project
       // PDF handling
       Dependencies.pdfbox.core,
       // Crypto
-      Dependencies.bouncyCastle.core,
+      Dependencies.bouncyCastle.core % "provided",
       // Test dependencies
       Dependencies.scalatest.play % Test,
       // MacWire
