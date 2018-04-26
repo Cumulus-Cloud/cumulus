@@ -27,7 +27,7 @@ You may also simply build the server:
 ```
 $ sbt compile
 ```
-> Both command will also compile the `routes` file and the twirls templates. Note that since this project is using an embed Pay! server, there is unfortunately no Play!'s like hot-reload mecanism ; but `~run` can still be used. 
+> Both command will also compile the `routes` file and the twirls templates. Note that since this project is using an embed Play! server, there is unfortunately no Play!'s like hot-reload mecanism ; but `~run` can still be used. 
 
 #### Production
 Both **sbt-native-packager** and **sbt-assembly** are available as sbt commands.
@@ -66,10 +66,10 @@ You'll need :
 > Even if we recommend to use docker, you still can configure the server to use your own services. The development configuration override should be done inside the custom configuration file `local.conf`, based on `local.example.conf`.
 
 #### With docker
-A docker compose file in `server/devtools/docker` is already defined, mounting the storage point and starting a PostgreSQL server (and also a mail server, not used for now).
+A docker compose file in `/devtools/docker` is already defined, mounting the storage point and starting a PostgreSQL server (and also a mail server, not used for now).
 
 ```
-$ cd server/devtools/docker
+$ cd /devtools/docker
 $ docker-compose up -d
 ```
 

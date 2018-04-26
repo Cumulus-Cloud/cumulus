@@ -17,7 +17,7 @@ We recommend using `docker` and `docker-compose` to easily manage and deploy the
 
 ### Using docker compose
 
-To run the cumulus server with `docker-compose` using the latest build you will need a `docker-compose.yml` file looking like this: 
+To run the cumulus server with `docker-compose` using the latest build you will need a `docker-compose.yml` file looking like this:
 
 ```yaml
 version: '3.4'
@@ -66,6 +66,8 @@ And then using the provided `Dockerfile` in your `docker-compose` file:
 ...
 ```
 For more information on how to build the app, please refer to the corresponding section of this readme.
+
+Note: if you have this error `psql: FATAL:  role "cumulus" does not exist`, it might be because you have a local postgres server which override the docker postgres server. Stop the local server instance and restart the docker.
 
 ### Manually
 
