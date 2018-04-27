@@ -36,10 +36,11 @@ case class FsNodeFilter(
     ParameterizedSqlFilter(s"""
       (
         dmetaphone($nameField) = dmetaphone({_name}) OR
-        levenshtein($nameField, {_name}) < 3 OR
-        name LIKE {_nameLike}
+        levenshtein_less_equal($nameField, {_name}, 3) < 3 OR
+        difference($nameField, {_name}) > 2 OR
+        name ~* {_nameLike}
       )
-    """.stripMargin, Seq(NamedParameter("_name", likeName), NamedParameter("_nameLike", s"%$likeName%")))
+    """.stripMargin, Seq(NamedParameter("_name", likeName), NamedParameter("_nameLike", s".*$likeName.*")))
   )
 
   private lazy val parentToFilter: Option[ParameterizedSqlFilter] = Some {

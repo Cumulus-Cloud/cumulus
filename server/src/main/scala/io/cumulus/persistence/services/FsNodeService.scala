@@ -126,6 +126,7 @@ class FsNodeService(
     nodeType: Option[FsNodeType],
     mimeType: Option[String],
     pagination: QueryPagination
+    // TODO add ordering
   )(implicit user: User): Future[Either[AppError, PaginatedList[FsNode]]] = {
     val filter     = FsNodeFilter(name, parent, nodeType, mimeType, user)
     val ordering   = FsNodeOrdering.empty
