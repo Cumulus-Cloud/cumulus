@@ -3,7 +3,6 @@ package io.cumulus
 import scala.util.{Failure, Success, Try}
 
 import io.cumulus.core.Logging
-import io.cumulus.core.validation.AppError
 import play.core.server.{Server, ServerComponents}
 
 /**

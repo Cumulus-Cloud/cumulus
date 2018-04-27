@@ -23,7 +23,7 @@ GET     /api/sharings/:ref            io.cumulus.controllers.SharingController.g
 DELETE  /api/sharings/:ref            io.cumulus.controllers.SharingController.delete(ref: Path)
 
 # API- Search
-GET     /api/search*path              io.cumulus.controllers.FileSystemController.search(path: Path, name: String, nodeType: Option[FsNodeType], `type`: Option[String], limit: Option[Int], offset: Option[Int])
+GET     /api/search*path              io.cumulus.controllers.FileSystemController.search(path: Path, name: String, nodeType: Option[FsNodeType], `type`: Option[String], sort: Option[FsNodeOrderingType], limit: Option[Int], offset: Option[Int])
 
 # API - Upload and download routes
 POST    /api/upload*path              io.cumulus.controllers.FileSystemController.upload(path: Path, cipher: Option[String], compression: Option[String])

@@ -11,8 +11,8 @@ import io.cumulus.core.validation.AppError
 import io.cumulus.models._
 import io.cumulus.models.fs._
 import io.cumulus.persistence.stores.filters.FsNodeFilter
-import io.cumulus.persistence.stores.orderings.FsNodeOrdering
-import io.cumulus.persistence.stores.orderings.QueryOrderingType.{OrderByFilenameAsc, OrderByNodeType}
+import io.cumulus.persistence.stores.orderings.{FsNodeOrdering, FsNodeOrderingType}
+import io.cumulus.persistence.stores.orderings.FsNodeOrderingType.{BY_FILENAME_ASC, BY_NODE_TYPE}
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore}
 import play.api.libs.json.__
 
@@ -101,7 +101,7 @@ class FsNodeService(
                 path = path,
                 user = user,
                 pagination = contentPagination,
-                ordering = FsNodeOrdering.of(OrderByNodeType, OrderByFilenameAsc)
+                ordering = FsNodeOrdering.of(BY_NODE_TYPE, BY_FILENAME_ASC)
               )
             }.map(c => directory.copy(content = c.items))
           case other: FsNode =>
@@ -117,6 +117,7 @@ class FsNodeService(
     * @param parent The node parent.
     * @param name The node's partial name.
     * @param nodeType The optional node type.
+    * @param ordering The optional ordering.
     * @param pagination The pagination of the research.
     * @param user The user performing the operation.
     */
@@ -125,14 +126,14 @@ class FsNodeService(
     name: String,
     nodeType: Option[FsNodeType],
     mimeType: Option[String],
+    ordering: Option[FsNodeOrderingType],
     pagination: QueryPagination
-    // TODO add ordering
   )(implicit user: User): Future[Either[AppError, PaginatedList[FsNode]]] = {
-    val filter     = FsNodeFilter(name, parent, nodeType, mimeType, user)
-    val ordering   = FsNodeOrdering.empty
+    val filter    = FsNodeFilter(name, parent, nodeType, mimeType, user)
+    val orderings = ordering.map(FsNodeOrdering.of(_)).getOrElse(FsNodeOrdering.empty)
 
     fsNodeStore
-      .findAll(filter, ordering, pagination)
+      .findAll(filter, orderings, pagination)
       .commit()
       .map(nodes => Right(PaginatedList(nodes.filterNot(_.path.isRoot), pagination.offset.getOrElse(0)))) // Ignore the root folder
   }
@@ -223,7 +224,6 @@ class FsNodeService(
   /**
     * Deletes a node in the file system. The deleted node should ne be a directory with children, and should not be
     * shared or have any children shared. The content will not be deleted.
-    *
     * @param path The path of the node.
     * @param user The user performing the operation.
     */

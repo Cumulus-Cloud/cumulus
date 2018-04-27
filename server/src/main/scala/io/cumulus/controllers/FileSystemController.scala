@@ -17,6 +17,7 @@ import io.cumulus.core.validation.AppError
 import io.cumulus.models.fs.{Directory, FsNodeType}
 import io.cumulus.models.{Path, Sharing, UserSession}
 import io.cumulus.persistence.services.{FsNodeService, SharingService, StorageService}
+import io.cumulus.persistence.stores.orderings.FsNodeOrderingType
 import io.cumulus.stages._
 import play.api.libs.json.{JsString, Json}
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
@@ -55,15 +56,16 @@ class FileSystemController(
     * @param name Name to look for. Approximation are allowed.
     * @param nodeType The optional type of node to look for.
     * @param mimeType The optional mime type to look for.
+    * @param sort The optional sorting of the query.
     * @param limit The maximum number of children elements (for a directory) to return. Used for pagination.
     * @param offset The offset of children elements (for a directory) to return. Used for pagination.
     */
-  def search(path: Path, name: String, nodeType: Option[FsNodeType], mimeType: Option[String], limit: Option[Int], offset: Option[Int]): Action[AnyContent] =
+  def search(path: Path, name: String, nodeType: Option[FsNodeType], mimeType: Option[String], sort: Option[FsNodeOrderingType], limit: Option[Int], offset: Option[Int]): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
       ApiResponse.paginated {
         val pagination = QueryPagination(limit, offset)
 
-        fsNodeService.searchNodes(path, name, nodeType, mimeType, pagination)
+        fsNodeService.searchNodes(path, name, nodeType, mimeType, sort, pagination)
       }
     }
 

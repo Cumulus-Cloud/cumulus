@@ -1,5 +1,7 @@
 package io.cumulus.controllers
 
+import scala.concurrent.{ExecutionContext, Future}
+
 import cats.data.EitherT
 import cats.implicits._
 import io.cumulus.controllers.utils.FileDownloaderUtils
@@ -10,7 +12,6 @@ import io.cumulus.core.validation.AppError
 import io.cumulus.models.{Path, SharingSession, UserSession}
 import io.cumulus.persistence.services.{SharingService, StorageService}
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
-import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Sharing visitor controller. This controller handle all the unauthenticated operation on shared elements.

@@ -47,6 +47,7 @@ lazy val cumulusServer = project
     // Allow to use `Path` and `FsNodeType` in route
     routesAddImport += "io.cumulus.models.Path",
     routesAddImport += "io.cumulus.models.fs.FsNodeType",
+    routesAddImport += "io.cumulus.persistence.stores.orderings.FsNodeOrderingType",
     routesFile := "routes",
     routesGeneratorClass := InjectedRoutesGenerator,
 
