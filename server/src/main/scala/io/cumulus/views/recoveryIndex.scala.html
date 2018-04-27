@@ -1,128 +1,17 @@
-@(error: Throwable)
+@(errors: String)
+
+@import play.twirl.api.HtmlFormat
 
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <title>Cumulus</title>
-        <link rel="stylesheet" media="screen" href="assets/main.css">
+        <link rel="stylesheet" media="screen" href="assets/parametres.css">
         <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>
-            body {
-                font-family: 'Lato', sans-serif;
-                line-height: normal;
-                line-height: normal;
-            }
-
-            div {
-                margin: 0;
-                padding: 0;
-                border: 0;
-                font-size: 100%;
-                font: inherit;
-                vertical-align: baseline;
-            }
-
-            #app {
-                display: flex;
-                flex-direction: row;
-            }
-
-            .left-panel {
-                width: 240px;
-                min-height: 100vh;
-                background-color: var(--lightPrimary);
-                padding: 24px 40px;
-            }
-
-            .title {
-                color: var(--darkPrimary);
-                font-size: 1.5rem;
-            }
-
-            .main-container {
-                padding: 20px;
-                display: flex;
-                flex: 1;
-            }
-
-            .main-container p {
-                color: var(--secondaryText);
-                padding-bottom: 14px;
-            }
-
-            .main-container h1 {
-                padding-bottom: 20px;
-                padding-top: 10px;
-                font-size: 1.7em;
-                color: var(--secondaryText);
-            }
-
-            .main-container ul {
-                min-width: 100%;
-                width: max-content;
-                display: flex;
-                flex-direction: column;
-                background-color: var(--secondaryBg);
-            }
-
-
-            .main-container ul li {
-                flex: 1;
-                border-bottom: 1px solid #EEE;
-                border-left: 3px solid transparent;
-                color: var(--primaryText);
-                padding: 8px;
-            }
-
-            .main-container ul li:hover {
-                border-left-color: var(--darkPrimary);
-            }
-
-            .main-container ul li .sep {
-                color: var(--secondaryText)
-            }
-
-            .main-container ul li .highlight {
-                color: var(--darkPrimary);
-            }
-
-            .center {
-                flex: 1;
-            }
-
-            .right-panel {
-                width: 266px;
-                padding: 10px;
-                padding-left: 35px;
-            }
-
-            .button {
-                padding: 8px 25px;
-                border: 1px solid var(--darkPrimary);
-                border-radius: 3px;
-                background: transparent;
-                text-align: center;
-                cursor: pointer;
-                color: var(--darkPrimary);
-                font-size: 0.9rem;
-                margin-bottom: 10px;
-                width: 100%;
-            }
-
-            .button:hover {
-                background-color: var(--lightPrimary);
-            }
-
-        </style>
-
-        <script
-            src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-            integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g="
-            crossorigin="anonymous"
-        ></script>
         <script>
-
+          window.cumulusErrors = HtmlFormat.row(errors)
+            /*
             $(document).ready(() => {
                 const reload = $('#reload')
                 const stop   = $('#stop')
@@ -154,37 +43,23 @@
                     })
                 })
             })
+            */
     </script>
     </head>
     <body>
         <div id="app">
-            <div class="left-panel">
+            <!-- <div class="left-panel">
                 <div class="title">Cumulus</div>
             </div>
             <div class="main-container">
-                <div class="center">
-                    <h1>Oh no, an error occurred! 😢</h1>
-                    <p>
-                        An error preventing the Cumulus server to start has occurred. The server is now started in
-                        recovery mode to show you what went wrong.<br/><br/>
-                        Errors usually come from configuration error such as an unreachable database.<br/><br/>
-                        Use the stack trace below to see what when wrong. In futures versions, Cumulus will try to
-                        guess what went wrong.
-                    </p>
-                    <ul>
-                        @error.getStackTrace.toList.map { trace =>
-                            <li>
-                                @trace.getClassName<span class="sep">.</span>@trace.getMethodName<span class="sep">(</span>@trace.getFileName<span class="sep">:</span><span class="highlight">@trace.getLineNumber</span><span class="sep">)</span>
-                            </li>
-                        }
-                    </ul>
-                </div>
                 <div class="right-panel">
                     <input type="button" value="Reload the server" class="button" id="reload" >
                     <input type="button" value="Stop the server" class="button" id="stop" >
                     <input type="button" value="Update the configuration" disabled class="button" >
                 </div>
-            </div>
+            </div> -->
         </div>
+        <script src="/messages.js"></script>
+        <script src="assets/parametres.js"></script>
     </body>
 </html>

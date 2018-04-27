@@ -35,3 +35,7 @@
 .active {
   color: var(--darkPrimary);
 }
+
+.disable {
+  color: var(-divider);
+}

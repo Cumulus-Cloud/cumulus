@@ -17,7 +17,7 @@ import Empty from "components/Empty"
 import Loader from "components/Loader"
 import { SearchResult } from "models/Search"
 import ShareModal from "components/ShareModal"
-import LeftPanel from "components/LeftPanel"
+import LeftPanel, { Link } from "components/LeftPanel"
 import RightPanel from "components/RightPanel"
 import FsNodeComponent from "components/FsNodeComponent"
 import MoveModal from "files/move/MoveModal"
@@ -62,9 +62,16 @@ class FileSystemContainer extends React.PureComponent<Props> {
 
   render() {
     const { directory, share, wantMove, sharedFsNode, onLogout } = this.props
+    const links: Link[] = [
+      {
+        active: true,
+        href: "#/fs/",
+        title: Messages("ui.myserver"),
+      }
+    ]
     return (
       <DropUploaderContainer className={styles.fileSystemContainer}>
-        <LeftPanel />
+        <LeftPanel links={links} />
         <div className={styles.mainContainer}>
           <AppBar onLogout={onLogout} />
           <InAppNotifContainer />

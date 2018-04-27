@@ -1,0 +1,57 @@
+.recoveryContainer {
+  display: flex;
+  flex-direction: row;
+}
+
+.mainContainer {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.title {
+  padding-bottom: 20px;
+  padding-top: 10px;
+  font-size: 1.7em;
+  color: var(--secondaryText);
+}
+
+.message {
+  color: var(--secondaryText);
+  padding-bottom: 14px;
+}
+
+.sep {
+  color: var(--secondaryText)
+}
+
+.highlight {
+  color: var(--darkPrimary);
+}
+
+.stacks {
+  
+}
+
+.stack {
+  border-bottom: 1px solid #EEE;
+  border-left: 3px solid transparent;
+  color: var(--primaryText);
+  padding: 8px;
+}
+
+.stack:hover {
+  border-left-color: var(--darkPrimary);
+}
+
+.actions {
+  width: 300px;
+  height: 100vh;
+  background-color: var(--secondaryBg);
+}

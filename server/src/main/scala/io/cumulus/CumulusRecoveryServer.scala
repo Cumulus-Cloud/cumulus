@@ -56,6 +56,8 @@ class CumulusRecoveryComponents(
       controller.stop
     case GET(p"/assets/$file*") =>
       assetController.versioned(file)
+    case GET(p"/messages.js") =>
+      assetController.messages
     case GET(p"/$path*") =>
       controller.index
   }

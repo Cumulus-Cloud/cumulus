@@ -29,8 +29,8 @@ dist/
 
 
 # Ignore the front's generated files
-src/main/resources/public/main.js
-src/main/resources/public/main.css
+src/main/resources/public/*.js
+src/main/resources/public/*.css
 src/main/resources/public/**/*.map
 src/main/resources/public/**/*.jpg
 

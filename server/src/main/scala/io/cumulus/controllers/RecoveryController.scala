@@ -24,7 +24,25 @@ class RecoveryController(
 ) extends AbstractController(cc) with ApiUtils with BodyParserJson {
 
   def index = Action {
-    Ok(io.cumulus.views.html.recoveryIndex(error))
+    def getAllSources(e: Throwable): Seq[Throwable] = {
+      Seq(e) ++ Option(e.getCause).map(cause => getAllSources(cause)).getOrElse(Seq.empty)
+    }
+
+    val errors = getAllSources(error).map(e =>
+      Json.obj(
+        "message" -> e.getMessage,
+        "stacks" -> e.getStackTrace.toList.map(s =>
+          Json.obj(
+            "className" -> s.getClassName,
+            "methodName" -> s.getMethodName,
+            "fileName" -> s.getFileName,
+            "lineNumber" -> s.getLineNumber
+          )
+        )
+      )
+    )
+
+    Ok(io.cumulus.views.html.recoveryIndex(Json.stringify(Json.toJson(errors))))
   }
 
   /**
