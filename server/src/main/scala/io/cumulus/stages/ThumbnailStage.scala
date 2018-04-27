@@ -36,7 +36,7 @@ trait ThumbnailGenerator extends Logging {
 
     val res = for {
       preview         <- generatePreview(file)
-      cipher          <- ciphers.get(file.storageReference.cipher.map(_.cipher))
+      cipher          <- ciphers.get(file.storageReference.cipher.map(_.name))
       compression     <- compressions.get(file.storageReference.compression)
       thumbnailWriter <- {
         StorageReferenceWriter.writer(

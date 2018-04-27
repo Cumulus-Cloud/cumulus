@@ -11,7 +11,7 @@ import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvide
 import com.softwaremill.macwire._
 import com.typesafe.config.{Config, ConfigFactory}
 import io.cumulus.controllers._
-import io.cumulus.controllers.utils.{Assets, LoggingFilter}
+import io.cumulus.controllers.utils.LoggingFilter
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.HttpErrorHandler
 import io.cumulus.core.persistence.CumulusDB

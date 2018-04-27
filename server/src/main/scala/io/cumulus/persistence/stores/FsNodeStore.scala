@@ -51,11 +51,11 @@ class FsNodeStore(
     * @param path The parent path of the elements to look for.
     * @param user The owner of the elements.
     */
-  def findContainedByPathAndUser[Ordering <: QueryOrdering](
+  def findContainedByPathAndUser(
     path: Path,
     user: User,
     pagination: QueryPagination,
-    ordering: Ordering = FsNodeOrdering.empty
+    ordering: FsNodeOrdering = FsNodeOrdering.empty
   ): Query[CumulusDB, PaginatedList[FsNode]] = {
     // Match directory starting by the location, but only on the direct level
     val regex = if (path.isRoot) "^/[^/]+$" else s"^${path.toString}/[^/]+$$"

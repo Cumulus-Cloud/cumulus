@@ -11,6 +11,7 @@ import io.cumulus.models.{Path, SharingSession, UserSession}
 import io.cumulus.persistence.services.{SharingService, StorageService}
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 import scala.concurrent.{ExecutionContext, Future}
+import com.github.ghik.silencer.silent
 
 /**
   * Sharing visitor controller. This controller handle all the unauthenticated operation on shared elements.
@@ -47,6 +48,7 @@ class SharingPublicController(
     * @param key The unique cipher key of the sharing.
     * @param forceDownload True to force download, otherwise content will be opened directly in the browser.
     */
+  @silent
   def downloadRoot(reference: String, name: String, key: String, forceDownload: Option[Boolean]): Action[AnyContent] =
     download("/", reference, key, forceDownload)
 

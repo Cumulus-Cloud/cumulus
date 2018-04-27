@@ -98,15 +98,16 @@ object StorageReferenceWriter {
 
   /** Get the cipher to crypt the file. */
   private def cipherForFile(maybeCipher: Option[CipherStage])(implicit session: UserSession) =
-    maybeCipher.map { cipher =>
+    maybeCipher.map { cipherStage =>
+
       // Retrieve the user's global private key
-      val (privateGlobalKey, _) =  session.privateKeyAndSalt
+      val privateGlobalKey = session.privateKey
 
       // Generate the file's own private key & get the cipher stage
-      val storageCipher =  StorageCipher.create(cipher.name, privateGlobalKey)
-      val cipherStage   =  cipher.encrypt(storageCipher.privateKey(privateGlobalKey), storageCipher.salt)
+      val cipher     = StorageCipher.create(cipherStage.name, privateGlobalKey)
+      val cipherFlow = cipherStage.encrypt(cipher.privateKey(privateGlobalKey), cipher.salt)
 
-      (Some(storageCipher), cipherStage)
+      (Some(cipher), cipherFlow)
     }
       .getOrElse((None, Flow[ByteString]))
 

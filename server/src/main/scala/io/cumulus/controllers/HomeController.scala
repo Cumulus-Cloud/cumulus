@@ -2,7 +2,6 @@ package io.cumulus.controllers
 
 import scala.concurrent.{ExecutionContext, Future}
 
-import akka.actor.Scheduler
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
@@ -11,8 +10,7 @@ import play.api.mvc._
 
 
 class HomeController(
-  cc: ControllerComponents,
-  scheduler: Scheduler
+  cc: ControllerComponents
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with BodyParserJson {

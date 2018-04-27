@@ -5,10 +5,11 @@ import scala.concurrent.ExecutionContextExecutor
 
 import _root_.controllers.AssetsComponents
 import akka.actor.Scheduler
+import com.github.ghik.silencer.silent
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.softwaremill.macwire._
-import io.cumulus.controllers.RecoveryController
-import io.cumulus.controllers.utils.{Assets, LoggingFilter}
+import io.cumulus.controllers.{Assets, RecoveryController}
+import io.cumulus.controllers.utils.LoggingFilter
 import io.cumulus.core.controllers.utils.api.{ApiUtils, HttpErrorHandler}
 import jsmessages.{JsMessages, JsMessagesFactory}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
@@ -57,6 +58,7 @@ class CumulusRecoveryComponents(
     case GET(p"/assets/$file*") =>
       assetController.versioned(file)
     case GET(p"/$path*") =>
+      path: @silent
       controller.index
   }
 

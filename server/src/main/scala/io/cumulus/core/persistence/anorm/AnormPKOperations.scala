@@ -43,14 +43,14 @@ abstract class AnormPKOperations[T, DB <: Database, PK](
         .as(rowParser.singleOpt)
     }
 
-  def findAll[Filter <: QueryFilter, Ordering <: QueryOrdering](filter: Filter, ordering: Ordering): Query[DB, List[T]] =
+  def findAll[Filter <: QueryFilter, Order <: QueryOrdering](filter: Filter, ordering: Order): Query[DB, List[T]] =
     qb { implicit c =>
       SQL(s"SELECT * FROM $table ${filter.toWHERE} ${ordering.toORDER}")
         .on(filter.namedParameters:_*)
         .as(rowParser.*)
     }
 
-  def findAll[Filter <: QueryFilter, Ordering <: QueryOrdering](filter: Filter, ordering: Ordering, pagination: QueryPagination): Query[DB, List[T]] =
+  def findAll[Filter <: QueryFilter, Order <: QueryOrdering](filter: Filter, ordering: Order, pagination: QueryPagination): Query[DB, List[T]] =
     qb { implicit c =>
       SQL(s"SELECT * FROM $table ${filter.toWHERE} ${ordering.toORDER} ${pagination.toLIMIT}")
         .on(filter.namedParameters: _*)
