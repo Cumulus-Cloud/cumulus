@@ -7,7 +7,7 @@ import _root_.controllers.AssetsComponents
 import akka.actor.Scheduler
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.softwaremill.macwire._
-import io.cumulus.controllers.RecoveryController
+import io.cumulus.controllers.{InstallationController, RecoveryController}
 import io.cumulus.controllers.utils.{Assets, LoggingFilter}
 import io.cumulus.core.controllers.utils.api.{ApiUtils, HttpErrorHandler}
 import jsmessages.{JsMessages, JsMessagesFactory}
@@ -54,6 +54,8 @@ class CumulusRecoveryComponents(
       controller.reload
     case GET(p"/api/admin/management/stop") =>
       controller.stop
+    case POST(p"/api/configuration/database/test") =>
+      installationController.testDatabase
     case GET(p"/assets/$file*") =>
       assetController.versioned(file)
     case GET(p"/$path*") =>
@@ -74,8 +76,8 @@ class CumulusRecoveryComponents(
   override lazy val httpErrorHandler: HttpErrorHandler = wire[HttpErrorHandler]
 
   // Controllers
-  lazy val controller: RecoveryController = wire[RecoveryController]
-  lazy val assetController: Assets        = wire[Assets]
-
+  lazy val controller: RecoveryController                 = wire[RecoveryController]
+  lazy val installationController: InstallationController = wire[InstallationController]
+  lazy val assetController: Assets                        = wire[Assets]
 
 }
