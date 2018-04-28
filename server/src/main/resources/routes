@@ -42,8 +42,8 @@ GET     /test                         io.cumulus.controllers.HomeController.test
 GET     /test/login                   io.cumulus.controllers.HomeController.testLogin
 
 # Front internationalization
-GET     /messages.js                  io.cumulus.controllers.utils.Assets.messages
+GET     /messages.js                  io.cumulus.controllers.Assets.messages
 
 # Map static resources to the /assets URL path
-GET     /favicon.ico                  io.cumulus.controllers.utils.Assets.favicon
-GET     /assets/*file                 io.cumulus.controllers.utils.Assets.versioned(file: controllers.Assets.Asset)
+GET     /favicon.ico                  io.cumulus.controllers.Assets.favicon
+GET     /assets/*file                 io.cumulus.controllers.Assets.versioned(file: controllers.Assets.Asset)

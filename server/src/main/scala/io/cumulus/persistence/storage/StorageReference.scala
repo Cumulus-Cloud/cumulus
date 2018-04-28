@@ -55,11 +55,19 @@ object StorageReference {
 
 }
 
+/**
+  * Cipher of a storage reference, containing the reference of the cipher, and the information needed to decrypt
+  * this file's private key with the user's own global private key.
+  * @param name The name of the cipher.
+  * @param iv The initialisation vector.
+  * @param encryptedPrivateKey The encrypted file's private key.
+  * @param salt The salt used during the crypting of the file.
+  */
 case class StorageCipher(
-  cipher: String,
+  name: String,
+  iv: ByteString,
   encryptedPrivateKey: ByteString,
-  salt: ByteString,
-  iv: ByteString
+  salt: ByteString
 ) {
 
   /**
@@ -72,21 +80,26 @@ case class StorageCipher(
 
 object StorageCipher {
 
-  def create(cipher: String, globalPrivateKey: ByteString) = {
+  /**
+    * Create a cipher (with a random key and salt) for a storage reference.
+    * @param cipher The cipher to use.
+    * @param globalPrivateKey The user's private key, used to crypt the file's private key.
+    */
+  def create(cipher: String, globalPrivateKey: ByteString): StorageCipher = {
 
-    // Generate the file private key
+    // Generate the file private key & a salt
     val privateKey = Crypto.randomBytes(16)
-    val salt       = Crypto.randomBytes(16)
+    val salt = Crypto.randomBytes(16)
 
     // Encrypt the hash of the private key
     val iv = Crypto.randomBytes(16)
-    val encryptedPrivateKey = Crypto.AESEncrypt(globalPrivateKey, iv, salt)
+    val encryptedPrivateKey = Crypto.AESEncrypt(globalPrivateKey, iv, privateKey)
 
     StorageCipher(
       cipher,
+      iv,
       encryptedPrivateKey,
-      salt,
-      iv
+      salt
     )
   }
 

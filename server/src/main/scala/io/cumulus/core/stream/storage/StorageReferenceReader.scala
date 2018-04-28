@@ -11,7 +11,7 @@ import io.cumulus.core.utils.Range
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.Session
 import io.cumulus.models.fs.File
-import io.cumulus.persistence.storage.{StorageCipher, StorageEngines, StorageObject, StorageReference}
+import io.cumulus.persistence.storage.{StorageEngines, StorageObject, StorageReference}
 import io.cumulus.stages.{Ciphers, Compressions}
 
 object StorageReferenceReader extends Logging {
@@ -62,7 +62,7 @@ object StorageReferenceReader extends Logging {
     else
       for {
         transformation <- transformationForFile(file)
-        storageEngine <- storageEngines.get(file.storageReference)
+        storageEngine  <- storageEngines.get(file.storageReference)
         source = {
           Source(file.storageReference.storage.toList)
             .splitWhen(_ => true)
@@ -186,12 +186,12 @@ object StorageReferenceReader extends Logging {
     storageReference.cipher match {
       case None =>
         Right(None)
-      case Some(StorageCipher(cipherName, _, salt, _)) =>
+      case Some(cipher) =>
         for {
-          cipher     <- ciphers.get(cipherName)
-          privateKey <- session.privateKeyOfFile(storageReference).toRight(AppError.validation("validation.fs-node.unknown-key", storageReference.id.toString))
-        } yield Some(cipher.decrypt(privateKey, salt))
-
+          cipherStage      <- ciphers.get(cipher.name)
+          filePrivateKey   <- session.privateKeyOfFile(storageReference).toRight(AppError.validation("validation.fs-node.unknown-key", storageReference.id.toString))
+          cipherFlow       =  cipherStage.decrypt(filePrivateKey, cipher.salt)
+        } yield Some(cipherFlow)
     }
 
   /** Generate the decompression stage for a given file. */

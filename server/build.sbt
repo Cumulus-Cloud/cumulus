@@ -84,7 +84,10 @@ lazy val cumulusServer = project
       // Test dependencies
       Dependencies.scalatest.play % Test,
       // MacWire
-      Dependencies.macWire.macros
+      Dependencies.macWire.macros,
+      // Silencer plugin
+      Dependencies.silencer.plugin,
+      Dependencies.silencer.lib
     )
   )
   .enablePlugins(RoutesCompilation, SbtTwirl, JavaAppPackaging)

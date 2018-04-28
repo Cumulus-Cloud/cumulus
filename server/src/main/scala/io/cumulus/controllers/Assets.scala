@@ -1,13 +1,13 @@
-package io.cumulus.controllers.utils
+package io.cumulus.controllers
 
 import scala.concurrent.ExecutionContext
 
-import jsmessages.JsMessages
 import controllers.Assets.Asset
 import controllers.AssetsMetadata
-import play.api.{Environment, Mode}
+import jsmessages.JsMessages
 import play.api.http.HttpErrorHandler
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
+import play.api.{Environment, Mode}
 
 class Assets(
   environment: Environment,

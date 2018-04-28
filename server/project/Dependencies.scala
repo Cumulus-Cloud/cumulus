@@ -88,4 +88,11 @@ object Dependencies {
     val macros = "com.softwaremill.macwire" %% "macros" % version
   }
 
+  object silencer {
+    val version = "0.6"
+
+    val plugin = compilerPlugin("com.github.ghik" %% "silencer-plugin" % version)
+    val lib    = "com.github.ghik" %% "silencer-lib" % version
+  }
+
 }

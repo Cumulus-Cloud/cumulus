@@ -235,7 +235,7 @@ object File {
       JsonFormat.humanReadable(file.size),
       file.hash,
       file.mimeType,
-      file.storageReference.cipher.map(_.cipher),
+      file.storageReference.cipher.map(_.name),
       file.storageReference.compression,
       file.metadata,
       file.thumbnailStorageReference.isDefined

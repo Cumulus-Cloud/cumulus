@@ -5,6 +5,7 @@ import java.util.UUID
 import scala.language.implicitConversions
 
 import akka.util.ByteString
+import com.github.ghik.silencer.silent
 import io.cumulus.core.json.JsonFormat._
 import io.cumulus.core.utils.Crypto
 import io.cumulus.persistence.storage.StorageReference
@@ -28,8 +29,8 @@ trait Session {
   * Session of the user. The private key is also used for decrypt and encrypt files, and thus should be present when
   * crypting and decrypting files.
   *
-  * @param user The connected user
-  * @param password The user's private key
+  * @param user The connected user.
+  * @param password The user's private key (password).
   */
 case class UserSession(
   user: User,
@@ -37,10 +38,13 @@ case class UserSession(
 ) extends Session {
 
   /** Private key of the user */
-  def privateKeyAndSalt: (ByteString, ByteString) =
-    (user.security.privateKey(password), user.security.privateKeySalt)
+  def privateKey: ByteString =
+    user.security.privateKey(password)
 
-  /** Retrieves the secret key of the provided storage reference, if any. */
+  /**
+    * Retrieves the secret key of the provided storage reference by decrypting the storage secret key with the user's
+    * global private key.
+    */
   def privateKeyOfFile(storageReference: StorageReference): Option[ByteString] =
     storageReference.cipher.map(_.privateKey(user.security.privateKey(password)))
 
@@ -58,13 +62,22 @@ object UserSession {
 
 }
 
+/**
+  * Sharing session.
+  * @param user The connected user.
+  * @param sharing The sharing information, containing the node's reference & file encrypted keys.
+  * @param key The sharing's private key.
+  */
 case class SharingSession(
   user: User,
   sharing: Sharing,
   key: ByteString
 ) extends Session {
 
-  /** Retrieves the secret key of the provided storage reference, if any. */
+  /**
+    * Retrieves the secret key of the provided storage reference using the sharing session, if the file is in the
+    * sharing session's shared files.
+    */
   def privateKeyOfFile(storageReference: StorageReference): Option[ByteString] =
     storageReference.cipher.flatMap(_ => sharing.fileSecurity.get(storageReference.id).map(_.privateKey(key)))
 
@@ -183,6 +196,7 @@ case class UserSecurity(
   /**
     * Change the password.
     */
+  @silent
   def changePassword(previousPassword: String, newPassword: String): UserSecurity = {
     // TODO (decrypt, re-encrypt)
     ???
