@@ -21,9 +21,9 @@ object RoutesCompilation extends AutoPlugin {
     routesAddImport      :=  Seq.empty[String],
     routesGeneratorClass := InjectedRoutesGenerator,
     routesFile           := "routes",
-    compileRoutes        := compileRoutesTask.value,
+    compileRoutes        := compileRoutesTask.value
 
-    sourceGenerators in Compile += compileRoutes.map(_.toSeq)
+   // sourceGenerators in Compile += compileRoutes.map(_.toSeq)
   )
 
   lazy val compileRoutesTask =

@@ -31,64 +31,182 @@ lazy val commonSettings = Seq(
   scalaVersion := "2.12.5"
 )
 
-// Remove unused warnings for compiled twirl templates
-TwirlKeys.templateImports := Seq()
+lazy val serverMainClass = Some("io.cumulus.CumulusApp")
 
-// Add Twirl files to the unmanaged sources
-sourceDirectories in (Compile, TwirlKeys.compileTemplates) := (unmanagedSourceDirectories in Compile).value
+// Cumulus core project
+lazy val cumulusCore =
+  project
+    .in(file("cumulus-core"))
+    .settings(commonSettings: _*)
+    .settings(
+      name := "cumulus-core",
+      libraryDependencies ++= Seq(
+        // i18n
+        Dependencies.jsMessages.core,
+        Dependencies.i18nHocon.core,
+        // Persistence
+        jdbc,
+        Dependencies.postgresql.core,
+        Dependencies.anorm.core,
+        Dependencies.commonsIO.core,
+        // enums utils
+        Dependencies.enumeratum.core,
+        Dependencies.enumeratum.play,
+        // cats
+        Dependencies.cats.core,
+        // JWT
+        Dependencies.jwtPlay.core,
+        // Emails
+        Dependencies.playMailer.core,
+        // Thumbnails generation
+        Dependencies.scrimage.core,
+        Dependencies.scrimage.ioExtra,
+        // PDF handling
+        Dependencies.pdfbox.core,
+        // Crypto
+        Dependencies.bouncyCastle.core,
+        // Silencer plugin
+        Dependencies.silencer.plugin,
+        Dependencies.silencer.lib
+      )
+    )
+
+// Cumulus module
+lazy val cumulusMainModule =
+  project
+    .in(file("cumulus-main-module"))
+    .settings(commonSettings: _*)
+    .settings(
+      name := "cumulus-main-module",
+
+      // Twirl templates
+      sourceDirectories in (Compile, TwirlKeys.compileTemplates) := (unmanagedSourceDirectories in Compile).value,
+      TwirlKeys.templateImports := Seq(),
+
+      // Allow to use `Path` and `FsNodeType` in route
+      routesAddImport += "io.cumulus.models.Path",
+      routesAddImport += "io.cumulus.models.fs.FsNodeType",
+      routesFile := "routes",
+      routesGeneratorClass := InjectedRoutesGenerator,
+
+      sourceGenerators in Compile += compileRoutes.map(_.toSeq),
+
+      libraryDependencies ++= Seq(
+        // Persistence
+        jdbc,
+        evolutions,
+        Dependencies.postgresql.core,
+        Dependencies.anorm.core,
+        // cats
+        Dependencies.cats.core,
+        // Emails
+        Dependencies.playMailer.core,
+        // MacWire
+        Dependencies.macWire.macros,
+        // Silencer plugin
+        Dependencies.silencer.plugin,
+        Dependencies.silencer.lib
+      )
+    )
+    .dependsOn(cumulusCore)
+    .enablePlugins(RoutesCompilation, SbtTwirl)
+
+// Cumulus recovery module
+lazy val cumulusRecoveryModule =
+  project
+    .in(file("cumulus-recovery-module"))
+    .settings(commonSettings: _*)
+    .settings(
+      name := "cumulus-recovery-module",
+
+      // Twirl templates
+      sourceDirectories in (Compile, TwirlKeys.compileTemplates) := (unmanagedSourceDirectories in Compile).value,
+      TwirlKeys.templateImports := Seq(),
+
+      libraryDependencies ++= Seq(
+        // Persistence
+        jdbc,
+        evolutions,
+        // enums utils
+        Dependencies.enumeratum.core,
+        Dependencies.enumeratum.play,
+        // cats
+        Dependencies.cats.core,
+        // Emails
+        Dependencies.playMailer.core,
+        // MacWire
+        Dependencies.macWire.macros,
+        // Silencer plugin
+        Dependencies.silencer.plugin,
+        Dependencies.silencer.lib
+      )
+    )
+    .dependsOn(cumulusCore)
+    .enablePlugins(SbtTwirl)
+
+// Cumulus server resources
+lazy val cumulusServerResources =
+  project
+    .in(file("cumulus-server-resources"))
+    .settings(commonSettings: _*)
+
+// Cumulus server
+lazy val cumulusServer =
+  project
+    .in(file("cumulus-server"))
+    .settings(commonSettings: _*)
+    .settings(
+      name := "cumulus-server",
+      mainClass in Compile := serverMainClass,
+      libraryDependencies ++= Seq(
+        // Play server
+        akkaHttpServer,
+        nettyServer,
+        playCore,
+        ws,
+        // Test dependencies
+        Dependencies.scalatest.play % Test,
+        // Silencer plugin
+        Dependencies.silencer.plugin,
+        Dependencies.silencer.lib
+      )
+    )
+    .dependsOn(cumulusMainModule, cumulusRecoveryModule, cumulusServerResources)
+    .enablePlugins(JavaAppPackaging)
+
+// Cumulus dev server
+lazy val cumulusServerDev =
+  project
+    .in(file("cumulus-server-dev"))
+    .settings(commonSettings: _*)
+    .settings(
+      name := "cumulus-server-dev",
+      libraryDependencies ++= Seq(
+        // Test dependencies
+        Dependencies.scalatest.play % Test
+      )
+    )
+    .dependsOn(cumulusMainModule, cumulusServerResources)
+    .enablePlugins(PlayScala)
+    .disablePlugins(PlayLayoutPlugin)
 
 // Main project
-lazy val cumulusServer = project
-  .in(file("."))
-  .settings(commonSettings: _*)
-  .settings(
-    name := "cumulus-server",
-
-    // Allow to use `Path` and `FsNodeType` in route
-    routesAddImport += "io.cumulus.models.Path",
-    routesAddImport += "io.cumulus.models.fs.FsNodeType",
-    routesFile := "routes",
-    routesGeneratorClass := InjectedRoutesGenerator,
-
-    libraryDependencies ++= Seq(
-      // Play server
-      akkaHttpServer,
-      javaCore,
-      ws,
-      // i18n
-      Dependencies.jsMessages.core,
-      Dependencies.i18nHocon.core,
-      // Persistence
-      jdbc,
-      evolutions,
-      //evolutions,
-      Dependencies.postgresql.core,
-      Dependencies.anorm.core,
-      Dependencies.commonsIO.core,
-      // enums utils
-      Dependencies.enumeratum.core,
-      Dependencies.enumeratum.play,
-      // cats
-      Dependencies.cats.core,
-      // JWT
-      Dependencies.jwtPlay.core,
-      // Emails
-      Dependencies.playMailer.core,
-      // Thumbnails generation
-      Dependencies.scrimage.core,
-      Dependencies.scrimage.ioExtra,
-      // PDF handling
-      Dependencies.pdfbox.core,
-      // Crypto
-      Dependencies.bouncyCastle.core % "provided",
-      // Test dependencies
-      Dependencies.scalatest.play % Test,
-      // MacWire
-      Dependencies.macWire.macros,
-      // Silencer plugin
-      Dependencies.silencer.plugin,
-      Dependencies.silencer.lib
+lazy val cumulusRoot =
+  project
+    .in(file("."))
+    .settings(commonSettings: _*)
+    .settings(
+      mainClass in Compile := serverMainClass,
+      name := "cumulus"
     )
-  )
-  .enablePlugins(RoutesCompilation, SbtTwirl, JavaAppPackaging)
+    .aggregate(
+      cumulusServer,
+      cumulusServerDev,
+      cumulusServerResources,
+      cumulusMainModule,
+      cumulusRecoveryModule,
+      cumulusCore
+    )
+    .dependsOn(cumulusServer)
+    .enablePlugins(JavaAppPackaging)
 
