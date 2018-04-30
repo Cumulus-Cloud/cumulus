@@ -190,14 +190,19 @@ lazy val cumulusServerDev =
     .enablePlugins(PlayScala)
     .disablePlugins(PlayLayoutPlugin)
 
+lazy val runDev = taskKey[Unit]("Executes `cumulusServerDev/run`")
+
 // Main project
 lazy val cumulusRoot =
   project
     .in(file("."))
     .settings(commonSettings: _*)
     .settings(
+      name := "cumulus",
       mainClass in Compile := serverMainClass,
-      name := "cumulus"
+      runDev := {
+        (run in Compile in cumulusServerDev).toTask("").value
+      }
     )
     .aggregate(
       cumulusServer,
