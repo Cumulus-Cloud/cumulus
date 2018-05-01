@@ -37,7 +37,7 @@ cumulus-server-resources/src/main/resources/public/**/*.jpg
 # Ignore server runtime directories
 tmp
 log
-storage
+/storage
 
 # Ignore the dev configuration file
 conf/local.conf
