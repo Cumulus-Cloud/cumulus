@@ -26,9 +26,18 @@ scalacOptions in ThisBuild := Seq(
 )
 
 lazy val commonSettings = Seq(
+  // Application common info
   version := "0.1-SNAPSHOT",
   organization := "io.cumulus",
-  scalaVersion := "2.12.5"
+  scalaVersion := "2.12.5",
+
+  // Override to force correct versions to be used with Play, and remove evicted version warnings
+  dependencyOverrides ++= Seq(
+    Dependencies.akka.actor,
+    Dependencies.akka.stream,
+    Dependencies.sl4j.core,
+    Dependencies.guava.core
+  )
 )
 
 lazy val serverMainClass = Some("io.cumulus.CumulusApp")
