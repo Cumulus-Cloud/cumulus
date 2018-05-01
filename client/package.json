@@ -1,7 +1,7 @@
 {
   "name": "cumulus",
   "version": "0.0.1",
-  "description": "Personal cloud done right !",
+  "description": "Personal cloud done right!",
   "author": "Cumulus-Cloud",
   "private": true,
   "license": "MIT",
@@ -17,9 +17,9 @@
     "url": "https://github.com/Cumulus-Cloud/cumulus/issues"
   },
   "scripts": {
-    "build": "parcel build src/main.tsx --out-dir ../server/src/main/resources/public --public-url assets --no-cache",
-    "watch": "parcel watch src/main.tsx --out-dir ../server/src/main/resources/public --public-url assets --no-hmr",
-    "watch-hot": "parcel watch src/main.tsx --out-dir ../server/src/main/resources/public --public-url assets",
+    "build": "parcel build src/main.tsx --out-dir ../server/cumulus-server-resources/src/main/resources/public --public-url assets --no-cache",
+    "watch": "parcel watch src/main.tsx --out-dir ../server/cumulus-server-resources/src/main/resources/public --public-url assets --no-hmr",
+    "watch-hot": "parcel watch src/main.tsx --out-dir ../server/cumulus-server-resources/src/main/resources/public --public-url assets",
     "lint": "tslint --project tsconfig.json"
   },
   "dependencies": {
