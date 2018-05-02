@@ -2,6 +2,25 @@ import sbt._
 
 object Dependencies {
 
+  object akka {
+    val version = "2.5.6"
+
+    val actor = "com.typesafe.akka" %% "akka-actor" % version
+    val stream = "com.typesafe.akka" %% "akka-stream" % version
+  }
+
+  object sl4j {
+    val version = "1.7.25"
+
+    val core = "org.slf4j" % "slf4j-api" % version
+  }
+
+  object guava {
+    val version = "22.0"
+
+    val core = "com.google.guava" % "guava" % "22.0"
+  }
+
   object postgresql {
     val version = "42.2.2"
 
@@ -86,6 +105,13 @@ object Dependencies {
     val version = "2.3.1"
 
     val macros = "com.softwaremill.macwire" %% "macros" % version
+  }
+
+  object silencer {
+    val version = "0.6"
+
+    val plugin = compilerPlugin("com.github.ghik" %% "silencer-plugin" % version)
+    val lib    = "com.github.ghik" %% "silencer-lib" % version
   }
 
 }
