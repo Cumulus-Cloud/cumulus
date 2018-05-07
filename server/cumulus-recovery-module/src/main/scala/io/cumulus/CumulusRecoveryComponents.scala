@@ -42,6 +42,12 @@ class CumulusRecoveryComponents(
       controller.stop
     case POST(p"/api/configuration/database/test") =>
       installationController.testDatabase
+    case POST(p"/api/configuration/database/configure") =>
+      installationController.configureDatabase
+    case POST(p"/api/configuration/email/test") =>
+      installationController.testEmail
+    case POST(p"/api/configuration/email/configure") =>
+      installationController.configureEmail
     case GET(p"/assets/$file*") =>
       assetController.versioned(file)
     case GET(p"/$path*") =>

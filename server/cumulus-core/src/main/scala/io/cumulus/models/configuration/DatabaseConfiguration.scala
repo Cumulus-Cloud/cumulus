@@ -23,9 +23,11 @@ case class DatabaseConfiguration(
 
 object DatabaseConfiguration {
 
-  private val usernameKey = "db.default.username"
-  private val passwordKey = "db.default.password"
-  private val urlKey      = "db.default.url"
+  private val prefix = "db.default"
+
+  private val usernameKey = s"$prefix.username"
+  private val passwordKey = s"$prefix.password"
+  private val urlKey      = s"$prefix.url"
 
   implicit val format: Format[DatabaseConfiguration] =
     Json.format[DatabaseConfiguration]

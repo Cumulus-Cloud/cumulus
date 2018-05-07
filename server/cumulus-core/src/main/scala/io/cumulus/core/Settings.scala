@@ -10,6 +10,10 @@ class Settings(
   conf: Configuration
 ) {
 
+  object configuration {
+    val path = conf.get[String]("cumulus.configuration.path")
+  }
+
   object api {
     val paginationDefaultSize = conf.get[Int]("cumulus.api.paginationDefaultSize")
   }
