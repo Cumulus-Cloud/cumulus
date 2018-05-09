@@ -10,3 +10,9 @@ trait ConfigurationEntries {
   def toPlayConfiguration: Configuration
 
 }
+
+trait ConfigurationEntriesFactory[T <: ConfigurationEntries] {
+
+  def fromPlayConfiguration(configuration: Configuration): T
+
+}

@@ -9,7 +9,8 @@ import com.github.ghik.silencer.silent
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.softwaremill.macwire._
 import io.cumulus.controllers.{InstallationController, RecoveryController}
-import io.cumulus.core.controllers.utils.{Assets, LoggingFilter}
+import io.cumulus.core.controllers.Assets
+import io.cumulus.core.controllers.utils.LoggingFilter
 import io.cumulus.core.controllers.utils.api.{ApiUtils, HttpErrorHandler}
 import io.cumulus.core.utils.ServerWatchdog
 import jsmessages.{JsMessages, JsMessagesFactory}

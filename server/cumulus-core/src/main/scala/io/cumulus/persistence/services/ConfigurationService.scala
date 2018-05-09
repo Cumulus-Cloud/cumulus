@@ -50,6 +50,16 @@ class ConfigurationService(
   }
 
   /**
+    * Read the database configuration from the override file.
+    */
+  def getDatabaseConfiguration: Future[DatabaseConfiguration] = Future {
+    val configurationFile = new File(settings.configuration.path)
+    val configuration     = Configuration(ConfigFactory.parseFileAnySyntax(configurationFile))
+
+    DatabaseConfiguration.fromPlayConfiguration(configuration)
+  }
+
+  /**
     * Tests the provided database configuration by trying to connect to the database. If any error occurs, the test
     * will be a failure, otherwise the test is a success.
     * @param databaseConfiguration The database configuration to test.
@@ -96,6 +106,16 @@ class ConfigurationService(
   }
 
   /**
+    * Read the SMTP configuration from the override file.
+    */
+  def getEmailConfiguration: Future[EmailConfiguration] = Future {
+    val configurationFile = new File(settings.configuration.path)
+    val configuration     = Configuration(ConfigFactory.parseFileAnySyntax(configurationFile))
+
+    EmailConfiguration.fromPlayConfiguration(configuration)
+  }
+
+  /**
     * Tests the SMTP configuration by trying to connect to send an email. If any error occurs, the test will be a
     * failure, otherwise the test is a success and a mail will be send.
     * @param emailConfiguration The SMTP configuration to test.
@@ -124,6 +144,5 @@ class ConfigurationService(
         TestSuccessful
     }
   }
-
 
 }

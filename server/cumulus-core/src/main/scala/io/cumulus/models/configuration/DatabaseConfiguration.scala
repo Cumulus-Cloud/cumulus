@@ -1,8 +1,8 @@
 package io.cumulus.models.configuration
 
+import io.cumulus.models.configuration.DatabaseConfiguration._
 import play.api.Configuration
 import play.api.libs.json.{Format, Json}
-
 
 case class DatabaseConfiguration(
   username: String,
@@ -14,14 +14,14 @@ case class DatabaseConfiguration(
 
   def toPlayConfiguration: Configuration =
     Configuration(
-      DatabaseConfiguration.usernameKey -> username,
-      DatabaseConfiguration.passwordKey -> password,
-      DatabaseConfiguration.urlKey -> s"jdbc:postgresql://$hostname:${port.getOrElse("5432")}/$database"
+      usernameKey -> username,
+      passwordKey -> password,
+      urlKey      -> s"jdbc:postgresql://$hostname:${port.getOrElse("5432")}/$database"
     )
 
 }
 
-object DatabaseConfiguration {
+object DatabaseConfiguration extends ConfigurationEntriesFactory[DatabaseConfiguration] {
 
   private val prefix = "db.default"
 
@@ -31,5 +31,40 @@ object DatabaseConfiguration {
 
   implicit val format: Format[DatabaseConfiguration] =
     Json.format[DatabaseConfiguration]
+
+  def fromPlayConfiguration(configuration: Configuration): DatabaseConfiguration = {
+    val username =
+      configuration
+        .getOptional[String](usernameKey)
+        .getOrElse("")
+
+    val password =
+      configuration
+        .getOptional[String](passwordKey)
+        .getOrElse("")
+
+    val urlRegex = """jdbc:postgresql:\/\/([^:]+)(?::(\d+))?\/(.+)""".r
+
+    val url =
+      configuration
+        .getOptional[String](usernameKey)
+        .getOrElse("")
+
+    val (hostname, port, database) =
+      urlRegex
+        .findFirstMatchIn(url)
+        .map { m =>
+          (m.group(1), Option(m.group(2)), m.group(3))
+        }
+        .getOrElse(("", None, ""))
+
+    DatabaseConfiguration(
+      username,
+      password,
+      hostname,
+      database,
+      port
+    )
+  }
 
 }
