@@ -41,7 +41,7 @@
     "redux-persist": "5.9.1",
     "reset-css": "3.0.0",
     "rxjs": "5.5.10",
-    "ts-debounce": "0.2.0",
+    "ts-debounce": "0.3.0",
     "typesafe-actions": "2.0.0-1",
     "validation.ts": "0.0.17"
   },
