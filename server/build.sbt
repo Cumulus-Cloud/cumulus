@@ -31,13 +31,11 @@ lazy val commonSettings = Seq(
   organization := "io.cumulus",
   scalaVersion := "2.12.5",
 
-  // Override to force correct versions to be used with Play, and remove evicted version warnings
-  dependencyOverrides ++= Seq(
-    Dependencies.akka.actor,
-    Dependencies.akka.stream,
-    Dependencies.sl4j.core,
-    Dependencies.guava.core
-  )
+  // Do not show eviction warnings, because we can't really do anything
+  // to suppress them...
+  evictionWarningOptions in update := EvictionWarningOptions.default
+    .withWarnTransitiveEvictions(false)
+    .withWarnDirectEvictions(false)
 )
 
 lazy val serverMainClass = Some("io.cumulus.CumulusApp")
