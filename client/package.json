@@ -17,7 +17,7 @@
     "url": "https://github.com/Cumulus-Cloud/cumulus/issues"
   },
   "scripts": {
-    "build": "parcel build src/main.tsx --out-dir ../server/cumulus-server-resources/src/main/resources/public --public-url assets --no-cache",
+    "build": "parcel build src/main.tsx --out-dir ../server/cumulus-server-resources/src/main/resources/public --public-url assets --no-cache --log-level 3 --detailed-report",
     "watch": "parcel watch src/main.tsx --out-dir ../server/cumulus-server-resources/src/main/resources/public --public-url assets --no-hmr",
     "watch-hot": "parcel watch src/main.tsx --out-dir ../server/cumulus-server-resources/src/main/resources/public --public-url assets",
     "lint": "tslint --project tsconfig.json"
@@ -51,7 +51,7 @@
     "@types/react-dnd": "2.0.36",
     "@types/react-dnd-html5-backend": "2.1.9",
     "@types/react-dom": "16.0.5",
-    "@types/react-redux": "5.0.18",
+    "@types/react-redux": "6.0.0",
     "@types/react-router": "4.0.25",
     "@types/react-router-redux": "5.0.14",
     "autoprefixer": "8.4.1",

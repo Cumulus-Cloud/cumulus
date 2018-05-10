@@ -5,6 +5,7 @@ import { GlobalState } from "store"
 import { InAppNotif } from "inAppNotif/InAppNotif"
 import { InAppNotifActions } from "inAppNotif/InAppNotifActions"
 import classNames from "utils/ClassNames"
+import { Actions } from "actions"
 
 interface PropsState {
   inAppNotif?: InAppNotif
@@ -41,7 +42,7 @@ const mapStateToProps = (state: GlobalState): PropsState => {
   }
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
+const mapDispatchToProps = (dispatch: Dispatch<Actions>): DispatchProps => {
   return {
     onHide: () => dispatch(InAppNotifActions.hideInAppNotif())
   }

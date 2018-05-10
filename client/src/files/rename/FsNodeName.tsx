@@ -8,6 +8,7 @@ import IconButton from "components/buttons/IconButton"
 import DoneIcon from "icons/DoneIcon"
 import CloseIcon from "icons/CloseIcon"
 import KeyDownAction from "components/KeyDownAction"
+import { Actions } from "actions"
 
 interface StateProps {
   newName: string
@@ -97,7 +98,7 @@ const mapStateToProps = (state: GlobalState, props: OwnProps): OwnProps & StateP
   }
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
+const mapDispatchToProps = (dispatch: Dispatch<Actions>): DispatchProps => {
   return {
     onNameChange: name => dispatch(RenameActions.changeName({ name })),
     onRename: (newName, fsNode) => dispatch(RenameActions.rename({ newName, fsNode })),

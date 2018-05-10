@@ -6,6 +6,7 @@ import { SearchActions } from "files/search/SearchActions"
 import { SearchState } from "files/search/SearchReducer"
 import { debounce } from "ts-debounce"
 import SearchBar from "components/search/SearchBar"
+import { Actions } from "actions"
 
 interface DispatchProps {
   onQueryChange(query: string): void
@@ -43,7 +44,7 @@ const mapStateToProps = (state: GlobalState): PropsState => {
     directory: state.fileSystem.directory!,
   }
 }
-const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
+const mapDispatchToProps = (dispatch: Dispatch<Actions>): DispatchProps => {
   return {
     onQueryChange: query => dispatch(SearchActions.queryChange({ query })),
     onFsNodeSearch: query => dispatch(SearchActions.fsNodeSearch({ query })),

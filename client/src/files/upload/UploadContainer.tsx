@@ -9,6 +9,7 @@ import GhostButton from "components/buttons/GhostButton"
 import UploadModal from "files/upload/UploadModal"
 import ReducedUploader from "files/upload/ReducedUploader"
 import { UploadModalStatus } from "models/UploadModalStatus"
+import { Actions } from "actions"
 
 interface DispatchProps {
   onUploaderModalStatus(status: UploadModalStatus): void
@@ -46,7 +47,7 @@ const mapStateToProps = (state: GlobalState): PropsState => {
     directory: state.fileSystem.directory!,
   }
 }
-const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
+const mapDispatchToProps = (dispatch: Dispatch<Actions>): DispatchProps => {
   return {
     onUploaderModalStatus: status => dispatch(UploadActions.uploaderModalStatus({ status })),
     onAddFiles: (files) => dispatch(UploadActions.addFiles({ files })),
