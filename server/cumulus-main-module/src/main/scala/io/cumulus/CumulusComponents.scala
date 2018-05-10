@@ -26,7 +26,7 @@ import io.cumulus.stages._
 import jsmessages.{JsMessages, JsMessagesFactory}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import play.api._
-import play.api.db.evolutions.EvolutionsComponents
+import play.api.db.evolutions.{ApplicationEvolutions, EvolutionsComponents}
 import play.api.db.{DBComponents, Database, HikariCPComponents}
 import play.api.i18n.MessagesApi
 import play.api.libs.mailer.MailerComponents
@@ -92,7 +92,8 @@ class CumulusComponents(
   lazy val router: Routes  = wire[Routes]
 
   override implicit lazy val configuration: Configuration =
-    context.initialConfiguration ++ Configuration(ConfigFactory.parseFile(new File(settings.configuration.path)))
+    context.initialConfiguration ++
+      Configuration(ConfigFactory.parseFile(new File(context.initialConfiguration.get[String]("cumulus.configuration.path"))))
 
   implicit lazy val config: Config     = configuration.underlying // for MailerComponents
   implicit lazy val settings: Settings = wire[Settings]

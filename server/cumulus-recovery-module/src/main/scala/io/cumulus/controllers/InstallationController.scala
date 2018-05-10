@@ -2,13 +2,11 @@ package io.cumulus.controllers
 
 import scala.concurrent.ExecutionContext
 
-import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
 import io.cumulus.models.configuration.{DatabaseConfiguration, EmailConfiguration}
 import io.cumulus.persistence.services.ConfigurationService
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
-import play.api.{Configuration, Environment}
 
 /**
   * Controller used during the installation, allowing to test, read and update the configuration. Note that this

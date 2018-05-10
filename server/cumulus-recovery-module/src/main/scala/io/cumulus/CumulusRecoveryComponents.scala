@@ -61,7 +61,8 @@ class CumulusRecoveryComponents(
   }
 
   override implicit lazy val configuration: Configuration =
-    context.initialConfiguration ++ Configuration(ConfigFactory.parseFile(new File(settings.configuration.path)))
+    context.initialConfiguration ++
+      Configuration(ConfigFactory.parseFile(new File(context.initialConfiguration.get[String]("cumulus.configuration.path"))))
 
   implicit lazy val settings: Settings = wire[Settings]
 
