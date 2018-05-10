@@ -25,7 +25,7 @@ import io.cumulus.stages._
 import jsmessages.{JsMessages, JsMessagesFactory}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import play.api._
-import play.api.db.evolutions.EvolutionsComponents
+import play.api.db.evolutions.{ClassLoaderEvolutionsReader, EvolutionsComponents}
 import play.api.db.{DBComponents, Database, HikariCPComponents}
 import play.api.i18n.MessagesApi
 import play.api.libs.mailer.MailerComponents
@@ -96,8 +96,9 @@ class CumulusComponents(
   implicit lazy val config: Config     = configuration.underlying // for MailerComponents
   implicit lazy val settings: Settings = wire[Settings]
 
-  // Access the lazy val to trigger evolutions
-  applicationEvolutions
+  // SQL evolutions
+  override lazy val evolutionsReader = new ClassLoaderEvolutionsReader
+  applicationEvolutions // Access the lazy val to trigger evolutions
 
   // Database & QueryMonad to access DB
   implicit lazy val database: Database = dbApi.database("default")
