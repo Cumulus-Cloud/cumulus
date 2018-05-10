@@ -23,6 +23,7 @@ import FsNodeComponent from "components/FsNodeComponent"
 import MoveModal from "files/move/MoveModal"
 import InAppNotifContainer from "inAppNotif/InAppNotifContainer"
 import DropUploaderContainer from "files/upload/DropUploaderContainer"
+import { Actions } from "actions"
 
 interface DispatchProps {
   onFetchDirectory(path: string): void
@@ -170,7 +171,7 @@ const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string
   }
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
+const mapDispatchToProps = (dispatch: Dispatch<Actions>): DispatchProps => {
   return {
     onFetchDirectory: path => dispatch(FileSystemActions.fetchDirectory({ path })),
     onDeleteFsNode: fsNode => dispatch(FileSystemActions.deleteFsNode({ fsNode })),

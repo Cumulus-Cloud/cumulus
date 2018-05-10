@@ -6,6 +6,7 @@ import LoginForm from "./LoginForm"
 import AuthLayout from "auth/AuthLayout"
 import GhostButton from "components/buttons/GhostButton"
 import { ApiError } from "models/ApiError"
+import { Actions } from "actions"
 
 interface DispatchProps {
   onChange(field: string, value: string): void
@@ -44,7 +45,7 @@ const mapStateToProps = (state: GlobalState): PropsState => {
   return state.auth.login
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
+const mapDispatchToProps = (dispatch: Dispatch<Actions>): DispatchProps => {
   return {
     onChange: (field, value) => dispatch(AuthActions.loginChange({ field, value })),
     onSubmit: (login, password) => dispatch(AuthActions.loginSubmit({ login, password }))
