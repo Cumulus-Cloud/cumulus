@@ -12,7 +12,8 @@ import com.softwaremill.macwire._
 import com.typesafe.config.{Config, ConfigFactory}
 import io.cumulus.controllers._
 import io.cumulus.core.Settings
-import io.cumulus.core.controllers.utils.{Assets, LoggingFilter}
+import io.cumulus.core.controllers.Assets
+import io.cumulus.core.controllers.utils.LoggingFilter
 import io.cumulus.core.controllers.utils.api.HttpErrorHandler
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.QueryBuilder
@@ -91,7 +92,7 @@ class CumulusComponents(
   lazy val router: Routes  = wire[Routes]
 
   override implicit lazy val configuration: Configuration =
-    context.initialConfiguration ++ Configuration(ConfigFactory.parseFile(new File("conf/override.conf")))
+    context.initialConfiguration ++ Configuration(ConfigFactory.parseFile(new File(settings.configuration.path)))
 
   implicit lazy val config: Config     = configuration.underlying // for MailerComponents
   implicit lazy val settings: Settings = wire[Settings]

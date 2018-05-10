@@ -1,10 +1,10 @@
 package io.cumulus.persistence.services
 
 import java.io.File
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-import akka.stream.IOResult
+import akka.stream.{IOResult, Materializer}
 import com.typesafe.config.ConfigFactory
 import io.cumulus.core.Settings
 import io.cumulus.core.utils.ConfigurationWriter
@@ -20,7 +20,9 @@ class ConfigurationService(
   environment: Environment
 )(
   implicit configuration: Configuration,
-  settings: Settings
+  materializer: Materializer,
+  settings: Settings,
+  ec: ExecutionContext
 ) {
 
   /**

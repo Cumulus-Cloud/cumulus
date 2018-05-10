@@ -28,6 +28,9 @@ object JsonFormat {
 
   }
 
+  /**
+    * Format for Maps with UUID as the key.
+    */
   implicit def uuidMapFormat[V](implicit format: Format[V]): Format[Map[UUID, V]] = new Format[Map[UUID, V]] {
 
     override def reads(json: JsValue): JsResult[Map[UUID, V]] =

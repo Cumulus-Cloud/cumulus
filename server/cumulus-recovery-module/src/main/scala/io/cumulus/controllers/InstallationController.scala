@@ -17,9 +17,6 @@ import play.api.{Configuration, Environment}
   */
 class InstallationController(
   configurationService: ConfigurationService,
-  environment: Environment,
-  configuration: Configuration,
-  settings: Settings,
   cc: ControllerComponents
 )(
   implicit ec: ExecutionContext
