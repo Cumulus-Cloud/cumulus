@@ -6,6 +6,7 @@ import SignupForm from "auth/signup/SignupForm"
 import AuthLayout from "auth/AuthLayout"
 import GhostButton from "components/buttons/GhostButton"
 import { ApiError } from "models/ApiError"
+import { Actions } from "actions"
 
 interface DispatchProps {
   onChange(field: string, value: string): void
@@ -46,7 +47,7 @@ const mapStateToProps = (state: GlobalState): PropsState => {
   return state.auth.signup
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
+const mapDispatchToProps = (dispatch: Dispatch<Actions>): DispatchProps => {
   return {
     onChange: (field, value) => dispatch(AuthActions.signupChange({ field, value })),
     onSubmit: (login, email, password) => dispatch(AuthActions.signupSubmit({ login, email, password }))

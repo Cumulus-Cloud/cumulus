@@ -7,6 +7,7 @@ import { Dispatch, connect } from "react-redux"
 import { GlobalState } from "store"
 import { UploadActions } from "files/upload/UploadActions"
 import { FsDirectory } from "models/FsNode"
+import { Actions } from "actions"
 
 interface OwnProps {
   className?: string
@@ -38,7 +39,7 @@ const mapStateToProps = (state: GlobalState): PropsState => {
   }
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
+const mapDispatchToProps = (dispatch: Dispatch<Actions>): DispatchProps => {
   return {
     onAddFilesToUpload: files => dispatch(UploadActions.addFiles({ files }))
   }
