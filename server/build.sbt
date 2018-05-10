@@ -29,7 +29,13 @@ lazy val commonSettings = Seq(
   // Application common info
   version := "0.1-SNAPSHOT",
   organization := "io.cumulus",
-  scalaVersion := "2.12.5"
+  scalaVersion := "2.12.5",
+
+  // Do not show eviction warnings, because we can't really do anything
+  // to suppress them...
+  evictionWarningOptions in update := EvictionWarningOptions.default
+    .withWarnTransitiveEvictions(false)
+    .withWarnDirectEvictions(false)
 )
 
 lazy val serverMainClass = Some("io.cumulus.CumulusApp")
