@@ -8,7 +8,7 @@ import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.utils.Base16
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.{Path, SharingSession, UserSession}
-import io.cumulus.persistence.services.{SharingService, StorageService}
+import io.cumulus.services.{SharingService, StorageService}
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 import scala.concurrent.{ExecutionContext, Future}
 import com.github.ghik.silencer.silent

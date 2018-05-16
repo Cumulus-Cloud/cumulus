@@ -7,7 +7,7 @@ import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.persistence.query.QueryPagination
 import io.cumulus.models.{Path, UserSession}
-import io.cumulus.persistence.services.SharingService
+import io.cumulus.services.SharingService
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 
 /**

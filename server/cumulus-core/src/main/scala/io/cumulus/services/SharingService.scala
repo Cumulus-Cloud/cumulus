@@ -1,4 +1,4 @@
-package io.cumulus.persistence.services
+package io.cumulus.services
 
 import java.time.LocalDateTime
 import java.util.UUID
@@ -179,7 +179,7 @@ class SharingService(
   /**
     * Returns a shared directory. Will fail if the element is not a directory or not found.
     *
-    * @see [[io.cumulus.persistence.services.SharingService#findSharedNode SharingService.findSharedNode]]
+    * @see [[io.cumulus.services.SharingService#findSharedNode SharingService.findSharedNode]]
     */
   def findSharedDirectory(
     reference: String,
@@ -208,7 +208,7 @@ class SharingService(
   /**
     * Returns a shared file. Will fail if the element is not a file or not found.
     *
-    * @see [[io.cumulus.persistence.services.SharingService#findSharedNode SharingService.findSharedNode]]
+    * @see [[io.cumulus.services.SharingService#findSharedNode SharingService.findSharedNode]]
     */
   def findSharedFile(
     reference: String,

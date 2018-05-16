@@ -1,4 +1,4 @@
-package io.cumulus.persistence.services
+package io.cumulus.services
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -146,7 +146,7 @@ class StorageService(
     * Deletes a file's reference and content by its reference. Safe to use on both directory and file. In case of a
     * file, the file's content will also be deleted.
     *
-    * @see [[io.cumulus.persistence.services.FsNodeService#deleteNode FsNodeService.deleteNode]]
+    * @see [[io.cumulus.services.FsNodeService#deleteNode FsNodeService.deleteNode]]
     * @param path The file's path.
     */
   def deleteNode(path: Path)(implicit session: UserSession): Future[Either[AppError, Unit]] = {

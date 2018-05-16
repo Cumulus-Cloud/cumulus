@@ -2,8 +2,8 @@ package io.cumulus
 
 import java.io.File
 import java.security.Security
-import scala.concurrent.ExecutionContextExecutor
 
+import scala.concurrent.ExecutionContextExecutor
 import _root_.controllers.AssetsComponents
 import akka.actor.{ActorRef, Scheduler}
 import akka.stream.{ActorMaterializer, Materializer}
@@ -17,7 +17,7 @@ import io.cumulus.core.controllers.utils.api.HttpErrorHandler
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.QueryBuilder
 import io.cumulus.core.utils.ServerWatchdog
-import io.cumulus.persistence.services.{FsNodeService, SharingService, StorageService, UserService}
+import io.cumulus.services._
 import io.cumulus.persistence.storage.engines.LocalStorage
 import io.cumulus.persistence.storage.{ChunkRemover, StorageEngines}
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore, UserStore}
@@ -31,7 +31,6 @@ import play.api.i18n.MessagesApi
 import play.api.libs.mailer.MailerComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
-
 import router.Routes
 
 /**
@@ -131,6 +130,7 @@ class CumulusComponents(
   lazy val fsNodeService: FsNodeService   = wire[FsNodeService]
   lazy val storageService: StorageService = wire[StorageService]
   lazy val sharingService: SharingService = wire[SharingService]
+  lazy val mailService: MailService       = wire[MailService]
 
   // Controllers
   lazy val homeController: HomeController                 = wire[HomeController]

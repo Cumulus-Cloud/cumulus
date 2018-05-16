@@ -1,6 +1,8 @@
 
 # App entrypoint
 GET     /                             io.cumulus.controllers.HomeController.index
+
+# Administration endpoints
 GET     /api/admin/management/reload  io.cumulus.controllers.ManagementController.reload
 GET     /api/admin/management/stop    io.cumulus.controllers.ManagementController.stop
 
@@ -9,6 +11,7 @@ POST    /api/users/login              io.cumulus.controllers.UserController.logi
 POST    /api/users/logout             io.cumulus.controllers.UserController.logout
 POST    /api/users/signup             io.cumulus.controllers.UserController.signUp
 GET     /api/users/me                 io.cumulus.controllers.UserController.me
+GET     /validateEmail                io.cumulus.controllers.UserController.validateEmail(userLogin: String, emailCode: String)
 
 # API - FS get/update routes
 GET     /api/fs*path                  io.cumulus.controllers.FileSystemController.get(path: Path, contentLimit: Option[Int], contentOffset: Option[Int])

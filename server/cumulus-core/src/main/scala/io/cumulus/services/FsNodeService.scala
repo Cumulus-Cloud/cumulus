@@ -1,4 +1,4 @@
-package io.cumulus.persistence.services
+package io.cumulus.services
 
 import java.time.LocalDateTime
 import scala.concurrent.{ExecutionContext, Future}

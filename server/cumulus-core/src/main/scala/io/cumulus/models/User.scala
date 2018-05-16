@@ -2,15 +2,15 @@ package io.cumulus.models
 
 import java.time.LocalDateTime
 import java.util.UUID
-import scala.language.implicitConversions
 
 import akka.util.ByteString
 import com.github.ghik.silencer.silent
-import io.cumulus.core.json.JsonFormat._
-import io.cumulus.core.utils.Crypto
+import io.cumulus.core.utils.{Base16, Base64, Crypto}
 import io.cumulus.persistence.storage.StorageReference
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+
+import scala.language.implicitConversions
 
 /**
   * Common trait for both user session and sharing session
@@ -56,7 +56,7 @@ object UserSession {
     userSession.user
 
   implicit def format: Format[UserSession] ={
-    implicit val userFormat = User.internalFormat
+    implicit val userFormat: OFormat[User] = User.internalFormat
     Json.format[UserSession]
   }
 
@@ -171,7 +171,10 @@ case class UserSecurity(
   salt1: ByteString,
   iv: ByteString,
   passwordHash: ByteString,
-  salt2: ByteString
+  salt2: ByteString,
+  emailCode: ByteString,
+  emailValidated: Boolean,
+  activated: Boolean
 ) {
 
   /**
@@ -186,12 +189,27 @@ case class UserSecurity(
   }
 
   /**
+    * Check that the provided code is the user's mail code.
+    */
+  def checkEmailCode(toTest: String): Boolean =
+    Base16.decode(toTest).contains(emailCode)
+
+  /**
     * Decode the private key using the provided password.
     */
   def privateKey(password: String): ByteString = {
     val hash = Crypto.scrypt(password, salt1)
     Crypto.AESDecrypt(hash, iv, encryptedPrivateKey)
   }
+
+  def validateEmail: UserSecurity =
+    copy(emailValidated = true)
+
+  def activate: UserSecurity =
+    copy(activated = true)
+
+  def deactivate: UserSecurity =
+    copy(activated = false)
 
   /**
     * Change the password.
@@ -227,13 +245,19 @@ object UserSecurity {
     val salt2 = Crypto.randomBytes(16)
     val passwordHashHash = Crypto.scrypt(passwordHash, salt2)
 
+    // Random password code
+    val passwordCode = Crypto.randomBytes(16)
+
     UserSecurity(
       encryptedPrivateKey = encryptedPrivateKey,
       privateKeySalt      = privateKeySalt,
       salt1               = salt,
       iv                  = iv,
       passwordHash        = passwordHashHash,
-      salt2               = salt2
+      salt2               = salt2,
+      emailCode           = passwordCode,
+      emailValidated      = false,
+      activated           = true
     )
   }
 

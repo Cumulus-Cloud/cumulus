@@ -15,8 +15,8 @@ services:
   cumulus_mailcatcher:
     image: jeanberu/mailcatcher
     ports:
-      - 1026:1025 # SMTP
-      - 1081:1080 # Web interface
+      - 1025:1025 # SMTP
+      - 1080:1080 # Web interface
 
   cumulus_adminer:
     image: adminer
