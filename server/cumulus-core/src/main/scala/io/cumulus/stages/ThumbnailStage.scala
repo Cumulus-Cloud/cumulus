@@ -1,6 +1,5 @@
 package io.cumulus.stages
 
-import javax.imageio.ImageIO
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Keep, StreamConverters}
 import com.sksamuel.scrimage.Image
@@ -8,11 +7,13 @@ import com.sksamuel.scrimage.nio.JpegWriter
 import io.cumulus.core.stream.storage.{StorageReferenceReader, StorageReferenceWriter}
 import io.cumulus.core.validation.AppError
 import io.cumulus.core.{Logging, Settings}
-import io.cumulus.models.UserSession
 import io.cumulus.models.fs.File
+import io.cumulus.models.user.UserSession
 import io.cumulus.persistence.storage.{StorageEngines, StorageReference}
+import javax.imageio.ImageIO
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.{ImageType, PDFRenderer}
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 

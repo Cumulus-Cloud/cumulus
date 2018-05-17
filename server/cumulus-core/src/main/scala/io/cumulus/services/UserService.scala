@@ -2,18 +2,19 @@ package io.cumulus.services
 
 import java.util.UUID
 
-import scala.concurrent.Future
-import scala.util.Try
-import io.cumulus.core.{Logging, Settings}
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.{QueryBuilder, QueryE}
 import io.cumulus.core.utils.Base16
 import io.cumulus.core.validation.AppError
-import io.cumulus.models.User
+import io.cumulus.core.{Logging, Settings}
 import io.cumulus.models.fs.Directory
+import io.cumulus.models.user.User
 import io.cumulus.persistence.stores.UserStore._
 import io.cumulus.persistence.stores.{FsNodeStore, UserStore}
 import play.api.libs.json.__
+
+import scala.concurrent.Future
+import scala.util.Try
 
 /**
   * User service, which handle the business logic and validations of the users.
@@ -140,16 +141,28 @@ class UserService(
     */
   def validateUserEmail(login: String, emailCode: String): Future[Either[AppError, User]] = {
 
-    userStore.findBy(loginField, login).map {
-      case Some(user) if user.security.checkEmailCode(emailCode) =>
-        if(user.security.emailValidated)
-          Left(AppError.validation("validation.user.email-already-validated"))
-        else
-          Right(user.copy(security = user.security.validateEmail))
-      case _ =>
-        Left(AppError.validation("validation.user.invalid-login-or-email-code"))
-    }
+    for {
+      // Find the user by the login
+      maybeUser <- QueryE.lift(userStore.findBy(loginField, login))
 
-  }.run()
+      // Update the email validation
+      updatedUser <- QueryE.pure {
+        maybeUser match {
+          case Some(user) if user.security.checkEmailCode(emailCode) =>
+            if(user.security.emailValidated)
+              Left(AppError.validation("validation.user.email-already-validated"))
+            else
+              Right(user.copy(security = user.security.validateEmail))
+          case _ =>
+            Left(AppError.validation("validation.user.invalid-login-or-email-code"))
+        }
+      }
+
+      // Save the modifications
+      _ <- QueryE.lift(userStore.update(updatedUser))
+
+    } yield updatedUser
+
+  }.commit()
 
 }

@@ -6,7 +6,7 @@ import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.controllers.utils.authentication.Authentication._
 import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
-import io.cumulus.models.{User, UserSession}
+import io.cumulus.models.user.{User, UserSession}
 import io.cumulus.services.UserService
 import play.api.libs.json.Json
 import play.api.mvc._
@@ -20,23 +20,18 @@ class UserController (
 
   def signUp: Action[SignUpPayload] =
     Action.async(parseJson[SignUpPayload]) { implicit request =>
-      val signInPayload = request.body
-      val user = User.create(signInPayload.email, signInPayload.login, signInPayload.password)
+      ApiResponse {
+        val signInPayload = request.body
+        val user = User.create(signInPayload.email, signInPayload.login, signInPayload.password)
 
-      userService.createUser(user).map {
-        case Right(authenticatedUser) =>
-          // TODO do not send that
-          loginUser(authenticatedUser, signInPayload.password)
-        case Left(error) =>
-          toApiError(error)
+        userService.createUser(user)
       }
     }
 
   def validateEmail(userLogin: String, emailCode: String): Action[AnyContent] =
-    Action.async {
-      ApiResponse {
-        // TODO send back a twirl template
-        userService.validateUserEmail(userLogin, emailCode)
+    Action.async { implicit request =>
+      userService.validateUserEmail(userLogin, emailCode).map { result =>
+        Ok(io.cumulus.views.html.emailvalidation(result))
       }
     }
 

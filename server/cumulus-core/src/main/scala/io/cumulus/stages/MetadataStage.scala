@@ -8,8 +8,8 @@ import akka.stream.scaladsl.StreamConverters
 import com.sksamuel.scrimage
 import io.cumulus.core.stream.storage.StorageReferenceReader
 import io.cumulus.core.validation.AppError
-import io.cumulus.models.Session
 import io.cumulus.models.fs._
+import io.cumulus.models.user.Session
 import io.cumulus.persistence.storage.StorageEngines
 import org.apache.pdfbox.pdmodel.PDDocument
 

@@ -10,7 +10,7 @@ import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
 import io.cumulus.core.utils.ServerWatchdog
 import io.cumulus.core.validation.AppError
-import io.cumulus.models.UserSession
+import io.cumulus.models.user.UserSession
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}
 

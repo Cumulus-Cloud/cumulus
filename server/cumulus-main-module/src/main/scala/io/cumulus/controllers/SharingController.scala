@@ -1,14 +1,15 @@
 package io.cumulus.controllers
 
-import scala.concurrent.ExecutionContext
-
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.persistence.query.QueryPagination
-import io.cumulus.models.{Path, UserSession}
+import io.cumulus.models.Path
+import io.cumulus.models.user.UserSession
 import io.cumulus.services.SharingService
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
+
+import scala.concurrent.ExecutionContext
 
 /**
   * Sharing controller. This controller handle all the authenticated operation on shared elements.

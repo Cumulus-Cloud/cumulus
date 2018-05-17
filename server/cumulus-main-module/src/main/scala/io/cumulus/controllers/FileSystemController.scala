@@ -1,7 +1,6 @@
 package io.cumulus.controllers
 
 import scala.concurrent.{ExecutionContext, Future}
-
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import cats.data.EitherT
@@ -15,7 +14,9 @@ import io.cumulus.core.controllers.utils.bodyParser.{BodyParserJson, BodyParserS
 import io.cumulus.core.persistence.query.QueryPagination
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.fs.{Directory, FsNodeType}
-import io.cumulus.models.{Path, Sharing, UserSession}
+import io.cumulus.models.sharing.Sharing
+import io.cumulus.models.Path
+import io.cumulus.models.user.UserSession
 import io.cumulus.services.{FsNodeService, SharingService, StorageService}
 import io.cumulus.stages._
 import play.api.libs.json.{JsString, Json}

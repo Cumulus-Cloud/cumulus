@@ -1,8 +1,5 @@
 package io.cumulus.services
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
-
 import akka.actor.ActorRef
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
@@ -13,10 +10,14 @@ import io.cumulus.core.stream.storage.{StorageReferenceReader, StorageReferenceW
 import io.cumulus.core.utils.Range
 import io.cumulus.core.validation.AppError
 import io.cumulus.core.{Logging, Settings}
+import io.cumulus.models.Path
 import io.cumulus.models.fs.{DefaultMetadata, File, FileMetadata}
-import io.cumulus.models.{Path, Session, UserSession}
+import io.cumulus.models.user.{Session, UserSession}
 import io.cumulus.persistence.storage.{StorageEngines, StorageReference}
 import io.cumulus.stages._
+
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 class StorageService(
   fsNodeService: FsNodeService,

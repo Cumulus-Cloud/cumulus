@@ -2,7 +2,7 @@ package io.cumulus.services
 
 import io.cumulus.core.Logging
 import io.cumulus.core.validation.AppError
-import io.cumulus.models.User
+import io.cumulus.models.user.User
 import play.api.libs.mailer.{Email, SMTPMailer}
 
 import scala.concurrent.ExecutionContext

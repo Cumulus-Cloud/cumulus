@@ -1,0 +1,34 @@
+@import io.cumulus.core.validation.AppError
+@import io.cumulus.core.validation.GlobalError
+@import io.cumulus.models.user.User
+@import play.api.i18n.Messages
+
+@(result: Either[AppError, User])(implicit messages: Messages)
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Cumulus</title>
+        <link rel="stylesheet" media="screen" href="assets/main.css">
+        <link rel="icon" type="image/png" href="favicon.ico">
+        <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+        @result match {
+            case Left(error: GlobalError) => {
+                <h1>Oups! Something went wrong... :(</h1>
+                <p>
+                    The validation did not work: @messages(error.key)
+                </p>
+            }
+            case Right(user) => {
+                <h1>Congratulations!</h1>
+                <p>
+                    Congratulation @user.login!, your email is now validated.
+                    You can now use your account with the Cumulus app
+                </p>
+            }
+        }
+    </body>
+</html>

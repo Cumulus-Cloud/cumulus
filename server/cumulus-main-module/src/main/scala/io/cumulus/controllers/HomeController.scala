@@ -3,7 +3,7 @@ package io.cumulus.controllers
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
-import io.cumulus.models.UserSession
+import io.cumulus.models.user.UserSession
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}

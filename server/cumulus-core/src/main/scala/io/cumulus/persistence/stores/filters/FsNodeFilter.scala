@@ -1,10 +1,10 @@
 package io.cumulus.persistence.stores.filters
 
 import anorm.NamedParameter
-import io.cumulus.core.persistence.anorm.AnormSupport._
 import io.cumulus.core.persistence.query.{ParameterizedSqlFilter, QueryFilter}
+import io.cumulus.models.Path
 import io.cumulus.models.fs.FsNodeType
-import io.cumulus.models.{Path, User}
+import io.cumulus.models.user.User
 import io.cumulus.persistence.stores.FsNodeStore._
 
 /**

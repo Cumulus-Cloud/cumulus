@@ -1,7 +1,6 @@
 package io.cumulus.services
 
 import java.time.LocalDateTime
-import scala.concurrent.{ExecutionContext, Future}
 
 import io.cumulus.core.Logging
 import io.cumulus.core.persistence.CumulusDB
@@ -10,11 +9,14 @@ import io.cumulus.core.utils.PaginatedList
 import io.cumulus.core.validation.AppError
 import io.cumulus.models._
 import io.cumulus.models.fs._
+import io.cumulus.models.user.User
 import io.cumulus.persistence.stores.filters.FsNodeFilter
 import io.cumulus.persistence.stores.orderings.FsNodeOrdering
 import io.cumulus.persistence.stores.orderings.QueryOrderingType.{OrderByFilenameAsc, OrderByNodeType}
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore}
 import play.api.libs.json.__
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class FsNodeService(
   fsNodeStore: FsNodeStore,

@@ -9,8 +9,9 @@ import io.cumulus.core.persistence.anorm.{AnormPKOperations, AnormRepository, An
 import io.cumulus.core.persistence.query._
 import io.cumulus.core.utils.PaginatedList
 import io.cumulus.core.utils.PaginatedList._
+import io.cumulus.models.Path
 import io.cumulus.models.fs.{Directory, FsNode}
-import io.cumulus.models.{Path, User}
+import io.cumulus.models.user.User
 import io.cumulus.persistence.stores.FsNodeStore._
 import io.cumulus.persistence.stores.orderings.FsNodeOrdering
 

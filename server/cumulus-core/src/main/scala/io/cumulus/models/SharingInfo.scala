@@ -1,6 +1,7 @@
 package io.cumulus.models
 
 import io.cumulus.models.fs.FsNode
+import io.cumulus.models.sharing.Sharing
 import play.api.libs.json.{Json, OWrites}
 
 case class SharingInfo(
