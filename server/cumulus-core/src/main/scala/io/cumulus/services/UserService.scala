@@ -63,6 +63,7 @@ class UserService(
       _ <- QueryE.pure {
         mailService
           .sendToUser(
+            "Your account validation", // TODO translate
             s"""hey, click <a href="${settings.host.url}/validateEmail?userLogin=${user.login}&emailCode=${Base16.encode(user.security.emailCode)}">here</a>""",
             user
           )

@@ -10,6 +10,10 @@ class Settings(
   conf: Configuration
 ) {
 
+  object mail {
+    val from: String = conf.get[String]("cumulus.mail.from")
+  }
+
   object host {
     val name: String = conf.get[String]("cumulus.host.name")
     val port: Int = conf.get[Int]("cumulus.host.port")

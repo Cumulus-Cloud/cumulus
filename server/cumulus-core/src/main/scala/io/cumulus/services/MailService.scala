@@ -1,6 +1,6 @@
 package io.cumulus.services
 
-import io.cumulus.core.Logging
+import io.cumulus.core.{Logging, Settings}
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.user.User
 import play.api.libs.mailer.{Email, SMTPMailer}
@@ -12,16 +12,17 @@ class MailService(
   mailer: SMTPMailer
 )(
   implicit
+  settings: Settings,
   ec: ExecutionContext
 ) extends Logging {
 
-  def sendToUser(message: String, user: User) = {
+  def sendToUser(subject: String, message: String, user: User): Either[AppError, String] = {
 
     val email = Email(
-      "Email test",
-      "Mister FROM <from@email.com>",
+      s"Cumulus Cloud - $subject",
+      s"<${settings.mail.from}>",
       Seq(s"${user.login} <${user.email}>"),
-      bodyText = Some("A text message"),
+      // TODO use a template
       bodyHtml = Some(s"""<html><body><p>An <b>html</b> message $message</p></body></html>""")
     )
 
