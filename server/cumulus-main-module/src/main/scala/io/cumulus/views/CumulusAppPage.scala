@@ -1,11 +1,12 @@
 package io.cumulus.views
 
+import play.api.i18n.Messages
 import scalatags.Text.all._
 
 /**
   * Main page of the app, handled by react.
   */
-object CumulusAppPage extends CumulusTemplate {
+case class CumulusAppPage(implicit val messages: Messages) extends CumulusTemplate {
 
   override protected lazy val pageBody: Seq[Tag] =
     Seq(

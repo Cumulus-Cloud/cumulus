@@ -12,8 +12,8 @@ class HomeController(
   cc: ControllerComponents
 ) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with BodyParserJson {
 
-  def index = Action {
-    Ok(CumulusAppPage)
+  def index = Action { implicit request =>
+    Ok(CumulusAppPage())
   }
 
 }

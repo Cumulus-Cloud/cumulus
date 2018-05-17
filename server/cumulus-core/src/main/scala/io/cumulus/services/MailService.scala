@@ -8,6 +8,9 @@ import play.api.libs.mailer.{Email, SMTPMailer}
 
 import scala.util.Try
 
+/**
+  * Mail service.
+  */
 class MailService(
   mailer: SMTPMailer
 )(
@@ -15,6 +18,13 @@ class MailService(
   settings: Settings
 ) extends Logging {
 
+
+  /**
+    * Send a mail to an user. Note that the mail's sending is for now blocking.
+    * @param subject Subject of the mail.
+    * @param emailContent Content of the mail.
+    * @param to Recipient user.
+    */
   def sendToUser(subject: String, emailContent: CumulusEmailTemplate, to: User): Either[AppError, String] = {
 
     val email = Email(
@@ -27,7 +37,5 @@ class MailService(
     // TODO send using an actor
     Try(mailer.send(email)).toEither.left.map(e => AppError.technical(e.getMessage))
   }
-
-  def sendToAll(text: String)(implicit user: User) = ???
 
 }

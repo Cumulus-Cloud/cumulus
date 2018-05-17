@@ -119,26 +119,6 @@ trait CumulusStaticTemplate extends CumulusTemplate {
       ".button:hover" - (
         backgroundColor :=! "var(--lightPrimary)"
       )
-
-      /*
-      "div.std" - (
-        margin(12 px, auto),
-        textAlign.left,
-        cursor.pointer,
-
-        &.hover -
-          cursor.zoomIn,
-
-        media.not.handheld.landscape.maxWidth(640 px) -
-          width(400 px),
-
-        &("span") -
-          color.red
-      )
-
-      "h1".firstChild -
-        fontWeight.bold
-        */
     }
 
   override protected def pageHead: Seq[Tag] = {

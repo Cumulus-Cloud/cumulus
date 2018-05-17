@@ -3,7 +3,11 @@ import play.api.i18n.Messages
 import scalatags.Text
 import scalatags.Text.all._
 
-case class CumulusRecoveryPage(error: Throwable)(implicit messages: Messages) extends CumulusStaticTemplate {
+case class CumulusRecoveryPage(
+  error: Throwable
+)(implicit
+  val messages: Messages
+) extends CumulusStaticTemplate {
 
   override protected lazy val pageHead: Seq[Tag] =
     super.pageHead ++
@@ -52,20 +56,13 @@ case class CumulusRecoveryPage(error: Throwable)(implicit messages: Messages) ex
 
   override protected lazy val pageContent: Seq[Text.all.Tag] =
     Seq(
-      h1("Oh no, an error occurred! \uD83D\uDE22"), // TODO internationalization
-      p("""
-          An error preventing the Cumulus server to start has occurred. The server is now started in
-          recovery mode to show you what went wrong.
-        """, // TODO internationalization
+      h1(messages("view.recovery.title")),
+      p(
+        messages("view.recovery.content-1"),
         br,br,
-        """
-          Errors usually come from configuration error such as an unreachable database.
-        """, // TODO internationalization
+        messages("view.recovery.content-2"),
         br,br,
-        """
-          Use the stack trace below to see what when wrong. In futures versions, Cumulus will try to
-          guess what went wrong.
-        """ // TODO internationalization
+        messages("view.recovery.content-3")
       ),
       ul(
         error.getStackTrace.toList.map { trace =>
@@ -85,9 +82,24 @@ case class CumulusRecoveryPage(error: Throwable)(implicit messages: Messages) ex
 
   override protected lazy val pageRightPanel: Seq[Text.all.Tag] =
     Seq(
-      input(id := "reload", `type` := "button", `class` := "button", value := "Reload the server"),
-      input(id := "stop", `type` := "button", `class` := "button", value := "Stop the server"),
-      input(disabled := "disabled", `type` := "button", `class` := "button", value := "Update the configuration")
-    ) // TODO internationalization
+      input(
+        id      := "reload",
+        `type`  := "button",
+        `class` := "button",
+        value   := messages("view.recovery.button.reload")
+      ),
+      input(
+        id      := "stop",
+        `type`  := "button",
+        `class` := "button",
+        value   := messages("view.recovery.button.stop")
+      ),
+      input(
+        disabled := "disabled",
+        `type`   := "button",
+        `class`  := "button",
+        value    :=  messages("view.recovery.button.update-conf")
+      )
+    )
 
 }

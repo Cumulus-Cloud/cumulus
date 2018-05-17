@@ -4,7 +4,6 @@ import java.util.UUID
 
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.{QueryBuilder, QueryE}
-import io.cumulus.core.utils.Base16
 import io.cumulus.core.validation.AppError
 import io.cumulus.core.{Logging, Settings}
 import io.cumulus.models.fs.Directory
@@ -12,6 +11,7 @@ import io.cumulus.models.user.User
 import io.cumulus.persistence.stores.UserStore._
 import io.cumulus.persistence.stores.{FsNodeStore, UserStore}
 import io.cumulus.views.email.CumulusEmailValidationEmail
+import play.api.i18n.Messages
 import play.api.libs.json.__
 
 import scala.concurrent.Future
@@ -35,7 +35,11 @@ class UserService(
     * return an error.
     * @param user The user to be created.
     */
-  def createUser(user: User): Future[Either[AppError, User]] = {
+  def createUser(
+    user: User
+  )(implicit
+    messages: Messages
+  ): Future[Either[AppError, User]] = {
 
     for {
       // Check for duplicated UUID. Should not really happen...
@@ -64,7 +68,7 @@ class UserService(
       _ <- QueryE.pure {
         mailService
           .sendToUser(
-            "Your account validation", // TODO translate
+            messages("email.email-validation.object"),
             CumulusEmailValidationEmail(user),
             user
           )

@@ -2,17 +2,23 @@ package io.cumulus.views.email
 
 import io.cumulus.core.Settings
 import io.cumulus.views.View
+import play.api.i18n.Messages
 import scalatags.Text.all._
 
+/**
+  * Template for Cumulus mails. The template should be compatible with the majority of
+  * web client.
+  */
 trait CumulusEmailTemplate extends View {
+
+  protected def settings: Settings
+  protected def messages: Messages
 
   override lazy val content: Frag =
     raw(rawContent)
 
-  protected def settings: Settings
-
   protected val mailTitle: String =
-    "Cumulus" // TODO internationalization ?
+    messages("email.title")
 
   protected def mailContentTitle: String
 
@@ -20,11 +26,7 @@ trait CumulusEmailTemplate extends View {
 
   protected val mailFooter: Tag = {
     span(
-      s"""
-         This email was sent from ${settings.mail.from}. Cumulus is a free
-         self-hosted solution for file sharing and storage. Feel free to
-         contribute to the project on our Github.
-       """ // TODO internationalization
+      messages("email.footer", settings.mail.from)
     )
   }
 

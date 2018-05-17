@@ -1,4 +1,5 @@
 package io.cumulus.views
+import play.api.i18n.Messages
 import scalatags.Text.all._
 import scalatags.Text.tags2.title
 
@@ -7,8 +8,10 @@ import scalatags.Text.tags2.title
   */
 trait CumulusTemplate extends View {
 
+  def messages: Messages
+
   protected val pageTitle: String =
-    "Cumulus"
+    messages("view.title")
 
   protected def pageHead: Seq[Tag] =
     Seq(
