@@ -6,7 +6,7 @@ import scalatags.Text.all._
 /**
   * Main page of the app, handled by react.
   */
-case class CumulusAppPage(implicit val messages: Messages) extends CumulusTemplate {
+case class CumulusAppPage()(implicit val messages: Messages) extends CumulusTemplate {
 
   override protected lazy val pageBody: Seq[Tag] =
     Seq(
