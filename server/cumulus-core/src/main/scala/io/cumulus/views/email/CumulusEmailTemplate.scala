@@ -1,12 +1,10 @@
 package io.cumulus.views.email
 
 import io.cumulus.core.Settings
-import io.cumulus.core.utils.Base16
-import io.cumulus.models.user.User
 import io.cumulus.views.View
 import scalatags.Text.all._
 
-trait CumulusEmail extends View {
+trait CumulusEmailTemplate extends View {
 
   override lazy val content: Frag =
     raw(rawContent)
@@ -367,9 +365,7 @@ trait CumulusEmail extends View {
       |          <td align="center" style="background-color: #F4F4F4;"><![endif]-->
       |
       |      <div style="background-color:transparent;">
-      |        <div
-      |            style="Margin: 0 auto;min-width: 320px;max-width: 640px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: #f2fbfa;"
-      |            class="block-grid ">
+      |        <div style="Margin: 0 auto;min-width: 320px;max-width: 640px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: #f2fbfa;" class="block-grid ">
       |          <div style="border-collapse: collapse;display: table;width: 100%;background-color:#f2fbfa;">
       |            <!--[if (mso)|(IE)]>
       |            <table width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -380,11 +376,9 @@ trait CumulusEmail extends View {
       |            <![endif]-->
       |
       |            <!--[if (mso)|(IE)]>
-      |            <td align="center" width="640"
-      |                style=" width:640px; padding-right: 0px; padding-left: 0px; padding-top:5px; padding-bottom:5px; border-top: 0px solid transparent; border-left: 0px solid transparent; border-bottom: 0px solid transparent; border-right: 0px solid transparent;"
-      |                valign="top"><![endif]-->
-      |            <div class="col num12"
-      |                 style="min-width: 320px;max-width: 640px;display: table-cell;vertical-align: top;">
+      |            <td align="center" width="640" style=" width:640px; padding-right: 0px; padding-left: 0px; padding-top:5px; padding-bottom:5px; border-top: 0px solid transparent; border-left: 0px solid transparent; border-bottom: 0px solid transparent; border-right: 0px solid transparent;" valign="top">
+      |            <![endif]-->
+      |            <div class="col num12" style="min-width: 320px;max-width: 640px;display: table-cell;vertical-align: top;">
       |              <div style="background-color: transparent; width: 100% !important;">
       |                <!--[if (!mso)&(!IE)]><!-->
       |                <div
@@ -398,12 +392,12 @@ trait CumulusEmail extends View {
       |                      <tr>
       |                        <td style="padding-right: 10px; padding-left: 10px; padding-top: 10px; padding-bottom: 10px;">
       |                    <![endif]-->
-      |                    <div
-      |                        style="color:#3dc7be;line-height:120%;font-family:'Lato', Tahoma, Verdana, Segoe, sans-serif; padding-right: 10px; padding-left: 10px; padding-top: 10px; padding-bottom: 10px;">
-      |                      <div
-      |                          style="font-size:12px;line-height:14px;font-family:Lato, Tahoma, Verdana, Segoe, sans-serif;color:#3dc7be;text-align:left;">
-      |                        <p style="margin: 0;font-size: 14px;line-height: 17px"><span
-      |                            style="font-size: 20px; line-height: 24px;">$mailTitle</span></p>
+      |                    <div style="color:#3dc7be;line-height:120%;font-family:'Lato', Tahoma, Verdana, Segoe, sans-serif; padding-right: 10px; padding-left: 10px; padding-top: 10px; padding-bottom: 10px;">
+      |                      <div style="font-size:12px;line-height:14px;font-family:Lato, Tahoma, Verdana, Segoe, sans-serif;color:#3dc7be;text-align:left;">
+      |                        <p style="margin: 0;font-size: 14px;line-height: 17px">
+      |                          <img border="0" src="${settings.host.url}/assets/cumulus-logo.png" alt="Logo" title="Logo" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline; border: 0; height: 25px; float: none; width: auto; padding-right: 7px;" height="25">
+      |                          <span style="font-size: 20px; line-height: 24px;">$mailTitle</span>
+      |                        </p>
       |                      </div>
       |                    </div>
       |                    <!--[if mso]></td></tr></table><![endif]-->
@@ -417,9 +411,7 @@ trait CumulusEmail extends View {
       |        </div>
       |      </div>
       |      <div style="background-color:transparent;">
-      |        <div
-      |            style="Margin: 0 auto;min-width: 320px;max-width: 640px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: #FFFFFF;"
-      |            class="block-grid ">
+      |        <div style="Margin: 0 auto;min-width: 320px;max-width: 640px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: #FFFFFF;" class="block-grid ">
       |          <div style="border-collapse: collapse;display: table;width: 100%;background-color:#FFFFFF;">
       |            <!--[if (mso)|(IE)]>
       |            <table width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -441,8 +433,7 @@ trait CumulusEmail extends View {
       |                  <!--<![endif]-->
       |
       |
-      |                  <div align="center" class="img-container center  autowidth  fullwidth "
-      |                       style="padding-right: 0px;  padding-left: 0px;">
+      |                  <div align="center" class="img-container center  autowidth  fullwidth " style="padding-right: 0px;  padding-left: 0px;">
       |                    <!--[if mso]>
       |                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
       |                      <tr style="line-height:0px;line-height:0px;">
@@ -456,15 +447,11 @@ trait CumulusEmail extends View {
       |                  </div>
       |
       |
-      |                  <table border="0" cellpadding="0" cellspacing="0" width="100%" class="divider "
-      |                         style="border-collapse: collapse;table-layout: fixed;border-spacing: 0;mso-table-lspace: 0pt;mso-table-rspace: 0pt;vertical-align: top;min-width: 100%;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%">
+      |                  <table border="0" cellpadding="0" cellspacing="0" width="100%" class="divider " style="border-collapse: collapse;table-layout: fixed;border-spacing: 0;mso-table-lspace: 0pt;mso-table-rspace: 0pt;vertical-align: top;min-width: 100%;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%">
       |                    <tbody>
       |                    <tr style="vertical-align: top">
-      |                      <td class="divider_inner"
-      |                          style="word-break: break-word;border-collapse: collapse !important;vertical-align: top;padding-right: 10px;padding-left: 10px;padding-top: 10px;padding-bottom: 10px;min-width: 100%;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%">
-      |                        <table class="divider_content" align="center" border="0" cellpadding="0"
-      |                               cellspacing="0" width="100%"
-      |                               style="border-collapse: collapse;table-layout: fixed;border-spacing: 0;mso-table-lspace: 0pt;mso-table-rspace: 0pt;vertical-align: top;border-top: 0px solid transparent;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%">
+      |                      <td class="divider_inner" style="word-break: break-word;border-collapse: collapse !important;vertical-align: top;padding-right: 10px;padding-left: 10px;padding-top: 10px;padding-bottom: 10px;min-width: 100%;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%">
+      |                        <table class="divider_content" align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;table-layout: fixed;border-spacing: 0;mso-table-lspace: 0pt;mso-table-rspace: 0pt;vertical-align: top;border-top: 0px solid transparent;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%">
       |                          <tbody>
       |                          <tr style="vertical-align: top">
       |                            <td style="word-break: break-word;border-collapse: collapse !important;vertical-align: top;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%">
@@ -485,10 +472,8 @@ trait CumulusEmail extends View {
       |                      <tr>
       |                        <td style="padding-right: 10px; padding-left: 10px; padding-top: 30px; padding-bottom: 20px;">
       |                    <![endif]-->
-      |                    <div
-      |                        style="line-height:120%;color:#6f6f6f;font-family:'Lato', Tahoma, Verdana, Segoe, sans-serif; padding-right: 10px; padding-left: 10px; padding-top: 30px; padding-bottom: 20px;">
-      |                      <div
-      |                          style="font-size:12px;line-height:14px;font-family:Lato, Tahoma, Verdana, Segoe, sans-serif;color:#6f6f6f;text-align:left;">
+      |                    <div style="line-height:120%;color:#6f6f6f;font-family:'Lato', Tahoma, Verdana, Segoe, sans-serif; padding-right: 10px; padding-left: 10px; padding-top: 30px; padding-bottom: 20px;">
+      |                      <div style="font-size:12px;line-height:14px;font-family:Lato, Tahoma, Verdana, Segoe, sans-serif;color:#6f6f6f;text-align:left;">
       |                        <p style="margin: 0;font-size: 14px;line-height: 17px;text-align: center">
       |                          <strong><span style="font-size: 48px; line-height: 57px;">$mailContentTitle</span></strong>
       |                        </p></div>
@@ -497,15 +482,11 @@ trait CumulusEmail extends View {
       |                  </div>
       |
       |
-      |                  <table border="0" cellpadding="0" cellspacing="0" width="100%" class="divider "
-      |                         style="border-collapse: collapse;table-layout: fixed;border-spacing: 0;mso-table-lspace: 0pt;mso-table-rspace: 0pt;vertical-align: top;min-width: 100%;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%">
+      |                  <table border="0" cellpadding="0" cellspacing="0" width="100%" class="divider " style="border-collapse: collapse;table-layout: fixed;border-spacing: 0;mso-table-lspace: 0pt;mso-table-rspace: 0pt;vertical-align: top;min-width: 100%;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%">
       |                    <tbody>
       |                    <tr style="vertical-align: top">
-      |                      <td class="divider_inner"
-      |                          style="word-break: break-word;border-collapse: collapse !important;vertical-align: top;padding-right: 10px;padding-left: 10px;padding-top: 10px;padding-bottom: 10px;min-width: 100%;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%">
-      |                        <table class="divider_content" height="0px" align="center" border="0"
-      |                               cellpadding="0" cellspacing="0" width="100%"
-      |                               style="border-collapse: collapse;table-layout: fixed;border-spacing: 0;mso-table-lspace: 0pt;mso-table-rspace: 0pt;vertical-align: top;border-top: 1px solid #CFCFCF;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%">
+      |                      <td class="divider_inner" style="word-break: break-word;border-collapse: collapse !important;vertical-align: top;padding-right: 10px;padding-left: 10px;padding-top: 10px;padding-bottom: 10px;min-width: 100%;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%">
+      |                        <table class="divider_content" height="0px" align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;table-layout: fixed;border-spacing: 0;mso-table-lspace: 0pt;mso-table-rspace: 0pt;vertical-align: top;border-top: 1px solid #CFCFCF;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%">
       |                          <tbody>
       |                          <tr style="vertical-align: top">
       |                            <td style="word-break: break-word;border-collapse: collapse !important;vertical-align: top;font-size: 0px;line-height: 0px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%">
@@ -560,8 +541,7 @@ trait CumulusEmail extends View {
       |
       |            <!--[if (mso)|(IE)]>
       |            <td align="center" width="640" style=" width:640px; padding-right: 0px; padding-left: 0px; padding-top:5px; padding-bottom:5px; border-top: 0px solid transparent; border-left: 0px solid transparent; border-bottom: 0px solid transparent; border-right: 0px solid transparent;" valign="top"><![endif]-->
-      |            <div class="col num12"
-      |                 style="min-width: 320px;max-width: 640px;display: table-cell;vertical-align: top;">
+      |            <div class="col num12" style="min-width: 320px;max-width: 640px;display: table-cell;vertical-align: top;">
       |              <div style="background-color: transparent; width: 100% !important;">
       |                <!--[if (!mso)&(!IE)]><!-->
       |                <div style="border-top: 0px solid transparent; border-left: 0px solid transparent; border-bottom: 0px solid transparent; border-right: 0px solid transparent; padding-top:5px; padding-bottom:5px; padding-right: 0px; padding-left: 0px;">
@@ -721,34 +701,5 @@ trait CumulusEmail extends View {
       |</body>
       |</html>
     """.stripMargin
-
-}
-
-case class CumulusEmailValidationEmail(
-  user: User,
-)(implicit
-  val settings: Settings
-) extends CumulusEmail {
-
-  override protected def mailContentTitle: String = "Email Validation"
-
-  override protected def mailContent: Seq[Tag] = {
-    val link = s"${settings.host.url}/validateEmail?userLogin=${user.login}&emailCode=${Base16.encode(user.security.emailCode)}"
-
-    Seq(
-      span(
-        s"Hello ${user.login}!",
-        br, br,
-        s"To validate your email ${user.email}, please follow ",
-        a(
-          href := link,
-          "this link"
-        )
-      ), // TODO internationalization
-      span(
-        "This is an automatic email. For any question, feel free to get back to your local Cumulus administrator."
-      ) // TODO internationalization
-    )
-  }
 
 }
