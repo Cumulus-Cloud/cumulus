@@ -3,11 +3,11 @@ package io.cumulus.controllers
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.language.postfixOps
-
 import akka.actor.Scheduler
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
 import io.cumulus.core.utils.ServerWatchdog
+import io.cumulus.views.CumulusRecoveryPage
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}
 
@@ -24,8 +24,8 @@ class RecoveryController(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) with ApiUtils with BodyParserJson {
 
-  def index = Action {
-    Ok(io.cumulus.views.html.recoveryIndex(error))
+  def index = Action { implicit request =>
+    Ok(CumulusRecoveryPage(error))
   }
 
   /**

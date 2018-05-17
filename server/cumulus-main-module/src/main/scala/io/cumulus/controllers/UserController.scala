@@ -2,20 +2,23 @@ package io.cumulus.controllers
 
 import scala.concurrent.ExecutionContext
 import io.cumulus.controllers.payloads.{LoginPayload, SignUpPayload}
+import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.controllers.utils.authentication.Authentication._
 import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
 import io.cumulus.models.user.{User, UserSession}
 import io.cumulus.services.UserService
+import io.cumulus.views.CumulusEmailValidationPage
 import play.api.libs.json.Json
 import play.api.mvc._
 
 class UserController (
   cc: ControllerComponents,
   userService: UserService
-)(
-  implicit ec: ExecutionContext
+)(implicit
+  ec: ExecutionContext,
+  settings: Settings
 ) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with BodyParserJson {
 
   def signUp: Action[SignUpPayload] =
@@ -31,7 +34,7 @@ class UserController (
   def validateEmail(userLogin: String, emailCode: String): Action[AnyContent] =
     Action.async { implicit request =>
       userService.validateUserEmail(userLogin, emailCode).map { result =>
-        Ok(io.cumulus.views.html.emailvalidation(result))
+        Ok(CumulusEmailValidationPage(result))
       }
     }
 

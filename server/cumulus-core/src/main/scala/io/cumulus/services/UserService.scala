@@ -11,6 +11,7 @@ import io.cumulus.models.fs.Directory
 import io.cumulus.models.user.User
 import io.cumulus.persistence.stores.UserStore._
 import io.cumulus.persistence.stores.{FsNodeStore, UserStore}
+import io.cumulus.views.email.CumulusEmailValidationEmail
 import play.api.libs.json.__
 
 import scala.concurrent.Future
@@ -64,7 +65,7 @@ class UserService(
         mailService
           .sendToUser(
             "Your account validation", // TODO translate
-            s"""hey, click <a href="${settings.host.url}/validateEmail?userLogin=${user.login}&emailCode=${Base16.encode(user.security.emailCode)}">here</a>""",
+            CumulusEmailValidationEmail(user),
             user
           )
       }

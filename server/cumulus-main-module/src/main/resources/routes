@@ -40,13 +40,7 @@ GET     /api/shared/download*path     io.cumulus.controllers.SharingPublicContro
 # Shared (visitor) 'pretty' routes for root element (file)
 GET     /shared/download/:ref/:name   io.cumulus.controllers.SharingPublicController.downloadRoot(ref, name, key, download: Option[Boolean])
 
-# Test routes
-GET     /test                         io.cumulus.controllers.HomeController.test
-GET     /test/login                   io.cumulus.controllers.HomeController.testLogin
-
-# Front internationalization
-GET     /messages.js                  io.cumulus.controllers.Assets.messages
-
 # Map static resources to the /assets URL path
 GET     /favicon.ico                  io.cumulus.controllers.Assets.favicon
+GET     /assets/messages.js           io.cumulus.controllers.Assets.messages
 GET     /assets/*file                 io.cumulus.controllers.Assets.versioned(file: controllers.Assets.Asset)
