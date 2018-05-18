@@ -65,6 +65,10 @@ lazy val cumulusCore =
         Dependencies.jwtPlay.core,
         // Emails
         Dependencies.playMailer.core,
+        // Templating
+        Dependencies.scalatags.core,
+        Dependencies.scalacss.core,
+        Dependencies.scalacss.scalatagsExt,
         // Thumbnails generation
         Dependencies.scrimage.core,
         Dependencies.scrimage.ioExtra,

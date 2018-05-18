@@ -1,18 +1,11 @@
 # --- !Ups
 
-  -- Users
+  -- User
   CREATE TABLE cumulus_user (
-    id                  UUID          PRIMARY KEY,
-    email               VARCHAR(255)  NOT NULL,
-    login               VARCHAR(64)   NOT NULL,
-    encryptedPrivateKey VARCHAR(64)   NOT NULL,
-    privateKeySalt      VARCHAR(64)   NOT NULL,
-    salt1               VARCHAR(64)   NOT NULL,
-    iv                  VARCHAR(64)   NOT NULL,
-    passwordHash        VARCHAR(64)   NOT NULL,
-    salt2               VARCHAR(64)   NOT NULL,
-    creation            TIMESTAMP     NOT NULL,
-    roles               VARCHAR(64)[] NOT NULL
+    id       UUID         PRIMARY KEY,
+    email    VARCHAR(255) NOT NULL,
+    login    VARCHAR(64)  NOT NULL,
+    metadata JSONB        NOT NULL      -- Contains metadata about the user (security info, etc...)
   );
 
   CREATE UNIQUE INDEX user_mail_unique ON cumulus_user (LOWER(email));

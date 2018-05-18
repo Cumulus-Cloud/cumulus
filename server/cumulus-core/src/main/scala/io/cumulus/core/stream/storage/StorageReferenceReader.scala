@@ -9,7 +9,7 @@ import io.cumulus.core.Logging
 import io.cumulus.core.stream.utils.ByteRange
 import io.cumulus.core.utils.Range
 import io.cumulus.core.validation.AppError
-import io.cumulus.models.Session
+import io.cumulus.models.user.Session
 import io.cumulus.models.fs.File
 import io.cumulus.persistence.storage.{StorageEngines, StorageObject, StorageReference}
 import io.cumulus.stages.{Ciphers, Compressions}

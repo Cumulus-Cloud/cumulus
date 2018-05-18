@@ -82,6 +82,19 @@ object Dependencies {
     val core = "org.apache.pdfbox" % "pdfbox" % version exclude("commons-logging", "commons-logging")
   }
 
+  object scalatags {
+    val version = "0.6.7"
+
+    val core = "com.lihaoyi" %% "scalatags" % version
+  }
+
+  object scalacss {
+    val version = "0.5.3"
+
+    val core = "com.github.japgolly.scalacss" %% "core" % version
+    val scalatagsExt = "com.github.japgolly.scalacss" %% "ext-scalatags" % version
+  }
+
   object macWire {
     val version = "2.3.1"
 
