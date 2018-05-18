@@ -32,7 +32,6 @@ dist/
 cumulus-server-resources/src/main/resources/public/main.js
 cumulus-server-resources/src/main/resources/public/main.css
 cumulus-server-resources/src/main/resources/public/**/*.map
-cumulus-server-resources/src/main/resources/public/**/*.jpg
 
 # Ignore server runtime directories
 tmp

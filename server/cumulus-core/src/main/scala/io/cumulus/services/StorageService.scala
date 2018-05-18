@@ -1,7 +1,4 @@
-package io.cumulus.persistence.services
-
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+package io.cumulus.services
 
 import akka.actor.ActorRef
 import akka.stream.Materializer
@@ -13,10 +10,14 @@ import io.cumulus.core.stream.storage.{StorageReferenceReader, StorageReferenceW
 import io.cumulus.core.utils.Range
 import io.cumulus.core.validation.AppError
 import io.cumulus.core.{Logging, Settings}
+import io.cumulus.models.Path
 import io.cumulus.models.fs.{DefaultMetadata, File, FileMetadata}
-import io.cumulus.models.{Path, Session, UserSession}
+import io.cumulus.models.user.{Session, UserSession}
 import io.cumulus.persistence.storage.{StorageEngines, StorageReference}
 import io.cumulus.stages._
+
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 class StorageService(
   fsNodeService: FsNodeService,
@@ -146,7 +147,7 @@ class StorageService(
     * Deletes a file's reference and content by its reference. Safe to use on both directory and file. In case of a
     * file, the file's content will also be deleted.
     *
-    * @see [[io.cumulus.persistence.services.FsNodeService#deleteNode FsNodeService.deleteNode]]
+    * @see [[io.cumulus.services.FsNodeService#deleteNode FsNodeService.deleteNode]]
     * @param path The file's path.
     */
   def deleteNode(path: Path)(implicit session: UserSession): Future[Either[AppError, Unit]] = {

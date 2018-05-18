@@ -1,6 +1,8 @@
 
 # App entrypoint
 GET     /                             io.cumulus.controllers.HomeController.index
+
+# Administration endpoints
 GET     /api/admin/management/reload  io.cumulus.controllers.ManagementController.reload
 GET     /api/admin/management/stop    io.cumulus.controllers.ManagementController.stop
 
@@ -9,6 +11,7 @@ POST    /api/users/login              io.cumulus.controllers.UserController.logi
 POST    /api/users/logout             io.cumulus.controllers.UserController.logout
 POST    /api/users/signup             io.cumulus.controllers.UserController.signUp
 GET     /api/users/me                 io.cumulus.controllers.UserController.me
+GET     /validateEmail                io.cumulus.controllers.UserController.validateEmail(userLogin: String, emailCode: String)
 
 # API - FS get/update routes
 GET     /api/fs*path                  io.cumulus.controllers.FileSystemController.get(path: Path, contentLimit: Option[Int], contentOffset: Option[Int])
@@ -37,13 +40,7 @@ GET     /api/shared/download*path     io.cumulus.controllers.SharingPublicContro
 # Shared (visitor) 'pretty' routes for root element (file)
 GET     /shared/download/:ref/:name   io.cumulus.controllers.SharingPublicController.downloadRoot(ref, name, key, download: Option[Boolean])
 
-# Test routes
-GET     /test                         io.cumulus.controllers.HomeController.test
-GET     /test/login                   io.cumulus.controllers.HomeController.testLogin
-
-# Front internationalization
-GET     /messages.js                  io.cumulus.core.controllers.Assets.messages
-
 # Map static resources to the /assets URL path
 GET     /favicon.ico                  io.cumulus.core.controllers.Assets.favicon
+GET     /assets/messages.js           io.cumulus.core.controllers.Assets.messages
 GET     /assets/*file                 io.cumulus.core.controllers.Assets.versioned(file: controllers.Assets.Asset)

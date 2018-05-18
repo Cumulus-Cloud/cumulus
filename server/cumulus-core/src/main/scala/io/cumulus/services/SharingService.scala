@@ -1,8 +1,7 @@
-package io.cumulus.persistence.services
+package io.cumulus.services
 
 import java.time.LocalDateTime
 import java.util.UUID
-import scala.concurrent.Future
 
 import akka.util.ByteString
 import io.cumulus.core.Logging
@@ -10,10 +9,14 @@ import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.{QueryBuilder, QueryE, QueryPagination}
 import io.cumulus.core.utils.{Base16, Crypto, PaginatedList}
 import io.cumulus.core.validation.AppError
+import io.cumulus.models._
 import io.cumulus.models.fs.{Directory, File, FsNode}
-import io.cumulus.models.{FileSharingSecurity, _}
+import io.cumulus.models.sharing.{FileSharingSecurity, Sharing, SharingSecurity}
+import io.cumulus.models.user.{User, UserSession}
 import io.cumulus.persistence.storage.StorageCipher
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore, UserStore}
+
+import scala.concurrent.Future
 
 class SharingService(
   userStore: UserStore,
@@ -179,7 +182,7 @@ class SharingService(
   /**
     * Returns a shared directory. Will fail if the element is not a directory or not found.
     *
-    * @see [[io.cumulus.persistence.services.SharingService#findSharedNode SharingService.findSharedNode]]
+    * @see [[io.cumulus.services.SharingService#findSharedNode SharingService.findSharedNode]]
     */
   def findSharedDirectory(
     reference: String,
@@ -208,7 +211,7 @@ class SharingService(
   /**
     * Returns a shared file. Will fail if the element is not a file or not found.
     *
-    * @see [[io.cumulus.persistence.services.SharingService#findSharedNode SharingService.findSharedNode]]
+    * @see [[io.cumulus.services.SharingService#findSharedNode SharingService.findSharedNode]]
     */
   def findSharedFile(
     reference: String,

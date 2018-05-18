@@ -1,7 +1,6 @@
 package io.cumulus.core.stream.storage
 
 import scala.concurrent.{ExecutionContext, Future}
-
 import akka.stream.FlowShape
 import akka.stream.scaladsl.GraphDSL.Implicits._
 import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, Sink, ZipWith}
@@ -11,7 +10,8 @@ import io.cumulus.core.stream.utils.{Chunker, Counter, DigestCalculator}
 import io.cumulus.core.utils.MimeType
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.fs.File
-import io.cumulus.models.{Path, UserSession}
+import io.cumulus.models.Path
+import io.cumulus.models.user.UserSession
 import io.cumulus.persistence.storage.{StorageCipher, StorageEngine, StorageObject, StorageReference}
 import io.cumulus.stages.{CipherStage, CompressionStage}
 

@@ -2,7 +2,6 @@ package io.cumulus
 
 import java.io.File
 import java.security.Security
-import scala.concurrent.ExecutionContextExecutor
 
 import _root_.controllers.AssetsComponents
 import akka.actor.{ActorRef, Scheduler}
@@ -18,22 +17,23 @@ import io.cumulus.core.controllers.utils.api.HttpErrorHandler
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.QueryBuilder
 import io.cumulus.core.utils.ServerWatchdog
-import io.cumulus.persistence.services.{FsNodeService, SharingService, StorageService, UserService}
 import io.cumulus.persistence.storage.engines.LocalStorage
 import io.cumulus.persistence.storage.{ChunkRemover, StorageEngines}
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore, UserStore}
+import io.cumulus.services._
 import io.cumulus.stages._
 import jsmessages.{JsMessages, JsMessagesFactory}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import play.api._
-import play.api.db.evolutions.{ApplicationEvolutions, EvolutionsComponents}
+import play.api.db.evolutions.{ClassLoaderEvolutionsReader, EvolutionsComponents}
 import play.api.db.{DBComponents, Database, HikariCPComponents}
 import play.api.i18n.MessagesApi
 import play.api.libs.mailer.MailerComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
-
 import router.Routes
+
+import scala.concurrent.ExecutionContextExecutor
 
 /**
   * Create the components of the Cumulus web application.
@@ -98,8 +98,9 @@ class CumulusComponents(
   implicit lazy val config: Config     = configuration.underlying // for MailerComponents
   implicit lazy val settings: Settings = wire[Settings]
 
-  // Access the lazy val to trigger evolutions
-  applicationEvolutions
+  // SQL evolutions
+  override lazy val evolutionsReader = new ClassLoaderEvolutionsReader
+  applicationEvolutions // Access the lazy val to trigger evolutions
 
   // Database & QueryMonad to access DB
   implicit lazy val database: Database = dbApi.database("default")
@@ -132,6 +133,7 @@ class CumulusComponents(
   lazy val fsNodeService: FsNodeService   = wire[FsNodeService]
   lazy val storageService: StorageService = wire[StorageService]
   lazy val sharingService: SharingService = wire[SharingService]
+  lazy val mailService: MailService       = wire[MailService]
 
   // Controllers
   lazy val homeController: HomeController                 = wire[HomeController]
