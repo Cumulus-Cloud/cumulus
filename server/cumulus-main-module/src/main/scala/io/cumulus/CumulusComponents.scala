@@ -91,12 +91,11 @@ class CumulusComponents(
   val routerPrefix: String = "/"
   lazy val router: Routes  = wire[Routes]
 
-  override implicit lazy val configuration: Configuration =
-    context.initialConfiguration ++
-      Configuration(ConfigFactory.parseFile(new File(context.initialConfiguration.get[String]("cumulus.configuration.path"))))
 
-  implicit lazy val config: Config     = configuration.underlying // for MailerComponents
-  implicit lazy val settings: Settings = wire[Settings]
+  // Configuration
+  implicit lazy val settings: Settings                    = new Settings(context.initialConfiguration)
+  override implicit lazy val configuration: Configuration = settings.underlying
+  implicit lazy val config: Config                        = configuration.underlying // for MailerComponents
 
   // SQL evolutions
   override lazy val evolutionsReader = new ClassLoaderEvolutionsReader

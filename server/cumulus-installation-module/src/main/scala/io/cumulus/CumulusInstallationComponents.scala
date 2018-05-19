@@ -60,11 +60,9 @@ class CumulusInstallationComponents(
         controller.index
     }
 
-  override implicit lazy val configuration: Configuration =
-    context.initialConfiguration ++
-      Configuration(ConfigFactory.parseFile(new File(context.initialConfiguration.get[String]("cumulus.configuration.path"))))
-
-  implicit lazy val settings: Settings = wire[Settings]
+  // Configuration
+  implicit lazy val settings: Settings                    = new Settings(context.initialConfiguration)
+  override implicit lazy val configuration: Configuration = settings.underlying
 
   // Override messagesApi to use Hocon config
   override implicit lazy val messagesApi: MessagesApi = wire[HoconMessagesApiProvider].get

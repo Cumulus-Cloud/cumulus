@@ -1,10 +1,7 @@
 package io.cumulus
 
-import java.io.File
-
-import com.typesafe.config.ConfigFactory
-import io.cumulus.core.Logging
 import io.cumulus.core.utils.ServerWatchdog
+import io.cumulus.core.{Logging, Settings}
 import play.api.{Configuration, Environment}
 import play.core.server.Server
 
@@ -62,21 +59,8 @@ object CumulusWatchdog extends ServerWatchdog with Logging {
     Configuration.load(env)
 
   /** The configuration. Not a val, because we want to reload the configuration at each call. */
-  private def configuration: Configuration =
-    initialConfiguration ++
-    Configuration(ConfigFactory.parseFile(new File(initialConfiguration.get[String]("cumulus.configuration.path"))))
-
-  /** If the server is in installation. */
-  private def inInstallation: Boolean =
-    configuration
-      .getOptional[Boolean]("cumulus.management.installation")
-      .getOrElse(false)
-
-  /** If the configuration allow the recovery server. */
-  private def allowRecovery: Boolean =
-    configuration
-      .getOptional[Boolean]("cumulus.management.allowRecovery")
-      .getOrElse(false)
+  private def settings: Settings =
+    new Settings(initialConfiguration)
 
   /** Starts the main server. */
   private def startMainServer(): Unit = {
@@ -99,7 +83,7 @@ object CumulusWatchdog extends ServerWatchdog with Logging {
   /** Starts the server. This method will ignore any server already running. */
   private def startServer(): Unit = {
     Try {
-      if (inInstallation) {
+      if (settings.management.installation) {
         logger.info("Starting the Cumulus installation server...")
         startInstallationServer()
       } else {
@@ -110,7 +94,7 @@ object CumulusWatchdog extends ServerWatchdog with Logging {
       case Success(_) =>
         logger.info("Cumulus web server successfully started")
       case Failure(error) =>
-        if(allowRecovery) {
+        if(settings.management.allowRecovery) {
           logger.warn("Cumulus web server failed to start", error)
           startRecoveryServer(error)
         } else {
