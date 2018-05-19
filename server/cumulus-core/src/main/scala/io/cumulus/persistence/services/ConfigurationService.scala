@@ -1,20 +1,26 @@
 package io.cumulus.persistence.services
 
 import java.io.File
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
 
 import akka.stream.{IOResult, Materializer}
 import com.typesafe.config.ConfigFactory
 import io.cumulus.core.Settings
+import io.cumulus.core.persistence.CumulusDB
+import io.cumulus.core.persistence.query.QueryBuilder
 import io.cumulus.core.utils.ConfigurationWriter
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.configuration.utils.{TestFailed, TestResult, TestSuccessful}
 import io.cumulus.models.configuration.{ConfigurationEntries, DatabaseConfiguration, EmailConfiguration}
+import io.cumulus.models.user.User
+import io.cumulus.persistence.stores.{FsNodeStore, UserStore}
+import io.cumulus.services.{MailService, UserService}
 import play.api.db._
 import play.api.inject.{ApplicationLifecycle, DefaultApplicationLifecycle}
 import play.api.libs.mailer.{Email, SMTPConfigurationProvider, SMTPMailer}
 import play.api.{Configuration, Environment}
+
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 class ConfigurationService(
   environment: Environment
@@ -26,7 +32,7 @@ class ConfigurationService(
 ) {
 
   /**
-    * Updates the user's configuration.
+    * Updates the server configuration with the provided information.
     * @param newConfiguration The configuration update.
     */
   def updateConfiguration(newConfiguration: ConfigurationEntries): Future[Either[AppError, Unit]] = {
@@ -55,10 +61,7 @@ class ConfigurationService(
     * Read the database configuration from the override file.
     */
   def getDatabaseConfiguration: Future[DatabaseConfiguration] = Future {
-    val configurationFile = new File(settings.configuration.path)
-    val configuration     = Configuration(ConfigFactory.parseFileAnySyntax(configurationFile))
-
-    DatabaseConfiguration.fromPlayConfiguration(configuration)
+    DatabaseConfiguration.fromPlayConfiguration(configurationFile)
   }
 
   /**
@@ -69,52 +72,18 @@ class ConfigurationService(
   def testDatabaseConfiguration(
     databaseConfiguration: DatabaseConfiguration
   ): Future[TestResult] = {
-    // Create a fake application, with a fake lifecycle, to test the database's connection
-    val fakeApplicationLifecycle: ApplicationLifecycle = new DefaultApplicationLifecycle()
-
-    Try {
-      val connectionPool: ConnectionPool =
-        new HikariCPConnectionPool(environment)
-
-      val dbApi: DBApi =
-        new DBApiProvider(
-          environment,
-          configuration ++ databaseConfiguration.toPlayConfiguration,
-          connectionPool,
-          fakeApplicationLifecycle,
-          None
-        ).get
-
-      val database: Database =
-        dbApi.database("default")
-
-      database
-        .getConnection()
-        .close()
-
-    } match {
-      case Failure(error) =>
-        def getAllSources(e: Throwable): Seq[Throwable] = {
-          Seq(e) ++ Option(e.getCause).map(cause => getAllSources(cause)).getOrElse(Seq.empty)
-        }
-
-        val causeError = getAllSources(error).take(3).reverse.headOption.getOrElse(error)
-        val response = TestFailed(causeError.getMessage)
-
-        fakeApplicationLifecycle.stop().map(_ => response).recover { case _: Exception => response }
-      case Success(_) =>
-        fakeApplicationLifecycle.stop().map(_ =>  TestSuccessful)
-    }
+    withDatabase(
+      _     => Future.successful(TestSuccessful),
+      error => TestFailed(error),
+      databaseConfiguration.toPlayConfiguration
+    )
   }
 
   /**
     * Read the SMTP configuration from the override file.
     */
   def getEmailConfiguration: Future[EmailConfiguration] = Future {
-    val configurationFile = new File(settings.configuration.path)
-    val configuration     = Configuration(ConfigFactory.parseFileAnySyntax(configurationFile))
-
-    EmailConfiguration.fromPlayConfiguration(configuration)
+    EmailConfiguration.fromPlayConfiguration(configurationFile)
   }
 
   /**
@@ -133,10 +102,10 @@ class ConfigurationService(
       mailerClient
         .send(
           Email(
-            "Configuration test",
-            emailConfiguration.user.getOrElse(""),
+            "Cumulus Cloud - Configuration test",
+            emailConfiguration.from,
             Seq(emailConfiguration.user.getOrElse("")),
-            Some("Test OK")
+            Some("Test OK") // TODO use mail template + mail service
           )
         )
     } match {
@@ -144,6 +113,83 @@ class ConfigurationService(
         TestFailed(error.getMessage)
       case Success(_) =>
         TestSuccessful
+    }
+  }
+
+  /**
+    * Create an administrator using the provided information
+    * @param admin The new administrator
+    */
+  def createAdministrator(admin: User): Future[Either[AppError, User]] = {
+    val combinedConfig = configuration ++ configurationFile
+
+    withDatabase({ db =>
+      val qb = new QueryBuilder[CumulusDB](db, ec)
+      val userStore = new UserStore()(qb)
+      val fsNodeStore = new FsNodeStore()(qb)
+      val mailService = new MailService(new SMTPMailer(new SMTPConfigurationProvider(combinedConfig.underlying).get()))
+      val userService = new UserService(userStore, fsNodeStore, mailService)
+
+      userService.createUser(admin)
+    }, { error =>
+      Left(AppError.technical("Database not configured", error)) // TODO error message
+    }, combinedConfig)
+  }
+
+  /**
+    * Get the configuration from the override configuration file. Note that this is not the whole configuration
+    * of the server, and may lack information from the main configuration. Also note that information present in
+    * this configuration may already be present in the main configuration if the server have been reloaded.
+    */
+  private def configurationFile: Configuration = {
+    Configuration(ConfigFactory.parseFileAnySyntax(new File(settings.configuration.path)))
+  }
+
+  /**
+    * Helper to use the database during the installation. This helper allow to start the database, handle any error
+    * during or after the operation, and then close the database.
+    */
+  private def withDatabase[R](
+    f: CumulusDB    => Future[R],
+    onError: String => R,
+    overrideConfig: Configuration = Configuration.empty
+  ): Future[R] = {
+    // Create a fake application, with a fake lifecycle, to test the database's connection
+    val fakeApplicationLifecycle: ApplicationLifecycle = new DefaultApplicationLifecycle()
+
+    Try {
+      val connectionPool: ConnectionPool =
+        new HikariCPConnectionPool(environment)
+
+      val dbApi: DBApi =
+        new DBApiProvider(
+          environment,
+          configuration ++ overrideConfig,
+          connectionPool,
+          fakeApplicationLifecycle,
+          None
+        ).get
+
+      val database: Database =
+        dbApi.database("default")
+
+      database
+        .getConnection()
+
+      f(database)
+
+    } match {
+      case Failure(error) =>
+        def getAllSources(e: Throwable): Seq[Throwable] = {
+          Seq(e) ++ Option(e.getCause).map(cause => getAllSources(cause)).getOrElse(Seq.empty)
+        }
+
+        val causeError = getAllSources(error).take(3).reverse.headOption.getOrElse(error)
+        val response = onError(causeError.getMessage)
+
+        fakeApplicationLifecycle.stop().map(_ => response).recover { case _: Exception => response }
+      case Success(futureResult) =>
+        futureResult.flatMap(result => fakeApplicationLifecycle.stop().map(_ =>  result))
     }
   }
 

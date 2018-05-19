@@ -45,8 +45,16 @@ object User {
       login,
       UserSecurity.create(password),
       LocalDateTime.now,
-      Seq(UserRole.User, UserRole.Admin) // TODO remove admin by default :)
+      Seq(UserRole.User)
     )
+  }
+
+  def createAdministrator(email: String, login: String, password: String): User = {
+    val user = create(email, login, password)
+
+    user
+      .copy(roles = Seq(UserRole.User, UserRole.Admin))
+      .copy(security = user.security.copy(emailValidated = true)) // Email always validated to admins
   }
 
   implicit val reads: Reads[User] = Json.reads[User]

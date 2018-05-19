@@ -90,10 +90,6 @@ lazy val cumulusMainModule =
     .settings(
       name := "cumulus-main-module",
 
-      // Twirl templates
-      sourceDirectories in (Compile, TwirlKeys.compileTemplates) := (unmanagedSourceDirectories in Compile).value,
-      TwirlKeys.templateImports := Seq(),
-
       // Allow to use `Path` and `FsNodeType` in route
       routesAddImport += "io.cumulus.models.Path",
       routesAddImport += "io.cumulus.models.fs.FsNodeType",
@@ -120,7 +116,7 @@ lazy val cumulusMainModule =
       )
     )
     .dependsOn(cumulusCore)
-    .enablePlugins(RoutesCompilation, SbtTwirl)
+    .enablePlugins(RoutesCompilation)
 
 // Cumulus recovery module
 lazy val cumulusRecoveryModule =
@@ -129,10 +125,6 @@ lazy val cumulusRecoveryModule =
     .settings(commonSettings: _*)
     .settings(
       name := "cumulus-recovery-module",
-
-      // Twirl templates
-      sourceDirectories in (Compile, TwirlKeys.compileTemplates) := (unmanagedSourceDirectories in Compile).value,
-      TwirlKeys.templateImports := Seq(),
 
       libraryDependencies ++= Seq(
         // Persistence
@@ -153,7 +145,34 @@ lazy val cumulusRecoveryModule =
       )
     )
     .dependsOn(cumulusCore)
-    .enablePlugins(SbtTwirl)
+
+// Cumulus installation module
+lazy val cumulusInstallationModule =
+  project
+    .in(file("cumulus-installation-module"))
+    .settings(commonSettings: _*)
+    .settings(
+      name := "cumulus-installation-module",
+
+      libraryDependencies ++= Seq(
+        // Persistence
+        jdbc,
+        evolutions,
+        // enums utils
+        Dependencies.enumeratum.core,
+        Dependencies.enumeratum.play,
+        // cats
+        Dependencies.cats.core,
+        // Emails
+        Dependencies.playMailer.core,
+        // MacWire
+        Dependencies.macWire.macros,
+        // Silencer plugin
+        Dependencies.silencer.plugin,
+        Dependencies.silencer.lib
+      )
+    )
+    .dependsOn(cumulusCore)
 
 // Cumulus server resources
 lazy val cumulusServerResources =

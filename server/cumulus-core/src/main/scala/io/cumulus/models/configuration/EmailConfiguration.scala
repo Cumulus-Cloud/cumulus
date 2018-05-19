@@ -11,7 +11,8 @@ case class EmailConfiguration(
   tls: Boolean,
   tlsRequired: Boolean,
   user: Option[String],
-  password: Option[String]
+  password: Option[String],
+  from: String
 ) extends ConfigurationEntries {
 
   def toPlayConfiguration: Configuration =
@@ -23,6 +24,7 @@ case class EmailConfiguration(
       tlsRequiredKey -> tlsRequired,
       userKey        -> user,
       passwordKey    -> password,
+      fromKey        -> from
     )
 
 }
@@ -38,6 +40,7 @@ object EmailConfiguration extends ConfigurationEntriesFactory[EmailConfiguration
   private val tlsRequiredKey = s"$prefix.tlsRequired"
   private val userKey        = s"$prefix.user"
   private val passwordKey    = s"$prefix.password"
+  private val fromKey        = "cumulus.mail.from"
 
   implicit val format: Format[EmailConfiguration] =
     Json.format[EmailConfiguration]
@@ -76,6 +79,11 @@ object EmailConfiguration extends ConfigurationEntriesFactory[EmailConfiguration
       configuration
         .getOptional[String](passwordKey)
 
+    val from =
+      configuration
+          .getOptional[String](fromKey)
+          .getOrElse("")
+
     EmailConfiguration(
       host,
       port,
@@ -83,7 +91,8 @@ object EmailConfiguration extends ConfigurationEntriesFactory[EmailConfiguration
       tls,
       tlsRequired,
       user,
-      password
+      password,
+      from
     )
   }
 
