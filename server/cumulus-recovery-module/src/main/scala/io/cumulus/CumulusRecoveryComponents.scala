@@ -10,7 +10,7 @@ import com.github.ghik.silencer.silent
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.softwaremill.macwire._
 import com.typesafe.config.ConfigFactory
-import io.cumulus.controllers.{InstallationController, RecoveryController}
+import io.cumulus.controllers.RecoveryController
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.Assets
 import io.cumulus.core.controllers.utils.LoggingFilter
@@ -45,16 +45,6 @@ class CumulusRecoveryComponents(
       controller.reload
     case GET(p"/api/admin/management/stop") =>
       controller.stop
-    case POST(p"/api/configuration/database/test") =>
-      installationController.testDatabase
-    case POST(p"/api/configuration/database/configure") =>
-      installationController.configureDatabase
-    case POST(p"/api/configuration/email/test") =>
-      installationController.testEmail
-    case POST(p"/api/configuration/email/configure") =>
-      installationController.configureEmail
-    case POST(p"/api/configuration/admin/configure") =>
-      installationController.createAdministrator
     case GET(p"/assets/$file*") =>
       assetController.versioned(file)
     case GET(p"/$path*") =>
@@ -85,8 +75,7 @@ class CumulusRecoveryComponents(
   lazy val configurationService: ConfigurationService = wire[ConfigurationService]
 
   // Controllers
-  lazy val controller: RecoveryController                 = wire[RecoveryController]
-  lazy val installationController: InstallationController = wire[InstallationController]
-  lazy val assetController: Assets                        = wire[Assets]
+  lazy val controller: RecoveryController = wire[RecoveryController]
+  lazy val assetController: Assets        = wire[Assets]
 
 }

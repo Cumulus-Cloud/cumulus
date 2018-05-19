@@ -10,7 +10,7 @@ import com.github.ghik.silencer.silent
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.softwaremill.macwire._
 import com.typesafe.config.ConfigFactory
-import io.cumulus.controllers.{InstallationController, RecoveryController}
+import io.cumulus.controllers.InstallationController
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.Assets
 import io.cumulus.core.controllers.utils.LoggingFilter
@@ -26,11 +26,9 @@ import play.api.routing.sird._
 import play.api.{ApplicationLoader, BuiltInComponentsFromContext, Configuration}
 
 
-class CumulusRecoveryComponents(
+class CumulusInstallationComponents(
   context: ApplicationLoader.Context,
   watchdog: ServerWatchdog
-)(
-  error: Throwable
 ) extends BuiltInComponentsFromContext(context)
   with HoconI18nComponents
   with AssetsComponents
@@ -43,18 +41,16 @@ class CumulusRecoveryComponents(
   lazy val router = Router.from {
     case GET(p"/api/admin/management/reload") =>
       controller.reload
-    case GET(p"/api/admin/management/stop") =>
-      controller.stop
     case POST(p"/api/configuration/database/test") =>
-      installationController.testDatabase
+      controller.testDatabase
     case POST(p"/api/configuration/database/configure") =>
-      installationController.configureDatabase
+      controller.configureDatabase
     case POST(p"/api/configuration/email/test") =>
-      installationController.testEmail
+      controller.testEmail
     case POST(p"/api/configuration/email/configure") =>
-      installationController.configureEmail
+      controller.configureEmail
     case POST(p"/api/configuration/admin/configure") =>
-      installationController.createAdministrator
+      controller.createAdministrator
     case GET(p"/assets/$file*") =>
       assetController.versioned(file)
     case GET(p"/$path*") =>
@@ -85,8 +81,7 @@ class CumulusRecoveryComponents(
   lazy val configurationService: ConfigurationService = wire[ConfigurationService]
 
   // Controllers
-  lazy val controller: RecoveryController                 = wire[RecoveryController]
-  lazy val installationController: InstallationController = wire[InstallationController]
-  lazy val assetController: Assets                        = wire[Assets]
+  lazy val controller: InstallationController = wire[InstallationController]
+  lazy val assetController: Assets            = wire[Assets]
 
 }

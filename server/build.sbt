@@ -240,6 +240,7 @@ lazy val cumulusRoot =
       cumulusServerResources,
       cumulusMainModule,
       cumulusRecoveryModule,
+      cumulusInstallationModule,
       cumulusCore
     )
     .dependsOn(cumulusServer)

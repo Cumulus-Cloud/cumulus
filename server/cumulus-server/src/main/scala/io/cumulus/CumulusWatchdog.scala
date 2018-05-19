@@ -12,6 +12,8 @@ import play.core.server.{Server, ServerComponents}
   */
 object CumulusWatchdog extends ServerWatchdog with Logging {
 
+  // TODO load some conf to see if the server needs configuration or not
+
   private var server: Option[Server] = None
 
   private def createServer: ServerComponents = {
@@ -20,6 +22,10 @@ object CumulusWatchdog extends ServerWatchdog with Logging {
 
   private def createRecoveryServer(error: Throwable): ServerComponents = {
     new CumulusRecoveryServer(error, this)
+  }
+
+  private def createInstallationServer: ServerComponents = {
+    new CumulusInstallationServer(this)
   }
 
   private def internalStart(): Unit = {
@@ -35,11 +41,16 @@ object CumulusWatchdog extends ServerWatchdog with Logging {
     server = Some(createRecoveryServer(error).server)
   }
 
-  /** Start the web server is not already started. */
+  private def internalStartInstallationServer: Unit = {
+    server = Some(createInstallationServer.server)
+  }
+
+  /** Start the web server if not already started. */
   def start(): Unit = {
     if(server.isEmpty) {
       logger.info("Starting the Cumulus web server...")
       Try {
+        // TODO start installation if needed
         internalStart()
       } match {
         case Success(_) =>
@@ -73,6 +84,7 @@ object CumulusWatchdog extends ServerWatchdog with Logging {
       internalStop()
 
     Try {
+      // TODO start installation if needed
       internalStart()
     } match {
       case Success(_) =>

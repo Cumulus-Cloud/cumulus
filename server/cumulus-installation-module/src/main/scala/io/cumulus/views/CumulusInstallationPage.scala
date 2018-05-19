@@ -3,7 +3,7 @@ import play.api.i18n.Messages
 import scalatags.Text
 import scalatags.Text.all._
 
-case class CumulusRecoveryPage(
+case class CumulusInstallationPage(
   error: Throwable
 )(implicit
   val messages: Messages

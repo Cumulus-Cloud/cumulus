@@ -1,16 +1,19 @@
 package io.cumulus.controllers
 
+import akka.actor.Scheduler
 import io.cumulus.controllers.payloads.AdminCreationPayload
-
-import scala.concurrent.ExecutionContext
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
+import io.cumulus.core.utils.ServerWatchdog
 import io.cumulus.models.configuration.{DatabaseConfiguration, EmailConfiguration}
 import io.cumulus.models.user.User
 import io.cumulus.persistence.services.ConfigurationService
-import io.cumulus.persistence.stores.UserStore
-import io.cumulus.services.UserService
+import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
+
+import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
+import scala.language.postfixOps
 
 /**
   * Controller used during the installation, allowing to test, read and update the configuration. Note that this
@@ -19,10 +22,32 @@ import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponent
   */
 class InstallationController(
   configurationService: ConfigurationService,
-  cc: ControllerComponents
+  cc: ControllerComponents,
+  watchdog: ServerWatchdog,
+  scheduler: Scheduler
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) with ApiUtils with BodyParserJson {
+
+  def index = Action { implicit request =>
+    Ok("TODO")
+  }
+
+  /**
+    * Reload programmatically the server. This will stop then restart the server, reloading everything on the server.
+    * During the reload the server won't be able to respond to queries.
+    */
+  def reload = Action { implicit request =>
+    ApiResponse {
+      logger.info("Requesting the reloading of the Cumulus server")
+
+      akka.pattern.after(2 seconds, scheduler)(Future {
+        watchdog.reload()
+      })
+
+      Right(Json.obj("message" -> request2Messages(request)("api-action.reload")))
+    }
+  }
 
   /**
     * Returns the database configuration.
@@ -93,11 +118,12 @@ class InstallationController(
       ApiResponse {
         val emailConfiguration = request.body
 
-        // TODO should ask to validate the email
-
         configurationService.updateConfiguration(emailConfiguration)
       }
     }
+
+  // TODO get administrator
+  // TODO update administrator ?
 
   /**
     * Create a new administrator.
@@ -120,9 +146,10 @@ class InstallationController(
   def validateInstallation: Action[AnyContent] =
     Action.async { implicit request =>
       ApiResponse {
-        // TODO should ask to validate the email
+        // TODO check the database and that an admin is created, and that his email is validated
+        // TODO and then restart the serveur which should launch normally
 
-        configurationService.createAdministrator(admin)
+        Future.successful(Right(""))
       }
     }
 
