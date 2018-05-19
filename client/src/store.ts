@@ -59,7 +59,7 @@ const enhancer = composeWithDevTools(
 const persistConfig = {
   key: "cumulus_root",
   storage,
-  whitelist: []
+  whitelist: ["auth"]
 }
 
 const persistedReducer: Reducer<GlobalState> = persistReducer(persistConfig, reducers)

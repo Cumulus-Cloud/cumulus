@@ -45,6 +45,7 @@ export const AuthReducer = (state: AuthState = initState, action: Actions): Auth
     case getType(AuthActions.loginSubmitError): return { ...state, login: { ...state.login, formErrors: action.payload.error, loading: false  }}
     case getType(AuthActions.loginSubmitSuccess): return {
       ...state,
+      signup: initState.signup,
       login: initState.login,
       token: action.payload.auth.token,
       user: action.payload.auth.user
@@ -55,6 +56,7 @@ export const AuthReducer = (state: AuthState = initState, action: Actions): Auth
     case getType(AuthActions.signupSubmitSuccess): return {
       ...state,
       signup: initState.signup,
+      login: initState.login,
       token: action.payload.auth.token,
       user: action.payload.auth.user
     }
