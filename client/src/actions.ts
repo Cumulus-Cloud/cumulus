@@ -1,3 +1,4 @@
+import { RouterAction } from "react-router-redux"
 import { AuthAction } from "auth/AuthActions"
 import { InAppNotifAction } from "inAppNotif/InAppNotifActions"
 import { FileSystemAction } from "files/fileSystem/FileSystemActions"
@@ -8,6 +9,7 @@ import { SearchAction } from "files/search/SearchActions"
 import { UploadAction } from "files/upload/UploadActions"
 
 export type Actions =
+  RouterAction |
   AuthAction |
   InAppNotifAction |
   FileSystemAction |

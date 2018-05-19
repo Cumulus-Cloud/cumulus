@@ -9,6 +9,7 @@ import ModalActions from "components/modals/ModalActions"
 import FlatButton from "components/buttons/FlatButton"
 import VideoPlayer from "components/preview/VideoPlayer"
 import ImagePreview from "components/preview/ImagePreview"
+import { Actions } from "actions"
 
 interface DispatchProps {
   onShowPreview(fsFile?: FsFile): void
@@ -54,9 +55,9 @@ const mapStateToProps = (state: GlobalState): PropsState => {
     fsFile: state.fileSystem.previewFsFile
   }
 }
-const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
+const mapDispatchToProps = (dispatch: Dispatch<Actions>): DispatchProps => {
   return {
-    onShowPreview: fsFile => dispatch(FileSystemActions.showPreview({ fsFile })),
+    onShowPreview: fsFile => dispatch(FileSystemActions.showPreview(fsFile)),
   }
 }
 

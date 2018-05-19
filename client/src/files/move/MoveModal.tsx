@@ -13,11 +13,12 @@ import { FsNode, FsDirectory, isDirectory } from "models/FsNode"
 import TargetDirectory from "files/move/TargetDirectory"
 import Breadcrumb from "components/breadcrumb/Breadcrumb"
 import { ApiError } from "models/ApiError"
+import { Actions } from "actions"
 
 interface PropsState {
   fsNodes: FsNode[]
   target: FsDirectory
-  loading: false
+  loading: boolean
   error?: ApiError
 }
 
@@ -96,11 +97,11 @@ const mapStateToProps = (state: GlobalState): PropsState => {
     error: state.move.error,
   }
 }
-const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
+const mapDispatchToProps = (dispatch: Dispatch<Actions>): DispatchProps => {
   return {
     onCancelMove: () => dispatch(MoveActions.cancelMove()),
-    onMove: (fsNodeToMove, target) => dispatch(MoveActions.move({ fsNodeToMove, target })),
-    onChangeTarget: path => dispatch(MoveActions.changeMoveTarget({ path }))
+    onMove: (fsNodeToMove, target) => dispatch(MoveActions.move(fsNodeToMove, target)),
+    onChangeTarget: path => dispatch(MoveActions.changeMoveTarget(path))
   }
 }
 

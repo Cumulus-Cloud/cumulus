@@ -29,15 +29,14 @@ dist/
 
 
 # Ignore the front's generated files
-src/main/resources/public/*.js
-src/main/resources/public/*.css
-src/main/resources/public/**/*.map
-src/main/resources/public/**/*.jpg
+cumulus-server-resources/src/main/resources/public/main.js
+cumulus-server-resources/src/main/resources/public/main.css
+cumulus-server-resources/src/main/resources/public/**/*.map
 
 # Ignore server runtime directories
 tmp
 log
-storage
+/storage
 
 # Ignore the dev configuration file
 conf/local.conf

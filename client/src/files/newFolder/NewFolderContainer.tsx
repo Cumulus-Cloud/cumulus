@@ -6,6 +6,7 @@ import { NewFolderActions } from "files/newFolder/NewFolderActions"
 import { FsNode } from "models/FsNode"
 import NewFolderModal from "files/newFolder/NewFolderModal"
 import GhostButton from "components/buttons/GhostButton"
+import { Actions } from "actions"
 
 interface DispatchProps {
   onNewFolderNameChange(newFolderName: string): void
@@ -55,11 +56,11 @@ const mapStateToProps = (state: GlobalState): PropsState => {
     directory: state.fileSystem.directory!
   }
 }
-const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
+const mapDispatchToProps = (dispatch: Dispatch<Actions>): DispatchProps => {
   return {
-    onNewFolderNameChange: newFolderName => dispatch(NewFolderActions.newFolderNameChange({ newFolderName })),
+    onNewFolderNameChange: newFolderName => dispatch(NewFolderActions.newFolderNameChange(newFolderName)),
     onWantCreateNewFolder: () => dispatch(NewFolderActions.wantCreateNewFolder()),
-    onCreateNewFolder: (currentDirectory, newFolderName) => dispatch(NewFolderActions.createNewFolder({ currentDirectory, newFolderName })),
+    onCreateNewFolder: (currentDirectory, newFolderName) => dispatch(NewFolderActions.createNewFolder(currentDirectory, newFolderName)),
   }
 }
 

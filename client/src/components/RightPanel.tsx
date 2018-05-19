@@ -8,6 +8,7 @@ import { FsNode } from "models/FsNode"
 import FsNodeInfos from "components/FsNodeInfos"
 import { FileSystemActions } from "files/fileSystem/FileSystemActions"
 import MultFsNodesPanel from "components/MultFsNodesPanel"
+import { Actions } from "actions"
 
 interface StateProps {
   directory: FsNode
@@ -59,7 +60,7 @@ const mapStateToProps = (state: GlobalState): StateProps => {
     fsNodeInfosToShow: state.fileSystem.fsNodeInfosToShow
   }
 }
-const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
+const mapDispatchToProps = (dispatch: Dispatch<Actions>): DispatchProps => {
   return {
     onHideFsNodeInfos: () => dispatch(FileSystemActions.hideFsNodeInfos()),
     onCanselSelectionOfFsNode: () => dispatch(FileSystemActions.canselSelectionOfFsNode())

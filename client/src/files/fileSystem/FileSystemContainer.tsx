@@ -23,6 +23,7 @@ import FsNodeComponent from "components/FsNodeComponent"
 import MoveModal from "files/move/MoveModal"
 import InAppNotifContainer from "inAppNotif/InAppNotifContainer"
 import DropUploaderContainer from "files/upload/DropUploaderContainer"
+import { Actions } from "actions"
 
 interface DispatchProps {
   onFetchDirectory(path: string): void
@@ -177,17 +178,17 @@ const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string
   }
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<GlobalState>): DispatchProps => {
+const mapDispatchToProps = (dispatch: Dispatch<Actions>): DispatchProps => {
   return {
-    onFetchDirectory: path => dispatch(FileSystemActions.fetchDirectory({ path })),
-    onDeleteFsNode: fsNode => dispatch(FileSystemActions.deleteFsNode({ fsNode })),
-    onShowPreview: fsFile => dispatch(FileSystemActions.showPreview({ fsFile })),
-    onSharing: fsNode => dispatch(FileSystemActions.sharing({ fsNode })),
+    onFetchDirectory: path => dispatch(FileSystemActions.fetchDirectory(path)),
+    onDeleteFsNode: fsNode => dispatch(FileSystemActions.deleteFsNode(fsNode)),
+    onShowPreview: fsFile => dispatch(FileSystemActions.showPreview(fsFile)),
+    onSharing: fsNode => dispatch(FileSystemActions.sharing(fsNode)),
     onCloseShare: () => dispatch(FileSystemActions.closeShare()),
-    onShowFsNodeInfos: fsNode => dispatch(FileSystemActions.showFsNodeInfos({ fsNode })),
-    onSelectFsNode: fsNode => dispatch(FileSystemActions.selectFsNode({ fsNode })),
-    onWantMove: (fsNodes, target) => dispatch(MoveActions.wantMove({ fsNodes, target })),
-    onWantRename: fsNode => dispatch(RenameActions.wantRename({ fsNode })),
+    onShowFsNodeInfos: fsNode => dispatch(FileSystemActions.showFsNodeInfos(fsNode)),
+    onSelectFsNode: fsNode => dispatch(FileSystemActions.selectFsNode(fsNode)),
+    onWantMove: (fsNodes, target) => dispatch(MoveActions.wantMove(fsNodes, target)),
+    onWantRename: fsNode => dispatch(RenameActions.wantRename(fsNode)),
     onLogout: () => dispatch(AuthActions.logout()),
   }
 }
