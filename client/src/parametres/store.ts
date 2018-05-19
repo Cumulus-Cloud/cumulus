@@ -12,7 +12,7 @@ import ParametresRootEpic from "parametres/ParametresRootEpic"
 
 export interface GlobalState {
   inAppNotif: InAppNotifState
-  router: Reducer<RouterState>
+  router: RouterState
 }
 
 // export interface Dependencies {
@@ -27,7 +27,7 @@ const middleware = routerMiddleware(history)
 // }
 const epicMiddleware = createEpicMiddleware(ParametresRootEpic, { })
 
-const reducers = combineReducers({
+const reducers = combineReducers<GlobalState>({
   inAppNotif: InAppNotifReducer,
   router: routerReducer,
 })
@@ -42,7 +42,7 @@ const persistConfig = {
   whitelist: []
 }
 
-const persistedReducer = persistReducer(persistConfig, reducers)
+const persistedReducer: Reducer<GlobalState> = persistReducer(persistConfig, reducers)
 
 export const store = createStore(persistedReducer, enhancer)
 export const persistor = persistStore(store)

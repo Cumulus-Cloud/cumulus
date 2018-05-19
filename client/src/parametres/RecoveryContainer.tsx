@@ -19,6 +19,7 @@ interface Error {
 
 export default class RecoveryContainer extends React.PureComponent {
   render() {
+    // tslint:disable-next-line:no-any
     const errors = ((window as any).cumulusErrors as Error[])
     return (
       <div className={styles.recoveryContainer}>
