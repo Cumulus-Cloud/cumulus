@@ -40,17 +40,18 @@ class CumulusRecoveryComponents(
   Security.addProvider(new BouncyCastleProvider)
 
   // Routes
-  lazy val router = Router.from {
-    case GET(p"/api/admin/management/reload") =>
-      controller.reload
-    case GET(p"/api/admin/management/stop") =>
-      controller.stop
-    case GET(p"/assets/$file*") =>
-      assetController.versioned(file)
-    case GET(p"/$path*") =>
-      path: @silent
-      controller.index
-  }
+  lazy val router: Router =
+    Router.from {
+      case GET(p"/api/admin/management/reload") =>
+        controller.reload
+      case GET(p"/api/admin/management/stop") =>
+        controller.stop
+      case GET(p"/assets/$file*") =>
+        assetController.versioned(file)
+      case GET(p"/$path*") =>
+        path: @silent
+        controller.index
+    }
 
   override implicit lazy val configuration: Configuration =
     context.initialConfiguration ++

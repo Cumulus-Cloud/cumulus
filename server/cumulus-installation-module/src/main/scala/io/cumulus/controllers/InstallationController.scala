@@ -5,9 +5,11 @@ import io.cumulus.controllers.payloads.AdminCreationPayload
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
 import io.cumulus.core.utils.ServerWatchdog
-import io.cumulus.models.configuration.{DatabaseConfiguration, EmailConfiguration}
+import io.cumulus.models.configuration.{ConfigurationEntries, DatabaseConfiguration, EmailConfiguration}
 import io.cumulus.models.user.User
 import io.cumulus.persistence.services.ConfigurationService
+import io.cumulus.views.CumulusInstallationPage
+import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 
@@ -30,7 +32,7 @@ class InstallationController(
 ) extends AbstractController(cc) with ApiUtils with BodyParserJson {
 
   def index = Action { implicit request =>
-    Ok("TODO")
+    Ok(CumulusInstallationPage())
   }
 
   /**
@@ -149,7 +151,15 @@ class InstallationController(
         // TODO check the database and that an admin is created, and that his email is validated
         // TODO and then restart the serveur which should launch normally
 
-        Future.successful(Right(""))
+        // Deactivate the installation
+        configurationService.updateConfiguration(
+          new ConfigurationEntries {
+            def toPlayConfiguration: Configuration =
+              Configuration(
+                "cumulus.management.installation" -> false
+              )
+          }
+        )
       }
     }
 

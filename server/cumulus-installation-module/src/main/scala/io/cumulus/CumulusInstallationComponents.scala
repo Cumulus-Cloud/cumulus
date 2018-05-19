@@ -14,7 +14,7 @@ import io.cumulus.controllers.InstallationController
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.Assets
 import io.cumulus.core.controllers.utils.LoggingFilter
-import io.cumulus.core.controllers.utils.api.{ApiUtils, HttpErrorHandler}
+import io.cumulus.core.controllers.utils.api.HttpErrorHandler
 import io.cumulus.core.utils.ServerWatchdog
 import io.cumulus.persistence.services.ConfigurationService
 import jsmessages.{JsMessages, JsMessagesFactory}
@@ -31,32 +31,34 @@ class CumulusInstallationComponents(
   watchdog: ServerWatchdog
 ) extends BuiltInComponentsFromContext(context)
   with HoconI18nComponents
-  with AssetsComponents
-  with ApiUtils {
+  with AssetsComponents {
 
   // Security provider
   Security.addProvider(new BouncyCastleProvider)
 
   // Routes
-  lazy val router = Router.from {
-    case GET(p"/api/admin/management/reload") =>
-      controller.reload
-    case POST(p"/api/configuration/database/test") =>
-      controller.testDatabase
-    case POST(p"/api/configuration/database/configure") =>
-      controller.configureDatabase
-    case POST(p"/api/configuration/email/test") =>
-      controller.testEmail
-    case POST(p"/api/configuration/email/configure") =>
-      controller.configureEmail
-    case POST(p"/api/configuration/admin/configure") =>
-      controller.createAdministrator
-    case GET(p"/assets/$file*") =>
-      assetController.versioned(file)
-    case GET(p"/$path*") =>
-      path: @silent
-      controller.index
-  }
+  lazy val router: Router =
+    Router.from {
+      case GET(p"/api/admin/management/reload") =>
+        controller.reload
+      case POST(p"/api/configuration/database/test") =>
+        controller.testDatabase
+      case POST(p"/api/configuration/database/configure") =>
+        controller.configureDatabase
+      case POST(p"/api/configuration/email/test") =>
+        controller.testEmail
+      case POST(p"/api/configuration/email/configure") =>
+        controller.configureEmail
+      case POST(p"/api/configuration/admin/configure") =>
+        controller.createAdministrator
+      case POST(p"/api/configuration/validate") =>
+        controller.validateInstallation
+      case GET(p"/assets/$file*") =>
+        assetController.versioned(file)
+      case GET(p"/$path*") =>
+        path: @silent
+        controller.index
+    }
 
   override implicit lazy val configuration: Configuration =
     context.initialConfiguration ++

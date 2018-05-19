@@ -201,7 +201,12 @@ lazy val cumulusServer =
         Dependencies.silencer.lib
       )
     )
-    .dependsOn(cumulusMainModule, cumulusRecoveryModule, cumulusServerResources)
+    .dependsOn(
+      cumulusMainModule,
+      cumulusRecoveryModule,
+      cumulusInstallationModule,
+      cumulusServerResources
+    )
     .enablePlugins(JavaAppPackaging)
 
 // Cumulus dev server

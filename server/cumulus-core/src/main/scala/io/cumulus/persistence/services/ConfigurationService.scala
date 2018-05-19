@@ -15,6 +15,7 @@ import io.cumulus.models.user.User
 import io.cumulus.persistence.stores.{FsNodeStore, UserStore}
 import io.cumulus.services.{MailService, UserService}
 import play.api.db._
+import play.api.i18n.Messages
 import play.api.inject.{ApplicationLifecycle, DefaultApplicationLifecycle}
 import play.api.libs.mailer.{Email, SMTPConfigurationProvider, SMTPMailer}
 import play.api.{Configuration, Environment}
@@ -120,7 +121,7 @@ class ConfigurationService(
     * Create an administrator using the provided information
     * @param admin The new administrator
     */
-  def createAdministrator(admin: User): Future[Either[AppError, User]] = {
+  def createAdministrator(admin: User)(implicit messages: Messages): Future[Either[AppError, User]] = {
     val combinedConfig = configuration ++ configurationFile
 
     withDatabase({ db =>
@@ -128,7 +129,7 @@ class ConfigurationService(
       val userStore = new UserStore()(qb)
       val fsNodeStore = new FsNodeStore()(qb)
       val mailService = new MailService(new SMTPMailer(new SMTPConfigurationProvider(combinedConfig.underlying).get()))
-      val userService = new UserService(userStore, fsNodeStore, mailService)
+      val userService = new UserService(userStore, fsNodeStore, mailService)(settings, qb)
 
       userService.createUser(admin)
     }, { error =>
@@ -176,7 +177,7 @@ class ConfigurationService(
       database
         .getConnection()
 
-      f(database)
+      f(CumulusDB(database))
 
     } match {
       case Failure(error) =>

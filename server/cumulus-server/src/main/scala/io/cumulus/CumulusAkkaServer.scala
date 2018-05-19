@@ -19,7 +19,7 @@ trait CumulusAkkaServer extends AkkaHttpServerComponents {
       case "DEV"  => Mode.Dev
       case "TEST" => Mode.Test
       case "PROD" => Mode.Prod
-      case _      => throw new Exception(s"Invalid mode type '$modeRaw' ; can only be 'DEV', 'TEST' or 'PROD'")
+      case _      => throw new Exception(s"Invalid mode type '${modeRaw.toUpperCase}' ; can only be 'DEV', 'TEST' or 'PROD'")
     }
 
   override lazy val serverConfig =

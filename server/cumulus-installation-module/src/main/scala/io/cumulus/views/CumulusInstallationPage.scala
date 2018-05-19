@@ -3,9 +3,7 @@ import play.api.i18n.Messages
 import scalatags.Text
 import scalatags.Text.all._
 
-case class CumulusInstallationPage(
-  error: Throwable
-)(implicit
+case class CumulusInstallationPage(implicit
   val messages: Messages
 ) extends CumulusStaticTemplate {
 
@@ -56,28 +54,7 @@ case class CumulusInstallationPage(
 
   override protected lazy val pageContent: Seq[Text.all.Tag] =
     Seq(
-      h1(messages("view.recovery.title")),
-      p(
-        messages("view.recovery.content-1"),
-        br,br,
-        messages("view.recovery.content-2"),
-        br,br,
-        messages("view.recovery.content-3")
-      ),
-      ul(
-        error.getStackTrace.toList.map { trace =>
-          li(
-            trace.getClassName,
-            span(`class` := "sep", "."),
-            trace.getMethodName,
-            span(`class` := "sep", "("),
-            trace.getFileName,
-            span(`class` := "sep", ":"),
-            span(`class` := "highlight", trace.getLineNumber),
-            span(`class` := "sep", ")")
-          )
-        }
-      )
+      h1("Installation page \uD83D\uDEE0")
     )
 
   override protected lazy val pageRightPanel: Seq[Text.all.Tag] =
@@ -93,12 +70,6 @@ case class CumulusInstallationPage(
         `type`  := "button",
         `class` := "button",
         value   := messages("view.recovery.button.stop")
-      ),
-      input(
-        disabled := "disabled",
-        `type`   := "button",
-        `class`  := "button",
-        value    :=  messages("view.recovery.button.update-conf")
       )
     )
 
