@@ -1,12 +1,12 @@
 import { createAction, ActionType } from "typesafe-actions"
 
-import { FsNode, FsFile } from "models/FsNode"
+import { FsNode, FsFile, FsDirectory } from "models/FsNode"
 import { Share } from "models/Share"
 import { ApiError } from "models/ApiError"
 
 export const FileSystemActions = {
   fetchDirectory: createAction("FetchDirectory", resolve => (path: string) => resolve({ path })),
-  fetchDirectorySuccess: createAction("FetchDirectorySuccess", resolve => (directory: FsNode) => resolve({ directory })),
+  fetchDirectorySuccess: createAction("FetchDirectorySuccess", resolve => (directory: FsDirectory) => resolve({ directory })),
   fetchDirectoryError: createAction("FetchDirectoryError", resolve => (error: ApiError) => resolve({ error })),
   deleteFsNode: createAction("DeleteFsNode", resolve => (fsNode: FsNode) => resolve({ fsNode })),
   deleteFsNodeSuccess: createAction("DeleteFsNodeSuccess", resolve => (fsNode: FsNode) => resolve({ fsNode })),

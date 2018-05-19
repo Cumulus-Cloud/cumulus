@@ -18,7 +18,7 @@ import { Actions } from "actions"
 interface PropsState {
   fsNodes: FsNode[]
   target: FsDirectory
-  loading: false
+  loading: boolean
   error?: ApiError
 }
 

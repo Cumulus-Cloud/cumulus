@@ -16,7 +16,7 @@ const initState: NewFolderState = {
   wantCreateNewFolder: false,
 }
 
-export const NewFolderReducer = (state: NewFolderState = initState, action: Actions) => {
+export const NewFolderReducer = (state: NewFolderState = initState, action: Actions): NewFolderState => {
   switch (action.type) {
     case getType(NewFolderActions.newFolderNameChange): return { ...state, newFolderName: action.payload.newFolderName }
     case getType(NewFolderActions.wantCreateNewFolder): return { ...state, wantCreateNewFolder: !state.wantCreateNewFolder, newFolderName: "" }
