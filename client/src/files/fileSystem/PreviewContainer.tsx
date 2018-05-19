@@ -57,7 +57,7 @@ const mapStateToProps = (state: GlobalState): PropsState => {
 }
 const mapDispatchToProps = (dispatch: Dispatch<Actions>): DispatchProps => {
   return {
-    onShowPreview: fsFile => dispatch(FileSystemActions.showPreview({ fsFile })),
+    onShowPreview: fsFile => dispatch(FileSystemActions.showPreview(fsFile)),
   }
 }
 

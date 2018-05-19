@@ -13,8 +13,8 @@ type EpicType = Epic<Actions, GlobalState, Dependencies>
 export const searchEpic: EpicType = (action$, _, { requests }) => action$.pipe(
   filter(isActionOf(SearchActions.fsNodeSearch)),
   mergeMap(({ payload: { query } }) => requests.search(query).pipe(
-    map(searchResult => SearchActions.searchSuccess({ searchResult })),
-    catchError((error: ApiError) => of(SearchActions.searchError({ error }))),
+    map(SearchActions.searchSuccess),
+    catchError((error: ApiError) => of(SearchActions.searchError(error))),
   ))
 )
 

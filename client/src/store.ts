@@ -25,7 +25,7 @@ export interface GlobalState {
   move: MoveState
   rename: RenameState
   inAppNotif: InAppNotifState
-  router: Reducer<RouterState>
+  router: RouterState
 }
 
 export interface Dependencies {
@@ -40,7 +40,7 @@ const dependencies: Dependencies = {
 }
 const epicMiddleware = createEpicMiddleware(RootEpic, { dependencies })
 
-const reducers = combineReducers({
+const reducers = combineReducers<GlobalState>({
   auth: AuthReducer,
   newFolder: NewFolderReducer,
   upload: UploadReducer,
@@ -52,17 +52,17 @@ const reducers = combineReducers({
   router: routerReducer,
 })
 const enhancer = composeWithDevTools(
-  applyMiddleware(epicMiddleware),
   applyMiddleware(middleware),
+  applyMiddleware(epicMiddleware),
 )
 
 const persistConfig = {
-  key: "root",
+  key: "cumulus_root",
   storage,
   whitelist: ["auth"]
 }
 
-const persistedReducer = persistReducer(persistConfig, reducers)
+const persistedReducer: Reducer<GlobalState> = persistReducer(persistConfig, reducers)
 
 export const store = createStore(persistedReducer, enhancer)
 export const persistor = persistStore(store)

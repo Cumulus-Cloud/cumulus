@@ -15,8 +15,8 @@ export const moveEpic: EpicType = (action$, _, { requests }) => action$.pipe(
   mergeMap(({ payload: { fsNodeToMove, target } }) => {
     const to = `${target.path === "/" ? "" : target.path}/${fsNodeToMove.name}`
     return requests.move(fsNodeToMove.path, to).pipe(
-      map(movedfsNode => MoveActions.moveSuccess({ fsNodeToMove, movedfsNode })),
-      catchError((error: ApiError) => of(MoveActions.moveError({ error })))
+      map(movedfsNode => MoveActions.moveSuccess(fsNodeToMove, movedfsNode)),
+      catchError((error: ApiError) => of(MoveActions.moveError(error)))
     )
   })
 )
@@ -29,8 +29,8 @@ export const moveErrorEpic: EpicType = action$ => action$.pipe(
 export const changeMoveTargetEpic: EpicType = (action$, _, { requests }) => action$.pipe(
   filter(isActionOf(MoveActions.changeMoveTarget)),
   mergeMap(({ payload: { path } }) => requests.fetchDirectory(path).pipe(
-    map(target => MoveActions.changeMoveTargetSuccess({ target })),
-    catchError((error: ApiError) => of(MoveActions.changeMoveTargetError({ error })))
+    map(MoveActions.changeMoveTargetSuccess),
+    catchError((error: ApiError) => of(MoveActions.changeMoveTargetError(error)))
   ))
 )
 

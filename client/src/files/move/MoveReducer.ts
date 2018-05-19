@@ -8,7 +8,7 @@ export interface MoveState {
   wantMove: boolean
   fsNodes: FsNode[]
   target?: FsDirectory
-  loading: false
+  loading: boolean
   targetLoading: boolean
   error?: ApiError
 }
@@ -20,7 +20,7 @@ const initState: MoveState = {
   targetLoading: false,
 }
 
-export const MoveReducer = (state: MoveState = initState, action: Actions) => {
+export const MoveReducer = (state: MoveState = initState, action: Actions): MoveState => {
   switch (action.type) {
     case getType(MoveActions.wantMove): return { ...state, wantMove: true, fsNodes: action.payload.fsNodes, target: action.payload.target }
     case getType(MoveActions.cancelMove): return initState

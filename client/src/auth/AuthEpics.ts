@@ -15,9 +15,9 @@ export const loginEpic: EpicType = (action$, _, { requests }) => action$.pipe(
   switchMap(({ payload: { login, password } }) => requests.login(login, password).pipe(
     map(auth => {
       history.replace("/fs/")
-      return AuthActions.loginSubmitSuccess({ auth })
+      return AuthActions.loginSubmitSuccess(auth)
     }),
-    catchError((error: ApiError) => of(AuthActions.loginSubmitError({ error })))
+    catchError((error: ApiError) => of(AuthActions.loginSubmitError(error)))
   ))
 )
 
@@ -31,9 +31,9 @@ export const signupEpic: EpicType = (action$, _, { requests }) => action$.pipe(
   switchMap(({ payload: { email, login, password } }) => requests.signup(login, email, password).pipe(
     map(auth => {
       history.replace("/fs/")
-      return AuthActions.signupSubmitSuccess({ auth })
+      return AuthActions.signupSubmitSuccess(auth)
     }),
-    catchError((error: ApiError) => of(AuthActions.signupSubmitError({ error })))
+    catchError((error: ApiError) => of(AuthActions.signupSubmitError(error)))
   ))
 )
 

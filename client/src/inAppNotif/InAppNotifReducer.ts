@@ -9,7 +9,7 @@ export interface InAppNotifState {
 
 const initState: InAppNotifState = {}
 
-export const InAppNotifReducer = (state: InAppNotifState = initState, action: Actions) => {
+export const InAppNotifReducer = (state: InAppNotifState = initState, action: Actions): InAppNotifState => {
   switch (action.type) {
     case getType(InAppNotifActions.showInAppNotif): return { ...state, inAppNotif: action.payload.inAppNotif }
     case getType(InAppNotifActions.hideInAppNotif): return { ...state, inAppNotif: undefined }

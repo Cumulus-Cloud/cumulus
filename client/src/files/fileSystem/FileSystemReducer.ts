@@ -8,7 +8,7 @@ import { MoveActions } from "files/move/MoveActions"
 import { RenameActions } from "files/rename/RenameActions"
 import { AuthActions } from "auth/AuthActions"
 import { ApiError } from "models/ApiError"
-import { Actions } from "actions";
+import { Actions } from "actions"
 
 export interface FileSystemState {
   directory?: FsDirectory
@@ -31,7 +31,7 @@ const initState: FileSystemState = {
 }
 
 // tslint:disable-next-line:cyclomatic-complexity
-export const FileSystemReducer = (state: FileSystemState = initState, action: Actions) => {
+export const FileSystemReducer = (state: FileSystemState = initState, action: Actions): FileSystemState => {
   switch (action.type) {
     case getType(FileSystemActions.fetchDirectory): return { ...state, loading: true }
     case getType(FileSystemActions.fetchDirectorySuccess): return { ...state, directory: action.payload.directory, loading: false }

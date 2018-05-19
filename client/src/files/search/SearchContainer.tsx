@@ -46,8 +46,8 @@ const mapStateToProps = (state: GlobalState): PropsState => {
 }
 const mapDispatchToProps = (dispatch: Dispatch<Actions>): DispatchProps => {
   return {
-    onQueryChange: query => dispatch(SearchActions.queryChange({ query })),
-    onFsNodeSearch: query => dispatch(SearchActions.fsNodeSearch({ query })),
+    onQueryChange: query => dispatch(SearchActions.queryChange(query)),
+    onFsNodeSearch: query => dispatch(SearchActions.fsNodeSearch(query)),
     onCancelSearch: () => dispatch(SearchActions.cancelSearch())
   }
 }

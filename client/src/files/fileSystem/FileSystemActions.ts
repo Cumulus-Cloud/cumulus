@@ -1,26 +1,26 @@
-import { FsNode, FsFile } from "models/FsNode"
+import { createAction, ActionType } from "typesafe-actions"
+
+import { FsNode, FsFile, FsDirectory } from "models/FsNode"
 import { Share } from "models/Share"
 import { ApiError } from "models/ApiError"
 
-import { buildAction, ActionsUnion } from "typesafe-actions"
-
 export const FileSystemActions = {
-  fetchDirectory: buildAction("FetchDirectory").payload<{ path: string }>(),
-  fetchDirectorySuccess: buildAction("FetchDirectorySuccess").payload<{ directory: FsNode }>(),
-  fetchDirectoryError: buildAction("FetchDirectoryError").payload<{ error: ApiError }>(),
-  deleteFsNode: buildAction("DeleteFsNode").payload<{ fsNode: FsNode }>(),
-  deleteFsNodeSuccess: buildAction("DeleteFsNodeSuccess").payload<{ fsNode: FsNode }>(),
-  deleteFsNodeError: buildAction("DeleteFsNodeError").payload<{ error: ApiError }>(),
-  showPreview: buildAction("ShowPreview").payload<{ fsFile?: FsFile }>(),
-  sharing: buildAction("Sharing").payload<{ fsNode: FsNode }>(),
-  sharingSuccess: buildAction("SharingSuccess").payload<{ share: Share, fsNode: FsNode }>(),
-  sharingError: buildAction("SharingError").payload<{ error: ApiError }>(),
-  closeShare: buildAction("CloseShare").empty(),
-  showFsNodeInfos: buildAction("ShowFsNodeInfos").payload<{ fsNode: FsNode }>(),
-  hideFsNodeInfos: buildAction("HideFsNodeInfos").empty(),
-  selectFsNode: buildAction("SelectFsNode").payload<{ fsNode: FsNode }>(),
-  deselectFsNode: buildAction("DeselectFsNode").payload<{ fsNode: FsNode }>(),
-  canselSelectionOfFsNode: buildAction("CanselSelectionOfFsNode").empty(),
+  fetchDirectory: createAction("FetchDirectory", resolve => (path: string) => resolve({ path })),
+  fetchDirectorySuccess: createAction("FetchDirectorySuccess", resolve => (directory: FsDirectory) => resolve({ directory })),
+  fetchDirectoryError: createAction("FetchDirectoryError", resolve => (error: ApiError) => resolve({ error })),
+  deleteFsNode: createAction("DeleteFsNode", resolve => (fsNode: FsNode) => resolve({ fsNode })),
+  deleteFsNodeSuccess: createAction("DeleteFsNodeSuccess", resolve => (fsNode: FsNode) => resolve({ fsNode })),
+  deleteFsNodeError: createAction("DeleteFsNodeError", resolve => (error: ApiError) => resolve({ error })),
+  showPreview: createAction("ShowPreview", resolve => (fsFile?: FsFile) => resolve({ fsFile })),
+  sharing: createAction("Sharing", resolve => (fsNode: FsNode) => resolve({ fsNode })),
+  sharingSuccess: createAction("SharingSuccess", resolve => (share: Share, fsNode: FsNode) => resolve({ share, fsNode })),
+  sharingError: createAction("SharingError", resolve => (error: ApiError) => resolve({ error })),
+  closeShare: createAction("CloseShare"),
+  showFsNodeInfos: createAction("ShowFsNodeInfos", resolve => (fsNode: FsNode) => resolve({ fsNode })),
+  hideFsNodeInfos: createAction("HideFsNodeInfos"),
+  selectFsNode: createAction("SelectFsNode", resolve => (fsNode: FsNode) => resolve({ fsNode })),
+  deselectFsNode: createAction("DeselectFsNode", resolve => (fsNode: FsNode) => resolve({ fsNode })),
+  canselSelectionOfFsNode: createAction("CanselSelectionOfFsNode"),
 }
 
-export type FileSystemAction = ActionsUnion<typeof FileSystemActions>
+export type FileSystemAction = ActionType<typeof FileSystemActions>
