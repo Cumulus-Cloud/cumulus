@@ -13,8 +13,8 @@ type EpicType = Epic<Actions, GlobalState, Dependencies>
 export const createNewFolderEpic: EpicType = (action$, _, { requests }) => action$.pipe(
   filter(isActionOf(NewFolderActions.createNewFolder)),
   mergeMap(({ payload: { currentDirectory, newFolderName } }) => requests.createFnNode(currentDirectory, newFolderName, "DIRECTORY").pipe(
-    map(newFolder => NewFolderActions.createNewFolderSuccess({ newFolder })),
-    catchError((error: ApiError) => of(NewFolderActions.createNewFolderError({ error })))
+    map(NewFolderActions.createNewFolderSuccess),
+    catchError((error: ApiError) => of(NewFolderActions.createNewFolderError(error)))
   ))
 )
 

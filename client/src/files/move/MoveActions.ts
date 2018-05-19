@@ -1,16 +1,16 @@
-import { buildAction, ActionsUnion } from "typesafe-actions"
+import { createAction, ActionType } from "typesafe-actions"
 import { FsNode, FsDirectory } from "models/FsNode"
 import { ApiError } from "models/ApiError"
 
 export const MoveActions = {
-  wantMove: buildAction("WantMove").payload<{ fsNodes: FsNode[], target: FsDirectory }>(),
-  cancelMove: buildAction("CancelMove").empty(),
-  move: buildAction("Move").payload<{ fsNodeToMove: FsNode, target: FsDirectory }>(),
-  moveSuccess: buildAction("MoveSuccess").payload<{ fsNodeToMove: FsNode, movedfsNode: FsNode }>(),
-  moveError: buildAction("MoveError").payload<{ error: ApiError }>(),
-  changeMoveTarget: buildAction("ChangeMoveTarget").payload<{ path: string }>(),
-  changeMoveTargetSuccess: buildAction("ChangeMoveTargetSuccess").payload<{ target: FsDirectory }>(),
-  changeMoveTargetError: buildAction("ChangeMoveTargetError").payload<{ error: ApiError }>(),
+  wantMove: createAction("WantMove", resolve => (fsNodes: FsNode[], target: FsDirectory) => resolve({ fsNodes, target })),
+  cancelMove: createAction("CancelMove"),
+  move: createAction("Move", resolve => (fsNodeToMove: FsNode, target: FsDirectory) => resolve({ fsNodeToMove, target })),
+  moveSuccess: createAction("MoveSuccess", resolve => (fsNodeToMove: FsNode, movedfsNode: FsNode) => resolve({ fsNodeToMove, movedfsNode })),
+  moveError: createAction("MoveError", resolve => (error: ApiError) => resolve({ error })),
+  changeMoveTarget: createAction("ChangeMoveTarget", resolve => (path: string) => resolve({ path })),
+  changeMoveTargetSuccess: createAction("ChangeMoveTargetSuccess", resolve => (target: FsDirectory) => resolve({ target })),
+  changeMoveTargetError: createAction("ChangeMoveTargetError", resolve => (error: ApiError) => resolve({ error })),
 }
 
-export type MoveAction = ActionsUnion<typeof MoveActions>
+export type MoveAction = ActionType<typeof MoveActions>

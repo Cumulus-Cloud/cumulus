@@ -173,15 +173,15 @@ const mapStateToProps = (state: GlobalState, props: { match?: RouterMatch<string
 
 const mapDispatchToProps = (dispatch: Dispatch<Actions>): DispatchProps => {
   return {
-    onFetchDirectory: path => dispatch(FileSystemActions.fetchDirectory({ path })),
-    onDeleteFsNode: fsNode => dispatch(FileSystemActions.deleteFsNode({ fsNode })),
-    onShowPreview: fsFile => dispatch(FileSystemActions.showPreview({ fsFile })),
-    onSharing: fsNode => dispatch(FileSystemActions.sharing({ fsNode })),
+    onFetchDirectory: path => dispatch(FileSystemActions.fetchDirectory(path)),
+    onDeleteFsNode: fsNode => dispatch(FileSystemActions.deleteFsNode(fsNode)),
+    onShowPreview: fsFile => dispatch(FileSystemActions.showPreview(fsFile)),
+    onSharing: fsNode => dispatch(FileSystemActions.sharing(fsNode)),
     onCloseShare: () => dispatch(FileSystemActions.closeShare()),
-    onShowFsNodeInfos: fsNode => dispatch(FileSystemActions.showFsNodeInfos({ fsNode })),
-    onSelectFsNode: fsNode => dispatch(FileSystemActions.selectFsNode({ fsNode })),
-    onWantMove: (fsNodes, target) => dispatch(MoveActions.wantMove({ fsNodes, target })),
-    onWantRename: fsNode => dispatch(RenameActions.wantRename({ fsNode })),
+    onShowFsNodeInfos: fsNode => dispatch(FileSystemActions.showFsNodeInfos(fsNode)),
+    onSelectFsNode: fsNode => dispatch(FileSystemActions.selectFsNode(fsNode)),
+    onWantMove: (fsNodes, target) => dispatch(MoveActions.wantMove(fsNodes, target)),
+    onWantRename: fsNode => dispatch(RenameActions.wantRename(fsNode)),
     onLogout: () => dispatch(AuthActions.logout()),
   }
 }

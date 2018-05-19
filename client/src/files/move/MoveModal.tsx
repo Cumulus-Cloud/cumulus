@@ -100,8 +100,8 @@ const mapStateToProps = (state: GlobalState): PropsState => {
 const mapDispatchToProps = (dispatch: Dispatch<Actions>): DispatchProps => {
   return {
     onCancelMove: () => dispatch(MoveActions.cancelMove()),
-    onMove: (fsNodeToMove, target) => dispatch(MoveActions.move({ fsNodeToMove, target })),
-    onChangeTarget: path => dispatch(MoveActions.changeMoveTarget({ path }))
+    onMove: (fsNodeToMove, target) => dispatch(MoveActions.move(fsNodeToMove, target)),
+    onChangeTarget: path => dispatch(MoveActions.changeMoveTarget(path))
   }
 }
 

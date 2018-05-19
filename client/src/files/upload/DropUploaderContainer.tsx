@@ -41,7 +41,7 @@ const mapStateToProps = (state: GlobalState): PropsState => {
 
 const mapDispatchToProps = (dispatch: Dispatch<Actions>): DispatchProps => {
   return {
-    onAddFilesToUpload: files => dispatch(UploadActions.addFiles({ files }))
+    onAddFilesToUpload: files => dispatch(UploadActions.addFiles(files))
   }
 }
 

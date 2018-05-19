@@ -13,8 +13,8 @@ type EpicType = Epic<Actions, GlobalState, Dependencies>
 export const renameEpic: EpicType = (action$, _, { requests }) => action$.pipe(
   filter(isActionOf(RenameActions.rename)),
   mergeMap(({ payload: { fsNode, newName } }) => requests.move(fsNode.path, `${fsNode.path.replace(fsNode.name, "")}${newName}`).pipe(
-    map(movedfsNode => RenameActions.renameSuccess({ fsNode: movedfsNode })),
-    catchError((error: ApiError) => of(RenameActions.renameError({ error })))
+    map(RenameActions.renameSuccess),
+    catchError((error: ApiError) => of(RenameActions.renameError(error)))
   ))
 )
 

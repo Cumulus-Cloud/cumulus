@@ -15,16 +15,16 @@ export const uploadEpic: EpicType = (action$, _, dependencies) => action$.pipe(
     return Observable.create((observer: Observer<Actions>) => {
       const progress = (e: ProgressEvent) => {
         const progressed = Math.round(e.loaded * 100 / e.total)
-        observer.next(UploadActions.progressUpload({ progress: progressed, fileToUpload }))
+        observer.next(UploadActions.progressUpload(progressed, fileToUpload))
       }
       dependencies.requests.upload(path, fileToUpload, debounce(progress, 30))
         .toPromise()
         .then(fsNode => {
-          observer.next(UploadActions.uploadFileSuccess({ fsNode, fileToUpload }))
+          observer.next(UploadActions.uploadFileSuccess(fsNode, fileToUpload))
           observer.complete()
         })
         .catch(error => {
-          observer.next(UploadActions.uploadFileError({ error, fileToUpload }))
+          observer.next(UploadActions.uploadFileError(error, fileToUpload))
           observer.complete()
         })
     })

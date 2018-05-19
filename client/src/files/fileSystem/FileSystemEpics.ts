@@ -13,8 +13,8 @@ type EpicType = Epic<Actions, GlobalState, Dependencies>
 export const fetchDirectoryEpic: EpicType = (action$, _, { requests }) => action$.pipe(
   filter(isActionOf(FileSystemActions.fetchDirectory)),
   switchMap(({ payload: { path } }) => requests.fetchDirectory(path).pipe(
-    map(directory => FileSystemActions.fetchDirectorySuccess({ directory })),
-    catchError((error: ApiError) => of(FileSystemActions.fetchDirectoryError({ error })))
+    map(FileSystemActions.fetchDirectorySuccess),
+    catchError((error: ApiError) => of(FileSystemActions.fetchDirectoryError(error)))
   ))
 )
 
@@ -26,8 +26,8 @@ export const fetchDirectoryErrorEpic: EpicType = action$ => action$.pipe(
 export const onDeleteFsNodeEpic: EpicType = (action$, _, { requests }) => action$.pipe(
   filter(isActionOf(FileSystemActions.deleteFsNode)),
   mergeMap(({ payload: { fsNode } }) => requests.deleteFsNode(fsNode).pipe(
-    map(() => FileSystemActions.deleteFsNodeSuccess({ fsNode })),
-    catchError((error: ApiError) => of(FileSystemActions.deleteFsNodeError({ error })))
+    map(() => FileSystemActions.deleteFsNodeSuccess(fsNode)),
+    catchError((error: ApiError) => of(FileSystemActions.deleteFsNodeError(error)))
   ))
 )
 
@@ -39,8 +39,8 @@ export const onDeleteFsNodeErrorEpic: EpicType = action$ => action$.pipe(
 export const sharingEpic: EpicType = (action$, _, { requests }) => action$.pipe(
   filter(isActionOf(FileSystemActions.sharing)),
   mergeMap(({ payload: { fsNode } }) => requests.share(fsNode).pipe(
-    map(share => FileSystemActions.sharingSuccess({ share, fsNode })),
-    catchError((error: ApiError) => of(FileSystemActions.sharingError({ error })))
+    map(share => FileSystemActions.sharingSuccess(share, fsNode)),
+    catchError((error: ApiError) => of(FileSystemActions.sharingError(error)))
   ))
 )
 
