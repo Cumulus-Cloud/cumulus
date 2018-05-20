@@ -1,15 +1,12 @@
 package io.cumulus
 
-import java.io.File
 import java.security.Security
-import scala.concurrent.ExecutionContextExecutor
 
 import _root_.controllers.AssetsComponents
 import akka.actor.Scheduler
 import com.github.ghik.silencer.silent
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.softwaremill.macwire._
-import com.typesafe.config.ConfigFactory
 import io.cumulus.controllers.InstallationController
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.Assets
@@ -24,6 +21,8 @@ import play.api.mvc.EssentialFilter
 import play.api.routing.Router
 import play.api.routing.sird._
 import play.api.{ApplicationLoader, BuiltInComponentsFromContext, Configuration}
+
+import scala.concurrent.ExecutionContextExecutor
 
 
 class CumulusInstallationComponents(
@@ -41,10 +40,14 @@ class CumulusInstallationComponents(
     Router.from {
       case GET(p"/api/admin/management/reload") =>
         controller.reload
+      case GET(p"/api/configuration/database") =>
+        controller.getDatabaseConfiguration
       case POST(p"/api/configuration/database/test") =>
         controller.testDatabase
       case POST(p"/api/configuration/database/configure") =>
         controller.configureDatabase
+      case GET(p"/api/configuration/email") =>
+        controller.getEmailConfiguration
       case POST(p"/api/configuration/email/test") =>
         controller.testEmail
       case POST(p"/api/configuration/email/configure") =>

@@ -149,7 +149,7 @@ class InstallationController(
     Action.async { implicit request =>
       ApiResponse {
         // TODO check the database and that an admin is created, and that his email is validated
-        // TODO and then restart the serveur which should launch normally
+        // TODO and then restart the server which should launch normally
 
         // Deactivate the installation
         configurationService.updateConfiguration(

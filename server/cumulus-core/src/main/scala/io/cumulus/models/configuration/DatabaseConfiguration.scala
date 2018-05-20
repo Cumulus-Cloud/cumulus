@@ -9,7 +9,7 @@ case class DatabaseConfiguration(
   password: String,
   hostname: String,
   database: String,
-  port: Option[String]
+  port: Option[Int]
 ) extends ConfigurationEntries {
 
   def toPlayConfiguration: Configuration =
@@ -47,14 +47,14 @@ object DatabaseConfiguration extends ConfigurationEntriesFactory[DatabaseConfigu
 
     val url =
       configuration
-        .getOptional[String](usernameKey)
+        .getOptional[String](urlKey)
         .getOrElse("")
 
     val (hostname, port, database) =
       urlRegex
         .findFirstMatchIn(url)
         .map { m =>
-          (m.group(1), Option(m.group(2)), m.group(3))
+          (m.group(1), Option(m.group(2).toInt), m.group(3))
         }
         .getOrElse(("", None, ""))
 

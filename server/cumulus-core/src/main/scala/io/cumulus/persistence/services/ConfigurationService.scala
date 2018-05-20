@@ -8,16 +8,17 @@ import io.cumulus.core.Settings
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.QueryBuilder
 import io.cumulus.core.utils.ConfigurationWriter
-import io.cumulus.core.validation.AppError
+import io.cumulus.core.validation.{AppError, GlobalError}
 import io.cumulus.models.configuration.utils.{TestFailed, TestResult, TestSuccessful}
 import io.cumulus.models.configuration.{ConfigurationEntries, DatabaseConfiguration, EmailConfiguration}
 import io.cumulus.models.user.User
 import io.cumulus.persistence.stores.{FsNodeStore, UserStore}
 import io.cumulus.services.{MailService, UserService}
+import io.cumulus.views.email.CumulusConfigurationTestEmail
 import play.api.db._
 import play.api.i18n.Messages
 import play.api.inject.{ApplicationLifecycle, DefaultApplicationLifecycle}
-import play.api.libs.mailer.{Email, SMTPConfigurationProvider, SMTPMailer}
+import play.api.libs.mailer.{SMTPConfigurationProvider, SMTPMailer}
 import play.api.{Configuration, Environment}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -94,24 +95,28 @@ class ConfigurationService(
     */
   def testEmailConfiguration(
     emailConfiguration: EmailConfiguration
-  ): Future[TestResult] = Future {
+  )(implicit messages: Messages): Future[TestResult] = Future {
 
-    val config = (configuration ++ emailConfiguration.toPlayConfiguration).underlying
+    val overrideConf = configuration ++ emailConfiguration.toPlayConfiguration
+    val settings = new Settings(overrideConf)
 
     Try {
-      val mailerClient: SMTPMailer = new SMTPMailer(new SMTPConfigurationProvider(config).get())
-      mailerClient
-        .send(
-          Email(
-            "Cumulus Cloud - Configuration test",
-            emailConfiguration.from,
-            Seq(emailConfiguration.user.getOrElse("")),
-            Some("Test OK") // TODO use mail template + mail service
-          )
-        )
+      val mailerClient: SMTPMailer = new SMTPMailer(new SMTPConfigurationProvider(overrideConf.underlying).get())
+      val mailService = new MailService(mailerClient)(settings)
+
+      mailService.sendTo(
+        "Configuration test",
+        CumulusConfigurationTestEmail()(settings, messages),
+        Seq(s"<${settings.mail.from}>")
+      )
+
     } match {
       case Failure(error) =>
         TestFailed(error.getMessage)
+      case Success(Left(error: GlobalError)) =>
+        TestFailed(Messages(error.key, error.args))
+      case Success(Left(_)) =>
+        TestFailed("Something went wrong") // TODO translation
       case Success(_) =>
         TestSuccessful
     }
@@ -153,7 +158,7 @@ class ConfigurationService(
   private def withDatabase[R](
     f: CumulusDB    => Future[R],
     onError: String => R,
-    overrideConfig: Configuration = Configuration.empty
+    overrideConfig: Configuration
   ): Future[R] = {
     // Create a fake application, with a fake lifecycle, to test the database's connection
     val fakeApplicationLifecycle: ApplicationLifecycle = new DefaultApplicationLifecycle()

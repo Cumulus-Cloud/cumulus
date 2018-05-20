@@ -1,15 +1,12 @@
 package io.cumulus
 
-import java.io.File
 import java.security.Security
-import scala.concurrent.ExecutionContextExecutor
 
 import _root_.controllers.AssetsComponents
 import akka.actor.Scheduler
 import com.github.ghik.silencer.silent
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.softwaremill.macwire._
-import com.typesafe.config.ConfigFactory
 import io.cumulus.controllers.RecoveryController
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.Assets
@@ -24,6 +21,8 @@ import play.api.mvc.EssentialFilter
 import play.api.routing.Router
 import play.api.routing.sird._
 import play.api.{ApplicationLoader, BuiltInComponentsFromContext, Configuration}
+
+import scala.concurrent.ExecutionContextExecutor
 
 
 class CumulusRecoveryComponents(

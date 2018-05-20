@@ -1,6 +1,5 @@
 package io.cumulus
 
-import java.io.File
 import java.security.Security
 
 import _root_.controllers.AssetsComponents
@@ -8,7 +7,7 @@ import akka.actor.{ActorRef, Scheduler}
 import akka.stream.{ActorMaterializer, Materializer}
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.softwaremill.macwire._
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.Config
 import io.cumulus.controllers._
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.Assets

@@ -17,14 +17,16 @@ case class EmailConfiguration(
 
   def toPlayConfiguration: Configuration =
     Configuration(
-      hostKey        -> host,
-      portKey        -> port,
-      sslKey         -> ssl,
-      tlsKey         -> tls,
-      tlsRequiredKey -> tlsRequired,
-      userKey        -> user,
-      passwordKey    -> password,
-      fromKey        -> from
+      Seq(
+        Some(hostKey        -> host),
+        Some(portKey        -> port),
+        Some(sslKey         -> ssl),
+        Some(tlsKey         -> tls),
+        Some(tlsRequiredKey -> tlsRequired),
+        Some(fromKey        -> from),
+        user    .map(userKey     -> _),
+        password.map(passwordKey -> _)
+      ).flatten:_*
     )
 
 }
