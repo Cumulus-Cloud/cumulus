@@ -7,14 +7,14 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 /**
-  * An user account
+  * An user account.
   *
-  * @param id The unique ID
-  * @param email The mail
-  * @param login The login
-  * @param security User's security information
-  * @param creation The creation date
-  * @param roles The roles of the user
+  * @param id The unique ID.
+  * @param email The mail.
+  * @param login The login.
+  * @param security User's security information.
+  * @param creation The creation date.
+  * @param roles The roles of the user.
   */
 case class User(
   id: UUID,
@@ -26,13 +26,12 @@ case class User(
 ) {
 
   /**
-    * Check if the account is an admin account
+    * Check if the account is an admin account.
     *
-    * @return True if the user is an admin, false otherwise
+    * @return True if the user is an admin, false otherwise.
     */
-  def isAdmin: Boolean = {
+  def isAdmin: Boolean =
     roles.contains(UserRole.Admin)
-  }
 
 }
 

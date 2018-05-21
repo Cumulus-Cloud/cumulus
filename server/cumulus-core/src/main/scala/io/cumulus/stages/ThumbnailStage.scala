@@ -8,7 +8,7 @@ import io.cumulus.core.stream.storage.{StorageReferenceReader, StorageReferenceW
 import io.cumulus.core.validation.AppError
 import io.cumulus.core.{Logging, Settings}
 import io.cumulus.models.fs.File
-import io.cumulus.models.user.UserSession
+import io.cumulus.models.user.session.UserSession
 import io.cumulus.persistence.storage.{StorageEngines, StorageReference}
 import javax.imageio.ImageIO
 import org.apache.pdfbox.pdmodel.PDDocument

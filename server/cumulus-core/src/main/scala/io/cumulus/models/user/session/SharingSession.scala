@@ -1,7 +1,8 @@
-package io.cumulus.models.user
+package io.cumulus.models.user.session
 
 import akka.util.ByteString
 import io.cumulus.models.sharing.Sharing
+import io.cumulus.models.user.User
 import io.cumulus.persistence.storage.StorageReference
 
 /**
