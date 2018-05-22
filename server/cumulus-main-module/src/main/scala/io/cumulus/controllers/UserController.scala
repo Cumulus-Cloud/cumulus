@@ -131,8 +131,10 @@ class UserController (
   def revokeSession(sessionId: UUID): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
       ApiResponse {
-        // TODO disconnect if we revoke the current session
-        sessionService.revokeSession(sessionId)
+        if(request.authenticatedSession.information.id == sessionId)
+          Future.successful(Left(AppError.validation("validation.user.session-cant-revoke-self")))
+        else
+          sessionService.revokeSession(sessionId)
       }
     }
 
@@ -140,10 +142,12 @@ class UserController (
     * Logs out the user performing the operation, clearing the cookies and invalidating the session.
     */
   def logout: Action[AnyContent] =
-    AuthenticatedAction { implicit request =>
-      // TODO revoke the session ?
-      //sessionService.revokeSession(request.authenticatedSession.information)
-      Redirect(routes.HomeController.index()).withoutAuthentication
+    AuthenticatedAction.asyncWithoutSession { implicit request =>
+      sessionService
+        .revokeSession(request.authenticatedSession.information.id)
+        .map { _ =>
+          Redirect(routes.HomeController.index())
+        }
     }
 
 }
