@@ -18,8 +18,8 @@ import io.cumulus.core.persistence.query.QueryBuilder
 import io.cumulus.core.utils.ServerWatchdog
 import io.cumulus.persistence.storage.engines.LocalStorage
 import io.cumulus.persistence.storage.{ChunkRemover, StorageEngines}
-import io.cumulus.persistence.stores.{FsNodeStore, SharingStore, UserStore}
 import io.cumulus.services._
+import io.cumulus.persistence.stores.{FsNodeStore, SessionStore, SharingStore, UserStore}
 import io.cumulus.stages._
 import jsmessages.{JsMessages, JsMessagesFactory}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
@@ -125,12 +125,14 @@ class CumulusComponents(
   lazy val userStore: UserStore       = wire[UserStore]
   lazy val fsNodeStore: FsNodeStore   = wire[FsNodeStore]
   lazy val sharingStore: SharingStore = wire[SharingStore]
+  lazy val sessionStore: SessionStore = wire[SessionStore]
 
   // Services
   lazy val userService: UserService       = wire[UserService]
   lazy val fsNodeService: FsNodeService   = wire[FsNodeService]
   lazy val storageService: StorageService = wire[StorageService]
   lazy val sharingService: SharingService = wire[SharingService]
+  lazy val sessionService: SessionService = wire[SessionService]
   lazy val mailService: MailService       = wire[MailService]
 
   // Controllers

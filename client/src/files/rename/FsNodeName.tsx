@@ -100,8 +100,8 @@ const mapStateToProps = (state: GlobalState, props: OwnProps): OwnProps & StateP
 
 const mapDispatchToProps = (dispatch: Dispatch<Actions>): DispatchProps => {
   return {
-    onNameChange: name => dispatch(RenameActions.changeName({ name })),
-    onRename: (newName, fsNode) => dispatch(RenameActions.rename({ newName, fsNode })),
+    onNameChange: name => dispatch(RenameActions.changeName(name)),
+    onRename: (newName, fsNode) => dispatch(RenameActions.rename(newName, fsNode)),
     onCancelRename: () => dispatch(RenameActions.cancelRename()),
   }
 }

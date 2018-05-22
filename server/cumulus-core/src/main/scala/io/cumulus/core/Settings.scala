@@ -26,6 +26,8 @@ class Settings(
   object management {
     val installation: Boolean  = underlying.getOptional[Boolean]("cumulus.management.installation").getOrElse(false)
     val allowRecovery: Boolean = underlying.getOptional[Boolean]("cumulus.management.allowRecovery").getOrElse(false)
+    val allowSignUp: Boolean   = underlying.get[Boolean]("cumulus.management.allow-sign-up")
+    val sessionDuration: Int   = underlying.get[Int]("cumulus.management.session-duration")
   }
 
   object mail {

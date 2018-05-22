@@ -62,7 +62,7 @@ class UserService(
       _ <- QueryE.lift(userStore.create(user))
 
       // Also create the root element of its own file-system
-      _ <- QueryE.lift(fsNodeStore.create(Directory.create(user.id, "/")))
+      _ <- QueryE.lift(fsNodeStore.create(Directory.create(user, "/")))
 
       // Finally, send the user a mail with a link to validate its account
       _ <- QueryE.pure {
@@ -82,7 +82,7 @@ class UserService(
     * Finds an user by its ID.
     * @param id The user of the user.
     */
-  def find(id: String): Future[Either[AppError, User]] = {
+  def findUser(id: String): Future[Either[AppError, User]] = {
 
     for {
       // Validate the provided UUID
@@ -102,7 +102,7 @@ class UserService(
     * Finds and user by its email.
     * @param email The email of the user.
     */
-  def findByEmail(email: String): Future[Either[AppError, User]] =
+  def findUserByEmail(email: String): Future[Either[AppError, User]] =
     QueryE
       .getOrNotFound(userStore.findBy(emailField, email))
       .commit()
@@ -111,7 +111,7 @@ class UserService(
     * Finds an user by its login.
     * @param login The login of the user.
     */
-  def findByLogin(login: String): Future[Either[AppError, User]] =
+  def findUserByLogin(login: String): Future[Either[AppError, User]] =
     QueryE
       .getOrNotFound(userStore.findBy(loginField, login))
       .commit()
@@ -122,17 +122,12 @@ class UserService(
     * @param login The user's login.
     * @param password The user's password.
     */
-  def loginUser(login: String, password: String): Future[Either[AppError, User]] = {
+  def checkLoginUser(login: String, password: String): Future[Either[AppError, User]] = {
 
     // Search an user by the login & check the hashed password
     userStore.findBy(loginField, login).map {
       case Some(user) if user.security.checkPassword(password) =>
-        if (!user.security.emailValidated)
-          Left(AppError.validation("validation.user.email-not-activated"))
-        else if (!user.security.activated)
-          Left(AppError.validation("validation.user.user-deactivated "))
-        else
-          Right(user)
+        UserService.validateUser(user)
       case _ =>
         Left(AppError.validation("validation.user.invalid-login-or-password"))
     }
@@ -170,5 +165,18 @@ class UserService(
     } yield updatedUser
 
   }.commit()
+
+}
+
+object UserService {
+
+  def validateUser(user: User): Either[AppError, User] = {
+    if (!user.security.emailValidated)
+      Left(AppError.validation("validation.user.email-not-activated"))
+    else if (!user.security.activated)
+      Left(AppError.validation("validation.user.user-deactivated "))
+    else
+      Right(user)
+  }
 
 }

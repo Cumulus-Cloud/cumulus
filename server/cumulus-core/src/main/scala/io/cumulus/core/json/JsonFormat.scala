@@ -1,12 +1,13 @@
 package io.cumulus.core.json
 
 import java.util.UUID
-import scala.util.Try
 
 import akka.util.ByteString
 import cats.data.NonEmptyList
 import io.cumulus.core.utils.Base64
 import play.api.libs.json._
+
+import scala.util.Try
 
 object JsonFormat {
 
@@ -29,7 +30,7 @@ object JsonFormat {
   }
 
   /**
-    * Format for Maps with UUID as the key.
+    * Format for maps with UUID as keys.
     */
   implicit def uuidMapFormat[V](implicit format: Format[V]): Format[Map[UUID, V]] = new Format[Map[UUID, V]] {
 

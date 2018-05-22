@@ -1,12 +1,11 @@
 package io.cumulus.controllers
 
+import io.cumulus.controllers.utils.UserAuthentication
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.ApiUtils
-import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.persistence.query.QueryPagination
 import io.cumulus.models.Path
-import io.cumulus.models.user.UserSession
-import io.cumulus.services.SharingService
+import io.cumulus.services.{SessionService, SharingService}
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 
 import scala.concurrent.ExecutionContext
@@ -16,11 +15,12 @@ import scala.concurrent.ExecutionContext
   */
 class SharingController(
   cc: ControllerComponents,
-  sharingService: SharingService
+  sharingService: SharingService,
+  val sessionService: SessionService
 )(implicit
-  ec: ExecutionContext,
+  val ec: ExecutionContext,
   settings: Settings
-) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils {
+) extends AbstractController(cc) with UserAuthentication with ApiUtils {
 
   /**
     * Lists all sharings of the authenticated user.

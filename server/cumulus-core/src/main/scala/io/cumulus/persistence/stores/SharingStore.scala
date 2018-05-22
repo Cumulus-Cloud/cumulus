@@ -120,7 +120,8 @@ class SharingStore(
   }
 
   val rowParser: RowParser[Sharing] = {
-    implicit def sharingColumn: Column[Sharing] = AnormSupport.column[Sharing](Sharing.internalFormat)
+    implicit val sharingColumn: Column[Sharing] =
+      AnormSupport.column[Sharing](Sharing.internalFormat)
 
     SqlParser.get[Sharing]("metadata")
   }

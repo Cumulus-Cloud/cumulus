@@ -1,26 +1,26 @@
 package io.cumulus.controllers
 
-import scala.concurrent.{ExecutionContext, Future}
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import cats.data.EitherT
 import cats.implicits._
 import io.cumulus.controllers.payloads.fs._
+import io.cumulus.controllers.utils.{UserAuthentication, FileDownloaderUtils}
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.FileDownloaderUtils
 import io.cumulus.core.controllers.utils.api.ApiUtils
-import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.controllers.utils.bodyParser.{BodyParserJson, BodyParserStream}
 import io.cumulus.core.persistence.query.QueryPagination
 import io.cumulus.core.validation.AppError
+import io.cumulus.models.Path
 import io.cumulus.models.fs.{Directory, FsNodeType}
 import io.cumulus.models.sharing.Sharing
-import io.cumulus.models.Path
-import io.cumulus.models.user.UserSession
-import io.cumulus.services.{FsNodeService, SharingService, StorageService}
+import io.cumulus.services.{FsNodeService, SessionService, SharingService, StorageService}
 import io.cumulus.stages._
 import play.api.libs.json.{JsString, Json}
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
+
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Controller for all the operations on the filesystem.
@@ -29,14 +29,16 @@ class FileSystemController(
   cc: ControllerComponents,
   fsNodeService: FsNodeService,
   storageService: StorageService,
-  sharingService: SharingService
+  sharingService: SharingService,
+  val sessionService: SessionService
 )(implicit
-  ec: ExecutionContext,
+  val ec: ExecutionContext,
   settings: Settings
-) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with FileDownloaderUtils with BodyParserJson with BodyParserStream {
+) extends AbstractController(cc) with UserAuthentication with ApiUtils with FileDownloaderUtils with BodyParserJson with BodyParserStream {
 
   /**
     * Gets a filesystem element by its path.
+    *
     * @param path The path of the element.
     * @param contentLimit The maximum number of children elements (for a directory) to return. Used for pagination.
     * @param contentOffset The offset of children elements (for a directory) to return. Used for pagination.
@@ -51,7 +53,8 @@ class FileSystemController(
     }
 
   /**
-    * Search through the filesystem.
+    * Searches through the filesystem.
+    *
     * @param path Root element for the search. Use '/' to search in the whole filesystem.
     * @param name Name to look for. Approximation are allowed.
     * @param nodeType The optional type of node to look for.
@@ -59,7 +62,14 @@ class FileSystemController(
     * @param limit The maximum number of children elements (for a directory) to return. Used for pagination.
     * @param offset The offset of children elements (for a directory) to return. Used for pagination.
     */
-  def search(path: Path, name: String, nodeType: Option[FsNodeType], mimeType: Option[String], limit: Option[Int], offset: Option[Int]): Action[AnyContent] =
+  def search(
+    path: Path,
+    name: String,
+    nodeType: Option[FsNodeType],
+    mimeType: Option[String],
+    limit: Option[Int],
+    offset: Option[Int]
+  ): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
       ApiResponse.paginated {
         val pagination = QueryPagination(limit, offset)
@@ -69,7 +79,8 @@ class FileSystemController(
     }
 
   /**
-    * Downloads the file by its path.
+    * Downloads a file by its path.
+    *
     * @param path The path of the file to download.
     * @param forceDownload True to force the download, otherwise content will be opened directly in the browser.
     */
@@ -98,7 +109,8 @@ class FileSystemController(
     }
 
   /**
-    * Download a file's thumbnail.
+    * Downloads a file's thumbnail.
+    *
     * @param path The path of the file.
     * @param forceDownload True to force the download, otherwise content will be opened directly in the browser.
     */
@@ -134,7 +146,8 @@ class FileSystemController(
     }
 
   /**
-    * Upload a new file.
+    * Uploads a new file.
+    *
     * @param path The path of the new file.
     * @param cipherName The cipher to use.
     * @param compressionName The compression to use.
@@ -147,26 +160,29 @@ class FileSystemController(
     }
 
   /**
-    * Create a new directory.
+    * Creates a new directory.
+    *
     * @param path The path of the new directory.
     */
   def create(path: Path): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
       ApiResponse {
-        val directory = Directory.create(request.user.id, path)
+        val directory = Directory.create(request.authenticatedSession.user, path)
+
         fsNodeService.createDirectory(directory)
       }
     }
 
   /**
-    * Update a file.
+    * Updates a file.
+    *
     * @param path The file to update.
     */
   def update(path: Path): Action[FsOperation] =
     AuthenticatedAction.async(parseJson[FsOperation]) { implicit request =>
       request.body match {
         case FsOperationCreate(_) =>
-          val directory = Directory.create(request.user.id, path)
+          val directory = Directory.create(request.authenticatedSession.user, path)
           ApiResponse(fsNodeService.createDirectory(directory))
         case FsOperationMove(to) =>
           ApiResponse(fsNodeService.moveNode(path, to))

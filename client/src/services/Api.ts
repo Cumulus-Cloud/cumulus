@@ -1,6 +1,5 @@
 import Axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from "axios"
-import { Observer } from "rxjs/Observer"
-import { Observable } from "rxjs/Observable"
+import { Observer, Observable } from "rxjs"
 import { Validator } from "validation.ts"
 import { User, UserValidator } from "models/User"
 import { AuthApiResponse, AuthApiResponseValidator } from "models/AuthApiResponse"

@@ -3,14 +3,13 @@ package io.cumulus.controllers
 import cats.data.EitherT
 import cats.implicits._
 import com.github.ghik.silencer.silent
-import io.cumulus.core.controllers.utils.FileDownloaderUtils
+import io.cumulus.core.controllers.utils.{FileDownloaderUtils, UserAuthentication}
 import io.cumulus.core.controllers.utils.api.ApiUtils
-import io.cumulus.core.controllers.utils.authentication.Authentication
 import io.cumulus.core.utils.Base16
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.Path
-import io.cumulus.models.user.{SharingSession, UserSession}
-import io.cumulus.services.{SharingService, StorageService}
+import io.cumulus.models.user.session.SharingSession
+import io.cumulus.services.{SessionService, SharingService, StorageService}
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -21,10 +20,11 @@ import scala.concurrent.{ExecutionContext, Future}
 class SharingPublicController(
   cc: ControllerComponents,
   sharingService: SharingService,
-  storageService: StorageService
+  storageService: StorageService,
+  val sessionService: SessionService
 )(implicit
-  ec: ExecutionContext
-) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with FileDownloaderUtils {
+  val ec: ExecutionContext
+) extends AbstractController(cc) with UserAuthentication with ApiUtils with FileDownloaderUtils {
 
   /**
     * Gets a sharing for an unauthenticated user.

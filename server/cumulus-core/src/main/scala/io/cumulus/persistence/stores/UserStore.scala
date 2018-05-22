@@ -19,8 +19,9 @@ class UserStore(
   val table: String   = UserStore.table
   val pkField: String = UserStore.pkField
 
-  def rowParser: RowParser[User] = {
-    implicit def fsNodeColumn: Column[User] = AnormSupport.column[User](User.internalFormat)
+  val rowParser: RowParser[User] = {
+    implicit val userColumn: Column[User] =
+      AnormSupport.column[User](User.internalFormat)
 
     SqlParser.get[User]("metadata")
   }

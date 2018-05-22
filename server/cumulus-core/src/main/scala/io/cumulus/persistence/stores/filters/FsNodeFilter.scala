@@ -1,6 +1,7 @@
 package io.cumulus.persistence.stores.filters
 
 import anorm.NamedParameter
+import io.cumulus.core.persistence.anorm.AnormSupport._
 import io.cumulus.core.persistence.query.{ParameterizedSqlFilter, QueryFilter}
 import io.cumulus.models.Path
 import io.cumulus.models.fs.FsNodeType
@@ -24,13 +25,14 @@ case class FsNodeFilter(
   owner: User
 ) extends QueryFilter {
 
-  lazy val filters = Seq(
-    ownerToFilter,
-    parentToFilter,
-    nodeTypeToFilter,
-    mimeTypeToFilter,
-    nameToFilter
-  ).flatten
+  lazy val filters: Seq[ParameterizedSqlFilter] =
+    Seq(
+      ownerToFilter,
+      parentToFilter,
+      nodeTypeToFilter,
+      mimeTypeToFilter,
+      nameToFilter
+    ).flatten
 
   private lazy val nameToFilter: Option[ParameterizedSqlFilter] = Some(
     ParameterizedSqlFilter(s"""
@@ -59,9 +61,5 @@ case class FsNodeFilter(
   private lazy val ownerToFilter: Option[ParameterizedSqlFilter] = Some {
     ParameterizedSqlFilter(s"$ownerField = {_owner}", "_owner", owner.id)
   }
-
-}
-
-object FsNodeFilter {
 
 }

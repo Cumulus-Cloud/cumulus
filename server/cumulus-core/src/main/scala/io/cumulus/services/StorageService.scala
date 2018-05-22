@@ -12,7 +12,8 @@ import io.cumulus.core.validation.AppError
 import io.cumulus.core.{Logging, Settings}
 import io.cumulus.models.Path
 import io.cumulus.models.fs.{DefaultMetadata, File, FileMetadata}
-import io.cumulus.models.user.{Session, UserSession}
+import io.cumulus.models.user.User
+import io.cumulus.models.user.session.{Session, UserSession}
 import io.cumulus.persistence.storage.{StorageEngines, StorageReference}
 import io.cumulus.stages._
 
@@ -53,7 +54,7 @@ class StorageService(
     compressionName: Option[String],
     content: Source[ByteString, _]
   )(implicit session: UserSession): Future[Either[AppError, File]] = {
-    implicit val user = session.user
+    implicit val user: User = session.user
 
     // Operations to perform before the upload process starts
     val preUpload = for {
@@ -134,7 +135,7 @@ class StorageService(
     * @param session The session performing the operation.
     */
   def downloadThumbnail(path: Path)(implicit session: Session): Future[Either[AppError, Source[ByteString, _]]] = {
-    implicit val user = session.user
+    implicit val user: User = session.user
 
     for {
       file    <- EitherT(fsNodeService.findFile(path))
