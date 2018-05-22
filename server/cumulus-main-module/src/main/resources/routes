@@ -1,46 +1,49 @@
 
 # App entrypoint
-GET     /                             io.cumulus.controllers.HomeController.index
+GET     /                                io.cumulus.controllers.HomeController.index
 
 # Administration endpoints
-GET     /api/admin/management/reload  io.cumulus.controllers.ManagementController.reload
-GET     /api/admin/management/stop    io.cumulus.controllers.ManagementController.stop
+GET     /api/admin/management/reload     io.cumulus.controllers.ManagementController.reload
+GET     /api/admin/management/stop       io.cumulus.controllers.ManagementController.stop
 
 # User management routes
-POST    /api/users/login              io.cumulus.controllers.UserController.login
-POST    /api/users/logout             io.cumulus.controllers.UserController.logout
-POST    /api/users/signup             io.cumulus.controllers.UserController.signUp
-GET     /api/users/me                 io.cumulus.controllers.UserController.me
-GET     /validateEmail                io.cumulus.controllers.UserController.validateEmail(userLogin: String, emailCode: String)
+POST    /api/users/login                 io.cumulus.controllers.UserController.login
+POST    /api/users/logout                io.cumulus.controllers.UserController.logout
+POST    /api/users/signup                io.cumulus.controllers.UserController.signUp
+GET     /api/users/me                    io.cumulus.controllers.UserController.me
+GET     /api/users/sessions              io.cumulus.controllers.UserController.listSessions(limit: Option[Int], offset: Option[Int])
+GET     /api/users/sessions/:ref         io.cumulus.controllers.UserController.getSession(ref: java.util.UUID)
+POST    /api/users/sessions/:ref/revoke  io.cumulus.controllers.UserController.revokeSession(ref: java.util.UUID)
+GET     /validateEmail                   io.cumulus.controllers.UserController.validateEmail(userLogin: String, emailCode: String)
 
 # API - FS get/update routes
-GET     /api/fs*path                  io.cumulus.controllers.FileSystemController.get(path: Path, contentLimit: Option[Int], contentOffset: Option[Int])
-PUT     /api/fs*path                  io.cumulus.controllers.FileSystemController.create(path: Path)
-POST    /api/fs*path                  io.cumulus.controllers.FileSystemController.update(path: Path)
-DELETE  /api/fs*path                  io.cumulus.controllers.FileSystemController.delete(path: Path)
+GET     /api/fs*path                     io.cumulus.controllers.FileSystemController.get(path: Path, contentLimit: Option[Int], contentOffset: Option[Int])
+PUT     /api/fs*path                     io.cumulus.controllers.FileSystemController.create(path: Path)
+POST    /api/fs*path                     io.cumulus.controllers.FileSystemController.update(path: Path)
+DELETE  /api/fs*path                     io.cumulus.controllers.FileSystemController.delete(path: Path)
 
 # API - Sharing manager (authenticated side)
-GET     /api/sharings                 io.cumulus.controllers.SharingController.all(limit: Option[Int], offset: Option[Int])
-GET     /api/sharings/fs*path         io.cumulus.controllers.SharingController.list(path: Path, limit: Option[Int], offset: Option[Int])
-GET     /api/sharings/:ref            io.cumulus.controllers.SharingController.get(ref: String)
-DELETE  /api/sharings/:ref            io.cumulus.controllers.SharingController.delete(ref: Path)
+GET     /api/sharings                    io.cumulus.controllers.SharingController.all(limit: Option[Int], offset: Option[Int])
+GET     /api/sharings/fs*path            io.cumulus.controllers.SharingController.list(path: Path, limit: Option[Int], offset: Option[Int])
+GET     /api/sharings/:ref               io.cumulus.controllers.SharingController.get(ref: String)
+DELETE  /api/sharings/:ref               io.cumulus.controllers.SharingController.delete(ref: Path)
 
 # API- Search
-GET     /api/search*path              io.cumulus.controllers.FileSystemController.search(path: Path, name: String, nodeType: Option[FsNodeType], `type`: Option[String], limit: Option[Int], offset: Option[Int])
+GET     /api/search*path                 io.cumulus.controllers.FileSystemController.search(path: Path, name: String, nodeType: Option[FsNodeType], `type`: Option[String], limit: Option[Int], offset: Option[Int])
 
 # API - Upload and download routes
-POST    /api/upload*path              io.cumulus.controllers.FileSystemController.upload(path: Path, cipher: Option[String], compression: Option[String])
-GET     /api/download*path            io.cumulus.controllers.FileSystemController.download(path: Path, download: Option[Boolean])
-GET     /api/thumbnail*path           io.cumulus.controllers.FileSystemController.downloadThumbnail(path: Path, download: Option[Boolean])
+POST    /api/upload*path                 io.cumulus.controllers.FileSystemController.upload(path: Path, cipher: Option[String], compression: Option[String])
+GET     /api/download*path               io.cumulus.controllers.FileSystemController.download(path: Path, download: Option[Boolean])
+GET     /api/thumbnail*path              io.cumulus.controllers.FileSystemController.downloadThumbnail(path: Path, download: Option[Boolean])
 
 # API - Shared (visitor)
-GET     /api/shared/fs*path           io.cumulus.controllers.SharingPublicController.get(path: Path, reference, key)
-GET     /api/shared/download*path     io.cumulus.controllers.SharingPublicController.download(path: Path, reference, key, download: Option[Boolean])
+GET     /api/shared/fs*path              io.cumulus.controllers.SharingPublicController.get(path: Path, reference, key)
+GET     /api/shared/download*path        io.cumulus.controllers.SharingPublicController.download(path: Path, reference, key, download: Option[Boolean])
 
 # Shared (visitor) 'pretty' routes for root element (file)
-GET     /shared/download/:ref/:name   io.cumulus.controllers.SharingPublicController.downloadRoot(ref, name, key, download: Option[Boolean])
+GET     /shared/download/:ref/:name      io.cumulus.controllers.SharingPublicController.downloadRoot(ref, name, key, download: Option[Boolean])
 
 # Map static resources to the /assets URL path
-GET     /favicon.ico                  io.cumulus.controllers.Assets.favicon
-GET     /assets/messages.js           io.cumulus.controllers.Assets.messages
-GET     /assets/*file                 io.cumulus.controllers.Assets.versioned(file: controllers.Assets.Asset)
+GET     /favicon.ico                     io.cumulus.controllers.Assets.favicon
+GET     /assets/messages.js              io.cumulus.controllers.Assets.messages
+GET     /assets/*file                    io.cumulus.controllers.Assets.versioned(file: controllers.Assets.Asset)

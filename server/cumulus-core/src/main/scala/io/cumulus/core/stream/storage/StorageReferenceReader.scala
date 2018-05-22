@@ -1,7 +1,6 @@
 package io.cumulus.core.stream.storage
 
 import scala.concurrent.ExecutionContext
-
 import akka.NotUsed
 import akka.stream.scaladsl.{Flow, Source}
 import akka.util.ByteString
@@ -9,8 +8,8 @@ import io.cumulus.core.Logging
 import io.cumulus.core.stream.utils.ByteRange
 import io.cumulus.core.utils.Range
 import io.cumulus.core.validation.AppError
-import io.cumulus.models.user.Session
 import io.cumulus.models.fs.File
+import io.cumulus.models.user.session.Session
 import io.cumulus.persistence.storage.{StorageEngines, StorageObject, StorageReference}
 import io.cumulus.stages.{Ciphers, Compressions}
 

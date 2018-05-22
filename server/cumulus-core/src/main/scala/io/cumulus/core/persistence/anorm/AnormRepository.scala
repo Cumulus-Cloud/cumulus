@@ -2,7 +2,7 @@ package io.cumulus.core.persistence.anorm
 
 import anorm._
 import io.cumulus.core.persistence.Database
-import io.cumulus.core.persistence.query.{Query, QueryBuilder, QueryFilter}
+import io.cumulus.core.persistence.query._
 
 trait AnormRepository[T, DB <: Database] {
 
