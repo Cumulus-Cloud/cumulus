@@ -3,10 +3,10 @@ package io.cumulus.services.admin
 import io.cumulus.core.Settings
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.{QueryBuilder, QueryE, QueryPagination}
-import io.cumulus.core.utils.PaginatedList
+import io.cumulus.core.utils.{Crypto, PaginatedList}
 import io.cumulus.core.utils.PaginatedList._
 import io.cumulus.core.validation.AppError
-import io.cumulus.models.user.{User, UserRole, UserUpdate}
+import io.cumulus.models.user.{User, UserRole, UserSecurity, UserUpdate}
 import io.cumulus.persistence.stores.UserStore.{emailField, loginField}
 import io.cumulus.persistence.stores.filters.UserFilter
 import io.cumulus.persistence.stores.orderings.UserOrdering
@@ -37,18 +37,21 @@ class UserAdminService(
   def createUser(
     email: String,
     login: String,
-    password: String,
     roles: Seq[UserRole]
   )(implicit
     admin: User,
     messages: Messages
   ): Future[Either[AppError, User]] = {
-    val user = User.create(email, login, password).copy(roles = roles)
-
-    // TODO the password should not be provided
+    val user =
+      User.create(
+        email,
+        login,
+        UserSecurity.create(Crypto.randomCode(26)).copy(needFirstPassword = true),
+        roles
+      )
 
     for {
-      _ <- QueryE.pure(UserService.requireAdmin(admin))
+      _ <- QueryE.pure(UserService.checkRequireAdmin(admin))
       _ <- createUserInternal(user)
     } yield user
 
@@ -68,7 +71,7 @@ class UserAdminService(
 
     for {
       // Check that the user is an admin
-      _ <- QueryE.pure(UserService.requireAdmin(admin))
+      _ <- QueryE.pure(UserService.checkRequireAdmin(admin))
 
       // List all the users
       users <- QueryE.lift(userStore.findAll(filter, UserOrdering.of(OrderByCreationAsc), pagination))
@@ -88,13 +91,13 @@ class UserAdminService(
 
     for {
       // Check that the user is an admin
-      _ <- QueryE.pure(UserService.requireAdmin(admin))
+      _ <- QueryE.pure(UserService.checkRequireAdmin(admin))
 
       // Find the user to update
       user <- findUserInternal(userId)
 
       // Cannot performs any operation on the current user
-      _ <- QueryE.pure(UserService.notSelf(user))
+      _ <- QueryE.pure(UserService.checkNotSelf(user))
 
       // Update the user's email and email validation
       updatedUserEmail <- (update.email, update.emailValidation) match {
@@ -138,13 +141,13 @@ class UserAdminService(
 
     for {
       // Check that the user is an admin
-      _ <- QueryE.pure(UserService.requireAdmin(admin))
+      _ <- QueryE.pure(UserService.checkRequireAdmin(admin))
 
       // Find the user to update
       user <- findUserInternal(userId)
 
       // Cannot performs any operation on the current user
-      _ <- QueryE.pure(UserService.notSelf(user))
+      _ <- QueryE.pure(UserService.checkNotSelf(user))
 
       // Deactivate the user
       deactivatedUser <- changeUserActivation(user, activation = false)
@@ -161,7 +164,7 @@ class UserAdminService(
 
     for {
       // Check that the user is an admin
-      _ <- QueryE.pure(UserService.requireAdmin(admin))
+      _ <- QueryE.pure(UserService.checkRequireAdmin(admin))
 
       // Find the user by its ID
       user <- findUserInternal(id)
@@ -178,7 +181,7 @@ class UserAdminService(
 
     for {
       // Check that the user is an admin
-      _ <- QueryE.pure(UserService.requireAdmin(admin))
+      _ <- QueryE.pure(UserService.checkRequireAdmin(admin))
 
       user <- QueryE.getOrNotFound(userStore.findBy(emailField, email))
 
@@ -194,7 +197,7 @@ class UserAdminService(
 
     for {
       // Check that the user is an admin
-      _ <- QueryE.pure(UserService.requireAdmin(admin))
+      _ <- QueryE.pure(UserService.checkRequireAdmin(admin))
 
       user <- QueryE.getOrNotFound(userStore.findBy(loginField, login))
 

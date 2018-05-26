@@ -18,6 +18,7 @@ POST    /api/users/logout                io.cumulus.controllers.UserController.l
 POST    /api/users/signup                io.cumulus.controllers.UserController.signUp
 GET     /api/users/me                    io.cumulus.controllers.UserController.me
 POST    /api/users/emailValidationResend io.cumulus.controllers.UserController.resendValidationEmail
+POST    /api/users/firstPssword          io.cumulus.controllers.UserController.setFirstPassword
 GET     /api/users/sessions              io.cumulus.controllers.UserController.listSessions(limit: Option[Int], offset: Option[Int])
 GET     /api/users/sessions/:ref         io.cumulus.controllers.UserController.getSession(ref: java.util.UUID)
 POST    /api/users/sessions/:ref/revoke  io.cumulus.controllers.UserController.revokeSession(ref: java.util.UUID)

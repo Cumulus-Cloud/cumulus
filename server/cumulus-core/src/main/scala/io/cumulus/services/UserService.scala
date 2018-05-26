@@ -4,7 +4,7 @@ import io.cumulus.core.Settings
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.{QueryBuilder, QueryE}
 import io.cumulus.core.validation.AppError
-import io.cumulus.models.user.User
+import io.cumulus.models.user.{User, UserSecurity}
 import io.cumulus.persistence.stores.UserStore._
 import io.cumulus.persistence.stores.{FsNodeStore, UserStore}
 import io.cumulus.views.email.CumulusEmailValidationEmail
@@ -57,7 +57,7 @@ class UserService(
     // Search an user by the login & check the hashed password
     userStore.findBy(loginField, login).map {
       case Some(user) if user.security.checkPassword(password) =>
-        UserService.validateUser(user)
+        UserService.checkUsableUser(user)
       case _ =>
         Left(AppError.validation("validation.user.invalid-login-or-password"))
     }
@@ -81,7 +81,7 @@ class UserService(
           .findBy(loginField, login)
           .map {
             case Some(user) if user.security.checkPassword(password) =>
-              UserService.validateUser(user)
+              UserService.checkUsableUser(user)
             case _ =>
               Left(AppError.validation("validation.user.invalid-login-or-password"))
           }
@@ -143,29 +143,73 @@ class UserService(
 
   }.commit()
 
+  /**
+    * Set the first password if the account has no password already set.
+    */
+  def setFirstPassword(
+    login: String,
+    password: String
+  ): Future[Either[AppError, User]] = {
+
+    for {
+      // Find the user by the login
+      user <- QueryE.getOrNotFound(userStore.findBy(loginField, login))
+
+      // Check if the user is waiting for a password
+      _ <- QueryE.pure {
+        if(!user.security.needFirstPassword)
+          Left(AppError.notFound("api-error.not-found"))
+        else
+          Right(())
+      }
+
+      // Set the first password
+      newSecurity = UserSecurity.create(password)
+      updatedUser = user.copy(
+        security = user.security.copy(
+          encryptedPrivateKey = newSecurity.encryptedPrivateKey,
+          salt1               = newSecurity.salt1,
+          iv                  = newSecurity.iv,
+          passwordHash        = newSecurity.passwordHash,
+          salt2               = newSecurity.salt2
+        )
+      )
+
+      // Save the update
+      _ <- QueryE.lift(userStore.update(updatedUser))
+
+    } yield updatedUser
+
+  }.commit()
+
 }
 
 object UserService {
 
-  def requireAdmin(user: User): Either[AppError, User] = {
+  def checkRequireAdmin(user: User): Either[AppError, User] = {
     if(!user.isAdmin)
       Left(AppError.forbidden("validation.user.admin-required"))
     else
       Right(user)
   }
 
-  def notSelf(user: User)(implicit other: User): Either[AppError, User] = {
+  def checkNotSelf(user: User)(implicit other: User): Either[AppError, User] = {
     if(user.id == other.id)
       Left(AppError.validation("validation.user.not-self")) // TODO key
     else
       Right(user)
   }
 
-  def validateUser(user: User): Either[AppError, User] = {
+  def checkUsableUser(user: User): Either[AppError, User] = {
+    // The email needs to be validated
     if (!user.security.emailValidated)
       Left(AppError.validation("validation.user.email-not-activated"))
+    // The account needs to be active
     else if (!user.security.activated)
       Left(AppError.validation("validation.user.user-deactivated "))
+    // The password need to be set
+    else if (user.security.needFirstPassword)
+      Left(AppError.validation("validation.user.need-password"))
     else
       Right(user)
   }

@@ -37,16 +37,23 @@ case class User(
 
 object User {
 
-  def create(email: String, login: String, password: String): User = {
+  def create(email: String, login: String, password: String): User =
+    create(
+      email,
+      login,
+      UserSecurity.create(password),
+      Seq(UserRole.User, UserRole.Admin) // TODO remove admin by default :)
+    )
+
+  def create(email: String, login: String, userSecurity: UserSecurity, roles: Seq[UserRole]): User =
     User(
       UUID.randomUUID(),
       email,
       login,
-      UserSecurity.create(password),
+      userSecurity,
       LocalDateTime.now,
-      Seq(UserRole.User, UserRole.Admin) // TODO remove admin by default :)
+      roles
     )
-  }
 
   implicit val reads: Reads[User] = Json.reads[User]
 

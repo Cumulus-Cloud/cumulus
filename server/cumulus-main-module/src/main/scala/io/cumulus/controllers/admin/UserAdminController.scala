@@ -25,7 +25,7 @@ class UserAdminController(
   /**
     * Creates a new user.
     */
-  def create: Action[SignUpPayload] =
+  def create: Action[SignUpPayload] = // TODO do not reuse SignUpPayload
     AuthenticatedAction.async(parseJson[SignUpPayload]) { implicit request =>
       ApiResponse {
         val signInPayload = request.body
@@ -33,7 +33,6 @@ class UserAdminController(
         userServiceAdmin.createUser(
           signInPayload.email,
           signInPayload.login,
-          signInPayload.password,
           Seq(UserRole.User) // Only user for now
         )
       }

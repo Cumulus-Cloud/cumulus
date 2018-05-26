@@ -46,7 +46,19 @@ class UserController (
     }
 
   /**
-    * Validate the email of the user. This a static page and not an API endpoint.
+    * Sets the first password if the user needs one.
+    */
+  def setFirstPassword: Action[SignUpPayload] = // TODO do not reuse SignUpPayload
+    Action.async(parseJson[SignUpPayload]) { implicit request =>
+      ApiResponse {
+        val signInPayload = request.body
+
+        userService.setFirstPassword(signInPayload.login, signInPayload.password)
+      }
+    }
+
+  /**
+    * Validates the email of the user. This a static page and not an API endpoint.
     * @param userLogin The login of the user.
     * @param emailCode The secret code sent by mail.
     */
@@ -98,7 +110,7 @@ class UserController (
     }
 
   /**
-    * Return information about the user performing the operation.
+    * Returns information about the user performing the operation.
     */
   def me: Action[AnyContent] =
     AuthenticatedAction { implicit request =>
@@ -112,7 +124,7 @@ class UserController (
   // TODO: route to change language
 
   /**
-    * List the sessions of the current user.
+    * Lists the sessions of the current user.
     *
     * @param limit The maximum number of sessions to return. Used for pagination.
     * @param offset The offset of sessions to return. Used for pagination.
@@ -128,7 +140,7 @@ class UserController (
     }
 
   /**
-    * Show the specified sessions.
+    * Shows the specified sessions.
     */
   def getSession(sessionId: UUID): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
@@ -138,7 +150,7 @@ class UserController (
     }
 
   /**
-    * Revoke the specified session.
+    * Revokes the specified session.
     *
     * @param sessionId The session to revoke.
     */

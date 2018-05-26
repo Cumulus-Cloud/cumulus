@@ -16,6 +16,10 @@ import play.api.libs.json.{Format, Json}
   * @param salt2 Salt used for the hash of the hash of the password. Because we can't keep the hash of the password,
   *              because this hash is used as the key of the global private key, we keep the hash of the hash of the
   *              password, and thus need two salt (one for the first hash, another for the second).
+  * @param emailCode Secret code sent by email, used to validate the email.
+  * @param emailValidated If the email has been validated.
+  * @param activated If the account is active or not. Account are, by default, active.
+  * @param needFirstPassword If the account needs its first password to be usable. A dummy random password will be used.
   */
 case class UserSecurity(
   encryptedPrivateKey: ByteString,
@@ -25,7 +29,8 @@ case class UserSecurity(
   salt2: ByteString,
   emailCode: ByteString,
   emailValidated: Boolean,
-  activated: Boolean
+  activated: Boolean,
+  needFirstPassword: Boolean
 ) {
 
   /**
@@ -106,7 +111,8 @@ object UserSecurity {
       salt2               = salt2,
       emailCode           = passwordCode,
       emailValidated      = false,
-      activated           = true
+      activated           = true,
+      needFirstPassword   = false
     )
   }
 
