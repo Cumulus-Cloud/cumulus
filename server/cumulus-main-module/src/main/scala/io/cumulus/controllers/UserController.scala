@@ -14,7 +14,6 @@ import io.cumulus.core.controllers.utils.authentication.Authentication._
 import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
 import io.cumulus.core.persistence.query.QueryPagination
 import io.cumulus.core.validation.AppError
-import io.cumulus.models.user.User
 import io.cumulus.models.user.session.UserSession
 import io.cumulus.services.{SessionService, UserService}
 import io.cumulus.views.CumulusEmailValidationPage
@@ -39,9 +38,8 @@ class UserController (
       ApiResponse {
         if(settings.management.allowSignUp) {
           val signInPayload = request.body
-          val user = User.create(signInPayload.email, signInPayload.login, signInPayload.password)
 
-          userService.createUser(user)
+          userService.createUser(signInPayload.email, signInPayload.login, signInPayload.password)
         } else
           Future.successful(Left(AppError.forbidden("validation.user.sign-up-deactivated")))
       }
@@ -56,6 +54,18 @@ class UserController (
     Action.async { implicit request =>
       userService.validateUserEmail(userLogin, emailCode).map { result =>
         Ok(CumulusEmailValidationPage(result))
+      }
+    }
+
+  /**
+    * Resend the validation email to the user.
+    */
+  def resendValidationEmail: Action[LoginPayload] =
+    Action.async(parseJson[LoginPayload]) { implicit request =>
+      val loginPayload = request.body
+
+      ApiResponse {
+        userService.resendEmail(loginPayload.login, loginPayload.password)
       }
     }
 
@@ -96,6 +106,10 @@ class UserController (
         Right(request.authenticatedSession.user)
       }
     }
+
+  // TODO: route to change email
+  // TODO: route to change password
+  // TODO: route to change language
 
   /**
     * List the sessions of the current user.

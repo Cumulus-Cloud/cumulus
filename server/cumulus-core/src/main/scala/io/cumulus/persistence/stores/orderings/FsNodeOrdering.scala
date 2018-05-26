@@ -15,7 +15,7 @@ sealed abstract class FsNodeOrderingType(sql: String, direction: QueryOrderingDi
 
 }
 
-object QueryOrderingType extends Enum[FsNodeOrderingType] {
+object FsNodeOrderingType extends Enum[FsNodeOrderingType] {
 
   // Note: since we use LocalDateTime, we can use the alphabetical order to sort dates
 

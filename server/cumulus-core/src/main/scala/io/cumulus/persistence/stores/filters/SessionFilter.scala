@@ -6,9 +6,9 @@ import io.cumulus.models.user.User
 import io.cumulus.persistence.stores.SessionStore._
 
 /**
-  * Filter for a filesystem node.
+  * Filter for sessions.
   *
-  * @param owner The owner of the node.
+  * @param owner The owner of the session.
   * @param revoked if the session is revoked.
   */
 case class SessionFilter(
