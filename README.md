@@ -1,4 +1,4 @@
-test2
+
 # <div align="center"><img src="https://cumulus-cloud.github.io/assets/img/logo3.png" width="280" /></div>
 
 Our vision of the self-hosted cloud, done right. Using state of the art technologies and frameworks, Cumulus aims to be the flawless experience you always wanted. Easy to deploy, fast, secure and with a beautiful UI.
