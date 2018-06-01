@@ -37,10 +37,18 @@ class UserService(
     login: String,
     password: String
   )(implicit messages: Messages): Future[Either[AppError, User]] = {
-    val user = User.create(email, login, password)
+    val user =
+      User.create(
+        email,
+        login,
+        password,
+        messages.lang.locale // Use default lang
+      )
 
-    createUserInternal(user)
-      .commit()
+    if(settings.management.allowSignUp)
+      createUserInternal(user).commit()
+    else
+      Future.successful(Left(AppError.forbidden("validation.user.sign-up-deactivated")))
   }
 
   /**
@@ -112,11 +120,11 @@ class UserService(
     * Validate an user email, using the provided login and the secret email code (sent by email, to check the email
     * account).
     * @param login The user's login.
-    * @param emailCode The email validation code.
+    * @param validationCode The email validation code.
     */
   def validateUserEmail(
     login: String,
-    emailCode: String
+    validationCode: String
   ): Future[Either[AppError, User]] = {
 
     for {
@@ -126,7 +134,7 @@ class UserService(
       // Update the email validation
       updatedUser <- QueryE.pure {
         maybeUser match {
-          case Some(user) if user.security.checkEmailCode(emailCode) =>
+          case Some(user) if user.security.checkValidationCode(validationCode) =>
             if(user.security.emailValidated)
               Left(AppError.validation("validation.user.email-already-validated"))
             else
@@ -145,22 +153,26 @@ class UserService(
 
   /**
     * Set the first password if the account has no password already set.
+    * @param login The login of the user.
+    * @param password The first password of the user.
+    * @param validationCode The email validation code.
     */
   def setFirstPassword(
     login: String,
-    password: String
+    password: String,
+    validationCode: String
   ): Future[Either[AppError, User]] = {
 
     for {
       // Find the user by the login
       user <- QueryE.getOrNotFound(userStore.findBy(loginField, login))
 
-      // Check if the user is waiting for a password
+      // Check if the user is waiting for a password & that the validation code is correct
       _ <- QueryE.pure {
-        if(!user.security.needFirstPassword)
-          Left(AppError.notFound("api-error.not-found"))
-        else
+        if(user.security.needFirstPassword && user.security.checkValidationCode(validationCode))
           Right(())
+        else
+          Left(AppError.notFound("api-error.not-found"))
       }
 
       // Set the first password

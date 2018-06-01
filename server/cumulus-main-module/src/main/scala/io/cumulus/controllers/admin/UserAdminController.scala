@@ -1,12 +1,12 @@
 package io.cumulus.controllers.admin
 
-import io.cumulus.controllers.payloads.SignUpPayload
+import io.cumulus.controllers.payloads.{SignUpPayload, UserCreationPayload}
 import io.cumulus.controllers.utils.UserAuthentication
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
 import io.cumulus.core.persistence.query.QueryPagination
-import io.cumulus.models.user.{UserRole, UserUpdate}
+import io.cumulus.models.user.UserUpdate
 import io.cumulus.services.SessionService
 import io.cumulus.services.admin.UserAdminService
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
@@ -25,15 +25,14 @@ class UserAdminController(
   /**
     * Creates a new user.
     */
-  def create: Action[SignUpPayload] = // TODO do not reuse SignUpPayload
-    AuthenticatedAction.async(parseJson[SignUpPayload]) { implicit request =>
+  def create: Action[UserCreationPayload] =
+    AuthenticatedAction.async(parseJson[UserCreationPayload]) { implicit request =>
       ApiResponse {
-        val signInPayload = request.body
+        val userCreationPayload = request.body
 
         userServiceAdmin.createUser(
-          signInPayload.email,
-          signInPayload.login,
-          Seq(UserRole.User) // Only user for now
+          userCreationPayload.email,
+          userCreationPayload.login
         )
       }
     }

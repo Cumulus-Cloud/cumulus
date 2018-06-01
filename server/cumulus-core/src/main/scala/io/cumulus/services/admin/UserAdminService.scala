@@ -3,7 +3,7 @@ package io.cumulus.services.admin
 import io.cumulus.core.Settings
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.{QueryBuilder, QueryE, QueryPagination}
-import io.cumulus.core.utils.{Crypto, PaginatedList}
+import io.cumulus.core.utils.PaginatedList
 import io.cumulus.core.utils.PaginatedList._
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.user.{User, UserRole, UserSecurity, UserUpdate}
@@ -32,12 +32,16 @@ class UserAdminService(
 
   /**
     * Creates a new user by an admin. The provided user should have an unique ID, email and login ; otherwise the
-    * creation will fail and return an error.
+    * creation will fail and return an error. The created user is not instantly activated because its password is not
+    * set, and its email not validated.
+    * @param email The email of the new user.
+    * @param login The login of the new user.
+    * @param roles The roles of the new user. Should at least contains the `UserRole.User` role to be usable.
     */
   def createUser(
     email: String,
     login: String,
-    roles: Seq[UserRole]
+    roles: Seq[UserRole] = Seq(UserRole.User)
   )(implicit
     admin: User,
     messages: Messages
@@ -46,7 +50,8 @@ class UserAdminService(
       User.create(
         email,
         login,
-        UserSecurity.create(Crypto.randomCode(26)).copy(needFirstPassword = true),
+        UserSecurity.createTemporary,  // Use temporary password
+        messages.lang.locale,          // Use default lang
         roles
       )
 

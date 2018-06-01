@@ -6,7 +6,7 @@ import cats.data.EitherT
 import cats.implicits._
 
 import scala.concurrent.{ExecutionContext, Future}
-import io.cumulus.controllers.payloads.{LoginPayload, SignUpPayload}
+import io.cumulus.controllers.payloads.{SetFirstPasswordPayload, LoginPayload, SignUpPayload}
 import io.cumulus.controllers.utils.UserAuthentication
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.ApiUtils
@@ -30,47 +30,55 @@ class UserController (
 ) extends AbstractController(cc) with UserAuthentication with ApiUtils with BodyParserJson {
 
   /**
-    * The sign up action, to create new accounts.
-    * @return
+    * The sign up action, to create a new account.
     */
   def signUp: Action[SignUpPayload] =
     Action.async(parseJson[SignUpPayload]) { implicit request =>
       ApiResponse {
-        if(settings.management.allowSignUp) {
-          val signInPayload = request.body
+        val signInPayload = request.body
 
-          userService.createUser(signInPayload.email, signInPayload.login, signInPayload.password)
-        } else
-          Future.successful(Left(AppError.forbidden("validation.user.sign-up-deactivated")))
+        request2Messages
+
+        userService.createUser(
+          signInPayload.email,
+          signInPayload.login,
+          signInPayload.password
+        )
       }
     }
 
   /**
     * Sets the first password if the user needs one.
     */
-  def setFirstPassword: Action[SignUpPayload] = // TODO do not reuse SignUpPayload
-    Action.async(parseJson[SignUpPayload]) { implicit request =>
+  def setFirstPassword: Action[SetFirstPasswordPayload] =
+    Action.async(parseJson[SetFirstPasswordPayload]) { implicit request =>
       ApiResponse {
-        val signInPayload = request.body
+        val passwordPayload = request.body
 
-        userService.setFirstPassword(signInPayload.login, signInPayload.password)
+        userService.setFirstPassword(
+          passwordPayload.login,
+          passwordPayload.password,
+          passwordPayload.validationCode
+        )
       }
     }
 
   /**
     * Validates the email of the user. This a static page and not an API endpoint.
     * @param userLogin The login of the user.
-    * @param emailCode The secret code sent by mail.
+    * @param validationCode The secret code sent by mail.
     */
-  def validateEmail(userLogin: String, emailCode: String): Action[AnyContent] =
+  def validateEmail(userLogin: String, validationCode: String): Action[AnyContent] =
     Action.async { implicit request =>
-      userService.validateUserEmail(userLogin, emailCode).map { result =>
-        Ok(CumulusEmailValidationPage(result))
-      }
+      userService
+        .validateUserEmail(userLogin, validationCode)
+        .map { result =>
+          Ok(CumulusEmailValidationPage(result))
+        }
     }
 
   /**
-    * Resend the validation email to the user.
+    * Resend the validation email to the user. Only works with user-created account waiting for an email validation.
     */
   def resendValidationEmail: Action[LoginPayload] =
     Action.async(parseJson[LoginPayload]) { implicit request =>
