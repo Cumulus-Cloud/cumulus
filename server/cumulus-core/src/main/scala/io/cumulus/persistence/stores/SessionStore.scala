@@ -43,6 +43,7 @@ object SessionStore {
   val pkField: String       = "id"
   val ownerField: String    = "user_id"
   val metadataField: String = "metadata"
+  val revokedField: String  = "revoked"
 
 }
 

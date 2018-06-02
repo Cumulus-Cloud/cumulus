@@ -1,4 +1,4 @@
-package io.cumulus.controllers
+package io.cumulus.controllers.admin
 
 import akka.actor.Scheduler
 import io.cumulus.controllers.utils.UserAuthentication

@@ -1,7 +1,6 @@
 package io.cumulus.models.user
 
 import akka.util.ByteString
-import com.github.ghik.silencer.silent
 import io.cumulus.core.json.JsonFormat._
 import io.cumulus.core.utils.{Base16, Crypto}
 import play.api.libs.json.{Format, Json}
@@ -16,6 +15,10 @@ import play.api.libs.json.{Format, Json}
   * @param salt2 Salt used for the hash of the hash of the password. Because we can't keep the hash of the password,
   *              because this hash is used as the key of the global private key, we keep the hash of the hash of the
   *              password, and thus need two salt (one for the first hash, another for the second).
+  * @param validationCode Secret code sent by email, used to validate the email.
+  * @param emailValidated If the email has been validated.
+  * @param activated If the account is active or not. Account are, by default, active.
+  * @param needFirstPassword If the account needs its first password to be usable. A dummy random password will be used.
   */
 case class UserSecurity(
   encryptedPrivateKey: ByteString,
@@ -23,9 +26,10 @@ case class UserSecurity(
   iv: ByteString,
   passwordHash: ByteString,
   salt2: ByteString,
-  emailCode: ByteString,
+  validationCode: ByteString,
   emailValidated: Boolean,
-  activated: Boolean
+  activated: Boolean,
+  needFirstPassword: Boolean
 ) {
 
   /**
@@ -42,8 +46,8 @@ case class UserSecurity(
   /**
     * Check that the provided code is the user's mail code.
     */
-  def checkEmailCode(toTest: String): Boolean =
-    Base16.decode(toTest).contains(emailCode)
+  def checkValidationCode(toTest: String): Boolean =
+    Base16.decode(toTest).contains(validationCode)
 
   /**
     * Decode the private key using the provided password.
@@ -65,10 +69,21 @@ case class UserSecurity(
   /**
     * Change the password.
     */
-  @silent
   def changePassword(previousPassword: String, newPassword: String): UserSecurity = {
-    // TODO (decrypt, re-encrypt)
-    ???
+    // Decrypt the private key
+    val previousPasswordHash = Crypto.scrypt(previousPassword, salt1)
+    val privateKey = Crypto.AESDecrypt(previousPasswordHash, iv, encryptedPrivateKey)
+
+    // Update the security info
+    val updatedSecurity = UserSecurity.create(privateKey, newPassword)
+
+    copy(
+      encryptedPrivateKey = updatedSecurity.encryptedPrivateKey,
+      salt1               = updatedSecurity.salt1,
+      iv                  = updatedSecurity.iv,
+      passwordHash        = updatedSecurity.passwordHash,
+      salt2               = updatedSecurity.salt2
+    )
   }
 
 }
@@ -76,13 +91,27 @@ case class UserSecurity(
 object UserSecurity {
 
   /**
-    * Create for a new user using the provided clear password.
+    * Create a random password with the flag `needFirstPassword` to true.
+    */
+  def createTemporary: UserSecurity =
+    create(Crypto.randomCode(26)).copy(needFirstPassword = true)
+
+  /**
+    * Create a security object for a provided clear password.
     * @param password The password of the user.
     */
-  def create(password: String): UserSecurity = {
-    // Generate a random 256Bit key
-    val privateKey = Crypto.randomBytes(16)
+  def create(password: String): UserSecurity =
+    create(
+      Crypto.randomBytes(16), // Generate a random 256Bit key
+      password
+    )
 
+  /**
+    * Create a security object for a provided clear password and clear private key.
+    * @param password The password of the user.
+    * @param privateKey The private key of the user.
+    */
+  def create(privateKey: ByteString, password: String): UserSecurity = {
     // Hash of the password to get a 256Bit AES key
     val salt = Crypto.randomBytes(16)
     val passwordHash = Crypto.scrypt(password, salt)
@@ -95,8 +124,8 @@ object UserSecurity {
     val salt2 = Crypto.randomBytes(16)
     val passwordHashHash = Crypto.scrypt(passwordHash, salt2)
 
-    // Random password code
-    val passwordCode = Crypto.randomBytes(16)
+    // Random validation code
+    val validationCode = Crypto.randomBytes(16)
 
     UserSecurity(
       encryptedPrivateKey = encryptedPrivateKey,
@@ -104,9 +133,10 @@ object UserSecurity {
       iv                  = iv,
       passwordHash        = passwordHashHash,
       salt2               = salt2,
-      emailCode           = passwordCode,
+      validationCode      = validationCode,
       emailValidated      = false,
-      activated           = true
+      activated           = true,
+      needFirstPassword   = false
     )
   }
 
