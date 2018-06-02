@@ -1,6 +1,7 @@
-package io.cumulus.models.user
+package io.cumulus.models.user.session
 
 import akka.util.ByteString
+import io.cumulus.models.user.User
 import io.cumulus.persistence.storage.StorageReference
 import play.api.libs.json.{Format, Json, OFormat}
 
@@ -8,15 +9,17 @@ import scala.language.implicitConversions
 
 /**
   * Session of the user. The private key is also used for decrypt and encrypt files, and thus should be present when
-  * crypting and decrypting files.
+  * ciphering and deciphering files.
   *
   * @param user The connected user.
+  * @param information The information on the session currently used by the user.
   * @param password The user's private key (password).
   */
 case class UserSession(
   user: User,
+  information: SessionInformation,
   password: String
-) extends Session {
+) extends AuthenticatedSession {
 
   /** Private key of the user */
   def privateKey: ByteString =
@@ -36,7 +39,7 @@ object UserSession {
   implicit def userSessionToUser(userSession: UserSession): User =
     userSession.user
 
-  implicit def format: Format[UserSession] ={
+  implicit def format: Format[UserSession] = {
     implicit val userFormat: OFormat[User] = User.internalFormat
     Json.format[UserSession]
   }

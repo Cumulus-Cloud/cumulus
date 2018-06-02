@@ -1,18 +1,18 @@
-package io.cumulus.controllers
+package io.cumulus.controllers.admin
+
+import akka.actor.Scheduler
+import io.cumulus.controllers.utils.UserAuthentication
+import io.cumulus.core.controllers.utils.api.ApiUtils
+import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
+import io.cumulus.core.utils.ServerWatchdog
+import io.cumulus.core.validation.AppError
+import io.cumulus.services.SessionService
+import play.api.libs.json.Json
+import play.api.mvc.{AbstractController, ControllerComponents}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
-
-import akka.actor.Scheduler
-import io.cumulus.core.controllers.utils.api.ApiUtils
-import io.cumulus.core.controllers.utils.authentication.Authentication
-import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
-import io.cumulus.core.utils.ServerWatchdog
-import io.cumulus.core.validation.AppError
-import io.cumulus.models.user.UserSession
-import play.api.libs.json.Json
-import play.api.mvc.{AbstractController, ControllerComponents}
 
 /**
   * Controller for all the operations on the server's own management.
@@ -20,10 +20,11 @@ import play.api.mvc.{AbstractController, ControllerComponents}
 class ManagementController(
   watchdog: ServerWatchdog,
   cc: ControllerComponents,
-  scheduler: Scheduler
+  scheduler: Scheduler,
+  val sessionService: SessionService
 )(
-  implicit ec: ExecutionContext
-) extends AbstractController(cc) with Authentication[UserSession] with ApiUtils with BodyParserJson {
+  implicit val ec: ExecutionContext
+) extends AbstractController(cc) with UserAuthentication with ApiUtils with BodyParserJson {
 
   /**
     * Reload programmatically the server. This will stop then restart the server, reloading everything on the server.
@@ -31,7 +32,7 @@ class ManagementController(
     */
   def reload = AuthenticatedAction { implicit request =>
     ApiResponse {
-      if (request.user.isAdmin) {
+      if (request.authenticatedSession.user.isAdmin) {
         logger.info("Requesting the reloading of the Cumulus server")
 
         akka.pattern.after(2 seconds, scheduler)(Future {
@@ -51,7 +52,7 @@ class ManagementController(
     */
   def stop = AuthenticatedAction { implicit request =>
     ApiResponse {
-      if (request.user.isAdmin) {
+      if (request.authenticatedSession.user.isAdmin) {
         logger.info("Requesting the stopping of the Cumulus server")
 
         akka.pattern.after(2 seconds, scheduler)(Future {

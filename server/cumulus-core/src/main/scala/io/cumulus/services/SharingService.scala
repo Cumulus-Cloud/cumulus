@@ -12,7 +12,8 @@ import io.cumulus.core.validation.AppError
 import io.cumulus.models._
 import io.cumulus.models.fs.{Directory, File, FsNode}
 import io.cumulus.models.sharing.{FileSharingSecurity, Sharing, SharingSecurity}
-import io.cumulus.models.user.{User, UserSession}
+import io.cumulus.models.user.User
+import io.cumulus.models.user.session.UserSession
 import io.cumulus.persistence.storage.StorageCipher
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore, UserStore}
 

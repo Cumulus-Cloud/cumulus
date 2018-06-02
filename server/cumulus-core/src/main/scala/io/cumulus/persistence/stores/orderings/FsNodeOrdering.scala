@@ -15,15 +15,17 @@ sealed abstract class FsNodeOrderingType(sql: String, direction: QueryOrderingDi
 
 }
 
-object QueryOrderingType extends Enum[FsNodeOrderingType] {
+object FsNodeOrderingType extends Enum[FsNodeOrderingType] {
 
-  case object OrderByFilenameAsc extends FsNodeOrderingType(nameField, ASC)
-  case object OrderByFilenameDesc extends FsNodeOrderingType(nameField, DESC)
-  case object OrderByCreationAsc extends FsNodeOrderingType(s"$metadataField ->> 'creation'", ASC)
-  case object OrderByCreationDesc extends FsNodeOrderingType(s"$metadataField ->> 'creation'", DESC)
-  case object OrderByModificationAsc extends FsNodeOrderingType(s"$metadataField ->> 'modification'", ASC)
+  // Note: since we use LocalDateTime, we can use the alphabetical order to sort dates
+
+  case object OrderByFilenameAsc      extends FsNodeOrderingType(nameField, ASC)
+  case object OrderByFilenameDesc     extends FsNodeOrderingType(nameField, DESC)
+  case object OrderByCreationAsc      extends FsNodeOrderingType(s"$metadataField ->> 'creation'", ASC)
+  case object OrderByCreationDesc     extends FsNodeOrderingType(s"$metadataField ->> 'creation'", DESC)
+  case object OrderByModificationAsc  extends FsNodeOrderingType(s"$metadataField ->> 'modification'", ASC)
   case object OrderByModificationDesc extends FsNodeOrderingType(s"$metadataField ->> 'modification'", DESC)
-  case object OrderByNodeType extends FsNodeOrderingType(nodeTypeField, ASC)
+  case object OrderByNodeType         extends FsNodeOrderingType(nodeTypeField, ASC)
 
   override val values: immutable.IndexedSeq[FsNodeOrderingType] = findValues
 

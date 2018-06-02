@@ -6,6 +6,7 @@ import java.util.UUID
 
 import io.cumulus.core.json.JsonFormat
 import io.cumulus.models.Path
+import io.cumulus.models.user.User
 import io.cumulus.persistence.storage.StorageReference
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
@@ -92,7 +93,7 @@ object Directory {
 
   /** Default newly created directory */
   def create(
-    creator: UUID,
+    creator: User,
     path: Path
   ): Directory = {
     val now = LocalDateTime.now()
@@ -104,7 +105,7 @@ object Directory {
       now,
       now,
       false,
-      creator,
+      creator.id,
       Seq.empty,
       Seq.empty
     )
@@ -177,7 +178,7 @@ object File {
 
   /** Default newly created file */
   def create(
-    owner: UUID,
+    creator: User,
     path: Path,
     mimeType: String,
     storage: StorageReference
@@ -191,7 +192,7 @@ object File {
       creation = now,
       modification = now,
       hidden = false,
-      owner = owner,
+      owner = creator.id,
       permissions = Seq.empty,
       metadata = DefaultMetadata.empty,
       size = storage.size,

@@ -11,6 +11,7 @@ import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvide
 import com.softwaremill.macwire._
 import com.typesafe.config.{Config, ConfigFactory}
 import io.cumulus.controllers._
+import io.cumulus.controllers.admin.{ManagementController, UserAdminController}
 import io.cumulus.controllers.utils.LoggingFilter
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.HttpErrorHandler
@@ -20,7 +21,8 @@ import io.cumulus.core.utils.ServerWatchdog
 import io.cumulus.services._
 import io.cumulus.persistence.storage.engines.LocalStorage
 import io.cumulus.persistence.storage.{ChunkRemover, StorageEngines}
-import io.cumulus.persistence.stores.{FsNodeStore, SharingStore, UserStore}
+import io.cumulus.persistence.stores.{FsNodeStore, SessionStore, SharingStore, UserStore}
+import io.cumulus.services.admin.UserAdminService
 import io.cumulus.stages._
 import jsmessages.{JsMessages, JsMessagesFactory}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
@@ -124,13 +126,18 @@ class CumulusComponents(
   lazy val userStore: UserStore       = wire[UserStore]
   lazy val fsNodeStore: FsNodeStore   = wire[FsNodeStore]
   lazy val sharingStore: SharingStore = wire[SharingStore]
+  lazy val sessionStore: SessionStore = wire[SessionStore]
 
   // Services
   lazy val userService: UserService       = wire[UserService]
   lazy val fsNodeService: FsNodeService   = wire[FsNodeService]
   lazy val storageService: StorageService = wire[StorageService]
   lazy val sharingService: SharingService = wire[SharingService]
+  lazy val sessionService: SessionService = wire[SessionService]
   lazy val mailService: MailService       = wire[MailService]
+
+  // Admin services
+  lazy val userServiceAdmin: UserAdminService = wire[UserAdminService]
 
   // Controllers
   lazy val homeController: HomeController                 = wire[HomeController]
@@ -140,6 +147,9 @@ class CumulusComponents(
   lazy val sharingController: SharingPublicController     = wire[SharingPublicController]
   lazy val sharingManagementController: SharingController = wire[SharingController]
   lazy val assetController: Assets                        = wire[Assets]
+
+  // Admin controllers
+  lazy val userAdminController: UserAdminController = wire[UserAdminController]
 
   // Actors
   lazy val chunkRemover: ActorRef = actorSystem.actorOf(ChunkRemover.props(storageEngines), "ChunkRemover")

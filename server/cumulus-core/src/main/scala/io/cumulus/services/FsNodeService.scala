@@ -12,7 +12,7 @@ import io.cumulus.models.fs._
 import io.cumulus.models.user.User
 import io.cumulus.persistence.stores.filters.FsNodeFilter
 import io.cumulus.persistence.stores.orderings.FsNodeOrdering
-import io.cumulus.persistence.stores.orderings.QueryOrderingType.{OrderByFilenameAsc, OrderByNodeType}
+import io.cumulus.persistence.stores.orderings.FsNodeOrderingType.{OrderByFilenameAsc, OrderByNodeType}
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore}
 import play.api.libs.json.__
 

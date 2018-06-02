@@ -18,7 +18,7 @@ case class CumulusEmailValidationEmail(
     messages("email.email-validation.content-title")
 
   override protected def mailContent: Seq[Tag] = {
-    val link = s"${settings.host.url}/validateEmail?userLogin=${user.login}&emailCode=${Base16.encode(user.security.emailCode)}"
+    val link = s"${settings.host.url}/validateEmail?userLogin=${user.login}&emailCode=${Base16.encode(user.security.validationCode)}"
 
     Seq(
       span(

@@ -11,6 +11,13 @@
   CREATE UNIQUE INDEX user_mail_unique ON cumulus_user (LOWER(email));
   CREATE UNIQUE INDEX user_login_unique ON cumulus_user (LOWER(login));
 
+  -- User's session
+  CREATE TABLE cumulus_session (
+    id       UUID  PRIMARY KEY,
+    user_id  UUID  REFERENCES cumulus_user(id), -- Owner
+    metadata JSONB NOT NULL                     -- Contains metadata about the session
+  );
+
   -- File system
   CREATE TABLE fs_node (
     id           UUID      PRIMARY KEY,
@@ -49,6 +56,7 @@
 
   DROP TABLE IF EXISTS sharing;
   DROP TABLE IF EXISTS fs_node;
+  DROP TABLE IF EXISTS cumulus_session;
   DROP TABLE IF EXISTS cumulus_user;
 
   DROP EXTENSION IF EXISTS fuzzystrmatch;

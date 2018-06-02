@@ -2,7 +2,7 @@ package io.cumulus.core.persistence.anorm
 
 import anorm._
 import io.cumulus.core.persistence.Database
-import io.cumulus.core.persistence.query.{Query, QueryBuilder, QueryFilter}
+import io.cumulus.core.persistence.query._
 
 trait AnormRepository[T, DB <: Database] {
 
@@ -63,4 +63,5 @@ trait AnormRepository[T, DB <: Database] {
     qb { implicit c =>
       SQL"SELECT COUNT(*) from #$table".as(SqlParser.long(1).single)
     }
+
 }
