@@ -3,17 +3,28 @@
 GET     /                                io.cumulus.controllers.HomeController.index
 
 # Administration endpoints
-GET     /api/admin/management/reload     io.cumulus.controllers.ManagementController.reload
-GET     /api/admin/management/stop       io.cumulus.controllers.ManagementController.stop
+GET     /api/admin/management/reload     io.cumulus.controllers.admin.ManagementController.reload
+GET     /api/admin/management/stop       io.cumulus.controllers.admin.ManagementController.stop
+
+POST    /api/admin/users                 io.cumulus.controllers.admin.UserAdminController.create
+GET     /api/admin/users                 io.cumulus.controllers.admin.UserAdminController.list(limit: Option[Int], offset: Option[Int])
+GET     /api/admin/users/:ref            io.cumulus.controllers.admin.UserAdminController.get(ref: String)
+POST    /api/admin/users/:ref            io.cumulus.controllers.admin.UserAdminController.update(ref: String)
+DELETE  /api/admin/users/:ref            io.cumulus.controllers.admin.UserAdminController.deactivate(ref: String)
 
 # User management routes
 POST    /api/users/login                 io.cumulus.controllers.UserController.login
 POST    /api/users/logout                io.cumulus.controllers.UserController.logout
 POST    /api/users/signup                io.cumulus.controllers.UserController.signUp
 GET     /api/users/me                    io.cumulus.controllers.UserController.me
+POST    /api/users/lang                  io.cumulus.controllers.UserController.changeLang
+POST    /api/users/password              io.cumulus.controllers.UserController.changePassword
+POST    /api/users/emailValidationResend io.cumulus.controllers.UserController.resendValidationEmail
 GET     /api/users/sessions              io.cumulus.controllers.UserController.listSessions(limit: Option[Int], offset: Option[Int])
 GET     /api/users/sessions/:ref         io.cumulus.controllers.UserController.getSession(ref: java.util.UUID)
+POST    /api/users/firstPassword         io.cumulus.controllers.UserController.setFirstPassword
 POST    /api/users/sessions/:ref/revoke  io.cumulus.controllers.UserController.revokeSession(ref: java.util.UUID)
+
 GET     /validateEmail                   io.cumulus.controllers.UserController.validateEmail(userLogin: String, emailCode: String)
 
 # API - FS get/update routes

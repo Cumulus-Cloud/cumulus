@@ -83,7 +83,7 @@ class SessionService(
       user <- QueryE.get(userStore.find(session.owner))
 
       // Test that the user is accessible
-      _ <- QueryE.pure(UserService.validateUser(user))
+      _ <- QueryE.pure(UserService.checkUsableUser(user))
 
       // Refresh the session
       refreshedSession = session.refresh(from)

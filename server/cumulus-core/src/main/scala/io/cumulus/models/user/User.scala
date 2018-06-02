@@ -1,7 +1,7 @@
 package io.cumulus.models.user
 
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.{Locale, UUID}
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
@@ -14,6 +14,7 @@ import play.api.libs.json._
   * @param login The login.
   * @param security User's security information.
   * @param creation The creation date.
+  * @param lang The lang of the user.
   * @param roles The roles of the user.
   */
 case class User(
@@ -22,6 +23,7 @@ case class User(
   login: String,
   security: UserSecurity,
   creation: LocalDateTime,
+  lang: Locale,
   roles: Seq[UserRole]
 ) {
 
@@ -37,16 +39,38 @@ case class User(
 
 object User {
 
-  def create(email: String, login: String, password: String): User = {
+  /** Creates a new user with default roles. */
+  def create(
+    email: String,
+    login: String,
+    password: String,
+    lang: Locale
+  ): User =
+    create(
+      email,
+      login,
+      UserSecurity.create(password),
+      lang,
+      Seq(UserRole.User, UserRole.Admin)
+    )
+
+  /** Creates a new user with the specified information. */
+  def create(
+    email: String,
+    login: String,
+    userSecurity: UserSecurity,
+    lang: Locale,
+    roles: Seq[UserRole]
+  ): User =
     User(
       UUID.randomUUID(),
       email,
       login,
-      UserSecurity.create(password),
+      userSecurity,
       LocalDateTime.now,
-      Seq(UserRole.User, UserRole.Admin) // TODO remove admin by default :)
+      lang,
+      roles
     )
-  }
 
   implicit val reads: Reads[User] = Json.reads[User]
 
@@ -56,6 +80,7 @@ object User {
       (__ \ "email").write[String] and
       (__ \ "login").write[String] and
       (__ \ "creation").write[LocalDateTime] and
+      (__ \ "lang").write[Locale] and
       (__ \ "roles").write[Seq[UserRole]]
     )(user =>
       (
@@ -63,6 +88,7 @@ object User {
         user.email,
         user.login,
         user.creation,
+        user.lang,
         user.roles
       )
     )

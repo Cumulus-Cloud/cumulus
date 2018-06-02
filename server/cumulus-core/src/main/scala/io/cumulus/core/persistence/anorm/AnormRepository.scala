@@ -63,4 +63,5 @@ trait AnormRepository[T, DB <: Database] {
     qb { implicit c =>
       SQL"SELECT COUNT(*) from #$table".as(SqlParser.long(1).single)
     }
+
 }

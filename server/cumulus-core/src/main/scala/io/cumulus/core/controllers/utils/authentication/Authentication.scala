@@ -100,7 +100,7 @@ trait Authentication[TOKEN, SESSION] extends BaseController with I18nSupport wit
     def withoutSession(
       block: AuthenticatedAction[AnyContent]
     ): Action[AnyContent] =
-      withErrorHandler(parse.default)(block)(defaultErrorHandler, refreshToken = false)
+      withErrorHandler(parse.default)(block)(defaultErrorHandler, discardToken = true)
 
     def apply[A](
       parser: BodyParser[A]
@@ -109,8 +109,8 @@ trait Authentication[TOKEN, SESSION] extends BaseController with I18nSupport wit
 
     def withErrorHandler[A](parser: BodyParser[A])(
       block: AuthenticatedAction[A]
-    )(errorHandler: ErrorHandler, refreshToken: Boolean = true): Action[A] =
-      asyncWithErrorHandler(parser)(block andThen Future.successful)(errorHandler, refreshToken)
+    )(errorHandler: ErrorHandler, discardToken: Boolean = false): Action[A] =
+      asyncWithErrorHandler(parser)(block andThen Future.successful)(errorHandler, discardToken)
 
     def async(
       block: AuthenticatedAsyncAction[AnyContent]
@@ -120,7 +120,7 @@ trait Authentication[TOKEN, SESSION] extends BaseController with I18nSupport wit
     def asyncWithoutSession(
       block: AuthenticatedAsyncAction[AnyContent]
     ): Action[AnyContent] =
-      asyncWithErrorHandler(parse.default)(block)(defaultErrorHandler, refreshToken = false)
+      asyncWithErrorHandler(parse.default)(block)(defaultErrorHandler, discardToken = true)
 
     def asyncWithErrorHandler(
       block: AuthenticatedAsyncAction[AnyContent]
@@ -134,8 +134,8 @@ trait Authentication[TOKEN, SESSION] extends BaseController with I18nSupport wit
 
     def asyncWithErrorHandler[A](bodyParser: BodyParser[A])(
       block: AuthenticatedAsyncAction[A]
-    )(errorHandler: ErrorHandler, refreshToken: Boolean = true): Action[A] =
-      action[A](bodyParser)(errorHandler, refreshToken).async(block)
+    )(errorHandler: ErrorHandler, discardToken: Boolean = false): Action[A] =
+      action[A](bodyParser)(errorHandler, discardToken = discardToken).async(block)
 
     /**
       * Return an action, to be composed with others action builders.
@@ -144,7 +144,8 @@ trait Authentication[TOKEN, SESSION] extends BaseController with I18nSupport wit
       bodyParser: BodyParser[B]
     )(
       errorHandler: ErrorHandler = defaultErrorHandler,
-      refreshToken: Boolean = true
+      refreshToken: Boolean = true,
+      discardToken: Boolean = false
     ): ActionBuilder[AuthenticatedRequest, B] =
       new ActionBuilder[AuthenticatedRequest, B] {
         override def parser: BodyParser[B] = bodyParser
@@ -164,10 +165,12 @@ trait Authentication[TOKEN, SESSION] extends BaseController with I18nSupport wit
               retrieveAuthentication(request, user).flatMap {
                 case Right(auth) =>
                   block(AuthenticatedRequest(auth, request)).map { req =>
-                    if(refreshToken)
-                      req.withAuthentication(jwtSession)
-                    else
+                    if(discardToken)
                       req.withoutAuthentication
+                    else if(refreshToken)
+                      req.withAuthentication(jwtSession.refresh)
+                    else
+                      req
                   }
                 case Left(error) =>
                   logger.warn(s"Authentication failed with a valid token: $error")
