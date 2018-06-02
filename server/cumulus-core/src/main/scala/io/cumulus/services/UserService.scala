@@ -4,13 +4,16 @@ import io.cumulus.core.Settings
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.{QueryBuilder, QueryE}
 import io.cumulus.core.validation.AppError
+import io.cumulus.models.user.session.UserSession
 import io.cumulus.models.user.{User, UserSecurity}
 import io.cumulus.persistence.stores.UserStore._
-import io.cumulus.persistence.stores.{FsNodeStore, UserStore}
+import io.cumulus.persistence.stores.filters.SessionFilter
+import io.cumulus.persistence.stores.{FsNodeStore, SessionStore, UserStore}
 import io.cumulus.views.email.CumulusEmailValidationEmail
-import play.api.i18n.Messages
+import play.api.i18n.{Lang, Messages}
 
 import scala.concurrent.Future
+import scala.util.Try
 
 /**
   * User service, which handle the business logic and validations of the users.
@@ -18,7 +21,8 @@ import scala.concurrent.Future
 class UserService(
   val userStore: UserStore,
   val fsNodeStore: FsNodeStore,
-  val mailService: MailService
+  val mailService: MailService,
+  sessionStore: SessionStore
 )(
   implicit
   val settings: Settings,
@@ -157,7 +161,7 @@ class UserService(
     * @param password The first password of the user.
     * @param validationCode The email validation code.
     */
-  def setFirstPassword(
+  def setUserFirstPassword(
     login: String,
     password: String,
     validationCode: String
@@ -189,6 +193,63 @@ class UserService(
 
       // Save the update
       _ <- QueryE.lift(userStore.update(updatedUser))
+
+    } yield updatedUser
+
+  }.commit()
+
+  /**
+    * Updates the language of the current user.
+    * @param lang The new language.
+    * @param user The user performing the operation.
+    */
+  def updateUserLanguage(
+    lang: String
+  )(implicit user: User): Future[Either[AppError, User]] = {
+
+    for {
+      updatedUser <- QueryE.pure {
+        Try(Lang(lang))
+          .toEither
+          .left.map(_ => AppError.validation("validation.user.invalid-lang"))
+          .map { validatedLang =>
+            user.copy(lang = validatedLang.locale)
+          }
+      }
+
+      _ <- QueryE.lift(userStore.update(updatedUser))
+
+    } yield updatedUser
+
+  }.run()
+
+  /**
+    * Update the current user password. This will also revoke all the user's sessions.
+    * @param actualPassword The actual password.
+    * @param newPassword The new password.
+    */
+  def updateUserPassword(
+    actualPassword: String,
+    newPassword: String
+  )(implicit session: UserSession): Future[Either[AppError, User]] = {
+    implicit val user: User = session.user
+
+    for {
+      // Update the user's password
+      updatedUser <- QueryE.pure {
+        if (user.security.checkPassword(actualPassword))
+          Right(user.copy(security = user.security.changePassword(actualPassword, newPassword)))
+        else
+          Left(AppError.validation("validation.user.invalid-login-or-password"))
+      }
+
+      // Update the user
+      _ <- QueryE.lift(userStore.update(updatedUser))
+
+      // Revoke all the sessions (except the current) of the user (because the password is stored in the session)
+      sessions        <- QueryE.lift(sessionStore.findAllAndLock(SessionFilter(user, revoked = Some(false))))
+      updatedSessions =  sessions.filterNot(_.id == session.information.id).map(_.revoke)
+      _               <- QueryE.seq(updatedSessions.map(s => sessionStore.update(s).map(Right.apply)))
 
     } yield updatedUser
 

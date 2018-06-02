@@ -6,7 +6,7 @@ import cats.data.EitherT
 import cats.implicits._
 
 import scala.concurrent.{ExecutionContext, Future}
-import io.cumulus.controllers.payloads.{SetFirstPasswordPayload, LoginPayload, SignUpPayload}
+import io.cumulus.controllers.payloads._
 import io.cumulus.controllers.utils.UserAuthentication
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.ApiUtils
@@ -55,7 +55,7 @@ class UserController (
       ApiResponse {
         val passwordPayload = request.body
 
-        userService.setFirstPassword(
+        userService.setUserFirstPassword(
           passwordPayload.login,
           passwordPayload.password,
           passwordPayload.validationCode
@@ -127,9 +127,45 @@ class UserController (
       }
     }
 
-  // TODO: route to change email
-  // TODO: route to change password
-  // TODO: route to change language
+  /**
+    * Changes the preferred lang of the current user.
+    */
+  def changeLang: Action[LangUpdatePayload] =
+    AuthenticatedAction.async(parseJson[LangUpdatePayload]) { implicit request =>
+      ApiResponse {
+        val langUpdatePayload = request.body
+
+        userService.updateUserLanguage(langUpdatePayload.lang)
+      }
+    }
+
+
+  /**
+    * Changes the user's password.
+    */
+  def changePassword: Action[PasswordUpdatePayload] =
+    AuthenticatedAction.action(parseJson[PasswordUpdatePayload])(refreshToken = false).async { implicit request =>
+      ApiResponse.result {
+        val passwordUpdatePayload = request.body
+
+        userService
+          .updateUserPassword(
+            passwordUpdatePayload.previousPassword,
+            passwordUpdatePayload.newPassword
+          )
+          .map(_.map { updatedUser =>
+            val session = UserSession(updatedUser, request.authenticatedSession.information, passwordUpdatePayload.newPassword)
+            val token   = createJwtSession(session)
+
+            Ok(Json.obj(
+              "token" -> token.refresh().serialize,
+              "user" -> Json.toJson(session.user)
+            )).withAuthentication(token)
+          })
+      }
+    }
+
+  // TODO: route to change email (+email validation)
 
   /**
     * Lists the sessions of the current user.

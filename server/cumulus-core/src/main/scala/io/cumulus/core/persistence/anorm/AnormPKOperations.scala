@@ -97,4 +97,5 @@ abstract class AnormPKOperations[T, DB <: Database, PK](
         s"$n = $placeholder"
       }
       .mkString(", ")
+
 }

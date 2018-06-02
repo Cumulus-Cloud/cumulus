@@ -6,8 +6,10 @@ import anorm._
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.anorm.AnormSupport._
 import io.cumulus.core.persistence.anorm.{AnormPKOperations, AnormRepository, AnormSupport}
-import io.cumulus.core.persistence.query.QueryBuilder
+import io.cumulus.core.persistence.query.{Query, QueryBuilder}
+import io.cumulus.models.user.User
 import io.cumulus.models.user.session.SessionInformation
+import io.cumulus.persistence.stores.SessionStore._
 
 /**
   * Session store, used to store users' sessions in the database.
@@ -43,6 +45,7 @@ object SessionStore {
   val pkField: String       = "id"
   val ownerField: String    = "user_id"
   val metadataField: String = "metadata"
+  val revokedField: String  = "revoked"
 
 }
 

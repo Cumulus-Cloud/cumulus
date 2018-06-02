@@ -27,7 +27,7 @@ case class SessionFilter(
   }
 
   private lazy val revokedToFilter: Option[ParameterizedSqlFilter] = revoked.map { revokedFilter =>
-    ParameterizedSqlFilter(s"$metadataField ->> 'revoked' = {_revoked}", "_revoked", revokedFilter)
+    ParameterizedSqlFilter(s"($metadataField ->> 'revoked')::bool = {_revoked}", "_revoked", revokedFilter)
   }
 
 }

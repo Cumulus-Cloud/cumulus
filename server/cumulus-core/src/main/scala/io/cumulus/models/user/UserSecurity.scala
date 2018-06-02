@@ -1,7 +1,6 @@
 package io.cumulus.models.user
 
 import akka.util.ByteString
-import com.github.ghik.silencer.silent
 import io.cumulus.core.json.JsonFormat._
 import io.cumulus.core.utils.{Base16, Crypto}
 import play.api.libs.json.{Format, Json}
@@ -70,10 +69,21 @@ case class UserSecurity(
   /**
     * Change the password.
     */
-  @silent
   def changePassword(previousPassword: String, newPassword: String): UserSecurity = {
-    // TODO (decrypt, re-encrypt)
-    ???
+    // Decrypt the private key
+    val previousPasswordHash = Crypto.scrypt(previousPassword, salt1)
+    val privateKey = Crypto.AESDecrypt(previousPasswordHash, iv, encryptedPrivateKey)
+
+    // Update the security info
+    val updatedSecurity = UserSecurity.create(privateKey, newPassword)
+
+    copy(
+      encryptedPrivateKey = updatedSecurity.encryptedPrivateKey,
+      salt1               = updatedSecurity.salt1,
+      iv                  = updatedSecurity.iv,
+      passwordHash        = updatedSecurity.passwordHash,
+      salt2               = updatedSecurity.salt2
+    )
   }
 
 }
@@ -87,13 +97,21 @@ object UserSecurity {
     create(Crypto.randomCode(26)).copy(needFirstPassword = true)
 
   /**
-    * Create a password and key for a new user using the provided clear password.
+    * Create a security object for a provided clear password.
     * @param password The password of the user.
     */
-  def create(password: String): UserSecurity = {
-    // Generate a random 256Bit key
-    val privateKey = Crypto.randomBytes(16)
+  def create(password: String): UserSecurity =
+    create(
+      Crypto.randomBytes(16), // Generate a random 256Bit key
+      password
+    )
 
+  /**
+    * Create a security object for a provided clear password and clear private key.
+    * @param password The password of the user.
+    * @param privateKey The private key of the user.
+    */
+  def create(privateKey: ByteString, password: String): UserSecurity = {
     // Hash of the password to get a 256Bit AES key
     val salt = Crypto.randomBytes(16)
     val passwordHash = Crypto.scrypt(password, salt)
@@ -106,8 +124,8 @@ object UserSecurity {
     val salt2 = Crypto.randomBytes(16)
     val passwordHashHash = Crypto.scrypt(passwordHash, salt2)
 
-    // Random password code
-    val passwordCode = Crypto.randomBytes(16)
+    // Random validation code
+    val validationCode = Crypto.randomBytes(16)
 
     UserSecurity(
       encryptedPrivateKey = encryptedPrivateKey,
@@ -115,7 +133,7 @@ object UserSecurity {
       iv                  = iv,
       passwordHash        = passwordHashHash,
       salt2               = salt2,
-      validationCode           = passwordCode,
+      validationCode      = validationCode,
       emailValidated      = false,
       activated           = true,
       needFirstPassword   = false
