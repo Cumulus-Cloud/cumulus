@@ -28,6 +28,7 @@ POST    /api/users/sessions/:ref/revoke  io.cumulus.controllers.UserController.r
 GET     /validateEmail                   io.cumulus.controllers.UserController.validateEmail(userLogin: String, emailCode: String)
 
 # API - FS get/update routes
+GET     /api/index                       io.cumulus.controllers.FileSystemController.index
 GET     /api/fs*path                     io.cumulus.controllers.FileSystemController.get(path: Path, contentLimit: Option[Int], contentOffset: Option[Int])
 PUT     /api/fs*path                     io.cumulus.controllers.FileSystemController.create(path: Path)
 POST    /api/fs*path                     io.cumulus.controllers.FileSystemController.update(path: Path)
