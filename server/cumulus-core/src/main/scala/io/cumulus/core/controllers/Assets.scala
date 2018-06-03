@@ -1,4 +1,4 @@
-package io.cumulus.controllers
+package io.cumulus.core.controllers
 
 import scala.concurrent.ExecutionContext
 

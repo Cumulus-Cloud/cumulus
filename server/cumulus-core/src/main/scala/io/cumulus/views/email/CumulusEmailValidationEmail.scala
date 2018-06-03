@@ -6,7 +6,9 @@ import io.cumulus.models.user.User
 import play.api.i18n.Messages
 import scalatags.Text.all._
 
-
+/**
+  * Validation email, used to check the email used by an user using a send link.
+  */
 case class CumulusEmailValidationEmail(
   user: User,
 )(implicit
@@ -14,7 +16,7 @@ case class CumulusEmailValidationEmail(
   val messages: Messages
 ) extends CumulusEmailTemplate {
 
-  override protected def mailContentTitle: String =
+  def mailContentTitle: String =
     messages("email.email-validation.content-title")
 
   override protected def mailContent: Seq[Tag] = {

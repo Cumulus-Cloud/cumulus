@@ -1,26 +1,26 @@
 package io.cumulus
 
-import java.io.File
 import java.security.Security
 
-import scala.concurrent.ExecutionContextExecutor
 import _root_.controllers.AssetsComponents
 import akka.actor.{ActorRef, Scheduler}
 import akka.stream.{ActorMaterializer, Materializer}
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.softwaremill.macwire._
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.Config
 import io.cumulus.controllers._
 import io.cumulus.controllers.admin.{ManagementController, UserAdminController}
 import io.cumulus.controllers.utils.LoggingFilter
 import io.cumulus.core.Settings
+import io.cumulus.core.controllers.Assets
+import io.cumulus.core.controllers.utils.LoggingFilter
 import io.cumulus.core.controllers.utils.api.HttpErrorHandler
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.QueryBuilder
 import io.cumulus.core.utils.ServerWatchdog
-import io.cumulus.services._
 import io.cumulus.persistence.storage.engines.LocalStorage
 import io.cumulus.persistence.storage.{ChunkRemover, StorageEngines}
+import io.cumulus.services._
 import io.cumulus.persistence.stores.{FsNodeStore, SessionStore, SharingStore, UserStore}
 import io.cumulus.services.admin.UserAdminService
 import io.cumulus.stages._
@@ -34,6 +34,8 @@ import play.api.libs.mailer.MailerComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
 import router.Routes
+
+import scala.concurrent.ExecutionContextExecutor
 
 /**
   * Create the components of the Cumulus web application.
@@ -91,11 +93,11 @@ class CumulusComponents(
   val routerPrefix: String = "/"
   lazy val router: Routes  = wire[Routes]
 
-  override implicit lazy val configuration: Configuration =
-    context.initialConfiguration ++ Configuration(ConfigFactory.parseFile(new File("conf/override.conf")))
 
-  implicit lazy val config: Config     = configuration.underlying // for MailerComponents
-  implicit lazy val settings: Settings = wire[Settings]
+  // Configuration
+  implicit lazy val settings: Settings                    = new Settings(context.initialConfiguration)
+  override implicit lazy val configuration: Configuration = settings.underlying
+  implicit lazy val config: Config                        = configuration.underlying // for MailerComponents
 
   // SQL evolutions
   override lazy val evolutionsReader = new ClassLoaderEvolutionsReader

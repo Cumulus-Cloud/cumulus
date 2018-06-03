@@ -1,4 +1,4 @@
-package io.cumulus.controllers.utils
+package io.cumulus.core.controllers.utils
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -23,4 +23,5 @@ class LoggingFilter(implicit val mat: Materializer, ec: ExecutionContext) extend
       result.withHeaders("Request-Time" -> requestTime.toString)
     }
   }
+
 }

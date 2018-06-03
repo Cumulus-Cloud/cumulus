@@ -51,7 +51,7 @@ object User {
       login,
       UserSecurity.create(password),
       lang,
-      Seq(UserRole.User, UserRole.Admin)
+      Seq(UserRole.User)
     )
 
   /** Creates a new user with the specified information. */
@@ -71,6 +71,14 @@ object User {
       lang,
       roles
     )
+
+  def createAdministrator(email: String, login: String, password: String): User = {
+    val user = create(email, login, password)
+
+    user
+      .copy(roles = Seq(UserRole.User, UserRole.Admin))
+      .copy(security = user.security.copy(emailValidated = true)) // Email always validated to admins
+  }
 
   implicit val reads: Reads[User] = Json.reads[User]
 

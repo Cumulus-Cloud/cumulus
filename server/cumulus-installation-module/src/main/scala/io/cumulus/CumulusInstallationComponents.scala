@@ -7,11 +7,11 @@ import akka.actor.Scheduler
 import com.github.ghik.silencer.silent
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.softwaremill.macwire._
-import io.cumulus.controllers.RecoveryController
+import io.cumulus.controllers.InstallationController
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.Assets
 import io.cumulus.core.controllers.utils.LoggingFilter
-import io.cumulus.core.controllers.utils.api.{ApiUtils, HttpErrorHandler}
+import io.cumulus.core.controllers.utils.api.HttpErrorHandler
 import io.cumulus.core.utils.ServerWatchdog
 import io.cumulus.persistence.services.ConfigurationService
 import jsmessages.{JsMessages, JsMessagesFactory}
@@ -25,15 +25,12 @@ import play.api.{ApplicationLoader, BuiltInComponentsFromContext, Configuration}
 import scala.concurrent.ExecutionContextExecutor
 
 
-class CumulusRecoveryComponents(
+class CumulusInstallationComponents(
   context: ApplicationLoader.Context,
   watchdog: ServerWatchdog
-)(
-  error: Throwable
 ) extends BuiltInComponentsFromContext(context)
   with HoconI18nComponents
-  with AssetsComponents
-  with ApiUtils {
+  with AssetsComponents {
 
   // Security provider
   Security.addProvider(new BouncyCastleProvider)
@@ -43,8 +40,22 @@ class CumulusRecoveryComponents(
     Router.from {
       case GET(p"/api/admin/management/reload") =>
         controller.reload
-      case GET(p"/api/admin/management/stop") =>
-        controller.stop
+      case GET(p"/api/configuration/database") =>
+        controller.getDatabaseConfiguration
+      case POST(p"/api/configuration/database/test") =>
+        controller.testDatabase
+      case POST(p"/api/configuration/database/configure") =>
+        controller.configureDatabase
+      case GET(p"/api/configuration/email") =>
+        controller.getEmailConfiguration
+      case POST(p"/api/configuration/email/test") =>
+        controller.testEmail
+      case POST(p"/api/configuration/email/configure") =>
+        controller.configureEmail
+      case POST(p"/api/configuration/admin/configure") =>
+        controller.createAdministrator
+      case POST(p"/api/configuration/validate") =>
+        controller.validateInstallation
       case GET(p"/assets/$file*") =>
         assetController.versioned(file)
       case GET(p"/$path*") =>
@@ -73,7 +84,7 @@ class CumulusRecoveryComponents(
   lazy val configurationService: ConfigurationService = wire[ConfigurationService]
 
   // Controllers
-  lazy val controller: RecoveryController = wire[RecoveryController]
-  lazy val assetController: Assets        = wire[Assets]
+  lazy val controller: InstallationController = wire[InstallationController]
+  lazy val assetController: Assets            = wire[Assets]
 
 }

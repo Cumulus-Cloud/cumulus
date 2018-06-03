@@ -3,7 +3,7 @@ package io.cumulus.controllers
 import cats.data.EitherT
 import cats.implicits._
 import com.github.ghik.silencer.silent
-import io.cumulus.controllers.utils.{FileDownloaderUtils, UserAuthentication}
+import io.cumulus.core.controllers.utils.{FileDownloaderUtils, UserAuthentication}
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.utils.Base16
 import io.cumulus.core.validation.AppError

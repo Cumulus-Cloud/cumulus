@@ -56,6 +56,6 @@ GET     /api/shared/download*path        io.cumulus.controllers.SharingPublicCon
 GET     /shared/download/:ref/:name      io.cumulus.controllers.SharingPublicController.downloadRoot(ref, name, key, download: Option[Boolean])
 
 # Map static resources to the /assets URL path
-GET     /favicon.ico                     io.cumulus.controllers.Assets.favicon
-GET     /assets/messages.js              io.cumulus.controllers.Assets.messages
-GET     /assets/*file                    io.cumulus.controllers.Assets.versioned(file: controllers.Assets.Asset)
+GET     /favicon.ico                     io.cumulus.core.controllers.Assets.favicon
+GET     /assets/messages.js              io.cumulus.core.controllers.Assets.messages
+GET     /assets/*file                    io.cumulus.core.controllers.Assets.versioned(file: controllers.Assets.Asset)

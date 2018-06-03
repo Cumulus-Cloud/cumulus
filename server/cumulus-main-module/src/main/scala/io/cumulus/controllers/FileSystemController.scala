@@ -7,6 +7,7 @@ import cats.implicits._
 import io.cumulus.controllers.payloads.fs._
 import io.cumulus.controllers.utils.{UserAuthentication, FileDownloaderUtils}
 import io.cumulus.core.Settings
+import io.cumulus.core.controllers.utils.FileDownloaderUtils
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.bodyParser.{BodyParserJson, BodyParserStream}
 import io.cumulus.core.persistence.query.QueryPagination

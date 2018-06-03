@@ -1,4 +1,4 @@
-package io.cumulus.controllers.utils
+package io.cumulus.core.controllers.utils
 
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
