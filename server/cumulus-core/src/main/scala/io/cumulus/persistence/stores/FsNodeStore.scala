@@ -25,13 +25,6 @@ class FsNodeStore(
   val table: String   = FsNodeStore.table
   val pkField: String = FsNodeStore.pkField
 
-  private val fsNodeIndexParse: RowParser[FsNodeIndex] =
-    SqlParser.get[String](pathField) ~
-    SqlParser.get[FsNodeType](nodeTypeField) map {
-      case path ~ nodeType =>
-        FsNodeIndex(path, nodeType)
-    }
-
   /**
     * Return the index (all the paths of the files and directories).
     * @param user The owner of the elements.
@@ -117,6 +110,13 @@ class FsNodeStore(
 
     SqlParser.get[FsNode]("metadata")
   }
+
+  private val fsNodeIndexParse: RowParser[FsNodeIndex] =
+    SqlParser.get[String](pathField) ~
+      SqlParser.get[FsNodeType](nodeTypeField) map {
+      case path ~ nodeType =>
+        FsNodeIndex(path, nodeType)
+    }
 
   def getParams(fsNode: FsNode): Seq[NamedParameter] = {
     val updatedFsNode = fsNode match {
