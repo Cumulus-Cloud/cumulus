@@ -28,6 +28,14 @@ class FsNodeService(
 ) extends Logging {
 
   /**
+    * Return the index (all the files) for the current user.
+    * @param user The user performing the operation.
+    */
+  def getIndex(implicit user: User): Future[Right[Nothing, List[FsNodeIndex]]] = {
+    fsNodeStore.findIndexByUser(user).map(Right(_)).run()
+  }
+
+  /**
     * Finds a file by its path and owner. Will fail if the element does not exist or is not a file.
     * @param path The path of the file.
     * @param user The user performing the operation.
@@ -85,34 +93,6 @@ class FsNodeService(
     */
   def findNode(path: Path, contentPagination: QueryPagination)(implicit user: User): Future[Either[AppError, FsNode]] =
     find(path, contentPagination).commit()
-
-  /** Find a node by path and owner */
-  private def find(path: Path, contentPagination: QueryPagination)(implicit user: User): QueryE[CumulusDB, FsNode] = {
-
-    for {
-      // Search the node by path and owner
-      node <- getNode(path)
-
-      // Update the node if the node is a directory
-      updatedNode <- {
-        node match {
-          // For directory we want to find the contained fsNode, so we need an extra query
-          case directory: Directory =>
-            QueryE.lift {
-              fsNodeStore.findContainedByPathAndUser(
-                path = path,
-                user = user,
-                pagination = contentPagination,
-                ordering = FsNodeOrdering.of(OrderByNodeType, OrderByFilenameAsc)
-              )
-            }.map(c => directory.copy(content = c.items))
-          case other: FsNode =>
-            QueryE.pure(other)
-        }
-      }
-    } yield updatedNode
-
-  }
 
   /**
     * Search through all the user's nodes.
@@ -264,6 +244,34 @@ class FsNodeService(
     } yield node
 
   }.commit()
+
+  /** Find a node by path and owner */
+  private def find(path: Path, contentPagination: QueryPagination)(implicit user: User): QueryE[CumulusDB, FsNode] = {
+
+    for {
+      // Search the node by path and owner
+      node <- getNode(path)
+
+      // Update the node if the node is a directory
+      updatedNode <- {
+        node match {
+          // For directory we want to find the contained fsNode, so we need an extra query
+          case directory: Directory =>
+            QueryE.lift {
+              fsNodeStore.findContainedByPathAndUser(
+                path = path,
+                user = user,
+                pagination = contentPagination,
+                ordering = FsNodeOrdering.of(OrderByNodeType, OrderByFilenameAsc)
+              )
+            }.map(c => directory.copy(content = c.items))
+          case other: FsNode =>
+            QueryE.pure(other)
+        }
+      }
+    } yield updatedNode
+
+  }
 
   /**
     * Creates a node into the filesystem. The path of the node should be unique and its parent should exists.

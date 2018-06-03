@@ -10,7 +10,7 @@ import io.cumulus.core.persistence.query._
 import io.cumulus.core.utils.PaginatedList
 import io.cumulus.core.utils.PaginatedList._
 import io.cumulus.models.Path
-import io.cumulus.models.fs.{Directory, FsNode}
+import io.cumulus.models.fs.{Directory, FsNode, FsNodeIndex, FsNodeType}
 import io.cumulus.models.user.User
 import io.cumulus.persistence.stores.FsNodeStore._
 import io.cumulus.persistence.stores.orderings.FsNodeOrdering
@@ -24,6 +24,16 @@ class FsNodeStore(
 
   val table: String   = FsNodeStore.table
   val pkField: String = FsNodeStore.pkField
+
+  /**
+    * Return the index (all the paths of the files and directories).
+    * @param user The owner of the elements.
+    */
+  def findIndexByUser(user: User) =
+    qb { implicit c =>
+      SQL"SELECT #$pathField, #$nodeTypeField FROM #$table WHERE #$ownerField = ${user.id} ORDER BY #$pathField"
+        .as(fsNodeIndexParse.*)
+    }
 
   /**
     * Find by a provided path and a provided user, used as the owner.
@@ -100,6 +110,13 @@ class FsNodeStore(
 
     SqlParser.get[FsNode]("metadata")
   }
+
+  private val fsNodeIndexParse: RowParser[FsNodeIndex] =
+    SqlParser.get[String](pathField) ~
+      SqlParser.get[FsNodeType](nodeTypeField) map {
+      case path ~ nodeType =>
+        FsNodeIndex(path, nodeType)
+    }
 
   def getParams(fsNode: FsNode): Seq[NamedParameter] = {
     val updatedFsNode = fsNode match {

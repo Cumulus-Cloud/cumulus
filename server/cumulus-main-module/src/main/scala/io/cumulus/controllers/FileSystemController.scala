@@ -36,6 +36,16 @@ class FileSystemController(
 ) extends AbstractController(cc) with UserAuthentication with ApiUtils with FileDownloaderUtils with BodyParserJson with BodyParserStream {
 
   /**
+    * List all the elements of the filesysteme.
+    */
+  def index: Action[AnyContent] =
+    AuthenticatedAction.async { implicit request =>
+      ApiResponse {
+        fsNodeService.getIndex
+      }
+    }
+
+  /**
     * Gets a filesystem element by its path.
     *
     * @param path The path of the element.
