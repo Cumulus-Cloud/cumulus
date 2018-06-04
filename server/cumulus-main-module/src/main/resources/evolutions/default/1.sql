@@ -47,6 +47,14 @@
 
   CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
 
+  -- Tasks
+  CREATE TABLE cumulus_task (
+    id        UUID  PRIMARY KEY,
+    status    VARCHAR(64),
+    recurrent BOOL,
+    metadata  JSONB NOT NULL      -- Contains metadata about the task
+  );
+
 # --- !Downs
 
   DROP INDEX IF EXISTS user_mail_unique;
@@ -58,5 +66,6 @@
   DROP TABLE IF EXISTS fs_node;
   DROP TABLE IF EXISTS cumulus_session;
   DROP TABLE IF EXISTS cumulus_user;
+  DROP TABLE IF EXISTS cumulus_task;
 
   DROP EXTENSION IF EXISTS fuzzystrmatch;

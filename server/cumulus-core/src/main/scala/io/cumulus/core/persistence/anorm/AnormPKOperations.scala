@@ -74,6 +74,19 @@ abstract class AnormPKOperations[T, DB <: Database, PK](
     }
   }
 
+  def upsert(item: T): Query[DB, Int] = {
+    val params       = getParams(item)
+    val fields       = params.map(_.name)
+    val placeholders = fields.map(n => s"{$n}").mkString(", ")
+    val updates      = getUpdates(params)
+
+    qb { implicit c =>
+      SQL(s"INSERT INTO $table(${fields.mkString(", ")}) VALUES ($placeholders) ON CONFLICT ($pkField) DO UPDATE SET $updates")
+        .on(params: _*)
+        .executeUpdate()
+    }
+  }
+
   def updateBy[A](
     pk: PK
   )(field: String, value: A)(implicit toStmt: ToStatement[A]): Query[DB, Int] =

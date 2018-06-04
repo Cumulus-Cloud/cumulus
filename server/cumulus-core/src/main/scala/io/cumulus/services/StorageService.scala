@@ -12,9 +12,10 @@ import io.cumulus.core.validation.AppError
 import io.cumulus.core.{Logging, Settings}
 import io.cumulus.models.Path
 import io.cumulus.models.fs.{DefaultMetadata, File, FileMetadata}
+import io.cumulus.models.task.DeleteStorageReferenceTask
 import io.cumulus.models.user.User
 import io.cumulus.models.user.session.{Session, UserSession}
-import io.cumulus.persistence.storage.{StorageEngines, StorageReference}
+import io.cumulus.persistence.storage.{StorageEngines, StorageObject, StorageReference}
 import io.cumulus.stages._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -22,7 +23,7 @@ import scala.util.{Failure, Success, Try}
 
 class StorageService(
   fsNodeService: FsNodeService,
-  chunkRemover: ActorRef
+  taskExecutor: ActorRef
 )(
   implicit
   ciphers: Ciphers,
@@ -154,13 +155,58 @@ class StorageService(
   def deleteNode(path: Path)(implicit session: UserSession): Future[Either[AppError, Unit]] = {
     fsNodeService.deleteNode(path)(session.user).map(_.map {
       case file: File =>
-        // Delete the file and its thumbnail
-        file.thumbnailStorageReference.foreach(chunkRemover ! _)
-        chunkRemover ! file
+        // Create a task to delete the file and its thumbnail
+        file.thumbnailStorageReference.foreach(taskExecutor ! DeleteStorageReferenceTask.create(_))
+        taskExecutor ! DeleteStorageReferenceTask.create(file.storageReference)
       case _ =>
         // Nothing to delete
     })
   }
+
+  /**
+    * Delete a storage reference. Unsafe method, be sure that the storage reference is not used before deleting it.
+    * @param storageReference The storage reference to delete.
+    */
+  def deleteStorageReference(storageReference: StorageReference): Future[Either[AppError, Unit]] = {
+
+    for {
+      storageEngine <- EitherT.fromEither[Future](storageEngines.get(storageReference))
+      result        <- EitherT[Future, AppError, Unit] {
+        Future.sequence(
+          storageReference
+            .storage
+            .map { storageObject =>
+              storageEngine.deleteObject(storageObject.id).map { r =>
+                r.left.map { error =>
+                  // Log errors
+                  logger.warn(s"Error occurred during deletion of ${storageObject.id}: $error")
+                  error
+                }
+              }
+            }
+        ).map(_ => Right({})) // Ignore results
+      }
+    } yield result
+
+  }.value
+
+  /**
+    * Delete a storage object. Unsafe method, be sure that the storage object is not used before deleting it.
+    * @param storageObject The storage object to delete.
+    */
+  def deleteStorageObject(storageObject: StorageObject): Future[Either[AppError, Unit]] = {
+
+    for {
+      storageEngine <- EitherT.fromEither[Future](storageEngines.get(storageObject))
+      result        <- EitherT(storageEngine.deleteObject(storageObject.id)).leftMap {
+        error =>
+          // Log errors
+          logger.warn(s"Error occurred during deletion of ${storageObject.id}: $error")
+          error
+      }
+    } yield result
+
+  }.value
 
   /** Extracts the metadata of the provided file. Will suppress and log any error. */
   private def extractMetadata(file: File)(implicit session: UserSession): FileMetadata = {

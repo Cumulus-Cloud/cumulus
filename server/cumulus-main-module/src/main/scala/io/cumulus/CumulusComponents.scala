@@ -2,11 +2,14 @@ package io.cumulus
 
 import java.io.File
 import java.security.Security
+import java.time.LocalDateTime
+import java.util.UUID
 
 import scala.concurrent.ExecutionContextExecutor
 import _root_.controllers.AssetsComponents
 import akka.actor.{ActorRef, Scheduler}
 import akka.stream.{ActorMaterializer, Materializer}
+import cats.data.EitherT
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.softwaremill.macwire._
 import com.typesafe.config.{Config, ConfigFactory}
@@ -16,12 +19,13 @@ import io.cumulus.controllers.utils.LoggingFilter
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.HttpErrorHandler
 import io.cumulus.core.persistence.CumulusDB
-import io.cumulus.core.persistence.query.QueryBuilder
+import io.cumulus.core.persistence.query.{QueryBuilder, QueryE}
 import io.cumulus.core.utils.ServerWatchdog
+import io.cumulus.models.task.{TaskStatus, TestOnceTask}
 import io.cumulus.services._
 import io.cumulus.persistence.storage.engines.LocalStorage
 import io.cumulus.persistence.storage.{ChunkRemover, StorageEngines}
-import io.cumulus.persistence.stores.{FsNodeStore, SessionStore, SharingStore, UserStore}
+import io.cumulus.persistence.stores._
 import io.cumulus.services.admin.UserAdminService
 import io.cumulus.stages._
 import jsmessages.{JsMessages, JsMessagesFactory}
@@ -34,6 +38,8 @@ import play.api.libs.mailer.MailerComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
 import router.Routes
+
+import scala.language.postfixOps
 
 /**
   * Create the components of the Cumulus web application.
@@ -127,6 +133,7 @@ class CumulusComponents(
   lazy val fsNodeStore: FsNodeStore   = wire[FsNodeStore]
   lazy val sharingStore: SharingStore = wire[SharingStore]
   lazy val sessionStore: SessionStore = wire[SessionStore]
+  lazy val taskStore: TaskStore       = wire[TaskStore]
 
   // Services
   lazy val userService: UserService       = wire[UserService]
@@ -134,6 +141,7 @@ class CumulusComponents(
   lazy val storageService: StorageService = wire[StorageService]
   lazy val sharingService: SharingService = wire[SharingService]
   lazy val sessionService: SessionService = wire[SessionService]
+  lazy val taskService: TaskService       = wire[TaskService]
   lazy val mailService: MailService       = wire[MailService]
 
   // Admin services
@@ -153,5 +161,25 @@ class CumulusComponents(
 
   // Actors
   lazy val chunkRemover: ActorRef = actorSystem.actorOf(ChunkRemover.props(storageEngines), "ChunkRemover")
+
+  {
+    lazy val taskExecutor: ActorRef = actorSystem.actorOf(TaskExecutor.props(taskService, fsNodeService), "TaskExecutor")
+
+    val task = TestOnceTask(
+      id = UUID.randomUUID(),
+      status = TaskStatus.WAITING,
+      creation = LocalDateTime.now,
+      scheduledExecution = None
+    )
+
+    import cats.implicits._
+
+    EitherT(QueryE.lift(taskStore.upsert(task)).run()).map(_ => taskExecutor ! task)
+
+    import scala.concurrent.duration._
+
+    // TODO from conf
+    actorSystem.scheduler.schedule(0 second, 10 seconds, taskExecutor, TaskExecutor.ScheduledRun)
+  }
 
 }
