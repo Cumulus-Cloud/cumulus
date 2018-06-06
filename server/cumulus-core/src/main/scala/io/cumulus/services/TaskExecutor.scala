@@ -20,7 +20,7 @@ import scala.concurrent.{ExecutionContext, Future}
   * be set in an internal map.
   */
 class TaskExecutor(
-  taskService: TaskService
+  taskService: => TaskService
 )(implicit
   ec: ExecutionContext,
   settings: Settings
@@ -48,6 +48,7 @@ class TaskExecutor(
       taskService.getTasksToExecute.map(_.map(self ! _))
       ()
 
+    // Try to run a task if possible
     case Available =>
       executeNextTaskIfPossible()
 
@@ -69,11 +70,11 @@ class TaskExecutor(
 
   private def executeNextTaskIfPossible(): Unit = {
     if(tasks.values.count(_.status == IN_PROGRESS) < maxConcurrent) {
-      tasks.headOption match {
+      tasks.find(_._2.status == WAITING) match {
         case Some((_, task)) =>
           log.debug(s"Starting a new task '${task.name}' (${task.id})")
           val inProgressTask = task.inProgress
-          registerTask(inProgressTask) // The task is executing, we need to update it
+          updateTask(inProgressTask) // The task is executing, we need to update it
           executeTask(inProgressTask)
         case _ =>
           log.debug("No more task to run. Waiting for new tasks...")
@@ -136,6 +137,15 @@ class TaskExecutor(
 
   /** Register a task waiting for its execution */
   private def registerTask(task: Task): Unit =
+    tasks.get(task.id) match {
+      case Some(_) =>
+        () // Ignore
+      case None =>
+        tasks(task.id) = task
+    }
+
+  /** Register a task waiting for its execution */
+  private def updateTask(task: Task): Unit =
     tasks(task.id) = task
 
   /** Remove an executed task from the list */

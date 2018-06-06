@@ -4,7 +4,8 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 import io.cumulus.core.validation.AppError
-import io.cumulus.persistence.storage.StorageReference
+import io.cumulus.models.fs.File
+import io.cumulus.models.user.session.UserSession
 import io.cumulus.services._
 import play.api.libs.json.{Json, OFormat}
 
@@ -13,17 +14,18 @@ import scala.concurrent.Future
 /**
   * Task to delete a storage reference.
   */
-case class DeleteStorageReferenceTask(
+case class MetadataExtractionTask(
   id: UUID,
   status: TaskStatus,
   creation: LocalDateTime,
-  storageReference: StorageReference,
+  file: File,
+  session: UserSession,
   scheduledExecution: Option[LocalDateTime] = None,
   retried: Int = 0,
   // lastError: Option[AppError] = None
 ) extends OnceTask {
 
-  override def name: String = "DeleteChunkTask"
+  override def name: String = "MetadataExtractionTask"
 
   def execute(
     userService: UserService,
@@ -31,9 +33,13 @@ case class DeleteStorageReferenceTask(
     sharingService: SharingService,
     sessionService: SessionService,
     mailService: MailService
-  ): Future[Either[AppError, Unit]] =
+  ): Future[Either[AppError, Unit]] = {
+    import scala.concurrent.ExecutionContext.Implicits.global
+
     storageService
-      .deleteStorageReference(storageReference)
+      .extractMetadata(file)(session)
+      .map(_.map(_ => ()))
+  }
 
   def copyTask(
     status: TaskStatus,
@@ -48,17 +54,18 @@ case class DeleteStorageReferenceTask(
 
 }
 
-object DeleteStorageReferenceTask {
+object MetadataExtractionTask {
 
-  def create(storageReference: StorageReference): DeleteStorageReferenceTask =
-    DeleteStorageReferenceTask(
+  def create(file: File)(implicit session: UserSession): MetadataExtractionTask =
+    MetadataExtractionTask(
       UUID.randomUUID,
       TaskStatus.WAITING,
       LocalDateTime.now,
-      storageReference
+      file,
+      session
     )
 
-  implicit val format: OFormat[DeleteStorageReferenceTask] =
-    Json.format[DeleteStorageReferenceTask]
+  implicit val format: OFormat[MetadataExtractionTask] =
+    Json.format[MetadataExtractionTask]
 
 }

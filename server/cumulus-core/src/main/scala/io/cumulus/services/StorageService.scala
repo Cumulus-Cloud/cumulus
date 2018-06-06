@@ -11,8 +11,8 @@ import io.cumulus.core.utils.Range
 import io.cumulus.core.validation.AppError
 import io.cumulus.core.{Logging, Settings}
 import io.cumulus.models.Path
-import io.cumulus.models.fs.{DefaultMetadata, File, FileMetadata}
-import io.cumulus.models.task.DeleteStorageReferenceTask
+import io.cumulus.models.fs.{DefaultMetadata, File}
+import io.cumulus.models.task.{DeleteStorageReferenceTask, MetadataExtractionTask, ThumbnailCreationTask}
 import io.cumulus.models.user.User
 import io.cumulus.models.user.session.{Session, UserSession}
 import io.cumulus.persistence.storage.{StorageEngines, StorageObject, StorageReference}
@@ -23,7 +23,7 @@ import scala.util.{Failure, Success, Try}
 
 class StorageService(
   fsNodeService: FsNodeService,
-  taskExecutor: ActorRef
+  taskExecutor: => ActorRef
 )(
   implicit
   ciphers: Ciphers,
@@ -89,16 +89,13 @@ class StorageService(
           // Store the file's content
           uploadedFile <- EitherT.liftF(content.runWith(fileWriter))
 
-          // Extract metadata
-          metadata         = extractMetadata(uploadedFile)
-          fileWithMetadata = uploadedFile.copy(metadata = metadata)
-
-          // Generate a thumbnail (if possible)
-          maybeThumbnail    <- EitherT.right(generateThumbnail(fileWithMetadata))
-          fileWithThumbnail =  fileWithMetadata.copy(thumbnailStorageReference = maybeThumbnail)
+          // Extract metadata & generate a thumbnail (if possible)
+          _ = println(taskExecutor)
+          _ = taskExecutor ! MetadataExtractionTask.create(uploadedFile)
+          _ = taskExecutor ! ThumbnailCreationTask.create(uploadedFile)
 
           // Create an entry in the database for the file
-          file <- EitherT(fsNodeService.createFile(fileWithThumbnail))
+          file <- EitherT(fsNodeService.createFile(uploadedFile))
 
         } yield file
       }
@@ -209,53 +206,63 @@ class StorageService(
   }.value
 
   /** Extracts the metadata of the provided file. Will suppress and log any error. */
-  private def extractMetadata(file: File)(implicit session: UserSession): FileMetadata = {
+  def extractMetadata(file: File)(implicit session: UserSession): Future[Either[AppError, File]] = {
     val metadataExtractor = metadataExtractors.get(file.mimeType)
 
-    Try {
-      metadataExtractor.extract(file)
-    } match {
-      case Success(metadata) =>
-        metadata.left.map { appError =>
-          // Do not fail the upload if the metadata extraction failed
-          logger.info(s"Failed to extract metadata of file ${file.path}: $appError")
+    val metadata =
+      Try {
+        metadataExtractor.extract(file)
+      } match {
+        case Success(result) =>
+          result.left.map { appError =>
+            // Do not fail the upload if the metadata extraction failed
+            logger.info(s"Failed to extract metadata of file ${file.path}: $appError")
+            DefaultMetadata.empty
+          }
+          .merge
+        case Failure(error) =>
+          // Handle unexpected error if the metadata generation failed
+          logger.warn(s"Failed to extract metadata of file ${file.path} with an unexpected error", error)
           DefaultMetadata.empty
-        }
-        .merge
-      case Failure(error) =>
-        // Handle unexpected error if the metadata generation failed
-        logger.warn(s"Failed to extract metadata of file ${file.path} with an unexpected error", error)
-        DefaultMetadata.empty
-    }
+      }
+
+    // And save the file
+    fsNodeService.setMetadata(file, metadata)(session.user)
+
   }
 
   /** Generates a thumbnail of the provided file. */
-  private def generateThumbnail(file: File)(implicit session: UserSession): Future[Option[StorageReference]] = {
+  def generateThumbnail(file: File)(implicit session: UserSession): Future[Either[AppError, File]] = {
     val thumbnailGenerator = thumbnailGenerators.get(file.mimeType)
 
-    Try {
-      thumbnailGenerator match {
-        case Some(generator) =>
-          generator.generate(file).map(_.map(Some(_)))
-        case None =>
-          Future.successful(Right(None))
-      }
-    } match {
-      case Success(thumbnail) =>
-        thumbnail.map { result =>
-          result
-            .left.map { appError =>
-              // Do not fail the upload if the metadata extraction failed
-              logger.info(s"Failed to generate thumbnail of file ${file.path}: $appError")
-              None
-            }
-            .merge
+    // Generate the thumbnail
+    val maybeThumbnail =
+      Try {
+        thumbnailGenerator match {
+          case Some(generator) =>
+            generator.generate(file).map(_.map(Some(_)))
+          case None =>
+            Future.successful(Right(None))
         }
-      case Failure(error) =>
-        // Handle unexpected error if the metadata generation failed
-        logger.warn(s"Failed to create a thumbnail of the file ${file.path} with an unexpected error", error)
-        Future.successful(None)
-    }
+      } match {
+        case Success(thumbnail) =>
+          thumbnail.map { result =>
+            result
+              .left.map { appError =>
+                // Do not fail the upload if the metadata extraction failed
+                logger.info(s"Failed to generate thumbnail of file ${file.path}: $appError")
+                None
+              }
+              .merge
+          }
+        case Failure(error) =>
+          // Handle unexpected error if the metadata generation failed
+          logger.warn(s"Failed to create a thumbnail of the file ${file.path} with an unexpected error", error)
+          Future.successful(None)
+      }
+
+    // And save the thumbnail
+    maybeThumbnail.flatMap(thumbnail => fsNodeService.setThumbnail(file, thumbnail)(session.user))
 
   }
 

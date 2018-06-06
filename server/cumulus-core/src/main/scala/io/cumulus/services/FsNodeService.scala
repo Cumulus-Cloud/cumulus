@@ -10,6 +10,7 @@ import io.cumulus.core.validation.AppError
 import io.cumulus.models._
 import io.cumulus.models.fs._
 import io.cumulus.models.user.User
+import io.cumulus.persistence.storage.StorageReference
 import io.cumulus.persistence.stores.filters.FsNodeFilter
 import io.cumulus.persistence.stores.orderings.FsNodeOrdering
 import io.cumulus.persistence.stores.orderings.FsNodeOrderingType.{OrderByFilenameAsc, OrderByNodeType}
@@ -155,6 +156,41 @@ class FsNodeService(
     */
   def createFile(file: File)(implicit user: User): Future[Either[AppError, File]] =
     createNode(file).map(_.map(_ => file))
+
+  /**
+    * Set the thumbnail of a file.
+    * @param file The updated file.
+    * @param thumbnailStorageReference The thumbnail storage reference.
+    * @param user The user performing the operation.
+    */
+  def setThumbnail(
+    file: File,
+    thumbnailStorageReference: Option[StorageReference]
+  )(implicit user: User): Future[Either[AppError, File]] = {
+    val fileWithThumbnail = file.copy(thumbnailStorageReference = thumbnailStorageReference)
+
+    QueryE.lift(
+      fsNodeStore
+        .update(fileWithThumbnail)
+        .map(_ => fileWithThumbnail)
+    ).run()
+  }
+
+  /**
+    * TODO
+    */
+  def setMetadata(
+    file: File,
+    fileMetadata: FileMetadata
+  )(implicit user: User): Future[Either[AppError, File]] = {
+    val fileWithMetadata = file.copy(metadata = fileMetadata)
+
+    QueryE.lift(
+      fsNodeStore
+        .update(fileWithMetadata)
+        .map(_ => fileWithMetadata)
+    ).run()
+  }
 
   /**
     * Moves a node to the provided path. The destination should not already exists and a directory parent.

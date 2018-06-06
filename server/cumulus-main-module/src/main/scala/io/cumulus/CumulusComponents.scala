@@ -160,7 +160,7 @@ class CumulusComponents(
   lazy val userAdminController: UserAdminController = wire[UserAdminController]
 
   // Actors
-  val taskExecutor: ActorRef = actorSystem.actorOf(TaskExecutor.props(taskService)(executionContext, settings), "TaskExecutor")
+  lazy val taskExecutor: ActorRef = actorSystem.actorOf(TaskExecutor.props(taskService)(executionContext, settings), "TaskExecutor")
 
   //import scala.concurrent.duration._
 
