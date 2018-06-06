@@ -15,6 +15,10 @@ class Settings(
     val sessionDuration: Int = conf.get[Int]("cumulus.management.session-duration")
   }
 
+  object backgroundTask {
+    val maximumParallelism: Int = conf.get[Int]("cumulus.background-task.maximum-parallelism")
+  }
+
   object mail {
     val from: String = conf.get[String]("cumulus.mail.from")
   }

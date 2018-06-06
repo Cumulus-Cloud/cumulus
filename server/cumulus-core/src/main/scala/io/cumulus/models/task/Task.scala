@@ -46,20 +46,26 @@ sealed trait Task {
       status = DONE
     )
   }
+
+  def inProgress: Task = {
+    copyTask(
+      status = IN_PROGRESS
+    )
+  }
   
   def failed(error: AppError): Task = {
     if(retried >= maxRetry)
       copyTask(
         status = FAILED,
-        scheduledExecution = scheduledExecution.map(_.plusMinutes(10)), // TODO get from settings
-       // lastError = Some(error)
+        scheduledExecution = Some(LocalDateTime.now.plusMinutes(10)) // TODO get from settings
+       // lastError = Some(error) // TODO ?
       )
     else
       copyTask(
         status = WAITING,
-        scheduledExecution = scheduledExecution.map(_.plusMinutes(10)), // TODO get from settings
-        retried = retried + 1,
-       // lastError = Some(error)
+        scheduledExecution = Some(LocalDateTime.now.plusMinutes(10)), // TODO get from settings
+        retried = retried + 1
+       // lastError = Some(error) // TODO ?
       )
   }
 

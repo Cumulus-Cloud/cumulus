@@ -160,26 +160,12 @@ class CumulusComponents(
   lazy val userAdminController: UserAdminController = wire[UserAdminController]
 
   // Actors
-  lazy val chunkRemover: ActorRef = actorSystem.actorOf(ChunkRemover.props(storageEngines), "ChunkRemover")
+  val taskExecutor: ActorRef = actorSystem.actorOf(TaskExecutor.props(taskService)(executionContext, settings), "TaskExecutor")
 
-  {
-    lazy val taskExecutor: ActorRef = actorSystem.actorOf(TaskExecutor.props(taskService, fsNodeService), "TaskExecutor")
+  //import scala.concurrent.duration._
 
-    val task = TestOnceTask(
-      id = UUID.randomUUID(),
-      status = TaskStatus.WAITING,
-      creation = LocalDateTime.now,
-      scheduledExecution = None
-    )
+  // TODO from conf
+  //actorSystem.scheduler.schedule(30 second, 60 seconds, taskExecutor, TaskExecutor.ScheduledRun)
 
-    import cats.implicits._
-
-    EitherT(QueryE.lift(taskStore.upsert(task)).run()).map(_ => taskExecutor ! task)
-
-    import scala.concurrent.duration._
-
-    // TODO from conf
-    actorSystem.scheduler.schedule(0 second, 10 seconds, taskExecutor, TaskExecutor.ScheduledRun)
-  }
 
 }

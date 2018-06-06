@@ -41,9 +41,9 @@ case class TestOnceTask(
     sessionService: SessionService,
     mailService: MailService
   ): Future[Either[AppError, Unit]] = {
-
-
-    println("I'm the task TestOnceTask execution, hello!")
+    println(s"Starting task on ${Thread.currentThread.getName}")
+    Thread.sleep(3000)
+    println(s"Stopping task on ${Thread.currentThread.getName}")
     Future.successful(Right(()))
   }
 
