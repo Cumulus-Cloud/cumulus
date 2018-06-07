@@ -1,14 +1,13 @@
-package io.cumulus.models.task
+package io.cumulus.core.task
 
 import java.time.LocalDateTime
 import java.util.UUID
 
 import io.cumulus.core.validation.AppError
-import io.cumulus.models.task.TaskStatus._
+import io.cumulus.core.task.TaskStatus._
 import io.cumulus.services._
-import play.api.libs.json.{Json, OFormat}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 sealed trait Task {
 
@@ -38,9 +37,6 @@ sealed trait Task {
   /** Number of times the task have been retried. */
   def retried: Int
 
-
-  // ==== TESTS ====
-
   def successful: Task = {
     copyTask(
       status = DONE
@@ -52,7 +48,7 @@ sealed trait Task {
       status = IN_PROGRESS
     )
   }
-  
+
   def failed(error: AppError): Task = {
     if(retried >= maxRetry)
       copyTask(
@@ -75,6 +71,8 @@ sealed trait Task {
     sharingService: SharingService,
     sessionService: SessionService,
     mailService: MailService
+  )(implicit
+    ec: ExecutionContext
   ): Future[Either[AppError, Unit]]
 
   def copyTask(
@@ -83,16 +81,6 @@ sealed trait Task {
     retried: Int = retried,
     lastError: Option[AppError] = None
   ): Task
-
-  // ==== TESTS ====
-
-
-}
-
-object Task {
-
-  implicit val format: OFormat[Task] =
-    Json.format[Task]
 
 }
 

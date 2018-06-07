@@ -12,7 +12,7 @@ import io.cumulus.core.validation.AppError
 import io.cumulus.core.{Logging, Settings}
 import io.cumulus.models.Path
 import io.cumulus.models.fs.{DefaultMetadata, File}
-import io.cumulus.models.task.{DeleteStorageReferenceTask, MetadataExtractionTask, ThumbnailCreationTask}
+import io.cumulus.services.tasks.{StorageReferenceDeletionTask, MetadataExtractionTask, ThumbnailCreationTask}
 import io.cumulus.models.user.User
 import io.cumulus.models.user.session.{Session, UserSession}
 import io.cumulus.persistence.storage.{StorageEngines, StorageObject, StorageReference}
@@ -153,8 +153,8 @@ class StorageService(
     fsNodeService.deleteNode(path)(session.user).map(_.map {
       case file: File =>
         // Create a task to delete the file and its thumbnail
-        file.thumbnailStorageReference.foreach(taskExecutor ! DeleteStorageReferenceTask.create(_))
-        taskExecutor ! DeleteStorageReferenceTask.create(file.storageReference)
+        file.thumbnailStorageReference.foreach(taskExecutor ! StorageReferenceDeletionTask.create(_))
+        taskExecutor ! StorageReferenceDeletionTask.create(file.storageReference)
       case _ =>
         // Nothing to delete
     })

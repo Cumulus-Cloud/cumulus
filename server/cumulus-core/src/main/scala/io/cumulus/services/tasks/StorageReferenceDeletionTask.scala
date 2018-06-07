@@ -1,31 +1,29 @@
-package io.cumulus.models.task
+package io.cumulus.services.tasks
 
 import java.time.LocalDateTime
 import java.util.UUID
 
+import io.cumulus.core.task.{OnceTask, Task, TaskStatus}
 import io.cumulus.core.validation.AppError
-import io.cumulus.models.fs.File
-import io.cumulus.models.user.session.UserSession
+import io.cumulus.persistence.storage.StorageReference
 import io.cumulus.services._
-import play.api.libs.json.{Json, OFormat}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Task to delete a storage reference.
   */
-case class ThumbnailCreationTask(
+case class StorageReferenceDeletionTask(
   id: UUID,
   status: TaskStatus,
   creation: LocalDateTime,
-  file: File,
-  session: UserSession,
+  storageReference: StorageReference,
   scheduledExecution: Option[LocalDateTime] = None,
   retried: Int = 0,
   // lastError: Option[AppError] = None
 ) extends OnceTask {
 
-  override def name: String = "ThumbnailCreationTask"
+  val name: String = "StorageReferenceDeletionTask"
 
   def execute(
     userService: UserService,
@@ -33,13 +31,11 @@ case class ThumbnailCreationTask(
     sharingService: SharingService,
     sessionService: SessionService,
     mailService: MailService
-  ): Future[Either[AppError, Unit]] = {
-    import scala.concurrent.ExecutionContext.Implicits.global
-
+  )(implicit
+    ec: ExecutionContext
+  ): Future[Either[AppError, Unit]] =
     storageService
-      .generateThumbnail(file)(session)
-      .map(_.map(_ => ()))
-  }
+      .deleteStorageReference(storageReference)
 
   def copyTask(
     status: TaskStatus,
@@ -54,21 +50,14 @@ case class ThumbnailCreationTask(
 
 }
 
-object ThumbnailCreationTask {
+object StorageReferenceDeletionTask {
 
-  def create(file: File)(implicit session: UserSession): ThumbnailCreationTask =
-    ThumbnailCreationTask(
+  def create(storageReference: StorageReference): StorageReferenceDeletionTask =
+    StorageReferenceDeletionTask(
       UUID.randomUUID,
       TaskStatus.WAITING,
       LocalDateTime.now,
-      file,
-      session
+      storageReference
     )
 
-  implicit val format: OFormat[ThumbnailCreationTask] =
-    Json.format[ThumbnailCreationTask]
-
 }
-
-
-

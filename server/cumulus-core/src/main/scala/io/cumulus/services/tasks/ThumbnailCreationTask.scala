@@ -1,20 +1,21 @@
-package io.cumulus.models.task
+package io.cumulus.services.tasks
 
 import java.time.LocalDateTime
 import java.util.UUID
 
+import io.cumulus.core.task.{OnceTask, Task, TaskStatus}
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.fs.File
 import io.cumulus.models.user.session.UserSession
 import io.cumulus.services._
 import play.api.libs.json.{Json, OFormat}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Task to delete a storage reference.
   */
-case class MetadataExtractionTask(
+case class ThumbnailCreationTask(
   id: UUID,
   status: TaskStatus,
   creation: LocalDateTime,
@@ -25,7 +26,7 @@ case class MetadataExtractionTask(
   // lastError: Option[AppError] = None
 ) extends OnceTask {
 
-  override def name: String = "MetadataExtractionTask"
+  val name: String = "ThumbnailCreationTask"
 
   def execute(
     userService: UserService,
@@ -33,13 +34,12 @@ case class MetadataExtractionTask(
     sharingService: SharingService,
     sessionService: SessionService,
     mailService: MailService
-  ): Future[Either[AppError, Unit]] = {
-    import scala.concurrent.ExecutionContext.Implicits.global
-
+  )(implicit
+    ec: ExecutionContext
+  ): Future[Either[AppError, Unit]] =
     storageService
-      .extractMetadata(file)(session)
+      .generateThumbnail(file)(session)
       .map(_.map(_ => ()))
-  }
 
   def copyTask(
     status: TaskStatus,
@@ -54,10 +54,10 @@ case class MetadataExtractionTask(
 
 }
 
-object MetadataExtractionTask {
+object ThumbnailCreationTask {
 
-  def create(file: File)(implicit session: UserSession): MetadataExtractionTask =
-    MetadataExtractionTask(
+  def create(file: File)(implicit session: UserSession): ThumbnailCreationTask =
+    ThumbnailCreationTask(
       UUID.randomUUID,
       TaskStatus.WAITING,
       LocalDateTime.now,
@@ -65,7 +65,10 @@ object MetadataExtractionTask {
       session
     )
 
-  implicit val format: OFormat[MetadataExtractionTask] =
-    Json.format[MetadataExtractionTask]
+  implicit val format: OFormat[ThumbnailCreationTask] =
+    Json.format[ThumbnailCreationTask]
 
 }
+
+
+

@@ -4,12 +4,10 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 import akka.actor.{Actor, ActorLogging, Props}
-import cats.data.EitherT
-import cats.implicits._
 import io.cumulus.core.Settings
 import io.cumulus.core.validation.AppError
-import io.cumulus.models.task.TaskStatus._
-import io.cumulus.models.task.{OnceTask, RecurrentTask, Task}
+import io.cumulus.core.task.TaskStatus._
+import io.cumulus.core.task.{OnceTask, RecurrentTask, Task}
 import io.cumulus.services.TaskExecutor._
 
 import scala.collection.mutable
@@ -42,18 +40,13 @@ class TaskExecutor(
     log.info("Stopping the TaskExecutor actor..")
 
   override def receive: Receive = {
-    // Scheduled run, we need to scan the database to get tasks waiting for execution
+    // Scheduled run, get tasks waiting for execution
     case ScheduledRun =>
       log.debug(s"Scheduled run of all tasks waiting for an execution")
-      taskService.getTasksToExecute.map(_.map(self ! _))
-      ()
-
-    // Try to run a task if possible
-    case Available =>
       executeNextTaskIfPossible()
 
     // The task should be executed when possible
-    case task: Task if task.status == WAITING && task.scheduledExecution.forall(_.isBefore(LocalDateTime.now)) =>
+    case task: Task if task.status == WAITING =>
       registerTask(task)
       executeNextTaskIfPossible()
 
@@ -70,8 +63,8 @@ class TaskExecutor(
 
   private def executeNextTaskIfPossible(): Unit = {
     if(tasks.values.count(_.status == IN_PROGRESS) < maxConcurrent) {
-      tasks.find(_._2.status == WAITING) match {
-        case Some((_, task)) =>
+      tasks.values.find(t => t.status == WAITING && t.scheduledExecution.forall(_.isBefore(LocalDateTime.now))) match {
+        case Some(task) =>
           log.debug(s"Starting a new task '${task.name}' (${task.id})")
           val inProgressTask = task.inProgress
           updateTask(inProgressTask) // The task is executing, we need to update it
@@ -89,51 +82,37 @@ class TaskExecutor(
     * Execute the provided task. Once finished, the finished task will be resent to the worker.
     * @param task The task to be performed.
     */
-  private def executeTask(task: Task): Future[Either[AppError, Task]] = {
-    for {
-      // Save the task before execution
-      _ <- EitherT(taskService.upsertTask(task))
+  private def executeTask(task: Task): Future[Unit] = {
 
-      // Run the task
-      updatedTask <-EitherT.liftF(
-        (task match {
-          // Task that only needs to be run once
-          case onceTask: OnceTask =>
-            taskService.executeOnceTask(onceTask)
+    // Run the task
+    val result: Future[Either[AppError, Unit]] = task match {
+      // Task that only needs to be run once
+      case onceTask: OnceTask =>
+        taskService.executeOnceTask(onceTask)
 
-          // Recurrent task
-          case recurrentTask: RecurrentTask =>
-            taskService.executeRecurrentTask(recurrentTask)
-        })
-          .map {
-            // The task have been successfully run. The task itself may or may not be successful.
-            case Right(_) =>
-              val updatedTask = task.successful
-              self ! updatedTask
-              updatedTask
+      // Recurrent task
+      case recurrentTask: RecurrentTask =>
+        taskService.executeRecurrentTask(recurrentTask)
+    }
 
-            // The task failed to run properly.
-            case Left(error) =>
-              val updatedTask = task.failed(error)
-              self ! updatedTask
-              log.warning(s"Error occurred during the task execution of '${task.name}' (ID ''${task.id}'): $error")
-              updatedTask
-          }
-          .recover {
-            case error =>
-              val updatedTask = task.failed(AppError.technical(error.getMessage)) // TODO error message
-              self ! updatedTask
-              log.warning(s"Unhandled error occurred during the task execution of '${task.name}' (ID ''${task.id}')", error)
-              updatedTask
-          }
-      )
+    result
+      .map {
+        // The task have been successfully run. The task itself may or may not be successful.
+        case Right(_) =>
+          self ! task.successful
 
-      // Save the updated task
-      _ <- EitherT(taskService.upsertTask(updatedTask))
+        // The task failed to run properly.
+        case Left(error) =>
+          log.warning(s"Error occurred during the task execution of '${task.name}' (ID ''${task.id}'): $error")
+          self ! task.failed(error)
+      }
+      .recover {
+        case error: Exception =>
+          log.warning(s"Unhandled error occurred during the task execution of '${task.name}' (ID ''${task.id}')", error)
+          self ! task.failed(AppError.technical(error.getMessage)) // TODO error message
+      }
 
-    } yield updatedTask
-
-  }.value
+  }
 
   /** Register a task waiting for its execution */
   private def registerTask(task: Task): Unit =
@@ -158,8 +137,6 @@ class TaskExecutor(
 object TaskExecutor {
 
   val ScheduledRun: String = "ScheduledRun"
-
-  val Available: String = "Available"
 
   def props(
     taskService: TaskService

@@ -2,14 +2,10 @@ package io.cumulus
 
 import java.io.File
 import java.security.Security
-import java.time.LocalDateTime
-import java.util.UUID
 
-import scala.concurrent.ExecutionContextExecutor
 import _root_.controllers.AssetsComponents
 import akka.actor.{ActorRef, Scheduler}
 import akka.stream.{ActorMaterializer, Materializer}
-import cats.data.EitherT
 import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.softwaremill.macwire._
 import com.typesafe.config.{Config, ConfigFactory}
@@ -19,13 +15,12 @@ import io.cumulus.controllers.utils.LoggingFilter
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.HttpErrorHandler
 import io.cumulus.core.persistence.CumulusDB
-import io.cumulus.core.persistence.query.{QueryBuilder, QueryE}
+import io.cumulus.core.persistence.query.QueryBuilder
 import io.cumulus.core.utils.ServerWatchdog
-import io.cumulus.models.task.{TaskStatus, TestOnceTask}
-import io.cumulus.services._
+import io.cumulus.persistence.storage.StorageEngines
 import io.cumulus.persistence.storage.engines.LocalStorage
-import io.cumulus.persistence.storage.{ChunkRemover, StorageEngines}
 import io.cumulus.persistence.stores._
+import io.cumulus.services._
 import io.cumulus.services.admin.UserAdminService
 import io.cumulus.stages._
 import jsmessages.{JsMessages, JsMessagesFactory}
@@ -39,6 +34,7 @@ import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
 import router.Routes
 
+import scala.concurrent.ExecutionContextExecutor
 import scala.language.postfixOps
 
 /**
@@ -133,7 +129,6 @@ class CumulusComponents(
   lazy val fsNodeStore: FsNodeStore   = wire[FsNodeStore]
   lazy val sharingStore: SharingStore = wire[SharingStore]
   lazy val sessionStore: SessionStore = wire[SessionStore]
-  lazy val taskStore: TaskStore       = wire[TaskStore]
 
   // Services
   lazy val userService: UserService       = wire[UserService]

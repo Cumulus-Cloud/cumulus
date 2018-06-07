@@ -1,4 +1,4 @@
-package io.cumulus.models.task
+package io.cumulus.core.task
 
 import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
 import io.cumulus.core.persistence.anorm.AnormEnum
