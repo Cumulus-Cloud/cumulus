@@ -14,8 +14,7 @@ import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
-  * Task executor. This worker will regularly scan the database for tasks to execute. Task waiting to be executed will
-  * be set in an internal map.
+  * Task executor. Task waiting to be executed will be set in an internal map.
   */
 class TaskExecutor(
   taskService: => TaskService
@@ -25,12 +24,11 @@ class TaskExecutor(
 ) extends Actor with ActorLogging {
 
   /**
-    * List of tasks waiting for execution. This list may not be the same as in the database, and the worker will scan
-    * regularly the database to be sure to be up to date.
+    * List of tasks waiting for execution.
     */
   private val tasks: mutable.Map[UUID, Task] = mutable.Map.empty // Be careful to only make changes from the worker thread.
 
-  /** Number of maximum parallel tasks */
+  /** Number of maximum parallel tasks. */
   private val maxConcurrent: Int = settings.backgroundTask.maximumParallelism
 
   override def preStart(): Unit =
@@ -114,7 +112,7 @@ class TaskExecutor(
 
   }
 
-  /** Register a task waiting for its execution */
+  /** Register a task waiting for its execution. */
   private def registerTask(task: Task): Unit =
     tasks.get(task.id) match {
       case Some(_) =>
@@ -123,11 +121,11 @@ class TaskExecutor(
         tasks(task.id) = task
     }
 
-  /** Register a task waiting for its execution */
+  /** Register a task waiting for its execution. */
   private def updateTask(task: Task): Unit =
     tasks(task.id) = task
 
-  /** Remove an executed task from the list */
+  /** Remove an executed task from the list. */
   private def unregisterTask(task: Task): Option[Task] =
     tasks.remove(task.id)
 
