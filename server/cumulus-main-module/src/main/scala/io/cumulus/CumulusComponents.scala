@@ -3,7 +3,6 @@ package io.cumulus
 import java.io.File
 import java.security.Security
 
-import scala.concurrent.ExecutionContextExecutor
 import _root_.controllers.AssetsComponents
 import akka.actor.{ActorRef, Scheduler}
 import akka.stream.{ActorMaterializer, Materializer}
@@ -18,10 +17,10 @@ import io.cumulus.core.controllers.utils.api.HttpErrorHandler
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.QueryBuilder
 import io.cumulus.core.utils.ServerWatchdog
-import io.cumulus.services._
+import io.cumulus.persistence.storage.StorageEngines
 import io.cumulus.persistence.storage.engines.LocalStorage
-import io.cumulus.persistence.storage.{ChunkRemover, StorageEngines}
-import io.cumulus.persistence.stores.{FsNodeStore, SessionStore, SharingStore, UserStore}
+import io.cumulus.persistence.stores._
+import io.cumulus.services._
 import io.cumulus.services.admin.UserAdminService
 import io.cumulus.stages._
 import jsmessages.{JsMessages, JsMessagesFactory}
@@ -34,6 +33,9 @@ import play.api.libs.mailer.MailerComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
 import router.Routes
+
+import scala.concurrent.ExecutionContextExecutor
+import scala.language.postfixOps
 
 /**
   * Create the components of the Cumulus web application.
@@ -134,6 +136,7 @@ class CumulusComponents(
   lazy val storageService: StorageService = wire[StorageService]
   lazy val sharingService: SharingService = wire[SharingService]
   lazy val sessionService: SessionService = wire[SessionService]
+  lazy val taskService: TaskService       = wire[TaskService]
   lazy val mailService: MailService       = wire[MailService]
 
   // Admin services
@@ -152,6 +155,12 @@ class CumulusComponents(
   lazy val userAdminController: UserAdminController = wire[UserAdminController]
 
   // Actors
-  lazy val chunkRemover: ActorRef = actorSystem.actorOf(ChunkRemover.props(storageEngines), "ChunkRemover")
+  lazy val taskExecutor: ActorRef = actorSystem.actorOf(TaskExecutor.props(taskService)(executionContext, settings), "TaskExecutor")
+
+  //import scala.concurrent.duration._
+
+  // TODO from conf
+  //actorSystem.scheduler.schedule(30 second, 60 seconds, taskExecutor, TaskExecutor.ScheduledRun)
+
 
 }

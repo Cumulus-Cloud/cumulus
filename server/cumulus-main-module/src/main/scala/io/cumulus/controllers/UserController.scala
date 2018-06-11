@@ -4,8 +4,6 @@ import java.util.UUID
 
 import cats.data.EitherT
 import cats.implicits._
-
-import scala.concurrent.{ExecutionContext, Future}
 import io.cumulus.controllers.payloads._
 import io.cumulus.controllers.utils.UserAuthentication
 import io.cumulus.core.Settings
@@ -19,6 +17,8 @@ import io.cumulus.services.{SessionService, UserService}
 import io.cumulus.views.CumulusEmailValidationPage
 import play.api.libs.json.Json
 import play.api.mvc._
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class UserController (
   cc: ControllerComponents,

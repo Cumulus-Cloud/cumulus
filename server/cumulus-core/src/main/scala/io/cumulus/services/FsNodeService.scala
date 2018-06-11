@@ -10,6 +10,7 @@ import io.cumulus.core.validation.AppError
 import io.cumulus.models._
 import io.cumulus.models.fs._
 import io.cumulus.models.user.User
+import io.cumulus.persistence.storage.StorageReference
 import io.cumulus.persistence.stores.filters.FsNodeFilter
 import io.cumulus.persistence.stores.orderings.FsNodeOrdering
 import io.cumulus.persistence.stores.orderings.FsNodeOrderingType.{OrderByFilenameAsc, OrderByNodeType}
@@ -47,14 +48,7 @@ class FsNodeService(
       node <- find(path, QueryPagination.empty)
 
       // Check if the node is a file
-      file <- QueryE.pure {
-        node match {
-          case file: File =>
-            Right(file)
-          case _ =>
-            Left(AppError.validation("validation.fs-node.not-file", path))
-        }
-      }
+      file <- QueryE.pure(isFileValidation(node))
     } yield file
 
   }.commit()
@@ -72,14 +66,7 @@ class FsNodeService(
       node <- find(path, contentPagination)
 
       // Check if the node is a directory
-      directory <- QueryE.pure {
-        node match {
-          case directory: Directory =>
-            Right(directory)
-          case _ =>
-            Left(AppError.validation("validation.fs-node.not-directory", path))
-        }
-      }
+      directory <- QueryE.pure(isDirectoryValidation(node))
     } yield directory
 
   }.commit()
@@ -155,6 +142,51 @@ class FsNodeService(
     */
   def createFile(file: File)(implicit user: User): Future[Either[AppError, File]] =
     createNode(file).map(_.map(_ => file))
+
+  /**
+    * Set the thumbnail of a file.
+    * @param file The updated file.
+    * @param thumbnailStorageReference The thumbnail storage reference.
+    * @param user The user performing the operation.
+    */
+  def setThumbnail(
+    file: File,
+    thumbnailStorageReference: Option[StorageReference]
+  )(implicit user: User): Future[Either[AppError, File]] = {
+
+    for {
+      // Get the modified file
+      node         <- getNodeWithLock(file.path)
+      upToDateFile <- QueryE.pure(isFileValidation(node))
+
+      // Add the thumbnail & save the file
+      fileWithThumbnail =  upToDateFile.copy(thumbnailStorageReference = thumbnailStorageReference)
+      _                 <- QueryE.lift(fsNodeStore.update(fileWithThumbnail))
+
+    } yield fileWithThumbnail
+
+  }.commit()
+
+  /**
+    * TODO
+    */
+  def setMetadata(
+    file: File,
+    fileMetadata: FileMetadata
+  )(implicit user: User): Future[Either[AppError, File]] = {
+
+    for {
+      // Get the modified file
+      node         <- getNodeWithLock(file.path)
+      upToDateFile <- QueryE.pure(isFileValidation(node))
+
+      // Add the metadata & save the file
+      fileWithMetadata =  upToDateFile.copy(metadata = fileMetadata)
+      _                <- QueryE.lift(fsNodeStore.update(fileWithMetadata))
+
+    } yield fileWithMetadata
+
+  }.commit()
 
   /**
     * Moves a node to the provided path. The destination should not already exists and a directory parent.
@@ -319,18 +351,36 @@ class FsNodeService(
     }
   }
 
-  /** Get a node and returns an error if the node doesn't exist. */
+  /** Gets a node and returns an error if the node doesn't exist. */
   private def getNode(path: Path)(implicit user: User) = {
     QueryE.getOrNotFound(fsNodeStore.findByPathAndUser(path, user))
   }
 
-  /** Get a node and lock it for the transaction */
+  /** Gets a node and lock it for the transaction */
   private def getNodeWithLock(path: Path)(implicit user: User) = {
     QueryE.getOrNotFound(fsNodeStore.findAndLockByPathAndUser(path, user))
   }
 
+  /** Checks that a node is a file. */
+  private def isFileValidation(node: FsNode): Either[AppError, File] =
+    node match {
+      case file: File =>
+        Right(file)
+      case _ =>
+        Left(AppError.validation("validation.fs-node.not-file", node.path))
+    }
+
+  /** Checks that a node is a directory. */
+  private def isDirectoryValidation(node: FsNode): Either[AppError, Directory] =
+    node match {
+      case directory: Directory =>
+        Right(directory)
+      case _ =>
+        Left(AppError.validation("validation.fs-node.not-directory", node.path))
+    }
+
   /** Gets the parent directory of the element or returns a not found error. */
-  private def getParent(path: Path)(implicit user: User) = {
+  private def getParent(path: Path)(implicit user: User): QueryE[CumulusDB, Directory] = {
     QueryE {
       fsNodeStore.findByPathAndUser(path.parent, user).map {
         case Some(directory: Directory) =>
@@ -342,7 +392,7 @@ class FsNodeService(
   }
 
   /** Gets the parent directory of the element and lock it for the transaction. */
-  private def getParentWithLock(path: Path)(implicit user: User) = {
+  private def getParentWithLock(path: Path)(implicit user: User): QueryE[CumulusDB, Directory] = {
     QueryE {
       fsNodeStore.findAndLockByPathAndUser(path.parent, user).map {
         case Some(directory: Directory) =>

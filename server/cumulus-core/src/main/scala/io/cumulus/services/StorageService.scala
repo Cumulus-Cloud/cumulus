@@ -11,10 +11,11 @@ import io.cumulus.core.utils.Range
 import io.cumulus.core.validation.AppError
 import io.cumulus.core.{Logging, Settings}
 import io.cumulus.models.Path
-import io.cumulus.models.fs.{DefaultMetadata, File, FileMetadata}
+import io.cumulus.models.fs.{DefaultMetadata, File}
+import io.cumulus.services.tasks.{StorageReferenceDeletionTask, MetadataExtractionTask, ThumbnailCreationTask}
 import io.cumulus.models.user.User
 import io.cumulus.models.user.session.{Session, UserSession}
-import io.cumulus.persistence.storage.{StorageEngines, StorageReference}
+import io.cumulus.persistence.storage.{StorageEngines, StorageObject, StorageReference}
 import io.cumulus.stages._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -22,7 +23,7 @@ import scala.util.{Failure, Success, Try}
 
 class StorageService(
   fsNodeService: FsNodeService,
-  chunkRemover: ActorRef
+  taskExecutor: => ActorRef
 )(
   implicit
   ciphers: Ciphers,
@@ -88,16 +89,13 @@ class StorageService(
           // Store the file's content
           uploadedFile <- EitherT.liftF(content.runWith(fileWriter))
 
-          // Extract metadata
-          metadata         = extractMetadata(uploadedFile)
-          fileWithMetadata = uploadedFile.copy(metadata = metadata)
-
-          // Generate a thumbnail (if possible)
-          maybeThumbnail    <- EitherT.right(generateThumbnail(fileWithMetadata))
-          fileWithThumbnail =  fileWithMetadata.copy(thumbnailStorageReference = maybeThumbnail)
+          // Extract metadata & generate a thumbnail (if possible)
+          _ = println(taskExecutor)
+          _ = taskExecutor ! MetadataExtractionTask.create(uploadedFile)
+          _ = taskExecutor ! ThumbnailCreationTask.create(uploadedFile)
 
           // Create an entry in the database for the file
-          file <- EitherT(fsNodeService.createFile(fileWithThumbnail))
+          file <- EitherT(fsNodeService.createFile(uploadedFile))
 
         } yield file
       }
@@ -154,62 +152,117 @@ class StorageService(
   def deleteNode(path: Path)(implicit session: UserSession): Future[Either[AppError, Unit]] = {
     fsNodeService.deleteNode(path)(session.user).map(_.map {
       case file: File =>
-        // Delete the file and its thumbnail
-        file.thumbnailStorageReference.foreach(chunkRemover ! _)
-        chunkRemover ! file
+        // Create a task to delete the file and its thumbnail
+        file.thumbnailStorageReference.foreach(taskExecutor ! StorageReferenceDeletionTask.create(_))
+        taskExecutor ! StorageReferenceDeletionTask.create(file.storageReference)
       case _ =>
         // Nothing to delete
     })
   }
 
+  /**
+    * Delete a storage reference. Unsafe method, be sure that the storage reference is not used before deleting it.
+    * @param storageReference The storage reference to delete.
+    */
+  def deleteStorageReference(storageReference: StorageReference): Future[Either[AppError, Unit]] = {
+
+    for {
+      storageEngine <- EitherT.fromEither[Future](storageEngines.get(storageReference))
+      result        <- EitherT[Future, AppError, Unit] {
+        Future.sequence(
+          storageReference
+            .storage
+            .map { storageObject =>
+              storageEngine.deleteObject(storageObject.id).map { r =>
+                r.left.map { error =>
+                  // Log errors
+                  logger.warn(s"Error occurred during deletion of ${storageObject.id}: $error")
+                  error
+                }
+              }
+            }
+        ).map(_ => Right({})) // Ignore results
+      }
+    } yield result
+
+  }.value
+
+  /**
+    * Delete a storage object. Unsafe method, be sure that the storage object is not used before deleting it.
+    * @param storageObject The storage object to delete.
+    */
+  def deleteStorageObject(storageObject: StorageObject): Future[Either[AppError, Unit]] = {
+
+    for {
+      storageEngine <- EitherT.fromEither[Future](storageEngines.get(storageObject))
+      result        <- EitherT(storageEngine.deleteObject(storageObject.id)).leftMap {
+        error =>
+          // Log errors
+          logger.warn(s"Error occurred during deletion of ${storageObject.id}: $error")
+          error
+      }
+    } yield result
+
+  }.value
+
   /** Extracts the metadata of the provided file. Will suppress and log any error. */
-  private def extractMetadata(file: File)(implicit session: UserSession): FileMetadata = {
+  def extractMetadata(file: File)(implicit session: UserSession): Future[Either[AppError, File]] = {
     val metadataExtractor = metadataExtractors.get(file.mimeType)
 
-    Try {
-      metadataExtractor.extract(file)
-    } match {
-      case Success(metadata) =>
-        metadata.left.map { appError =>
-          // Do not fail the upload if the metadata extraction failed
-          logger.info(s"Failed to extract metadata of file ${file.path}: $appError")
+    val metadata =
+      Try {
+        metadataExtractor.extract(file)
+      } match {
+        case Success(result) =>
+          result.left.map { appError =>
+            // Do not fail the upload if the metadata extraction failed
+            logger.info(s"Failed to extract metadata of file ${file.path}: $appError")
+            DefaultMetadata.empty
+          }
+          .merge
+        case Failure(error) =>
+          // Handle unexpected error if the metadata generation failed
+          logger.warn(s"Failed to extract metadata of file ${file.path} with an unexpected error", error)
           DefaultMetadata.empty
-        }
-        .merge
-      case Failure(error) =>
-        // Handle unexpected error if the metadata generation failed
-        logger.warn(s"Failed to extract metadata of file ${file.path} with an unexpected error", error)
-        DefaultMetadata.empty
-    }
+      }
+
+    // And save the file
+    fsNodeService.setMetadata(file, metadata)(session.user)
+
   }
 
   /** Generates a thumbnail of the provided file. */
-  private def generateThumbnail(file: File)(implicit session: UserSession): Future[Option[StorageReference]] = {
+  def generateThumbnail(file: File)(implicit session: UserSession): Future[Either[AppError, File]] = {
     val thumbnailGenerator = thumbnailGenerators.get(file.mimeType)
 
-    Try {
-      thumbnailGenerator match {
-        case Some(generator) =>
-          generator.generate(file).map(_.map(Some(_)))
-        case None =>
-          Future.successful(Right(None))
-      }
-    } match {
-      case Success(thumbnail) =>
-        thumbnail.map { result =>
-          result
-            .left.map { appError =>
-              // Do not fail the upload if the metadata extraction failed
-              logger.info(s"Failed to generate thumbnail of file ${file.path}: $appError")
-              None
-            }
-            .merge
+    // Generate the thumbnail
+    val maybeThumbnail =
+      Try {
+        thumbnailGenerator match {
+          case Some(generator) =>
+            generator.generate(file).map(_.map(Some(_)))
+          case None =>
+            Future.successful(Right(None))
         }
-      case Failure(error) =>
-        // Handle unexpected error if the metadata generation failed
-        logger.warn(s"Failed to create a thumbnail of the file ${file.path} with an unexpected error", error)
-        Future.successful(None)
-    }
+      } match {
+        case Success(thumbnail) =>
+          thumbnail.map { result =>
+            result
+              .left.map { appError =>
+                // Do not fail the upload if the metadata extraction failed
+                logger.info(s"Failed to generate thumbnail of file ${file.path}: $appError")
+                None
+              }
+              .merge
+          }
+        case Failure(error) =>
+          // Handle unexpected error if the metadata generation failed
+          logger.warn(s"Failed to create a thumbnail of the file ${file.path} with an unexpected error", error)
+          Future.successful(None)
+      }
+
+    // And save the thumbnail
+    maybeThumbnail.flatMap(thumbnail => fsNodeService.setThumbnail(file, thumbnail)(session.user))
 
   }
 
