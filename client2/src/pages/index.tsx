@@ -23,8 +23,26 @@ import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import Divider from '@material-ui/core/Divider'
 import ExpansionPanelActions from '@material-ui/core/ExpansionPanelActions'
+import Drawer from '@material-ui/core/Drawer'
+import List from '@material-ui/core/List'
+import ListItem from '@material-ui/core/ListItem'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
+import ListItemText from '@material-ui/core/ListItemText'
+import CloudUpload from '@material-ui/icons/CloudUpload'
+import CloudIcon from '@material-ui/icons/CloudQueue'
+import SearchIcon from '@material-ui/icons/Search'
+import CompareArrowsIcon from '@material-ui/icons/CompareArrows'
+import MailIcon from '@material-ui/icons/Mail'
+import DeleteIcon from '@material-ui/icons/Delete'
+import ReportIcon from '@material-ui/icons/Report'
+import GroupAddIcon from '@material-ui/icons/GroupAdd'
+import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder'
+import TextField from '@material-ui/core/TextField'
+import Grid from '@material-ui/core/Grid'
 
 import withRoot from '../withRoot'
+import FileListElement from '../elements/fileListElement'
+
 /*
 import ButtonAppBar from '../components/app-bar'
 import withRoot from '../withRoot'
@@ -54,11 +72,15 @@ const About = () => (
 
 const styles = (theme: Theme) => createStyles({
   root: {
-    textAlign: 'center',
-    paddingTop: 110
+    flexGrow: 1,
+    zIndex: 1,
+    overflow: 'hidden',
+    position: 'relative',
+    display: 'flex',
   },
   appbarRoot: {
     flexGrow: 1,
+    zIndex: theme.zIndex.drawer + 1,
   },
   flex: {
     flex: 1,
@@ -67,29 +89,21 @@ const styles = (theme: Theme) => createStyles({
     marginLeft: -12,
     marginRight: 20,
   },
-  tableRoot: {
+  pathRoot: {
     width: '100%',
     maxWidth: 800,
+    paddingLeft: theme.spacing.unit * 3,
     marginRight: 'auto',
     marginLeft: 'auto',
-    marginTop: theme.spacing.unit * 3,
-    overflowX: 'auto',
+    display: 'flex',
+    alignItems: 'center'
   },
-  table: {
-    minWidth: 700,
+  homeButton: {
+    marginLeft:  theme.spacing.unit * -4
   },
-  pathRoot: theme.mixins.gutters({
-    width: '100%',
-    maxWidth: 800,
-    paddingTop: 16,
-    paddingBottom: 16,
-    marginTop: theme.spacing.unit * 3,
-    marginRight: 'auto',
-    marginLeft: 'auto'
-  }),
   testRoot: {
     width: '100%',
-    marginTop: theme.spacing.unit * 3,
+    marginTop: theme.spacing.unit * 2,
     maxWidth: 800,
     marginRight: 'auto',
     marginLeft: 'auto'
@@ -100,6 +114,25 @@ const styles = (theme: Theme) => createStyles({
     fontSize: theme.typography.pxToRem(15),
     fontWeight: theme.typography.fontWeightRegular
   },
+  appBar: {
+    zIndex: theme.zIndex.drawer + 1,
+  },
+  drawerPaper: {
+    position: 'relative',
+    width: 240,
+  },
+  content: {
+    flexGrow: 1,
+    backgroundColor: theme.palette.background.default,
+    padding: theme.spacing.unit * 3,
+    minWidth: 0, // So the Typography noWrap works
+  },
+  toolbar: theme.mixins.toolbar,
+  margin: {
+    margin: theme.spacing.unit,
+    backgroundColor: theme.palette.primary.light,
+    color: 'white'
+  },
 })
 
 interface Props extends WithStyles<typeof styles> {}
@@ -108,107 +141,202 @@ class Index extends React.Component<Props, {}> {
 
   render() {
 
-    let id = 0
-    function createData(name: string, calories: number, fat: number, carbs: number, protein: number) {
-      id += 1
-      return { id, name, calories, fat, carbs, protein }
-    }
-
-    const data = [
-      createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
-      createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
-      createData('Eclair', 262, 16.0, 24, 6.0),
-      createData('Cupcake', 305, 3.7, 67, 4.3),
-      createData('Gingerbread', 356, 16.0, 49, 3.9),
-    ]
-
     return (
       <Router>
-        <div>
-          <div className={this.props.classes.appbarRoot}>
-            <AppBar position="static">
-              <Toolbar>
-                <IconButton className={this.props.classes.menuButton} color="inherit" aria-label="Menu">
-                    <MenuIcon />
-                </IconButton>
-                <Typography variant="title" color="inherit" className={this.props.classes.flex}>
-                    Cumulus
-                </Typography>
-                <IconButton color="inherit"><AccountCircle /></IconButton>
-              </Toolbar>
-            </AppBar>
-          </div>
-
-          <div>
-            <Paper className={this.props.classes.pathRoot} elevation={4}>
-              <Typography component="p">
-                /aaaa/bbbb/cccc/ddd
+        <div className={this.props.classes.root}>
+          <AppBar position="absolute" className={this.props.classes.appbarRoot}>
+            <Toolbar>
+              <IconButton className={this.props.classes.menuButton} color="inherit" aria-label="Menu">
+                  <CloudIcon />
+              </IconButton>
+              <Typography variant="title" color="inherit" className={this.props.classes.flex}>
+                  Cumulus
               </Typography>
-            </Paper>
-          </div>
+              <IconButton color="inherit"><AccountCircle /></IconButton>
+            </Toolbar>
+          </AppBar>
+          <Drawer
+            variant="permanent"
+            classes={{
+              paper: this.props.classes.drawerPaper,
+            }}
+          >
+            <div className={this.props.classes.toolbar} />
+            <List>{searchListItem}</List>
+            <Divider style={{height: 1}} />
+            <List>{mailFolderListItems}</List>
+            <Divider style={{height: 1}} />
+            <List>{otherMailFolderListItems}</List>
+          </Drawer>
+          <main className={this.props.classes.content}>
+            <div className={this.props.classes.toolbar} />
+            <div>
+              <div className={this.props.classes.pathRoot}>
+                <Button className={this.props.classes.homeButton}>
+                  <Icon>home</Icon>
+                </Button>
+                <Icon >keyboard_arrow_right</Icon>
+                <Button >
+                  aaaaa
+                </Button>
+                <Icon  >keyboard_arrow_right</Icon>
+                <Button>
+                  aaaaa
+                </Button>
+                <Icon  >keyboard_arrow_right</Icon>
+                <Button>
+                  aaaaa
+                </Button>
+                <div style={{ flexGrow: 1 }} />
 
-          {
-            // TODO 
-          }
-          <div className={this.props.classes.testRoot}>
-            <ExpansionPanel onClick={(e) => console.log(e)} expanded={false} >
-              <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Icon>insert_drive_file</Icon>
-                <Typography className={this.props.classes.heading}>some image.jpg</Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails>
-                <Typography>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex,
-                  sit amet blandit leo lobortis eget.
-                </Typography>
-              </ExpansionPanelDetails>
-              <Divider />
-              <ExpansionPanelActions>
-                <Button size="small">Delete</Button>
-                <Button size="small">Move</Button>
-                <Button size="small" color="primary">Share</Button>
-                <Button size="small" color="primary">Download</Button>
-              </ExpansionPanelActions>
-            </ExpansionPanel>
+              </div>
+            </div>
 
+            <div className={this.props.classes.testRoot}>
 
-            <ExpansionPanel>
-              <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+              <FileListElement type="file" filename="test.jpg" />
+              <FileListElement type="directory" filename="some_directory" />
+
+              <ExpansionPanel>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                 <Icon>insert_drive_file</Icon>
-                <Typography className={this.props.classes.heading}>Expansion Panel 2</Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails>
-                <Typography>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex,
-                  sit amet blandit leo lobortis eget.
-                </Typography>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-            <ExpansionPanel>
-              <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                <Icon>folder</Icon>
-                <Typography className={this.props.classes.heading}>Expansion Panel 2</Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails>
-                <Typography>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex,
-                  sit amet blandit leo lobortis eget.
-                </Typography>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-            <ExpansionPanel>
-              <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                <Icon>folder</Icon>
-                <Typography className={this.props.classes.heading}>Expansion Panel 2</Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails>
-                <Typography>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex,
-                  sit amet blandit leo lobortis eget.
-                </Typography>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-          </div>
+                  <Typography className={this.props.classes.heading}>some image.jpg</Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                  <Typography>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex,
+                    sit amet blandit leo lobortis eget.
+                  </Typography>
+                </ExpansionPanelDetails>
+                <Divider />
+                <ExpansionPanelActions>
+                  <Button size="small">Delete</Button>
+                  <Button size="small">Move</Button>
+                  <Button size="small" color="primary">Share</Button>
+                  <Button size="small" color="primary">Download</Button>
+                </ExpansionPanelActions>
+              </ExpansionPanel>
+
+              <ExpansionPanel>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                  <Icon>insert_drive_file</Icon>
+                  <Typography className={this.props.classes.heading}>things.pdf</Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                  <Typography>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex,
+                    sit amet blandit leo lobortis eget.
+                  </Typography>
+                </ExpansionPanelDetails>
+              </ExpansionPanel>
+              <ExpansionPanel>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                  <Icon>folder</Icon>
+                  <Typography className={this.props.classes.heading}>Some directory</Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                  <Typography>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex,
+                    sit amet blandit leo lobortis eget.
+                  </Typography>
+                </ExpansionPanelDetails>
+              </ExpansionPanel>
+
+            </div>
+
+          </main>
+        </div>  
+
+      </Router>
+    )
+  }
+}
+
+export default withRoot(withStyles(styles) < {} > (Index))
+
+/*
+
+  <div className={this.props.classes.root}>
+    <Route exact path="/" component={Home}/>
+    <Route exact path="/about" component={About}/>
+  </div>
+
+*/
+
+const searchListItem = (
+  <div>
+    <ListItem button style={{ height: 50 }}>
+      <ListItemIcon>
+        <SearchIcon />
+      </ListItemIcon>
+      <ListItem>
+        <TextField
+          id="search"
+          type="search"
+          margin="none"
+          placeholder="Search..."
+          style={{
+            marginBottom: 0,
+            marginLeft: -9,
+            width: 136
+          }}
+
+          InputProps={{
+            disableUnderline: true
+          }}
+        />
+      </ListItem>
+    </ListItem>
+  </div>
+);
+
+const mailFolderListItems = (
+  <div>
+    <ListItem button>
+      <ListItemIcon>
+        <CreateNewFolderIcon />
+      </ListItemIcon>
+      <ListItemText primary="Create Directory" />
+    </ListItem>
+    <ListItem button>
+      <ListItemIcon>
+        <CloudUpload />
+      </ListItemIcon>
+      <ListItemText primary="Upload File" />
+    </ListItem>
+    <ListItem button>
+      <ListItemIcon>
+        <GroupAddIcon />
+      </ListItemIcon>
+      <ListItemText primary="Share Directory" />
+    </ListItem>
+  </div>
+);
+
+const otherMailFolderListItems = (
+  <div>
+    <ListItem button disabled>
+      <ListItemIcon>
+        <CompareArrowsIcon />
+      </ListItemIcon>
+      <ListItemText primary="Move selected" />
+    </ListItem>
+    <ListItem button disabled>
+      <ListItemIcon>
+        <DeleteIcon />
+      </ListItemIcon>
+      <ListItemText primary="Delete selected" />
+    </ListItem>
+    <ListItem button disabled >
+      <ListItemIcon>
+        <GroupAddIcon />
+      </ListItemIcon>
+      <ListItemText primary="Share selected" />
+    </ListItem>
+  </div>
+);
+
+/*
 
           <Paper className={this.props.classes.tableRoot}>
             <Table className={this.props.classes.table}>
@@ -238,21 +366,6 @@ class Index extends React.Component<Props, {}> {
               </TableBody>
             </Table>
           </Paper>
-          <div className={this.props.classes.root}>
-
-            <Route exact path="/" component={Home}/>
-            <Route exact path="/about" component={About}/>
-          </div>
-        </div>
-      </Router>
-    )
-  }
-}
-
-export default withRoot(withStyles(styles) < {} > (Index))
-
-/*
-
 
           <div>
             <Paper className={this.props.classes.pathRoot} elevation={4}>
