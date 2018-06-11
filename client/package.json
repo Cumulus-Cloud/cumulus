@@ -33,7 +33,7 @@
     "react-dnd-html5-backend": "2.6.0",
     "react-dom": "16.4.0",
     "react-redux": "5.0.7",
-    "react-router": "4.2.0",
+    "react-router": "4.3.1",
     "react-router-redux": "5.0.0-alpha.9",
     "redux": "4.0.0",
     "redux-devtools-extension": "2.13.2",
