@@ -34,7 +34,7 @@ import SearchIcon from '@material-ui/icons/Search'
 import CompareArrowsIcon from '@material-ui/icons/CompareArrows'
 import MailIcon from '@material-ui/icons/Mail'
 import DeleteIcon from '@material-ui/icons/Delete'
-import ReportIcon from '@material-ui/icons/Report'
+import MenuButton from '@material-ui/icons/Menu'
 import GroupAddIcon from '@material-ui/icons/GroupAdd'
 import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder'
 import TextField from '@material-ui/core/TextField'
@@ -46,6 +46,9 @@ import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer'
 import withMobileDialog, { WithMobileDialogOptions } from '@material-ui/core/withMobileDialog'
+
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 
 import withRoot from '../withRoot'
 import FileListElement from '../elements/fileListElement'
@@ -84,6 +87,7 @@ const styles = (theme: Theme) => createStyles({
     overflow: 'hidden',
     position: 'relative',
     display: 'flex',
+    height: '100%'
   },
   appbarRoot: {
     flexGrow: 1,
@@ -96,6 +100,17 @@ const styles = (theme: Theme) => createStyles({
     marginLeft: -12,
     marginRight: 20,
   },
+  menuButtonMobile: {
+    display: 'none',
+    [theme.breakpoints.down('sm')]: {
+      display: 'flex'
+    }
+  },
+  menuButtonDesktop: {
+    [theme.breakpoints.down('sm')]: {
+      display: 'none'
+    }
+  },
   pathRoot: {
     width: '100%',
     maxWidth: 800,
@@ -103,7 +118,8 @@ const styles = (theme: Theme) => createStyles({
     marginRight: 'auto',
     marginLeft: 'auto',
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
+    overflow: 'auto'
   },
   homeButton: {
     marginLeft:  theme.spacing.unit * -4
@@ -156,6 +172,7 @@ type PropsWithStyle = Props & WithStyles<typeof styles>
 interface State {
   popupOpened: boolean
   drawer: boolean
+  anchorEl?: EventTarget
 }
 
 class Index extends React.Component<PropsWithStyle, State> {
@@ -173,6 +190,15 @@ class Index extends React.Component<PropsWithStyle, State> {
     this.setState({...this.state, drawer: !this.state.drawer })
   }
 
+  openMenu(e: EventTarget) {
+    this.setState({...this.state, anchorEl: e })
+  }
+
+
+  closeMenu() {
+    this.setState({...this.state, anchorEl: undefined })
+  }
+
   render() {
     const { fullScreen } = this.props;
 
@@ -181,13 +207,27 @@ class Index extends React.Component<PropsWithStyle, State> {
         <div className={this.props.classes.root}>
           <AppBar position="absolute" className={this.props.classes.appbarRoot}>
             <Toolbar>
-              <IconButton className={this.props.classes.menuButton} color="inherit" aria-label="Menu" onClick={() => this.showDrawer()}>
+              <IconButton className={`${this.props.classes.menuButton} ${this.props.classes.menuButtonDesktop}`} color="inherit" aria-label="Menu">
                   <CloudIcon />
+              </IconButton>
+              <IconButton className={`${this.props.classes.menuButton} ${this.props.classes.menuButtonMobile}`} color="inherit" aria-label="Menu" onClick={() => this.showDrawer()}>
+                  <MenuButton />
               </IconButton>
               <Typography variant="title" color="inherit" className={this.props.classes.flex}>
                   Cumulus
               </Typography>
-              <IconButton color="inherit"><AccountCircle /></IconButton>
+              <IconButton onClick={(e) => this.openMenu(e.currentTarget)} color="inherit"><AccountCircle /></IconButton>
+              <Menu
+                id="simple-menu"
+                anchorEl={this.state.anchorEl}
+                open={Boolean(this.state.anchorEl)}
+                onClose={() => this.closeMenu()}
+              >
+                <MenuItem onClick={() => this.closeMenu()}>My account</MenuItem>
+                <MenuItem onClick={() => this.closeMenu()}>Logout</MenuItem>
+                <Divider />
+                <MenuItem onClick={() => this.closeMenu()}>Admin panel</MenuItem>
+              </Menu>
             </Toolbar>
           </AppBar>
           <SwipeableDrawer
@@ -341,19 +381,28 @@ class Index extends React.Component<PropsWithStyle, State> {
             onClose={() => this.showPopup()}
             aria-labelledby="responsive-dialog-title"
           >
-            <DialogTitle id="responsive-dialog-title">{"Use Google's location service?"}</DialogTitle>
+            <DialogTitle id="responsive-dialog-title">
+              Creation of a new directory
+            </DialogTitle>
             <DialogContent>
               <DialogContentText>
-                Let Google help apps determine location. This means sending anonymous location data to
-                Google, even when no apps are running.
+                Name of the new directory
               </DialogContentText>
+              <TextField
+                autoFocus
+                margin="dense"
+                id="name"
+                label="Name"
+                type="text"
+                fullWidth
+              />
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => this.showPopup()} color="primary">
-                Disagree
+              <Button onClick={() => this.showPopup()}>
+                Cancel
               </Button>
               <Button onClick={() => this.showPopup()} color="primary" autoFocus>
-                Agree
+                Create
               </Button>
             </DialogActions>
           </Dialog>

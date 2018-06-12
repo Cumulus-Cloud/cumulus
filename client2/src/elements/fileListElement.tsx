@@ -29,45 +29,9 @@ import withRoot from '../withRoot'
 
 const styles = (theme: Theme) => createStyles({
   root: {
-    textAlign: 'center',
-    paddingTop: 110
-  },
-  appbarRoot: {
-    flexGrow: 1,
-  },
-  flex: {
-    flex: 1,
-  },
-  menuButton: {
-    marginLeft: -12,
-    marginRight: 20,
-  },
-  tableRoot: {
-    width: '100%',
-    maxWidth: 800,
-    marginRight: 'auto',
-    marginLeft: 'auto',
-    marginTop: theme.spacing.unit * 3,
-    overflowX: 'auto',
-  },
-  table: {
-    minWidth: 700,
-  },
-  pathRoot: theme.mixins.gutters({
-    width: '100%',
-    maxWidth: 800,
-    paddingTop: 16,
-    paddingBottom: 16,
-    marginTop: theme.spacing.unit * 3,
-    marginRight: 'auto',
-    marginLeft: 'auto'
-  }),
-  testRoot: {
-    width: '100%',
-    marginTop: theme.spacing.unit * 3,
-    maxWidth: 800,
-    marginRight: 'auto',
-    marginLeft: 'auto'
+    [theme.breakpoints.down('xs')]: {
+      flexDirection: 'column'
+    }
   },
   heading: {
     paddingLeft: 15,
@@ -99,6 +63,10 @@ const styles = (theme: Theme) => createStyles({
   },
   columnImage: {
     flexBasis: 200,
+    [theme.breakpoints.down('xs')]: {
+      textAlign: 'center',
+      paddingBottom: theme.spacing.unit * 2
+    }
   },
   columnInner: {
     paddingTop: 3,
@@ -176,7 +144,7 @@ class FileListElement extends React.Component<PropsWithStyle, State> {
           {icon}
           {title}
         </ExpansionPanelSummary>
-        <ExpansionPanelDetails>
+        <ExpansionPanelDetails  className={this.props.classes.root}>
           {
             this.props.type == 'file' ?
             <div className={this.props.classes.columnImage}>
