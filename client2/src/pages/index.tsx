@@ -39,6 +39,13 @@ import GroupAddIcon from '@material-ui/icons/GroupAdd'
 import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder'
 import TextField from '@material-ui/core/TextField'
 import Grid from '@material-ui/core/Grid'
+import Dialog from '@material-ui/core/Dialog'
+import DialogActions from '@material-ui/core/DialogActions'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogContentText from '@material-ui/core/DialogContentText'
+import DialogTitle from '@material-ui/core/DialogTitle'
+import SwipeableDrawer from '@material-ui/core/SwipeableDrawer'
+import withMobileDialog, { WithMobileDialogOptions } from '@material-ui/core/withMobileDialog'
 
 import withRoot from '../withRoot'
 import FileListElement from '../elements/fileListElement'
@@ -59,7 +66,7 @@ const Home = () => (
         About
     </Link>
 </div>
-);
+)
   
 const About = () => (
 <div>
@@ -68,7 +75,7 @@ const About = () => (
         Go back
     </Link>
 </div>
-);
+)
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -133,20 +140,48 @@ const styles = (theme: Theme) => createStyles({
     backgroundColor: theme.palette.primary.light,
     color: 'white'
   },
+  drawerStatic: {
+    [theme.breakpoints.down('sm')]: {
+      display: 'none'
+    }
+  }
 })
 
-interface Props extends WithStyles<typeof styles> {}
+interface Props {
+  fullScreen: boolean
+}
 
-class Index extends React.Component<Props, {}> {
+type PropsWithStyle = Props & WithStyles<typeof styles>
+
+interface State {
+  popupOpened: boolean
+  drawer: boolean
+}
+
+class Index extends React.Component<PropsWithStyle, State> {
+
+  constructor(props: PropsWithStyle) {
+    super(props)
+    this.state = { popupOpened: false, drawer: false }
+  }
+
+  showPopup() {
+    this.setState({...this.state, popupOpened: !this.state.popupOpened })
+  }
+
+  showDrawer() {
+    this.setState({...this.state, drawer: !this.state.drawer })
+  }
 
   render() {
+    const { fullScreen } = this.props;
 
     return (
       <Router>
         <div className={this.props.classes.root}>
           <AppBar position="absolute" className={this.props.classes.appbarRoot}>
             <Toolbar>
-              <IconButton className={this.props.classes.menuButton} color="inherit" aria-label="Menu">
+              <IconButton className={this.props.classes.menuButton} color="inherit" aria-label="Menu" onClick={() => this.showDrawer()}>
                   <CloudIcon />
               </IconButton>
               <Typography variant="title" color="inherit" className={this.props.classes.flex}>
@@ -155,8 +190,41 @@ class Index extends React.Component<Props, {}> {
               <IconButton color="inherit"><AccountCircle /></IconButton>
             </Toolbar>
           </AppBar>
+          <SwipeableDrawer
+            open={this.state.drawer}
+            onClose={() => this.showDrawer()}
+            onOpen={() => this.showDrawer()}
+          >
+              <List>{searchListItem}</List>
+              <Divider style={{height: 1}} />
+              <List>
+                <div>
+                  <ListItem button onClick={() => this.showPopup()} >
+                    <ListItemIcon>
+                      <CreateNewFolderIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Create Directory" />
+                  </ListItem>
+                  <ListItem button>
+                    <ListItemIcon>
+                      <CloudUpload />
+                    </ListItemIcon>
+                    <ListItemText primary="Upload File" />
+                  </ListItem>
+                  <ListItem button>
+                    <ListItemIcon>
+                      <GroupAddIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Share Directory" />
+                  </ListItem>
+                </div>
+              </List>
+              <Divider style={{height: 1}} />
+              <List>{otherMailFolderListItems}</List>
+          </SwipeableDrawer>
           <Drawer
             variant="permanent"
+            className={this.props.classes.drawerStatic}
             classes={{
               paper: this.props.classes.drawerPaper,
             }}
@@ -164,7 +232,28 @@ class Index extends React.Component<Props, {}> {
             <div className={this.props.classes.toolbar} />
             <List>{searchListItem}</List>
             <Divider style={{height: 1}} />
-            <List>{mailFolderListItems}</List>
+            <List>
+              <div>
+                <ListItem button onClick={() => this.showPopup()} >
+                  <ListItemIcon>
+                    <CreateNewFolderIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Create Directory" />
+                </ListItem>
+                <ListItem button>
+                  <ListItemIcon>
+                    <CloudUpload />
+                  </ListItemIcon>
+                  <ListItemText primary="Upload File" />
+                </ListItem>
+                <ListItem button>
+                  <ListItemIcon>
+                    <GroupAddIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Share Directory" />
+                </ListItem>
+              </div>
+            </List>
             <Divider style={{height: 1}} />
             <List>{otherMailFolderListItems}</List>
           </Drawer>
@@ -245,6 +334,29 @@ class Index extends React.Component<Props, {}> {
             </div>
 
           </main>
+
+          <Dialog
+            fullScreen={fullScreen}
+            open={this.state.popupOpened}
+            onClose={() => this.showPopup()}
+            aria-labelledby="responsive-dialog-title"
+          >
+            <DialogTitle id="responsive-dialog-title">{"Use Google's location service?"}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Let Google help apps determine location. This means sending anonymous location data to
+                Google, even when no apps are running.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => this.showPopup()} color="primary">
+                Disagree
+              </Button>
+              <Button onClick={() => this.showPopup()} color="primary" autoFocus>
+                Agree
+              </Button>
+            </DialogActions>
+          </Dialog>
         </div>  
 
       </Router>
@@ -252,7 +364,12 @@ class Index extends React.Component<Props, {}> {
   }
 }
 
-export default withRoot(withStyles(styles) < {} > (Index))
+export default withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ()(Index))
+
+// export default withMobileDialog()(withStyles(styles) <PropsWithStyle> (Index))
+
+
+//export default withRoot(withMobileDialog()(withStyles(styles) < {} > (Index)))
 
 /*
 

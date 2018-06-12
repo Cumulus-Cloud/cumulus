@@ -137,7 +137,7 @@ interface State {
 
 class FileListElement extends React.Component<PropsWithStyle, State> {
 
-  constructor(props: Props & WithStyles<typeof styles>){
+  constructor(props: PropsWithStyle){
     super(props)
     this.state = {
       selected: false,
