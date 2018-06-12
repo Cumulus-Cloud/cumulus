@@ -51,7 +51,10 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
 import withRoot from '../withRoot'
-import FileListElement from '../elements/fileListElement'
+import FileListElement from '../elements/FileListElement'
+import CumulusAppBar from '../elements/CumulusAppBar';
+import { User } from '../models/User';
+import BreadCrumb from '../elements/BreadCrumb';
 
 /*
 import ButtonAppBar from '../components/app-bar'
@@ -87,42 +90,7 @@ const styles = (theme: Theme) => createStyles({
     overflow: 'hidden',
     position: 'relative',
     display: 'flex',
-    height: '100%'
-  },
-  appbarRoot: {
-    flexGrow: 1,
-    zIndex: theme.zIndex.drawer + 1,
-  },
-  flex: {
-    flex: 1,
-  },
-  menuButton: {
-    marginLeft: -12,
-    marginRight: 20,
-  },
-  menuButtonMobile: {
-    display: 'none',
-    [theme.breakpoints.down('sm')]: {
-      display: 'flex'
-    }
-  },
-  menuButtonDesktop: {
-    [theme.breakpoints.down('sm')]: {
-      display: 'none'
-    }
-  },
-  pathRoot: {
-    width: '100%',
-    maxWidth: 800,
-    paddingLeft: theme.spacing.unit * 3,
-    marginRight: 'auto',
-    marginLeft: 'auto',
-    display: 'flex',
-    alignItems: 'center',
-    overflow: 'auto'
-  },
-  homeButton: {
-    marginLeft:  theme.spacing.unit * -4
+    minHeight: '100%'
   },
   testRoot: {
     width: '100%',
@@ -137,9 +105,6 @@ const styles = (theme: Theme) => createStyles({
     fontSize: theme.typography.pxToRem(15),
     fontWeight: theme.typography.fontWeightRegular
   },
-  appBar: {
-    zIndex: theme.zIndex.drawer + 1,
-  },
   drawerPaper: {
     position: 'relative',
     width: 240,
@@ -148,7 +113,8 @@ const styles = (theme: Theme) => createStyles({
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
     padding: theme.spacing.unit * 3,
-    minWidth: 0, // So the Typography noWrap works
+    paddingTop: theme.spacing.unit * 2,
+    minWidth: 0
   },
   toolbar: theme.mixins.toolbar,
   margin: {
@@ -202,34 +168,29 @@ class Index extends React.Component<PropsWithStyle, State> {
   render() {
     const { fullScreen } = this.props;
 
+    const user: User = {
+      id: '1',
+      login: 'Vuzi',
+      creation: "",
+      roles: [ 'user', 'admin' ]
+    }
+
+    // TODO
+    // Drawer (with SwipeableDrawer + Static drawer) + Search etc...
+    // Content + FileListElement
+    // Login page ?
+
     return (
       <Router>
         <div className={this.props.classes.root}>
-          <AppBar position="absolute" className={this.props.classes.appbarRoot}>
-            <Toolbar>
-              <IconButton className={`${this.props.classes.menuButton} ${this.props.classes.menuButtonDesktop}`} color="inherit" aria-label="Menu">
-                  <CloudIcon />
-              </IconButton>
-              <IconButton className={`${this.props.classes.menuButton} ${this.props.classes.menuButtonMobile}`} color="inherit" aria-label="Menu" onClick={() => this.showDrawer()}>
-                  <MenuButton />
-              </IconButton>
-              <Typography variant="title" color="inherit" className={this.props.classes.flex}>
-                  Cumulus
-              </Typography>
-              <IconButton onClick={(e) => this.openMenu(e.currentTarget)} color="inherit"><AccountCircle /></IconButton>
-              <Menu
-                id="simple-menu"
-                anchorEl={this.state.anchorEl}
-                open={Boolean(this.state.anchorEl)}
-                onClose={() => this.closeMenu()}
-              >
-                <MenuItem onClick={() => this.closeMenu()}>My account</MenuItem>
-                <MenuItem onClick={() => this.closeMenu()}>Logout</MenuItem>
-                <Divider />
-                <MenuItem onClick={() => this.closeMenu()}>Admin panel</MenuItem>
-              </Menu>
-            </Toolbar>
-          </AppBar>
+          <CumulusAppBar 
+            user={user}
+            showDrawer={() => this.showDrawer()}
+            showAccountPanel={() => { return }}
+            showAdminPanel={() => { return }}
+            logout={() => { return }}
+          />
+          <div>
           <SwipeableDrawer
             open={this.state.drawer}
             onClose={() => this.showDrawer()}
@@ -297,29 +258,10 @@ class Index extends React.Component<PropsWithStyle, State> {
             <Divider style={{height: 1}} />
             <List>{otherMailFolderListItems}</List>
           </Drawer>
+          </div>
           <main className={this.props.classes.content}>
             <div className={this.props.classes.toolbar} />
-            <div>
-              <div className={this.props.classes.pathRoot}>
-                <Button className={this.props.classes.homeButton}>
-                  <Icon>home</Icon>
-                </Button>
-                <Icon >keyboard_arrow_right</Icon>
-                <Button >
-                  aaaaa
-                </Button>
-                <Icon  >keyboard_arrow_right</Icon>
-                <Button>
-                  aaaaa
-                </Button>
-                <Icon  >keyboard_arrow_right</Icon>
-                <Button>
-                  aaaaa
-                </Button>
-                <div style={{ flexGrow: 1 }} />
-
-              </div>
-            </div>
+            <BreadCrumb path={'/aaaa/bbbb/cccc/dddd'} onPathSelected={(p) => console.log(p)} />
 
             <div className={this.props.classes.testRoot}>
 
