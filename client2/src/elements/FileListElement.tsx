@@ -135,9 +135,6 @@ class FileListElement extends React.Component<PropsWithStyle, State> {
         <Typography onClick={() => this.select()} color="primary" className={this.props.classes.headingSelected}>{this.props.filename}</Typography> :
         <Typography onClick={() => this.select()} className={this.props.classes.heading}>{this.props.filename}</Typography>
 
-      console.log(this.state.expanded)
-      console.log(this.state.selected)
-
     return (
       <ExpansionPanel expanded={this.state.expanded} >
         <ExpansionPanelSummary expandIcon={expandIcon} >

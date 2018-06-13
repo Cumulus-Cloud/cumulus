@@ -55,6 +55,7 @@ import FileListElement from '../elements/FileListElement'
 import CumulusAppBar from '../elements/CumulusAppBar';
 import { User } from '../models/User';
 import BreadCrumb from '../elements/BreadCrumb';
+import CumulusDrawer from '../elements/CumulusDrawer';
 
 /*
 import ButtonAppBar from '../components/app-bar'
@@ -152,14 +153,13 @@ class Index extends React.Component<PropsWithStyle, State> {
     this.setState({...this.state, popupOpened: !this.state.popupOpened })
   }
 
-  showDrawer() {
+  drawerToggle() {
     this.setState({...this.state, drawer: !this.state.drawer })
   }
 
   openMenu(e: EventTarget) {
     this.setState({...this.state, anchorEl: e })
   }
-
 
   closeMenu() {
     this.setState({...this.state, anchorEl: undefined })
@@ -180,85 +180,42 @@ class Index extends React.Component<PropsWithStyle, State> {
     // Content + FileListElement
     // Login page ?
 
+    const searchElements = searchListItem
+    const actionElements = (
+      <div>
+        <ListItem button onClick={() => this.showPopup()} >
+          <ListItemIcon>
+            <CreateNewFolderIcon />
+          </ListItemIcon>
+          <ListItemText primary="Create Directory" />
+        </ListItem>
+        <ListItem button>
+          <ListItemIcon>
+            <CloudUpload />
+          </ListItemIcon>
+          <ListItemText primary="Upload File" />
+        </ListItem>
+        <ListItem button>
+          <ListItemIcon>
+            <GroupAddIcon />
+          </ListItemIcon>
+          <ListItemText primary="Share Directory" />
+        </ListItem>
+      </div>
+    )
+    const contextualActionElements = otherMailFolderListItems
+
     return (
       <Router>
         <div className={this.props.classes.root}>
           <CumulusAppBar 
             user={user}
-            showDrawer={() => this.showDrawer()}
+            showDrawer={() => this.drawerToggle()}
             showAccountPanel={() => { return }}
             showAdminPanel={() => { return }}
             logout={() => { return }}
           />
-          <div>
-          <SwipeableDrawer
-            open={this.state.drawer}
-            onClose={() => this.showDrawer()}
-            onOpen={() => this.showDrawer()}
-          >
-              <List>{searchListItem}</List>
-              <Divider style={{height: 1}} />
-              <List>
-                <div>
-                  <ListItem button onClick={() => this.showPopup()} >
-                    <ListItemIcon>
-                      <CreateNewFolderIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="Create Directory" />
-                  </ListItem>
-                  <ListItem button>
-                    <ListItemIcon>
-                      <CloudUpload />
-                    </ListItemIcon>
-                    <ListItemText primary="Upload File" />
-                  </ListItem>
-                  <ListItem button>
-                    <ListItemIcon>
-                      <GroupAddIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="Share Directory" />
-                  </ListItem>
-                </div>
-              </List>
-              <Divider style={{height: 1}} />
-              <List>{otherMailFolderListItems}</List>
-          </SwipeableDrawer>
-          <Drawer
-            variant="permanent"
-            className={this.props.classes.drawerStatic}
-            classes={{
-              paper: this.props.classes.drawerPaper,
-            }}
-          >
-            <div className={this.props.classes.toolbar} />
-            <List>{searchListItem}</List>
-            <Divider style={{height: 1}} />
-            <List>
-              <div>
-                <ListItem button onClick={() => this.showPopup()} >
-                  <ListItemIcon>
-                    <CreateNewFolderIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Create Directory" />
-                </ListItem>
-                <ListItem button>
-                  <ListItemIcon>
-                    <CloudUpload />
-                  </ListItemIcon>
-                  <ListItemText primary="Upload File" />
-                </ListItem>
-                <ListItem button>
-                  <ListItemIcon>
-                    <GroupAddIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Share Directory" />
-                </ListItem>
-              </div>
-            </List>
-            <Divider style={{height: 1}} />
-            <List>{otherMailFolderListItems}</List>
-          </Drawer>
-          </div>
+          <CumulusDrawer onDrawerToggle={() => this.drawerToggle()} showDynamicDrawer={this.state.drawer} searchElements={searchElements} actionElements={actionElements} contextualActionElements={contextualActionElements} />
           <main className={this.props.classes.content}>
             <div className={this.props.classes.toolbar} />
             <BreadCrumb path={'/aaaa/bbbb/cccc/dddd'} onPathSelected={(p) => console.log(p)} />
