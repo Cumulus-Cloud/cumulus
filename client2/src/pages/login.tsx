@@ -48,6 +48,8 @@ import SwipeableDrawer from '@material-ui/core/SwipeableDrawer'
 import withMobileDialog, { WithMobileDialogOptions } from '@material-ui/core/withMobileDialog'
 
 import Menu from '@material-ui/core/Menu';
+import Grow from '@material-ui/core/Grow';
+import Zoom from '@material-ui/core/Zoom';
 import MenuItem from '@material-ui/core/MenuItem';
 
 import withRoot from '../withRoot'
@@ -58,24 +60,62 @@ import BreadCrumb from '../elements/BreadCrumb';
 import CumulusDrawer from '../elements/CumulusDrawer';
 
 const styles = (theme: Theme) => createStyles({
-  root: theme.mixins.gutters({
-    paddingTop: 16,
-    paddingBottom: 16,
-    marginTop: theme.spacing.unit * 3,
-    maxWidth: 400
-  }),
+  root: {
+    padding: theme.spacing.unit * 3,
+    flex: 1
+  },
+  loginPanel: {
+    zIndex: 10,
+    width: 400,
+    display: 'flex',
+    flexDirection: 'column',
+    [theme.breakpoints.down('xs')]: {
+      width: '100%',
+      height: '100%'
+    }
+  },
+  backgroundFilter: {
+    zIndex: 0,
+    position: 'fixed',
+    top: 0,
+    width: '100%',
+    height: '100%',
+    background: 'radial-gradient(ellipse at center, #1e5799 0%,rgba(54, 151, 142, 0.8) 0%,#0C526C 100%,#3d7eaa 100%,#182848 100%,#6e48aa 100%,#6e48aa 100%)',
+    opacity: .7
+  },
   background: {
+    height: '100%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    height: '100%',
     backgroundImage: 'url(https://cumulus-cloud.github.io/assets/img/template/bg3.jpg)',
     backgroundSize: 'cover'
   },
   textField: {
     marginLeft: theme.spacing.unit,
     marginRight: theme.spacing.unit,
-    width: '100%',
+    display: 'flex'
+  },
+  title: {
+    color: 'white',
+    backgroundColor: '#29A7A0',
+    padding: theme.spacing.unit * 3,
+    display: 'flex'
+  },
+  logo: {
+    backgroundColor: '#F1FBFA',
+    color: '#29A7A0',
+    marginRight: theme.spacing.unit * 2
+  },
+  logoText: {
+    color: '#F1FBFA',
+    paddingTop: theme.spacing.unit,
+    fontSize: theme.typography.pxToRem(28)
+  },
+  loginButtons: {
+    padding: theme.spacing.unit * 3,
+    display: 'flex',
+    justifyContent: 'flex-end'
   }
 })
 
@@ -99,33 +139,50 @@ class Login extends React.Component<PropsWithStyle, State> {
   }
 
   render() {
+    // TODO handler sign-up with account creation
+    // TODO also handle email-validation (special url?)
     return (
       <div className={this.props.classes.background} >
-        <Paper className={this.props.classes.root} elevation={1}>
-          <Typography variant="headline" component="h3">
-            <CloudIcon/> <span>Cumulus</span>
-          </Typography>
-          <Typography component="p">
-
-        <TextField
-          id="password-input"
-          label="Login"
-          className={this.props.classes.textField}
-          type="text"
-          margin="normal"
-        />
-        <TextField
-          id="password-input"
-          label="Password"
-          className={this.props.classes.textField}
-          type="password"
-          margin="normal"
-        />
-          </Typography>
-        </Paper>
+        <div className={this.props.classes.backgroundFilter} />
+        <Grow in={true} style={{ transitionDelay: 300 }} >
+          <Paper className={this.props.classes.loginPanel} elevation={5}>
+            <div className={this.props.classes.title}>
+              <Button variant="fab"  className={this.props.classes.logo} >
+                <CloudIcon/>
+              </Button>
+              <Typography variant="headline" component="h3" className={this.props.classes.logoText}>
+                Cumulus
+              </Typography>
+            </div>
+            <div className={this.props.classes.root}>
+              <TextField
+                id="login-input"
+                label="Login"
+                className={this.props.classes.textField}
+                type="text"
+                margin="normal"
+              />
+              <TextField
+                id="password-input"
+                label="Mot de passe"
+                className={this.props.classes.textField}
+                type="password"
+                margin="normal"
+              />
+            </div>
+            <div className={this.props.classes.loginButtons} >
+              <Button color="primary">
+                S'inscrire
+              </Button>
+              <Button color="primary">
+                Se connecter
+              </Button>
+            </div>
+          </Paper>
+        </Grow>
       </div>
     )
   }
 }
 
-export default withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ()(Login))
+export default withRoot(withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ()(Login)))

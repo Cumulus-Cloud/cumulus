@@ -312,21 +312,10 @@ class Index extends React.Component<PropsWithStyle, State> {
   }
 }
 
-export default withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ()(Index))
-
-// export default withMobileDialog()(withStyles(styles) <PropsWithStyle> (Index))
+export default withRoot(withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ()(Index)))
 
 
-//export default withRoot(withMobileDialog()(withStyles(styles) < {} > (Index)))
 
-/*
-
-  <div className={this.props.classes.root}>
-    <Route exact path="/" component={Home}/>
-    <Route exact path="/about" component={About}/>
-  </div>
-
-*/
 
 const searchListItem = (
   <div>
@@ -400,47 +389,3 @@ const otherMailFolderListItems = (
     </ListItem>
   </div>
 );
-
-/*
-
-          <Paper className={this.props.classes.tableRoot}>
-            <Table className={this.props.classes.table}>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Dessert (100g serving)</TableCell>
-                  <TableCell numeric>Calories</TableCell>
-                  <TableCell numeric>Fat (g)</TableCell>
-                  <TableCell numeric>Carbs (g)</TableCell>
-                  <TableCell numeric>Protein (g)</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {data.map(n => {
-                  return (
-                    <TableRow key={n.id}>
-                      <TableCell component="th" scope="row">
-                        {n.name}
-                      </TableCell>
-                      <TableCell numeric>{n.calories}</TableCell>
-                      <TableCell numeric>{n.fat}</TableCell>
-                      <TableCell numeric>{n.carbs}</TableCell>
-                      <TableCell numeric>{n.protein}</TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </Paper>
-
-          <div>
-            <Paper className={this.props.classes.pathRoot} elevation={4}>
-              <Typography variant="headline" component="h3">
-                This is a sheet of paper.
-              </Typography>
-              <Typography component="p">
-                Paper can be used to build surface or other elements for your application.
-              </Typography>
-            </Paper>
-          </div>
-
-      */

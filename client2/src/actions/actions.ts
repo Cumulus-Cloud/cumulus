@@ -1,7 +1,7 @@
 import { Directory } from '../models/FsNode'
 import { Action } from 'redux'
 import { ActionCreator } from 'react-redux'
-import { ApiError } from '../models/ApiError';
+import { ApiError } from '../models/ApiError'
 
 
 export interface LoadDirectoryAction extends Action {
