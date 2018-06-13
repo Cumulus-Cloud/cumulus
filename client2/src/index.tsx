@@ -1,5 +1,5 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import Index from './pages/index'
+import Login from './pages/login'
 
-ReactDOM.render(<Index />, document.querySelector('#app'))
+ReactDOM.render(<Login />, document.querySelector('#app'))
