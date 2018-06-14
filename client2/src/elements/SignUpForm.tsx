@@ -35,6 +35,7 @@ import CompareArrowsIcon from '@material-ui/icons/CompareArrows'
 import MailIcon from '@material-ui/icons/Mail'
 import DeleteIcon from '@material-ui/icons/Delete'
 import MenuButton from '@material-ui/icons/Menu'
+import LeftButton from '@material-ui/icons/KeyboardArrowLeft'
 import GroupAddIcon from '@material-ui/icons/GroupAdd'
 import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder'
 import TextField from '@material-ui/core/TextField'
@@ -47,38 +48,27 @@ import DialogTitle from '@material-ui/core/DialogTitle'
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer'
 import withMobileDialog, { WithMobileDialogOptions } from '@material-ui/core/withMobileDialog'
 
+import Visibility from '@material-ui/icons/Visibility';
+import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import FormControl from '@material-ui/core/FormControl';
+
 import Menu from '@material-ui/core/Menu';
 import Grow from '@material-ui/core/Grow';
 import Zoom from '@material-ui/core/Zoom';
+import Slide from '@material-ui/core/Slide';
 import MenuItem from '@material-ui/core/MenuItem';
+import Tooltip from '@material-ui/core/Tooltip'
 
 import withRoot from '../withRoot'
 import FileListElement from '../elements/FileListElement'
 import CumulusAppBar from '../elements/CumulusAppBar';
 import { User } from '../models/User';
 import BreadCrumb from '../elements/BreadCrumb';
-import CumulusDrawer from '../elements/CumulusDrawer'
-
-
-import SignInForm from '../elements/LogInForm'
-import SignUpForm from '../elements/SignUpForm'
+import CumulusDrawer from '../elements/CumulusDrawer';
 
 const styles = (theme: Theme) => createStyles({
-  root: {
-    padding: theme.spacing.unit * 3,
-    flex: 1
-  },
-  loginRoot: {
-    zIndex: 10,
-    width: 400,
-    display: 'flex',
-    flexDirection: 'column',
-    [theme.breakpoints.down('xs')]: {
-      width: '100%',
-      height: '100%'
-    }
-  },
-  loginForm: {
+  form: {
     padding: theme.spacing.unit * 3,
     flex: 1
   },
@@ -87,93 +77,113 @@ const styles = (theme: Theme) => createStyles({
     marginRight: theme.spacing.unit,
     display: 'flex'
   },
-  loginTitle: {
-    color: 'white',
-    backgroundColor: '#29A7A0',
+  formButtons: {
     padding: theme.spacing.unit * 3,
-    display: 'flex'
-  },
-  logo: {
-    backgroundColor: '#F1FBFA',
-    color: '#29A7A0',
-    marginRight: theme.spacing.unit * 2
-  },
-  logoText: {
-    color: '#F1FBFA',
-    paddingTop: theme.spacing.unit,
-    fontSize: theme.typography.pxToRem(28)
-  },
-  backgroundFilter: {
-    zIndex: 0,
-    position: 'fixed',
-    top: 0,
-    width: '100%',
-    height: '100%',
-    background: 'radial-gradient(ellipse at center, #1e5799 0%,rgba(54, 151, 142, 0.8) 0%,#0C526C 100%,#3d7eaa 100%,#182848 100%,#6e48aa 100%,#6e48aa 100%)',
-    opacity: .7
-  },
-  background: {
-    height: '100%',
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundImage: 'url(https://cumulus-cloud.github.io/assets/img/template/bg3.jpg)',
-    backgroundSize: 'cover'
+    justifyContent: 'flex-end'
   },
-  loginPanel: {
-    zIndex: 10
+  backButton: {
+    marginRight: 'auto',
+    paddingLeft: 0
   }
 })
 
 interface Props {
-  fullScreen: boolean
+  onGoBack:() => void
+  onSignUp:(login: string, email:string, password: string) => void
 }
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
 interface State {
-  showSignIn: boolean
+  showPassword: boolean
 }
 
-class Login extends React.Component<PropsWithStyle, State> {
+class SignUpForm extends React.Component<PropsWithStyle, State> {
 
   constructor(props: PropsWithStyle) {
     super(props)
-    this.state = { showSignIn: false }
+    this.state = { 
+      showPassword: false
+    }
   }
 
-  toggleSignInForm() {
-    this.setState({ ...this.state, showSignIn: !this.state.showSignIn })
+  onGoBack() {
+    this.props.onGoBack()
+  }
+
+  onSignUp() {
+    // TODO check values ?
+    this.props.onSignUp('todo', 'todo', 'todo')
+  }
+
+  togglePassword() {
+    this.setState({ showPassword: !this.state.showPassword });
   }
 
   render() {
-    // TODO handler sign-up with account creation
-    // TODO also handle email-validation (special url?)
     return (
-      <div className={this.props.classes.background} >
-        <div className={this.props.classes.backgroundFilter} />
-        <Grow in={true} style={{ transitionDelay: 400 }} >
-          <Paper className={this.props.classes.loginRoot} elevation={5}>
-            <div className={this.props.classes.loginTitle}>
-              <Zoom in={true} style={{ transitionDelay: 600 }} >
-                <Button variant="fab"  className={this.props.classes.logo} >
-                  <CloudIcon/>
-                </Button>
-              </Zoom>
-              <Typography variant="headline" component="h3" className={this.props.classes.logoText}>
-                Cumulus
-              </Typography>
-            </div>
-            {
-              this.state.showSignIn ?
-              <SignUpForm onGoBack={() => this.toggleSignInForm()} onSignUp={() => console.log('sign up')} /> :
-              <SignInForm onSignUp={() => this.toggleSignInForm()} onSignIn={() => console.log('sign in')} />
-            }
-          </Paper>
-        </Grow>
-      </div>
+      <Grow in={true}>
+        <div>
+          <div className={this.props.classes.form}>
+            <Typography variant="display1" align="center" >
+              Inscription
+            </Typography>
+            <Tooltip id="tooltip-icon" title="Nom unique du compte" placement="bottom-end" enterDelay={500} >
+              <TextField
+                id="login-input"
+                label="Login"
+                className={this.props.classes.textField}
+                type="text"
+                margin="normal"
+              />
+            </Tooltip>
+            <Tooltip id="tooltip-icon" title="Email valide lié au compte" placement="bottom-end" enterDelay={500} >
+              <TextField
+                id="login-email"
+                label="Adresse email"
+                className={this.props.classes.textField}
+                type="email"
+                margin="normal"
+              />
+            </Tooltip>
+            <Tooltip id="tooltip-icon" title="Clef secrète de chiffrement, entre 4 et 64 caractères" placement="bottom-end" enterDelay={500} >
+              <TextField
+                id="password-input"
+                label="Mot de passe"
+                className={this.props.classes.textField}
+                type={this.state.showPassword ? 'text' : 'password'}
+                margin="normal"
+
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="Toggle password visibility"
+                        onClick={() => this.togglePassword()}
+                        onMouseDown={(e) => e.preventDefault}
+                      >
+                        {this.state.showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
+              />
+            </Tooltip>
+          </div>
+          <div className={this.props.classes.formButtons} >
+            <Button color="primary" className={this.props.classes.backButton} onClick={() => this.onGoBack()} >
+              <LeftButton />
+              Revenir à la connexion
+            </Button>
+            <Button color="primary" onClick={() => this.onSignUp()} >
+              S'inscrire
+            </Button>
+          </div>
+        </div>
+      </Grow>
     )
   }
 }
 
-export default withRoot(withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ()(Login)))
+export default withStyles(styles)<PropsWithStyle> (SignUpForm)

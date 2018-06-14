@@ -50,6 +50,7 @@ import withMobileDialog, { WithMobileDialogOptions } from '@material-ui/core/wit
 import Menu from '@material-ui/core/Menu';
 import Grow from '@material-ui/core/Grow';
 import Zoom from '@material-ui/core/Zoom';
+import Slide from '@material-ui/core/Slide';
 import MenuItem from '@material-ui/core/MenuItem';
 
 import withRoot from '../withRoot'
@@ -57,18 +58,10 @@ import FileListElement from '../elements/FileListElement'
 import CumulusAppBar from '../elements/CumulusAppBar';
 import { User } from '../models/User';
 import BreadCrumb from '../elements/BreadCrumb';
-import CumulusDrawer from '../elements/CumulusDrawer'
-
-
-import SignInForm from '../elements/LogInForm'
-import SignUpForm from '../elements/SignUpForm'
+import CumulusDrawer from '../elements/CumulusDrawer';
 
 const styles = (theme: Theme) => createStyles({
   root: {
-    padding: theme.spacing.unit * 3,
-    flex: 1
-  },
-  loginRoot: {
     zIndex: 10,
     width: 400,
     display: 'flex',
@@ -103,77 +96,69 @@ const styles = (theme: Theme) => createStyles({
     paddingTop: theme.spacing.unit,
     fontSize: theme.typography.pxToRem(28)
   },
-  backgroundFilter: {
-    zIndex: 0,
-    position: 'fixed',
-    top: 0,
-    width: '100%',
-    height: '100%',
-    background: 'radial-gradient(ellipse at center, #1e5799 0%,rgba(54, 151, 142, 0.8) 0%,#0C526C 100%,#3d7eaa 100%,#182848 100%,#6e48aa 100%,#6e48aa 100%)',
-    opacity: .7
-  },
-  background: {
-    height: '100%',
+  loginButtons: {
+    padding: theme.spacing.unit * 3,
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundImage: 'url(https://cumulus-cloud.github.io/assets/img/template/bg3.jpg)',
-    backgroundSize: 'cover'
-  },
-  loginPanel: {
-    zIndex: 10
+    justifyContent: 'flex-end'
   }
 })
 
 interface Props {
-  fullScreen: boolean
+  onSignUp: (login: string, password: string) => void
+  onSignIn: () => void
 }
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
-interface State {
-  showSignIn: boolean
-}
+interface State {}
 
-class Login extends React.Component<PropsWithStyle, State> {
+class SignInForm extends React.Component<PropsWithStyle, State> {
 
   constructor(props: PropsWithStyle) {
     super(props)
-    this.state = { showSignIn: false }
+    this.state = { popupOpened: false, drawer: false }
   }
 
-  toggleSignInForm() {
-    this.setState({ ...this.state, showSignIn: !this.state.showSignIn })
+  onSignUp() {
+    this.props.onSignUp('todo', 'todo')
+  }
+
+  onSignIn() {
+    this.props.onSignIn()
   }
 
   render() {
-    // TODO handler sign-up with account creation
-    // TODO also handle email-validation (special url?)
     return (
-      <div className={this.props.classes.background} >
-        <div className={this.props.classes.backgroundFilter} />
-        <Grow in={true} style={{ transitionDelay: 400 }} >
-          <Paper className={this.props.classes.loginRoot} elevation={5}>
-            <div className={this.props.classes.loginTitle}>
-              <Zoom in={true} style={{ transitionDelay: 600 }} >
-                <Button variant="fab"  className={this.props.classes.logo} >
-                  <CloudIcon/>
-                </Button>
-              </Zoom>
-              <Typography variant="headline" component="h3" className={this.props.classes.logoText}>
-                Cumulus
-              </Typography>
-            </div>
-            {
-              this.state.showSignIn ?
-              <SignUpForm onGoBack={() => this.toggleSignInForm()} onSignUp={() => console.log('sign up')} /> :
-              <SignInForm onSignUp={() => this.toggleSignInForm()} onSignIn={() => console.log('sign in')} />
-            }
-          </Paper>
-        </Grow>
+      <Grow in={true}>
+      <div>
+        <div className={this.props.classes.loginForm}>
+          <TextField
+            id="login-input"
+            label="Login"
+            className={this.props.classes.textField}
+            type="text"
+            margin="normal"
+          />
+          <TextField
+            id="password-input"
+            label="Mot de passe"
+            className={this.props.classes.textField}
+            type="password"
+            margin="normal"
+          />
+        </div>
+        <div className={this.props.classes.loginButtons} >
+          <Button color="primary" onClick={() => this.onSignUp()}>
+            S'inscrire
+          </Button>
+          <Button color="primary" onClick={() => this.onSignIn()}>
+            Se connecter
+          </Button>
+        </div>
       </div>
+      </Grow>
     )
   }
 }
 
-export default withRoot(withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ()(Login)))
+export default withStyles(styles)<PropsWithStyle> (SignInForm)

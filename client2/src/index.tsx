@@ -3,4 +3,4 @@ import * as ReactDOM from 'react-dom'
 import Login from './pages/login'
 import Index from './pages/index'
 
-ReactDOM.render(<Index />, document.querySelector('#app'))
+ReactDOM.render(<Login />, document.querySelector('#app'))
