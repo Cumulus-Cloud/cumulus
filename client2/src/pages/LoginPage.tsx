@@ -6,23 +6,18 @@ import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import Typography from '@material-ui/core/Typography'
-import withMobileDialog from '@material-ui/core/withMobileDialog'
 import Zoom from '@material-ui/core/Zoom'
 import CloudIcon from '@material-ui/icons/CloudQueue'
 import * as React from 'react'
 
-import SignInForm from '../elements/SignInForm'
-import SignUpForm from '../elements/SignUpForm'
-import withRoot from '../withRoot'
-import { ApiError } from '../models/ApiError';
-import { User } from '../models/User';
+import SignInForm from '../elements/login/SignInForm'
+import SignUpForm from '../elements/login/SignUpForm'
+import withRoot from '../elements/utils/withRoot'
+import { ApiError } from '../models/ApiError'
+import { User } from '../models/User'
 
 
 const styles = (theme: Theme) => createStyles({
-  root: {
-    padding: theme.spacing.unit * 3,
-    flex: 1
-  },
   loginRoot: {
     zIndex: 10,
     width: 400,
@@ -49,23 +44,6 @@ const styles = (theme: Theme) => createStyles({
     paddingTop: theme.spacing.unit,
     fontSize: theme.typography.pxToRem(28)
   },
-  backgroundFilter: {
-    zIndex: 0,
-    position: 'fixed',
-    top: 0,
-    width: '100%',
-    height: '100%',
-    background: 'radial-gradient(ellipse at center, #1e5799 0%,rgba(54, 151, 142, 0.8) 0%,#0C526C 100%,#3d7eaa 100%,#182848 100%,#6e48aa 100%,#6e48aa 100%)',
-    opacity: .7
-  },
-  background: {
-    height: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundImage: 'url(https://cumulus-cloud.github.io/assets/img/template/bg3.jpg)',
-    backgroundSize: 'cover'
-  },
   emailPanel: {
     padding: theme.spacing.unit * 3,
     display: 'flex',
@@ -89,6 +67,7 @@ interface Props {
     error?: ApiError
     user?: User
   }
+  showLoader: boolean
   onSignIn: (login: string, password: string) => void
   onSignUp: (login: string, email: string, password: string) => void
 }
@@ -119,7 +98,7 @@ class Login extends React.Component<PropsWithStyle, State> {
   }
 
   render() {
-    const { classes, signIn, signUp } = this.props
+    const { classes, signIn, signUp, showLoader } = this.props
     const isSignedIn = !!signIn.user
     const hasSignedUp = !!signUp.user
 
@@ -152,7 +131,7 @@ class Login extends React.Component<PropsWithStyle, State> {
       }
     })()
 
-    const content = (
+    return (
       <Grow in={true} style={{ transitionDelay: 400 }} >
         <Paper className={classes.loginRoot} elevation={5}>
           <div className={classes.loginTitle}>
@@ -170,17 +149,6 @@ class Login extends React.Component<PropsWithStyle, State> {
       </Grow>
     )
 
-    return (
-      <div className={classes.background} >
-        <div className={classes.backgroundFilter} />
-        {
-          // When signed in, show the backgrond
-          !isSignedIn ?
-          content :
-          <span/>
-        }
-      </div>
-    )
   }
 }
 

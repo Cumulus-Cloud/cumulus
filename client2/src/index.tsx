@@ -1,49 +1,25 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import Login from './pages/login'
-import { connect, Dispatch, Provider } from 'react-redux'
+import { Provider } from 'react-redux'
 
-import { store } from './actions/store'
-import UserState from './actions/userState';
-import { UserActions, signIn, signUp } from './actions/userActions';
-import { ApiError } from './models/ApiError';
-import { User } from './models/User';
+import { store } from './actions/user/userStore'
 
-export interface Props {
-  signIn: {
-    error?: ApiError
-    user: User
-  }
-  signUp: {
-    error?: ApiError
-    user: User
-  }
-  onSignIn: (login: string, password: string) => void
-  onSignUp: (login: string, email: string, password: string) => void
-}
+import AppPage from './pages/AppPage'
+import { CircularProgress } from '@material-ui/core'
+import WithAuthenticationContainer from './elements/utils/WithAuthentication'
 
-function mapStateToProps(state: UserState) {
-  return {
-    signIn: { ...state.signIn },
-    signUp: { ...state.signUp }
-  }
-}
-
-function mapDispatchToProps(dispatch: Dispatch<UserActions>) {
-  return {
-    onSignIn: (login: string, password: string) =>
-      dispatch(signIn(login, password)),
-    onSignUp: (login: string, email: string, password: string) =>
-      dispatch(signUp(login, email, password))
-  }
-}
-
-const LoginContainer = connect(mapStateToProps, mapDispatchToProps)(Login)
-
+import LoginApp from './pages/LoginContainer'
+import AppBackground from './elements/utils/AppBackground'
 
 ReactDOM.render(
   <Provider store={store} >
-    <LoginContainer />
+    <AppBackground>
+      <WithAuthenticationContainer
+        element={<AppPage/>}
+        login={<LoginApp/>}
+        loader={<CircularProgress size={100} style={{ color: 'white' }}/>}
+      />
+    </AppBackground>
   </Provider>,
   document.querySelector('#app')
 )

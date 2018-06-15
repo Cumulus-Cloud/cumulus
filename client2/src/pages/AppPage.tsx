@@ -34,6 +34,7 @@ import SearchIcon from '@material-ui/icons/Search'
 import CompareArrowsIcon from '@material-ui/icons/CompareArrows'
 import MailIcon from '@material-ui/icons/Mail'
 import DeleteIcon from '@material-ui/icons/Delete'
+import ShareIcon from '@material-ui/icons/Share'
 import MenuButton from '@material-ui/icons/Menu'
 import GroupAddIcon from '@material-ui/icons/GroupAdd'
 import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder'
@@ -50,12 +51,13 @@ import withMobileDialog, { WithMobileDialogOptions } from '@material-ui/core/wit
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
-import withRoot from '../withRoot'
+import withRoot from '../elements/utils/withRoot'
 import FileListElement from '../elements/FileListElement'
 import CumulusAppBar from '../elements/CumulusAppBar';
 import { User } from '../models/User';
 import BreadCrumb from '../elements/BreadCrumb';
 import CumulusDrawer from '../elements/CumulusDrawer';
+import { Grow } from '@material-ui/core';
 
 /*
 import ButtonAppBar from '../components/app-bar'
@@ -114,8 +116,22 @@ const styles = (theme: Theme) => createStyles({
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
     padding: theme.spacing.unit * 3,
-    paddingTop: theme.spacing.unit * 2,
-    minWidth: 0
+    paddingLeft: theme.spacing.unit * 4, // +1 for the scrollbar
+    marginTop: theme.mixins.toolbar.minHeight,
+    minWidth: 0,
+    overflowY: 'scroll',
+    ['&::-webkit-scrollbar']: {
+      width: theme.spacing.unit
+    },
+    ['&::-webkit-scrollbar-track']: {
+      background: theme.palette.background.paper
+    },
+    ['&::-webkit-scrollbar-thumb']: {
+      background: '#CCC'
+    },
+    ['&::-webkit-scrollbar-thumb:hover']: {
+      background: '#BBB'
+    }
   },
   toolbar: theme.mixins.toolbar,
   margin: {
@@ -142,7 +158,7 @@ interface State {
   anchorEl?: EventTarget
 }
 
-class Index extends React.Component<PropsWithStyle, State> {
+class AppPage extends React.Component<PropsWithStyle, State> {
 
   constructor(props: PropsWithStyle) {
     super(props)
@@ -197,7 +213,7 @@ class Index extends React.Component<PropsWithStyle, State> {
         </ListItem>
         <ListItem button>
           <ListItemIcon>
-            <GroupAddIcon />
+            <ShareIcon />
           </ListItemIcon>
           <ListItemText primary="Share Directory" />
         </ListItem>
@@ -206,7 +222,7 @@ class Index extends React.Component<PropsWithStyle, State> {
     const contextualActionElements = otherMailFolderListItems
 
     return (
-      <Router>
+      <Grow in={true} style={{ transitionDelay: 400 }} >
         <div className={this.props.classes.root}>
           <CumulusAppBar 
             user={user}
@@ -217,7 +233,6 @@ class Index extends React.Component<PropsWithStyle, State> {
           />
           <CumulusDrawer onDrawerToggle={() => this.drawerToggle()} showDynamicDrawer={this.state.drawer} searchElements={searchElements} actionElements={actionElements} contextualActionElements={contextualActionElements} />
           <main className={this.props.classes.content}>
-            <div className={this.props.classes.toolbar} />
             <BreadCrumb path={'/aaaa/bbbb/cccc/dddd'} onPathSelected={(p) => console.log(p)} />
 
             <div className={this.props.classes.testRoot}>
@@ -307,16 +322,14 @@ class Index extends React.Component<PropsWithStyle, State> {
           </Dialog>
         </div>  
 
-      </Router>
+      </Grow>
     )
   }
 }
 
-export default withRoot(withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ()(Index)))
+export default withRoot(withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ()(AppPage)))
 
-
-
-
+// TODO..
 const searchListItem = (
   <div>
     <ListItem button style={{ height: 50 }}>
@@ -360,7 +373,7 @@ const mailFolderListItems = (
     </ListItem>
     <ListItem button>
       <ListItemIcon>
-        <GroupAddIcon />
+        <ShareIcon />
       </ListItemIcon>
       <ListItemText primary="Share Directory" />
     </ListItem>
@@ -383,7 +396,7 @@ const otherMailFolderListItems = (
     </ListItem>
     <ListItem button disabled >
       <ListItemIcon>
-        <GroupAddIcon />
+        <ShareIcon />
       </ListItemIcon>
       <ListItemText primary="Share selected" />
     </ListItem>

@@ -25,7 +25,7 @@ import Divider from '@material-ui/core/Divider'
 import ExpansionPanelActions from '@material-ui/core/ExpansionPanelActions'
 import Chip from '@material-ui/core/Chip'
 
-import withRoot from '../withRoot'
+import withRoot from '../elements/utils/withRoot'
 
 const styles = (theme: Theme) => createStyles({
   root: {

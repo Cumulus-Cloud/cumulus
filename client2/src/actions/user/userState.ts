@@ -1,6 +1,5 @@
-import { ApiError } from '../models/ApiError'
-import { User } from '../models/User'
-import { signIn } from './userActions';
+import { ApiError } from '../../models/ApiError'
+import { User } from '../../models/User'
 
 export default interface UserState {
   loading: Boolean

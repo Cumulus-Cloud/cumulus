@@ -3,7 +3,6 @@ import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles'
 import * as React from 'react'
 
 // A theme with custom primary and secondary color.
-// It's optional.
 const theme = createMuiTheme({
   palette: {
     primary: {
