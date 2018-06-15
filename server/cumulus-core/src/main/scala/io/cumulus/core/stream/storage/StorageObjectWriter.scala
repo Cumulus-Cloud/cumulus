@@ -24,8 +24,8 @@ import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
   */
 class StorageObjectWriter(storageEngine: StorageEngine)(implicit ec: ExecutionContext) extends GraphStage[FlowShape[ByteString, StorageObject]] with Logging {
 
-  val in: Inlet[ByteString]      = Inlet[ByteString]("ObjectWriter.in")
-  val out: Outlet[StorageObject] = Outlet[StorageObject]("ObjectWriter.out")
+  private val in: Inlet[ByteString]      = Inlet[ByteString]("ObjectWriter.in")
+  private val out: Outlet[StorageObject] = Outlet[StorageObject]("ObjectWriter.out")
 
   override val shape: FlowShape[ByteString, StorageObject] = FlowShape.of(in, out)
 

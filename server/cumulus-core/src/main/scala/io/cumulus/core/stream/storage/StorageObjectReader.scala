@@ -31,8 +31,8 @@ class StorageObjectReader(
   implicit ec: ExecutionContext
 ) extends GraphStage[FlowShape[StorageObject, ByteString]] with Logging {
 
-  val in: Inlet[StorageObject] = Inlet[StorageObject]("ObjectReader.in")
-  val out: Outlet[ByteString]  = Outlet[ByteString]("ObjectReader.out")
+  private val in: Inlet[StorageObject] = Inlet[StorageObject]("ObjectReader.in")
+  private val out: Outlet[ByteString]  = Outlet[ByteString]("ObjectReader.out")
 
   override val shape: FlowShape[StorageObject, ByteString] = FlowShape.of(in, out)
 
