@@ -51,34 +51,3 @@ export const loadDirectoryFailure: ActionCreator<LoadDirectoryFailureAction> =
 
   
 export type DirectoryActions = LoadDirectoryAction | LoadDirectorySuccessAction | LoadDirectoryFailureAction
-
-/*
-function createDirectory(path: string) {
-  return {
-    type: CREATE_FSNODE,
-    path: path
-  }
-}
-
-function selectFsNode(path: string) {
-
-}
-
-function unselectDirectory(path: string) {
-
-}
-
-function deleteFsNode(path: string) {
-  return {
-    type: DELETE_DIRECTORY,
-    path: path
-  }
-}
-
-function shareFsNode(path: string) {
-  return {
-    type: SHARE_FSNODE,
-    path: path
-  }
-}
-*/

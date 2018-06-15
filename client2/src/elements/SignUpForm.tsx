@@ -12,6 +12,8 @@ import LeftButton from '@material-ui/icons/KeyboardArrowLeft'
 import Visibility from '@material-ui/icons/Visibility'
 import VisibilityOff from '@material-ui/icons/VisibilityOff'
 import * as React from 'react'
+import { ApiError } from '../models/ApiError';
+import { User } from '../models/User';
 
 
 const styles = (theme: Theme) => createStyles({
@@ -36,6 +38,8 @@ const styles = (theme: Theme) => createStyles({
 })
 
 interface Props {
+  error?: ApiError
+  createdUser?: User
   onGoBack:() => void
   onSignUp:(login: string, email:string, password: string) => void
 }
@@ -44,6 +48,9 @@ type PropsWithStyle = Props & WithStyles<typeof styles>
 
 interface State {
   showPassword: boolean
+  login: string
+  email: string
+  password: string
 }
 
 class SignUpForm extends React.Component<PropsWithStyle, State> {
@@ -51,6 +58,9 @@ class SignUpForm extends React.Component<PropsWithStyle, State> {
   constructor(props: PropsWithStyle) {
     super(props)
     this.state = { 
+      login: '',
+      email: '',
+      password: '',
       showPassword: false
     }
   }
@@ -61,18 +71,33 @@ class SignUpForm extends React.Component<PropsWithStyle, State> {
 
   onSignUp() {
     // TODO check values ?
-    this.props.onSignUp('todo', 'todo', 'todo')
+    this.props.onSignUp(this.state.login, this.state.email, this.state.password)
   }
 
   togglePassword() {
     this.setState({ showPassword: !this.state.showPassword });
   }
 
+  onLoginChange(login: string) {
+    this.setState({ ...this.state, login })
+  }
+
+  onEmailChange(email: string) {
+    this.setState({ ...this.state, email })
+  }
+
+  onPasswordChange(password: string) {
+    this.setState({ ...this.state, password })
+  }
+
   render() {
+
+    const { classes, error } = this.props
+    
     return (
       <Grow in={true}>
         <div>
-          <div className={this.props.classes.form}>
+          <div className={classes.form}>
             <Typography variant="display1" align="center" >
               Inscription
             </Typography>
@@ -80,27 +105,33 @@ class SignUpForm extends React.Component<PropsWithStyle, State> {
               <TextField
                 id="login-input"
                 label="Login"
-                className={this.props.classes.textField}
+                className={classes.textField}
                 type="text"
                 margin="normal"
+                onChange={(e) => this.onLoginChange(e.target.value)}
+                error={!!error}
               />
             </Tooltip>
             <Tooltip id="tooltip-icon" title="Email valide lié au compte" placement="bottom-end" enterDelay={500} >
               <TextField
                 id="login-email"
                 label="Adresse email"
-                className={this.props.classes.textField}
+                className={classes.textField}
                 type="email"
                 margin="normal"
+                onChange={(e) => this.onEmailChange(e.target.value)}
+                error={!!error}
               />
             </Tooltip>
             <Tooltip id="tooltip-icon" title="Clef secrète de chiffrement, entre 4 et 64 caractères" placement="bottom-end" enterDelay={500} >
               <TextField
                 id="password-input"
                 label="Mot de passe"
-                className={this.props.classes.textField}
+                className={classes.textField}
                 type={this.state.showPassword ? 'text' : 'password'}
                 margin="normal"
+                onChange={(e) => this.onPasswordChange(e.target.value)}
+                error={!!error}
 
                 InputProps={{
                   endAdornment: (
@@ -118,8 +149,8 @@ class SignUpForm extends React.Component<PropsWithStyle, State> {
               />
             </Tooltip>
           </div>
-          <div className={this.props.classes.formButtons} >
-            <Button color="primary" className={this.props.classes.backButton} onClick={() => this.onGoBack()} >
+          <div className={classes.formButtons} >
+            <Button color="primary" className={classes.backButton} onClick={() => this.onGoBack()} >
               <LeftButton />
               Revenir à la connexion
             </Button>

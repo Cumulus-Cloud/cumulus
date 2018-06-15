@@ -24,22 +24,6 @@ export const signIn: ActionCreator<SignInAction> =
     }
   })
 
-// TODO test that it work
-const signInTest: ActionCreator<ThunkAction<Promise<UserActions>, UserState, null, UserActions>> =
-  (login: string, password: string) =>
-    (dispatch: ThunkDispatch<null, UserState, UserActions>, getState: () =>  UserState) => {
-      dispatch(signIn(login, password))
-      
-      return fetch(`https://www.reddit.com/r/test.json`)
-      .then(
-        response => response.json(),
-        error => console.log('An error occurred.', error)
-      )
-      .then(json => dispatch(signInSuccess({ id: '1', login: 'vuzi', creation: '', roles: ['user', 'admin']  })))
-    }
-
-// TODO add the redux store to the login page
-
 export interface SignInSuccessAction extends Action {
   type: 'USER/SIGN_IN_SUCCESS'
   payload: {
