@@ -31,6 +31,24 @@ lazy val commonSettings = Seq(
   organization := "io.cumulus",
   scalaVersion := "2.12.5",
 
+  // Wart warnings
+  wartremoverWarnings ++= Seq(
+    Wart.Null,
+    Wart.ArrayEquals,
+    Wart.AsInstanceOf,
+    Wart.EitherProjectionPartial,
+    Wart.ExplicitImplicitTypes,
+    Wart.IsInstanceOf,
+    Wart.OptionPartial,
+    Wart.Recursion,
+    Wart.Return,
+    Wart.StringPlusAny,
+    Wart.TraversableOps,
+    Wart.TryPartial,
+    Wart.While,
+    Wart.Var
+  ),
+
   // Do not show eviction warnings, because we can't really do anything
   // to suppress them...
   evictionWarningOptions in update := EvictionWarningOptions.default
@@ -94,12 +112,14 @@ lazy val cumulusMainModule =
       sourceDirectories in (Compile, TwirlKeys.compileTemplates) := (unmanagedSourceDirectories in Compile).value,
       TwirlKeys.templateImports := Seq(),
 
-      // Allow to use `Path` and `FsNodeType` in route
-      routesAddImport += "io.cumulus.models.Path",
-      routesAddImport += "io.cumulus.models.fs.FsNodeType",
+      // Route generation configuration
       routesFile := "routes",
       routesGeneratorClass := InjectedRoutesGenerator,
 
+      // Ignore warnings from the generated files from the route
+      wartremoverExcluded ++= compileRoutes.in(Compile).map(_.toSeq).value,
+
+      // Add the generated files to the sources of the module
       sourceGenerators in Compile += compileRoutes.map(_.toSeq),
 
       libraryDependencies ++= Seq(

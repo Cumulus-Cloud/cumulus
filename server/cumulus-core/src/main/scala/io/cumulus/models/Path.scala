@@ -143,10 +143,15 @@ object Path {
       override def writes(o: Path): JsValue             = JsString(o)
     }
 
-  implicit def pathBinder(implicit stringBinder: PathBindable[String]) =
+  implicit def pathBinder(implicit stringBinder: PathBindable[String]): PathBindable[Path] =
     new PathBindable[Path] {
-      def bind(key: String, value: String) = stringBinder.bind(key, value).map(Path.sanitize)
-      def unbind(key: String, value: Path) = value.toString
+
+      def bind(key: String, value: String): Either[String, Path] =
+        stringBinder.bind(key, value).map(Path.sanitize)
+
+      def unbind(key: String, value: Path): String =
+        value.toString
+
     }
 
 }

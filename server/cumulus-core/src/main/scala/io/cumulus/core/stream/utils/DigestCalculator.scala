@@ -16,27 +16,28 @@ import io.cumulus.core.utils.Base64
   */
 class DigestCalculator(algorithm: String) extends GraphStage[FlowShape[ByteString, String]] {
 
-  val in = Inlet[ByteString]("DigestCalculator.in")
-  val out = Outlet[String]("DigestCalculator.out")
-  override val shape = FlowShape.of(in, out)
+  private val in: Inlet[ByteString] = Inlet[ByteString]("DigestCalculator.in")
+  private val out: Outlet[String]   = Outlet[String]("DigestCalculator.out")
+
+  override val shape: FlowShape[ByteString, String] = FlowShape.of(in, out)
 
   override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = new GraphStageLogic(shape) {
-    val digest = MessageDigest.getInstance(algorithm)
+    private val digest = MessageDigest.getInstance(algorithm)
 
     setHandler(out, new OutHandler {
-      override def onPull() = {
+      override def onPull(): Unit = {
         pull(in)
       }
     })
 
     setHandler(in, new InHandler {
-      override def onPush() = {
+      override def onPush(): Unit = {
         val chunk = grab(in)
         digest.update(chunk.toArray)
         pull(in)
       }
 
-      override def onUpstreamFinish() = {
+      override def onUpstreamFinish(): Unit = {
         emit(out, Base64.encode(digest.digest()))
         completeStage()
       }

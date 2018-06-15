@@ -10,3 +10,6 @@ addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.0")
 
 // Used to package the application
 addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.3.4")
+
+// Linter
+addSbtPlugin("org.wartremover" % "sbt-wartremover" % "2.2.1")

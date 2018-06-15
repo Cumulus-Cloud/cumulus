@@ -31,9 +31,10 @@ class StorageObjectReader(
   implicit ec: ExecutionContext
 ) extends GraphStage[FlowShape[StorageObject, ByteString]] with Logging {
 
-  val in  = Inlet[StorageObject]("ObjectReader.in")
-  val out = Outlet[ByteString]("ObjectReader.out")
-  override val shape = FlowShape.of(in, out)
+  val in: Inlet[StorageObject] = Inlet[StorageObject]("ObjectReader.in")
+  val out: Outlet[ByteString]  = Outlet[ByteString]("ObjectReader.out")
+
+  override val shape: FlowShape[StorageObject, ByteString] = FlowShape.of(in, out)
 
   override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = new GraphStageLogic(shape) {
 
@@ -41,6 +42,7 @@ class StorageObjectReader(
     private implicit val engine: StorageEngine = storageEngine
 
     // The current state
+    @SuppressWarnings(Array("org.wartremover.warts.Var", "org.wartremover.warts.Null"))
     private var state: ObjectReaderState = _
 
     setHandler(out, new OutHandler {

@@ -92,6 +92,7 @@ object AnormSupport {
   /**
     * Column parser for optional JsObject with PostgreSQL.
     */
+  @SuppressWarnings(Array("org.wartremover.warts.Null"))
   def columnOpt[T](implicit reads: Reads[T]): Column[Option[T]] = Column(
     (value, meta) => {
       val MetaDataItem(qualified, _, _) = meta
@@ -118,6 +119,7 @@ object AnormSupport {
     else
       Left(UnexpectedNullableFound(""))
 
+  @SuppressWarnings(Array("org.wartremover.warts.StringPlusAny"))
   private def jsonParseError[T](meta: MetaDataItem, content: String)(err: Seq[(JsPath, Seq[JsonValidationError])]) =
     Left(
       TypeDoesNotMatch(
@@ -125,6 +127,7 @@ object AnormSupport {
       )
     )
 
+  @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
   private def cannotConvertError(value: Any, qualified: ColumnName, targetTypeName: String) =
     Left(
       TypeDoesNotMatch(

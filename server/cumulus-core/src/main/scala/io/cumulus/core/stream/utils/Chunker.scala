@@ -16,11 +16,14 @@ import akka.util.ByteString
   * @see [[https://doc.akka.io/docs/akka/2.5/scala/stream/stream-cookbook.html#working-with-io]]
   */
 class Chunker(chunkSize: Int) extends GraphStage[FlowShape[ByteString, ByteString]] {
-  val in = Inlet[ByteString]("Chunker.in")
-  val out = Outlet[ByteString]("Chunker.out")
-  override val shape = FlowShape.of(in, out)
+
+  private val in: Inlet[ByteString]   = Inlet[ByteString]("Chunker.in")
+  private val out: Outlet[ByteString] = Outlet[ByteString]("Chunker.out")
+
+  override val shape: FlowShape[ByteString, ByteString] = FlowShape.of(in, out)
 
   override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = new GraphStageLogic(shape) {
+    @SuppressWarnings(Array("org.wartremover.warts.Var"))
     private var buffer = ByteString.empty
 
     setHandler(out, new OutHandler {
