@@ -1,16 +1,15 @@
 package io.cumulus.controllers
 
 import io.cumulus.core.controllers.utils.api.ApiUtils
-import io.cumulus.views.CumulusAppPage
 import play.api.mvc._
 
 
 class HomeController(
-  cc: ControllerComponents
+  cc: ControllerComponents,
+  assets: Assets
 ) extends AbstractController(cc) with ApiUtils {
 
-  def index = Action { implicit request =>
-    Ok(CumulusAppPage())
-  }
+  val index: Action[AnyContent] =
+    assets.assets.versioned("index.html")
 
 }

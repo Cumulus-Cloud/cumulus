@@ -1,7 +1,7 @@
 import { ApiError } from '../models/ApiError'
 import { User } from '../models/User'
 
-const urlBase = 'http://localhost:9000'
+const urlBase = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:9000'
 
 const ApiUtils = {
 

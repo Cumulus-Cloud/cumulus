@@ -18,7 +18,15 @@ import { User } from '../models/User'
 
 
 const styles = (theme: Theme) => createStyles({
-  loginRoot: {
+  root: {
+    display: 'flex',
+    alignItems: 'center',
+    [theme.breakpoints.down('xs')]: {
+      width: '100%',
+      height: '100%'
+    }
+  },
+  loginPanel: {
     zIndex: 10,
     width: 400,
     display: 'flex',
@@ -132,21 +140,23 @@ class Login extends React.Component<PropsWithStyle, State> {
     })()
 
     return (
-      <Grow in={true} style={{ transitionDelay: 400 }} >
-        <Paper className={classes.loginRoot} elevation={5}>
-          <div className={classes.loginTitle}>
-            <Zoom in={true} style={{ transitionDelay: 600 }} >
-              <Button variant="fab" className={classes.logo} >
-                <CloudIcon/>
-              </Button>
-            </Zoom>
-            <Typography variant="headline" component="h3" className={classes.logoText}>
-              Cumulus
-            </Typography>
-          </div>
-          {form}
-        </Paper>
-      </Grow>
+      <div className={classes.root}>
+        <Grow in={true} style={{ transitionDelay: 400 }} >
+          <Paper className={classes.loginPanel} elevation={5}>
+            <div className={classes.loginTitle}>
+              <Zoom in={true} style={{ transitionDelay: 600 }} >
+                <Button variant="fab" className={classes.logo} >
+                  <CloudIcon/>
+                </Button>
+              </Zoom>
+              <Typography variant="headline" component="h3" className={classes.logoText}>
+                Cumulus
+              </Typography>
+            </div>
+            {form}
+          </Paper>
+        </Grow>
+      </div>
     )
 
   }

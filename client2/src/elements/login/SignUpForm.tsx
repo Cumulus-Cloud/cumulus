@@ -1,3 +1,4 @@
+import * as React from 'react'
 import Button from '@material-ui/core/Button'
 import Grow from '@material-ui/core/Grow'
 import IconButton from '@material-ui/core/IconButton'
@@ -11,9 +12,9 @@ import Typography from '@material-ui/core/Typography'
 import LeftButton from '@material-ui/icons/KeyboardArrowLeft'
 import Visibility from '@material-ui/icons/Visibility'
 import VisibilityOff from '@material-ui/icons/VisibilityOff'
-import * as React from 'react'
-import { ApiError } from '../models/ApiError';
-import { User } from '../models/User';
+
+import { ApiError } from '../../models/ApiError'
+import { User } from '../../models/User'
 
 
 const styles = (theme: Theme) => createStyles({
@@ -101,7 +102,7 @@ class SignUpForm extends React.Component<PropsWithStyle, State> {
             <Typography variant="display1" align="center" >
               Inscription
             </Typography>
-            <Tooltip id="tooltip-icon" title="Nom unique du compte" placement="bottom-end" enterDelay={500} >
+            <Tooltip id="tooltip-icon" title="Nom unique du compte" placement="bottom" enterDelay={500} >
               <TextField
                 id="login-input"
                 label="Login"
@@ -112,7 +113,7 @@ class SignUpForm extends React.Component<PropsWithStyle, State> {
                 error={!!error}
               />
             </Tooltip>
-            <Tooltip id="tooltip-icon" title="Email valide lié au compte" placement="bottom-end" enterDelay={500} >
+            <Tooltip id="tooltip-icon" title="Email valide lié au compte" placement="bottom" enterDelay={500} >
               <TextField
                 id="login-email"
                 label="Adresse email"
@@ -123,7 +124,7 @@ class SignUpForm extends React.Component<PropsWithStyle, State> {
                 error={!!error}
               />
             </Tooltip>
-            <Tooltip id="tooltip-icon" title="Clef secrète de chiffrement, entre 4 et 64 caractères" placement="bottom-end" enterDelay={500} >
+            <Tooltip id="tooltip-icon" title="Clef secrète de chiffrement, entre 4 et 64 caractères" placement="bottom" enterDelay={500} >
               <TextField
                 id="password-input"
                 label="Mot de passe"

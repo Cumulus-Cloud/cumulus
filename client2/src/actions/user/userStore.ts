@@ -1,5 +1,5 @@
 import { createStore, applyMiddleware } from 'redux'
-import { createEpicMiddleware, combineEpics, EpicMiddleware } from 'redux-observable'
+import { createEpicMiddleware, combineEpics } from 'redux-observable'
 
 import { UserActions } from '../../actions/user/userActions'
 import { signInEpic, signUpEpic, testSignedInEpic } from '../../actions/user/userEpics'

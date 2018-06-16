@@ -1,13 +1,13 @@
+import * as React from 'react'
 import Button from '@material-ui/core/Button'
 import Grow from '@material-ui/core/Grow'
-import Collapse from '@material-ui/core/Collapse'
 import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import TextField from '@material-ui/core/TextField'
-import * as React from 'react'
-import { Typography } from '@material-ui/core';
-import { ApiError } from '../models/ApiError';
+import { Typography } from '@material-ui/core'
+
+import { ApiError } from '../../models/ApiError'
 
 const styles = (theme: Theme) => createStyles({
   signInForm: {

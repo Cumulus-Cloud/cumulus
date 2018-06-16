@@ -11,13 +11,20 @@ import WithAuthenticationContainer from './elements/utils/WithAuthentication'
 import LoginApp from './pages/LoginContainer'
 import AppBackground from './elements/utils/AppBackground'
 
+const loader = (
+  <div style={{ display: 'flex', alignItems: 'center' }}>
+    <CircularProgress size={100} style={{ color: 'white' }}/>
+  </div>
+)
+  
+
 ReactDOM.render(
   <Provider store={store} >
     <AppBackground>
       <WithAuthenticationContainer
         element={<AppPage/>}
         login={<LoginApp/>}
-        loader={<CircularProgress size={100} style={{ color: 'white' }}/>}
+        loader={loader}
       />
     </AppBackground>
   </Provider>,

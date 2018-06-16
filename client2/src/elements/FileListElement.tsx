@@ -85,7 +85,8 @@ const styles = (theme: Theme) => createStyles({
     }
   },
   chip: {
-    marginRight: 5
+    marginRight: 5,
+    marginTop: 2
   }
 })
 

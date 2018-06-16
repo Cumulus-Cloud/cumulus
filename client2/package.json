@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "node node_modules/parcel-bundler/src/cli.js ./src/index.html --out-dir dev",
-    "build": "node node_modules/parcel-bundler/src/cli.js build ./src/index.html --out-dir dist",
+    "build": "node node_modules/parcel-bundler/src/cli.js build ./src/index.html --out-dir ../server/cumulus-server-resources/src/main/resources/public --public-url assets --no-cache --log-level 3 --detailed-report",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

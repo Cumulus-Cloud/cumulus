@@ -1,11 +1,11 @@
-import { Epic } from "redux-observable"
-import { filter, map, mergeMap } from "rxjs/operators"
+import { Epic } from 'redux-observable'
+import { filter, map, mergeMap } from 'rxjs/operators'
 
 import { User } from '../../models/User'
 import Api from '../../services/api'
 import { ApiError } from '../../models/ApiError'
 import { SignInAction, signInFailure, signInSuccess, UserActions, SignUpAction, signUpSuccess, signUpFailure, TestSignedInAction, notSignedIn, signedIn } from './userActions'
-import UserState from "./userState"
+import UserState from './userState'
 
 type EpicType = Epic<UserActions, UserActions, UserState>
 
