@@ -19,13 +19,19 @@ import TableRow from '@material-ui/core/TableRow'
 import Paper from '@material-ui/core/Paper'
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
+import DirectoryIcon from '@material-ui/icons/Folder'
+import FileIcon from '@material-ui/icons/InsertDriveFile'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import Divider from '@material-ui/core/Divider'
 import ExpansionPanelActions from '@material-ui/core/ExpansionPanelActions'
 import Chip from '@material-ui/core/Chip'
+import { distanceInWords } from 'date-fns'
 
 import withRoot from '../elements/utils/withRoot'
+import { FsNode } from '../models/FsNode';
+import { Select } from '@material-ui/core';
+import { ApiUtils } from '../services/api';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -66,6 +72,10 @@ const styles = (theme: Theme) => createStyles({
     [theme.breakpoints.down('xs')]: {
       textAlign: 'center',
       paddingBottom: theme.spacing.unit * 2
+    },
+    img: {
+      heigh: 200,
+      width: 200
     }
   },
   columnInner: {
@@ -90,18 +100,18 @@ const styles = (theme: Theme) => createStyles({
   }
 })
 
-type FileType = 'directory' | 'file'
-
 interface Props {
-  type: FileType
-  filename: string
+  fsNode: FsNode
+  selected: boolean
+  onSelected: (node: FsNode) => void
+  onDeselected: (node: FsNode) => void
+  onClicked: (node: FsNode) => void
 }
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
 interface State {
   expanded: boolean
-  selected: boolean
 }
 
 class FileListElement extends React.Component<PropsWithStyle, State> {
@@ -109,7 +119,6 @@ class FileListElement extends React.Component<PropsWithStyle, State> {
   constructor(props: PropsWithStyle){
     super(props)
     this.state = {
-      selected: false,
       expanded: false
     }
   }
@@ -118,45 +127,117 @@ class FileListElement extends React.Component<PropsWithStyle, State> {
     this.setState({ ...this.state, expanded: !this.state.expanded })
   }
 
-  select() {
-    this.setState({ ...this.state, selected: !this.state.selected })
+  toggleSelect() {
+    if(this.props.selected)
+      this.props.onDeselected(this.props.fsNode)
+    else
+      this.props.onSelected(this.props.fsNode)
+  }
+
+  onClicked() {
+    this.props.onClicked(this.props.fsNode)
   }
 
   render() {
+    const { classes, fsNode, selected } = this.props
+    const now = new Date()
+
     const expandIcon =
-      <span onClick={() => this.expand()} className={this.props.classes.button} ><ExpandMoreIcon/></span>
+      <span onClick={() => this.expand()} className={classes.button} ><ExpandMoreIcon/></span>
     
     const icon =
-      this.state.selected ?
-        <Icon onClick={() => this.select()} color="primary" >{this.props.type === 'directory' ? 'folder' : 'insert_drive_file'}</Icon> :
-        <Icon onClick={() => this.select()} >{this.props.type === 'directory' ? 'folder' : 'insert_drive_file'}</Icon>
+      fsNode.nodeType === 'DIRECTORY' ?
+        <DirectoryIcon onClick={() => this.toggleSelect()} color={selected ? 'primary' : 'default'}/> :
+        <FileIcon onClick={() => this.toggleSelect()} color={selected ? 'primary' : 'default'}/>
 
     const title = 
-      this.state.selected ?
-        <Typography onClick={() => this.select()} color="primary" className={this.props.classes.headingSelected}>{this.props.filename}</Typography> :
-        <Typography onClick={() => this.select()} className={this.props.classes.heading}>{this.props.filename}</Typography>
+        <Typography
+          onClick={() => this.onClicked()}
+          color={selected ? 'primary' : 'default'}
+          className={selected ? classes.headingSelected : classes.heading}
+        >
+          {fsNode.name}
+        </Typography>
 
+    const preview =
+      fsNode.nodeType == 'FILE' && fsNode.hasThumbnail ?
+      <div className={classes.columnImage}>
+        <img src={`${ApiUtils.urlBase}/api/thumbnail/${fsNode.path}`} />
+      </div> :
+      <div/>
+
+    console.log(fsNode.creation)
+
+    const details = () => {
+      if(fsNode.nodeType == 'FILE')
+        return (
+          <span>
+            <div className={classes.columnInner}>
+              <Typography variant="caption">
+                {`Taille du fichier : ${fsNode.humanReadableSize}`} 
+              </Typography>
+              <br/>
+              <Typography variant="caption">
+                {`Création : ${distanceInWords(new Date(fsNode.creation), now)}`}
+              </Typography>
+              <br/>
+              <Typography variant="caption">
+                {`Modification : ${distanceInWords(new Date(fsNode.creation), now)}`}
+              </Typography>
+            </div>
+            <div className={classes.columnInner}>
+              <Typography variant="caption">
+                {`Type de fichier : ${fsNode.mimeType}`} 
+              </Typography>
+              <br/>
+              <Typography variant="caption">
+                {`Compression : ${fsNode.compression}`} 
+              </Typography>
+              <br/>
+              <Typography variant="caption">
+                {`Chiffrement : ${fsNode.cipher}`} 
+              </Typography>
+            </div>
+          </span>
+        )
+      else
+        return (
+          <span>
+            <div className={classes.columnInner}>
+              <Typography variant="caption">
+                {`Taille du fichier : ${fsNode.}`} 
+              </Typography>
+              <br/>
+              <Typography variant="caption">
+                {`Création : ${distanceInWords(new Date(fsNode.creation), now)}`}
+              </Typography>
+              <br/>
+              <Typography variant="caption">
+                {`Modification : ${distanceInWords(new Date(fsNode.creation), now)}`}
+              </Typography>
+            </div>
+            <div className={classes.columnInner}>
+            
+            </div>
+          </span>
+        )
+    }
+       
     return (
       <ExpansionPanel expanded={this.state.expanded} >
         <ExpansionPanelSummary expandIcon={expandIcon} >
-          {icon}
-          {title}
+        {icon}
+        {title}
         </ExpansionPanelSummary>
-        <ExpansionPanelDetails  className={this.props.classes.root}>
-          {
-            this.props.type == 'file' ?
-            <div className={this.props.classes.columnImage}>
-              <img src="https://blog.addthiscdn.com/wp-content/uploads/2016/03/01125908/200-200-pixels.png" />
-            </div> :
-            <div/>
-          }
-          <div className={this.props.classes.column}>
+        <ExpansionPanelDetails  className={classes.root}>
+          {preview}
+          <div className={classes.column}>
 
-            <div className={this.props.classes.columnInner}>
-              <div className={this.props.classes.row}>
-                <div className={this.props.classes.columnInner}>
+            <div className={classes.columnInner}>
+              <div className={classes.row}>
+                <div className={classes.columnInner}>
                   <Typography variant="caption">
-                    Size of the file: 12Mo
+                    ccc
                   </Typography>
                   <br/>
                   <Typography variant="caption">
@@ -167,7 +248,7 @@ class FileListElement extends React.Component<PropsWithStyle, State> {
                     Modification: 2 days ago
                   </Typography>
                 </div>
-                <div className={this.props.classes.columnInner}>
+                <div className={classes.columnInner}>
                   <Typography variant="caption">
                     Size of the file: 12Mo
                   </Typography>
@@ -182,8 +263,8 @@ class FileListElement extends React.Component<PropsWithStyle, State> {
                 </div>
               </div>
             </div>
-            <div className={this.props.classes.columnInner}>
-              <Chip label="Barbados" className={this.props.classes.chip} onDelete={() => {}} />
+            <div className={classes.columnInner}>
+              <Chip label="Barbados" className={classes.chip} onDelete={() => {}} />
               <Chip label="Barbados" className={this.props.classes.chip} onDelete={() => {}} />
               <Chip label="Barbados" className={this.props.classes.chip} onDelete={() => {}} />
               <Chip label="Barbados" className={this.props.classes.chip} onDelete={() => {}} />

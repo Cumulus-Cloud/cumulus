@@ -45,6 +45,7 @@ import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
+import CircularProgress from '@material-ui/core/CircularProgress'
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer'
 import withMobileDialog, { WithMobileDialogOptions } from '@material-ui/core/withMobileDialog'
 
@@ -59,14 +60,6 @@ import BreadCrumb from '../elements/BreadCrumb';
 import CumulusDrawer from '../elements/CumulusDrawer';
 import { Grow } from '@material-ui/core';
 import { Directory } from '../models/FsNode';
-
-/*
-import ButtonAppBar from '../components/app-bar'
-import withRoot from '../withRoot'
-import AnomalyList from './anomaly-list'
-import AnomalyDetail from './anomaly-detail'
-import ClientsList from './client-list'
-*/
 
 
 const Home = () => (
@@ -134,6 +127,11 @@ const styles = (theme: Theme) => createStyles({
       background: '#BBB'
     }
   },
+  loader: {
+    margin: 'auto',
+    display: 'block',
+    marginTop: theme.spacing.unit * 5
+  },
   toolbar: theme.mixins.toolbar,
   margin: {
     margin: theme.spacing.unit,
@@ -157,7 +155,6 @@ interface Props {
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
 interface State {
-  path: string
   popupOpened: boolean
   drawer: boolean
   anchorEl?: EventTarget
@@ -167,11 +164,11 @@ class AppPage extends React.Component<PropsWithStyle, State> {
 
   constructor(props: PropsWithStyle) {
     super(props)
-    this.state = { path: '/', popupOpened: false, drawer: false }
+    this.state = { popupOpened: false, drawer: false }
   }
 
   componentDidMount() {
-    this.props.onChangePath(this.state.path, 0) // TODO handle pagination
+    this.props.onChangePath('/', 0) // TODO handle pagination
   }
 
   showPopup() {
@@ -191,7 +188,7 @@ class AppPage extends React.Component<PropsWithStyle, State> {
   }
 
   render() {
-    const { fullScreen } = this.props;
+    const { currentDirectory, showLoader, classes, fullScreen } = this.props
 
     const user: User = {
       id: '1',
@@ -230,12 +227,29 @@ class AppPage extends React.Component<PropsWithStyle, State> {
     )
     const contextualActionElements = otherMailFolderListItems
 
-    if(this.props.currentDirectory)
-      console.log(this.props.currentDirectory)
+    const breadCrumb = currentDirectory && currentDirectory.path !== '/' ? // Do not show for an empty path (root directory)
+      <BreadCrumb path={currentDirectory.path} onPathSelected={(p) => console.log(p)} /> :
+      <span/>
+
+    const fileList = currentDirectory && this ?
+      currentDirectory.content.map((node) => (
+        <FileListElement
+          key={node.id}
+          fsNode={node}
+          selected={false}
+          onSelected={() => console.log('select')}
+          onDeselected={() => console.log('select')}
+          onClicked={() => console.log('click')}
+        />
+      )) :
+      []
+    
+    if(currentDirectory)
+      console.log(currentDirectory)
 
     return (
       <Grow in={true}>
-        <div className={this.props.classes.root}>
+        <div className={classes.root}>
           <CumulusAppBar 
             user={user}
             showDrawer={() => this.drawerToggle()}
@@ -243,62 +257,26 @@ class AppPage extends React.Component<PropsWithStyle, State> {
             showAdminPanel={() => { return }}
             logout={() => { return }}
           />
-          <CumulusDrawer onDrawerToggle={() => this.drawerToggle()} showDynamicDrawer={this.state.drawer} searchElements={searchElements} actionElements={actionElements} contextualActionElements={contextualActionElements} />
-          <main className={this.props.classes.content}>
-            <BreadCrumb path={'/aaaa/bbbb/cccc/dddd'} onPathSelected={(p) => console.log(p)} />
-
-            <div className={this.props.classes.testRoot}>
-
-              <FileListElement type="file" filename="test.jpg" />
-              <FileListElement type="directory" filename="some_directory" />
-
-              <ExpansionPanel>
-                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                <Icon>insert_drive_file</Icon>
-                  <Typography className={this.props.classes.heading}>some image.jpg</Typography>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails>
-                  <Typography>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex,
-                    sit amet blandit leo lobortis eget.
-                  </Typography>
-                </ExpansionPanelDetails>
-                <Divider />
-                <ExpansionPanelActions>
-                  <Button size="small">Delete</Button>
-                  <Button size="small">Move</Button>
-                  <Button size="small" color="primary">Share</Button>
-                  <Button size="small" color="primary">Download</Button>
-                </ExpansionPanelActions>
-              </ExpansionPanel>
-
-              <ExpansionPanel>
-                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                  <Icon>insert_drive_file</Icon>
-                  <Typography className={this.props.classes.heading}>things.pdf</Typography>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails>
-                  <Typography>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex,
-                    sit amet blandit leo lobortis eget.
-                  </Typography>
-                </ExpansionPanelDetails>
-              </ExpansionPanel>
-              <ExpansionPanel>
-                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                  <Icon>folder</Icon>
-                  <Typography className={this.props.classes.heading}>Some directory</Typography>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails>
-                  <Typography>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex,
-                    sit amet blandit leo lobortis eget.
-                  </Typography>
-                </ExpansionPanelDetails>
-              </ExpansionPanel>
-
-            </div>
-
+          <CumulusDrawer
+            onDrawerToggle={() => this.drawerToggle()}
+            showDynamicDrawer={this.state.drawer}
+            searchElements={searchElements}
+            actionElements={actionElements}
+            contextualActionElements={contextualActionElements}
+          />
+          <main className={classes.content}>
+            {
+              showLoader ?
+              <div>
+                <CircularProgress className={classes.loader} size={100} color="primary"/>
+              </div> :
+              <span>
+                {breadCrumb}
+                <div className={classes.testRoot}>
+                  {fileList}
+                </div>
+              </span>
+            }
           </main>
 
           <Dialog

@@ -18,7 +18,9 @@ interface ApiPaginatedList<T> {
   offset: number
 }
 
-const ApiUtils = {
+export const ApiUtils = {
+
+  urlBase: urlBase,
 
   maxResultDefault: 30,
 
