@@ -1,4 +1,4 @@
-import { Theme } from '@material-ui/core/styles/createMuiTheme'
+import { Theme, Direction } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import * as React from 'react'
@@ -58,6 +58,7 @@ import { User } from '../models/User';
 import BreadCrumb from '../elements/BreadCrumb';
 import CumulusDrawer from '../elements/CumulusDrawer';
 import { Grow } from '@material-ui/core';
+import { Directory } from '../models/FsNode';
 
 /*
 import ButtonAppBar from '../components/app-bar'
@@ -147,12 +148,16 @@ const styles = (theme: Theme) => createStyles({
 })
 
 interface Props {
+  onChangePath: (path: string, contentOffset: number) => void
+  currentDirectory: Directory
+  showLoader: boolean
   fullScreen: boolean
 }
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
 interface State {
+  path: string
   popupOpened: boolean
   drawer: boolean
   anchorEl?: EventTarget
@@ -162,7 +167,11 @@ class AppPage extends React.Component<PropsWithStyle, State> {
 
   constructor(props: PropsWithStyle) {
     super(props)
-    this.state = { popupOpened: false, drawer: false }
+    this.state = { path: '/', popupOpened: false, drawer: false }
+  }
+
+  componentDidMount() {
+    this.props.onChangePath(this.state.path, 0) // TODO handle pagination
   }
 
   showPopup() {
@@ -221,8 +230,11 @@ class AppPage extends React.Component<PropsWithStyle, State> {
     )
     const contextualActionElements = otherMailFolderListItems
 
+    if(this.props.currentDirectory)
+      console.log(this.props.currentDirectory)
+
     return (
-      <Grow in={true} style={{ transitionDelay: 400 }} >
+      <Grow in={true}>
         <div className={this.props.classes.root}>
           <CumulusAppBar 
             user={user}

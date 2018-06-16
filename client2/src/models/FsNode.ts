@@ -1,3 +1,4 @@
+import { Metadata, PDFDocumentMetadata } from './FsNode'
 
 export type FsNodeType = 'DIRECTORY' | 'FILE'
 
@@ -7,13 +8,14 @@ export type CipherType = 'AES'
 
 export type MetadataType = 'DefaultMetadata' | 'ImageMetadata' | 'PDFDocumentMetadata'
 
-export interface Metadata {
+
+export interface DefaultMetadata {
   tags: string[]
   values: Map<string, string>
-  metadataType: MetadataType
+  metadataType: 'DefaultMetadata'
 }
 
-export interface ImageMetadata extends Metadata {
+export interface ImageMetadata {
   maker?: string
   model?: string
   datetime?: string
@@ -21,10 +23,10 @@ export interface ImageMetadata extends Metadata {
   width?: number
   tags: string[]
   values: Map<string, string>
-  metadataType: MetadataType
+  metadataType: 'ImageMetadata'
 }
 
-export interface PDFDocumentMetadata extends Metadata {
+export interface PDFDocumentMetadata {
   pageCount?: number
   title?: string
   author?: string
@@ -34,21 +36,13 @@ export interface PDFDocumentMetadata extends Metadata {
   modificationDate?: string
   tags: string[]
   values: Map<string, string>
-  metadataType: MetadataType
+  metadataType: 'PDFDocumentMetadata'
 }
 
-export interface FsNode {
-  id: string
-  nodeType: FsNodeType
-  path: string
-  name: string
-  creation: string
-  modification: string
-  hidden: boolean
-  owner: string
-}
+export type Metadata = DefaultMetadata | ImageMetadata | PDFDocumentMetadata
 
-export interface File extends FsNode {
+
+export interface File {
   id: string,
   nodeType: 'FILE',
   path: string,
@@ -67,7 +61,7 @@ export interface File extends FsNode {
   metadata: Metadata
 }
 
-export interface Directory extends FsNode {
+export interface Directory {
   id: string
   nodeType: 'DIRECTORY'
   path: string
@@ -78,3 +72,39 @@ export interface Directory extends FsNode {
   owner: string
   content: FsNode[]
 }
+
+export type FsNode =  File | Directory
+
+
+export interface FsOperationCreate {
+  operationType: 'CREATE'
+}
+
+export interface FsOperationMove {
+  to: string,
+  operationType: 'MOVE'
+}
+
+export interface FsOperationShareLink {
+  passwordProtection?: string
+  duration?: number
+  needAuthentication?: boolean
+  operationType: 'SHARE_LINK'
+}
+
+export interface FsOperationShareDelete {
+  reference: string
+  operationType: 'SHARE_DELETE'
+}
+
+export interface FsOperationDelete {
+  reference: string
+  operationType: 'DELETE'
+}
+
+export type FsOperation = 
+  FsOperationCreate |
+  FsOperationMove |
+  FsOperationShareLink |
+  FsOperationShareDelete | 
+  FsOperationDelete

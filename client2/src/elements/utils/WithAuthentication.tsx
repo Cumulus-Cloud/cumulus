@@ -3,6 +3,7 @@ import { Dispatch, connect } from 'react-redux'
 
 import UserState from '../../actions/user/userState'
 import { UserActions, testSignedIn } from '../../actions/user/userActions'
+import GlobalState from '../../actions/state';
 
 interface Props {
   onLoad: () => void
@@ -33,10 +34,11 @@ class WithAuthenticationElement extends React.Component<Props, {}> {
 }
 
 
-function mapStateToProps(state: UserState) {
+function mapStateToProps(state: GlobalState) {
+  console.log(state)
   return {
-    connected: !!state.signIn.user,
-    loading: state.loading
+    connected: !!state.user.signIn.user,
+    loading: state.user.loading
   }
 }
 
