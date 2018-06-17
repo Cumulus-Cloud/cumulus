@@ -22,7 +22,8 @@ const styles = (theme: Theme) => createStyles({
     alignItems: 'center'
   },
   homeButton: {
-    marginLeft:  theme.spacing.unit * -4
+    marginLeft:  theme.spacing.unit * -2,
+    minWidth: 0
   }
 })
 

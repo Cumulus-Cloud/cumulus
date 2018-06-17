@@ -27,9 +27,11 @@ import Drawer from '@material-ui/core/Drawer'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
+import InfoIcon from '@material-ui/icons/Info'
 import ListItemText from '@material-ui/core/ListItemText'
 import CloudUpload from '@material-ui/icons/CloudUpload'
 import CloudIcon from '@material-ui/icons/CloudQueue'
+import Slide from '@material-ui/core/Slide'
 import SearchIcon from '@material-ui/icons/Search'
 import CompareArrowsIcon from '@material-ui/icons/CompareArrows'
 import MailIcon from '@material-ui/icons/Mail'
@@ -132,6 +134,14 @@ const styles = (theme: Theme) => createStyles({
     display: 'block',
     marginTop: theme.spacing.unit * 5
   },
+  emptyDirectory: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  emptyDirectoryIcon: {
+    marginRight: theme.spacing.unit
+  },
   toolbar: theme.mixins.toolbar,
   margin: {
     margin: theme.spacing.unit,
@@ -169,6 +179,10 @@ class AppPage extends React.Component<PropsWithStyle, State> {
 
   componentDidMount() {
     this.props.onChangePath('/', 0) // TODO handle pagination
+  }
+
+  onChangePath(path: string) {
+    this.props.onChangePath(path, 0) // TODO handle pagination
   }
 
   showPopup() {
@@ -228,10 +242,10 @@ class AppPage extends React.Component<PropsWithStyle, State> {
     const contextualActionElements = otherMailFolderListItems
 
     const breadCrumb = currentDirectory && currentDirectory.path !== '/' ? // Do not show for an empty path (root directory)
-      <BreadCrumb path={currentDirectory.path} onPathSelected={(p) => console.log(p)} /> :
+      <BreadCrumb path={currentDirectory.path} onPathSelected={(path) => this.onChangePath(path)} /> :
       <span/>
 
-    const fileList = currentDirectory && this ?
+    const fileList = currentDirectory && !showLoader ?
       currentDirectory.content.map((node) => (
         <FileListElement
           key={node.id}
@@ -239,13 +253,10 @@ class AppPage extends React.Component<PropsWithStyle, State> {
           selected={false}
           onSelected={() => console.log('select')}
           onDeselected={() => console.log('select')}
-          onClicked={() => console.log('click')}
+          onClicked={() => this.onChangePath(node.path)}
         />
       )) :
       []
-    
-    if(currentDirectory)
-      console.log(currentDirectory)
 
     return (
       <Grow in={true}>
@@ -265,18 +276,29 @@ class AppPage extends React.Component<PropsWithStyle, State> {
             contextualActionElements={contextualActionElements}
           />
           <main className={classes.content}>
-            {
-              showLoader ?
-              <div>
-                <CircularProgress className={classes.loader} size={100} color="primary"/>
-              </div> :
               <span>
                 {breadCrumb}
                 <div className={classes.testRoot}>
-                  {fileList}
+                  {
+                    showLoader ?
+                    <div>
+                      <CircularProgress className={classes.loader} size={100} color="primary"/>
+                    </div> :
+                    <Slide direction="up" in={true}>
+                      <div>
+                        {
+                          fileList.length == 0 ?
+                          <Typography variant="caption" className={classes.emptyDirectory} >
+                            <InfoIcon className={classes.emptyDirectoryIcon}/>
+                            {'Ce dossier est vide'} 
+                          </Typography> :
+                          fileList
+                        }
+                      </div>
+                    </Slide>
+                  }
                 </div>
               </span>
-            }
           </main>
 
           <Dialog

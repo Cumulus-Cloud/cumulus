@@ -10,7 +10,7 @@ const initialState: FsState = {
 const reducer: Reducer<FsState, FsActions> = (state: FsState = initialState, action: FsActions) => {
   switch(action.type) {
     case 'FS/GET_DIRECTORY':
-      return { ...state, loadingCurrent: true, current: undefined, error: undefined }
+      return { ...state, loadingCurrent: true, error: undefined }
     case 'FS/GET_DIRECTORY_SUCCESS':
       return { ...state, loadingCurrent: false, current: action.payload.directory, error: undefined }
     case 'FS/GET_DIRECTORY_FAILURE':
