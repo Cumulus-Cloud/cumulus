@@ -204,17 +204,13 @@ class AppPage extends React.Component<PropsWithStyle, State> {
   render() {
     const { currentDirectory, showLoader, classes, fullScreen } = this.props
 
+    // TODO real user
     const user: User = {
       id: '1',
       login: 'Vuzi',
       creation: "",
       roles: [ 'user', 'admin' ]
     }
-
-    // TODO
-    // Drawer (with SwipeableDrawer + Static drawer) + Search etc...
-    // Content + FileListElement
-    // Login page ?
 
     const searchElements = searchListItem
     const actionElements = (
@@ -241,6 +237,9 @@ class AppPage extends React.Component<PropsWithStyle, State> {
     )
     const contextualActionElements = otherMailFolderListItems
 
+    // TODO file list in another component ! + change route according to location & vice versa
+    // The drawer will also be part of that (preparation for other pages of the app)
+
     const breadCrumb = currentDirectory && currentDirectory.path !== '/' ? // Do not show for an empty path (root directory)
       <BreadCrumb path={currentDirectory.path} onPathSelected={(path) => this.onChangePath(path)} /> :
       <span/>
@@ -257,6 +256,10 @@ class AppPage extends React.Component<PropsWithStyle, State> {
         />
       )) :
       []
+
+    // TODO pop-up. State from redux or controlled ? To be defined
+
+    // TODO router ton match on /fs for the file etc..
 
     return (
       <Grow in={true}>
@@ -276,29 +279,29 @@ class AppPage extends React.Component<PropsWithStyle, State> {
             contextualActionElements={contextualActionElements}
           />
           <main className={classes.content}>
-              <span>
-                {breadCrumb}
-                <div className={classes.testRoot}>
-                  {
-                    showLoader ?
+            <span>
+              {breadCrumb}
+              <div className={classes.testRoot}>
+                {
+                  showLoader ?
+                  <div>
+                    <CircularProgress className={classes.loader} size={100} color="primary"/>
+                  </div> :
+                  <Slide direction="up" in={true}>
                     <div>
-                      <CircularProgress className={classes.loader} size={100} color="primary"/>
-                    </div> :
-                    <Slide direction="up" in={true}>
-                      <div>
-                        {
-                          fileList.length == 0 ?
-                          <Typography variant="caption" className={classes.emptyDirectory} >
-                            <InfoIcon className={classes.emptyDirectoryIcon}/>
-                            {'Ce dossier est vide'} 
-                          </Typography> :
-                          fileList
-                        }
-                      </div>
-                    </Slide>
-                  }
-                </div>
-              </span>
+                      {
+                        fileList.length == 0 ?
+                        <Typography variant="caption" className={classes.emptyDirectory} >
+                          <InfoIcon className={classes.emptyDirectoryIcon}/>
+                          {'Ce dossier est vide'} 
+                        </Typography> :
+                        fileList
+                      }
+                    </div>
+                  </Slide>
+                }
+              </div>
+            </span>
           </main>
 
           <Dialog

@@ -1,3 +1,4 @@
+import * as React from 'react'
 import Button from '@material-ui/core/Button'
 import Grow from '@material-ui/core/Grow'
 import Paper from '@material-ui/core/Paper'
@@ -8,7 +9,9 @@ import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import Typography from '@material-ui/core/Typography'
 import Zoom from '@material-ui/core/Zoom'
 import CloudIcon from '@material-ui/icons/CloudQueue'
-import * as React from 'react'
+import { BrowserRouter as Router, Route, Link, match } from 'react-router-dom'
+import { withRouter } from 'react-router-dom'
+import * as H from 'history'
 
 import SignInForm from '../elements/login/SignInForm'
 import SignUpForm from '../elements/login/SignUpForm'
@@ -78,6 +81,11 @@ interface Props {
   showLoader: boolean
   onSignIn: (login: string, password: string) => void
   onSignUp: (login: string, email: string, password: string) => void
+
+  history: H.History
+  location: H.Location
+  match: match<{}>
+  staticContext: undefined
 }
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
@@ -106,38 +114,37 @@ class Login extends React.Component<PropsWithStyle, State> {
   }
 
   render() {
-    const { classes, signIn, signUp, showLoader } = this.props
-    const isSignedIn = !!signIn.user
-    const hasSignedUp = !!signUp.user
+    const { classes, signIn, signUp } = this.props
 
-    console.log(this.props)
-
-    const { showSignIn } = this.state
-
-    const form = (() => {
-      if(hasSignedUp) {
-        // Has signed up, show the email confirmation panel
-        return (
-          <Grow in={true}>
-            <div className={classes.emailPanel}>
-              <Typography variant="body1">
-                Un email de confirmation vient de vous être envoyé 🎉<br/><br/>
-                Vous devez valider votre adresse email afin de pouvoir commencer à utiliser votre compte.
-              </Typography>
-              <div className={classes.emailLogo}>
-                <MailIcon color="secondary"/>
-              </div>
-            </div>
-          </Grow>
-        )
-      } else if(showSignIn) {
-        // Is signing up, show the sign up panel
-        return <SignUpForm error={signUp.error} createdUser={signUp.user} onGoBack={() => this.toggleSignInForm()} onSignUp={(login, email, password) => this.onSignUp(login, email, password)} /> :
-      } else {
-        // Default, show the sign in panel
-        return <SignInForm error={signIn.error} onSignUp={() => this.toggleSignInForm()} onSignIn={(login, password) => this.onSignIn(login, password)} />
-      }
-    })()
+    const signInForm = (
+      <SignInForm
+        error={signIn.error}
+        onSignUp={() => this.props.history.push('/auth/sign-up')}
+        onSignIn={(login, password) => this.onSignIn(login, password)}
+      />
+    )
+    
+    const signUpForm = (
+      <SignUpForm
+        error={signUp.error}
+        onGoBack={() => this.props.history.push('/auth/sign-in')}
+        onSignUp={(login, email, password) => this.onSignUp(login, email, password)}
+      />
+    )
+    
+    const emailValidation = (
+      <Grow in={true}>
+        <div className={classes.emailPanel}>
+          <Typography variant="body1">
+            Un email de confirmation vient de vous être envoyé 🎉<br/><br/>
+            Vous devez valider votre adresse email afin de pouvoir commencer à utiliser votre compte.
+          </Typography>
+          <div className={classes.emailLogo}>
+            <MailIcon color="secondary"/>
+          </div>
+        </div>
+      </Grow>
+    )
 
     return (
       <div className={classes.root}>
@@ -153,7 +160,9 @@ class Login extends React.Component<PropsWithStyle, State> {
                 Cumulus
               </Typography>
             </div>
-            {form}
+            <Route exact path="/auth/sign-in" render={() => signInForm}/>
+            <Route exact path="/auth/sign-up" render={() => signUpForm}/>
+            <Route exact path="/auth/email-validation" render={() => emailValidation}/>
           </Paper>
         </Grow>
       </div>

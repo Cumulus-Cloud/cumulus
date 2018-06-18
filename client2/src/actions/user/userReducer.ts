@@ -4,7 +4,7 @@ import UserState from './userState'
 import { UserActions } from './userActions'
 
 const initialState: UserState = {
-  loading: false,
+  loading: true,
   connected: false,
   signIn: {},
   signUp: {}

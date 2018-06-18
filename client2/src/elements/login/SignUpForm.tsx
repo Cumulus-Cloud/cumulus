@@ -40,7 +40,6 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   error?: ApiError
-  createdUser?: User
   onGoBack:() => void
   onSignUp:(login: string, email:string, password: string) => void
 }

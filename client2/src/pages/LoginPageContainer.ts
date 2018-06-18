@@ -1,10 +1,9 @@
 import { connect, Dispatch } from 'react-redux'
+import { withRouter } from 'react-router-dom'
 
 import Login from '../pages/LoginPage'
-import UserState from '../actions/user/userState'
 import { UserActions, signIn, signUp } from '../actions/user/userActions'
-import GlobalState from '../actions/state';
-
+import GlobalState from '../actions/state'
 
 function mapStateToProps(state: GlobalState) {
   return {
@@ -25,4 +24,4 @@ function mapDispatchToProps(dispatch: Dispatch<UserActions>) {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Login)
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Login) as any) // TODO typing

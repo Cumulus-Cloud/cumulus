@@ -1,9 +1,9 @@
 import { connect, Dispatch } from 'react-redux'
+import { withRouter } from 'react-router-dom'
 
 import AppPage from './AppPage'
-import FsState from '../actions/fs/fsState'
 import { FsActions, getDirectory } from '../actions/fs/fsActions'
-import GlobalState from '../actions/state';
+import GlobalState from '../actions/state'
 
 function mapStateToProps(state: GlobalState) {
   return {
@@ -20,4 +20,4 @@ function mapDispatchToProps(dispatch: Dispatch<FsActions>) {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(AppPage)
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(AppPage) as any) // TODO typing

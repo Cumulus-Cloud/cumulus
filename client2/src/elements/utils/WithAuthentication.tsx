@@ -9,8 +9,8 @@ interface Props {
   onLoad: () => void
   connected: boolean
   loading: boolean
-  element: JSX.Element
-  login: JSX.Element
+  authenticated: JSX.Element
+  fallback: JSX.Element
   loader: JSX.Element
 }
 
@@ -21,14 +21,14 @@ class WithAuthenticationElement extends React.Component<Props, {}> {
   }
 
   render() {
-    const { connected, loading, element, login, loader } = this.props
+    const { connected, loading, authenticated, fallback, loader } = this.props
 
     if(connected)
-      return element
+      return authenticated
     else if(loading)
       return loader
     else
-      return login
+      return fallback
   }
 
 }
