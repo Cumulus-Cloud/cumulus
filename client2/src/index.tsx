@@ -2,16 +2,16 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 
-import store from './actions/store'
+import store, { history } from './actions/store'
 
 import { CircularProgress } from '@material-ui/core'
 import WithAuthentication from './elements/utils/WithAuthentication'
-
-import LoginApp from './pages/LoginPageContainer'
 import MainApp from './pages/AppPageContainer'
 import AppBackground from './elements/utils/AppBackground'
-
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom'
+import { ConnectedRouter } from 'connected-react-router'
+
+import LoginPage from './pages/LoginPage';
 
 const loader = (
   <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -22,7 +22,7 @@ const loader = (
 ReactDOM.render(
   <Provider store={store} >
     <AppBackground>
-      <Router>
+      <ConnectedRouter history={history}>
         <Switch>
           <WithAuthentication
             authenticated={
@@ -33,14 +33,14 @@ ReactDOM.render(
             }
             fallback={
               <Switch>
-                <Route path="/auth" render={() => <LoginApp/>} />
+                <Route path="/auth" render={() => <LoginPage/>} />
                 <Route render={(p) => <Redirect to={`/auth/sign-in?redirect=${p.location.pathname}`}/>} />
               </Switch>  
             }
             loader={loader}
           />
         </Switch>  
-      </Router>
+      </ConnectedRouter>
     </AppBackground>
   </Provider>,
   document.querySelector('#app')

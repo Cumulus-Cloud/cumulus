@@ -1,9 +1,8 @@
 import * as React from 'react'
 import { Dispatch, connect } from 'react-redux'
 
-import UserState from '../../actions/user/userState'
-import { UserActions, testSignedIn } from '../../actions/user/userActions'
-import GlobalState from '../../actions/state';
+import GlobalState from '../../actions/state'
+import { AuthenticationActions, testSignedIn } from '../../actions/user/auth/authenticationActions'
 
 interface Props {
   onLoad: () => void
@@ -37,12 +36,12 @@ class WithAuthenticationElement extends React.Component<Props, {}> {
 function mapStateToProps(state: GlobalState) {
   console.log(state)
   return {
-    connected: !!state.user.signIn.user,
-    loading: state.user.loading
+    connected: !!state.auth.connected,
+    loading: state.auth.loading
   }
 }
 
-function mapDispatchToProps(dispatch: Dispatch<UserActions>) {
+function mapDispatchToProps(dispatch: Dispatch<AuthenticationActions>) {
   return {
     onLoad: () => {
       dispatch(testSignedIn())

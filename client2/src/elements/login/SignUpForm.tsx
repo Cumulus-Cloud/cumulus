@@ -11,14 +11,14 @@ import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import LeftButton from '@material-ui/icons/KeyboardArrowLeft'
 import Visibility from '@material-ui/icons/Visibility'
+import CircularProgress from '@material-ui/core/CircularProgress'
 import VisibilityOff from '@material-ui/icons/VisibilityOff'
 
 import { ApiError } from '../../models/ApiError'
-import { User } from '../../models/User'
 
 
 const styles = (theme: Theme) => createStyles({
-  form: {
+  root: {
     padding: theme.spacing.unit * 3,
     flex: 1
   },
@@ -27,7 +27,7 @@ const styles = (theme: Theme) => createStyles({
     marginRight: theme.spacing.unit,
     display: 'flex'
   },
-  formButtons: {
+  buttons: {
     padding: theme.spacing.unit * 3,
     display: 'flex',
     justifyContent: 'flex-end'
@@ -35,13 +35,21 @@ const styles = (theme: Theme) => createStyles({
   backButton: {
     marginRight: 'auto',
     paddingLeft: 0
+  },
+  buttonProgress: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
   }
 })
 
 interface Props {
+  loading: boolean
   error?: ApiError
-  onGoBack:() => void
-  onSignUp:(login: string, email:string, password: string) => void
+  onSignIn:() => void
+  onSignUp:(login: string, email: string, password: string) => void
 }
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
@@ -65,8 +73,8 @@ class SignUpForm extends React.Component<PropsWithStyle, State> {
     }
   }
 
-  onGoBack() {
-    this.props.onGoBack()
+  onSignIn() {
+    this.props.onSignIn()
   }
 
   onSignUp() {
@@ -92,12 +100,12 @@ class SignUpForm extends React.Component<PropsWithStyle, State> {
 
   render() {
 
-    const { classes, error } = this.props
+    const { classes, error, loading } = this.props
     
     return (
       <Grow in={true}>
         <div>
-          <div className={classes.form}>
+          <div className={classes.root}>
             <Typography variant="display1" align="center" >
               Inscription
             </Typography>
@@ -149,13 +157,14 @@ class SignUpForm extends React.Component<PropsWithStyle, State> {
               />
             </Tooltip>
           </div>
-          <div className={classes.formButtons} >
-            <Button color="primary" className={classes.backButton} onClick={() => this.onGoBack()} >
+          <div className={classes.buttons} >
+            <Button color="primary" disabled={loading} className={classes.backButton} onClick={() => this.onSignIn()} >
               <LeftButton />
               Revenir à la connexion
             </Button>
-            <Button color="primary" onClick={() => this.onSignUp()} >
+            <Button color="primary" disabled={loading} onClick={() => this.onSignUp()} >
               S'inscrire
+              {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
             </Button>
           </div>
         </div>

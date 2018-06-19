@@ -5,12 +5,13 @@ import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import TextField from '@material-ui/core/TextField'
+import CircularProgress from '@material-ui/core/CircularProgress'
 import { Typography } from '@material-ui/core'
 
 import { ApiError } from '../../models/ApiError'
 
 const styles = (theme: Theme) => createStyles({
-  signInForm: {
+  root: {
     padding: theme.spacing.unit * 3,
     flex: 1
   },
@@ -19,7 +20,7 @@ const styles = (theme: Theme) => createStyles({
     marginRight: theme.spacing.unit,
     display: 'flex'
   },
-  signInButtons: {
+  buttons: {
     padding: theme.spacing.unit * 3,
     display: 'flex',
     justifyContent: 'flex-end'
@@ -30,10 +31,18 @@ const styles = (theme: Theme) => createStyles({
     marginBottom: theme.spacing.unit * -3,
     height: theme.typography.body1.lineHeight,
     textAlign: 'center'
+  },
+  buttonProgress: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
   }
 })
 
 interface Props {
+  loading: boolean
   error?: ApiError
   onSignUp: () => void
   onSignIn: (login: string, password: string) => void
@@ -71,12 +80,12 @@ class SignInForm extends React.Component<PropsWithStyle, State> {
   }
 
   render() {
-    const { classes, error } = this.props
+    const { classes, error, loading } = this.props
 
     return (
       <Grow in={true}>
         <div>
-          <div className={classes.signInForm}>
+          <div className={classes.root}>
             <TextField
               id="login-input"
               label="Login"
@@ -107,12 +116,13 @@ class SignInForm extends React.Component<PropsWithStyle, State> {
               }
             </Typography>
           </div>
-          <div className={classes.signInButtons} >
-            <Button color="primary" onClick={() => this.onSignUp()}>
+          <div className={classes.buttons} >
+            <Button color="primary" disabled={loading} onClick={() => this.onSignUp()}>
               S'inscrire
             </Button>
-            <Button color="primary" onClick={() => this.onSignIn()}>
+            <Button color="primary" disabled={loading} onClick={() => this.onSignIn()}>
               Se connecter
+              {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
             </Button>
           </div>
         </div>
