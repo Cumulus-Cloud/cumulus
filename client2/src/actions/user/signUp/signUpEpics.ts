@@ -1,6 +1,7 @@
 import { Epic } from 'redux-observable'
-import { filter, map, mergeMap } from 'rxjs/operators'
+import { filter, map, mergeMap, flatMap } from 'rxjs/operators'
 import { push } from 'connected-react-router'
+import { of, concat } from 'rxjs'
 
 import Api from '../../../services/api'
 import { ApiError } from '../../../models/ApiError'
@@ -18,19 +19,14 @@ export const signUpEpic: EpicType = (action$) =>
       const { login, email, password } = action.payload
       return Api.user.signUp(login, email, password)
     }),
-    map((result: ApiError | User) => {
+    flatMap((result: ApiError | User) => {
       if('errors' in result) {
-        return signUpFailure(result)
+        return of(signUpFailure(result))
       } else {
-        return signUpSuccess(result)
+        return concat(
+          of(signUpSuccess(result)),
+          of(push(Routes.auth.signInConfirmation))
+        )
       }
-    })
-  )
-
-export const signUpSuccessRedirectEpic: EpicType = (action$) =>
-  action$.pipe(
-    filter((action: SignUpActions) => action.type === 'USER/SIGN_UP/SUCCESS'),
-    map((_: SignUpSuccessAction) => {
-      return push(Routes.auth.signInConfirmation)
     })
   )

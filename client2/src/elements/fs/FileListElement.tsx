@@ -1,22 +1,9 @@
+import * as React from 'react'
 import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
-import * as React from 'react'
-import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
-import AppBar from '@material-ui/core/AppBar'
-import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 import Button from '@material-ui/core/Button'
-import IconButton from '@material-ui/core/IconButton'
-import Icon from '@material-ui/core/Icon'
-import MenuIcon from '@material-ui/icons/Menu'
-import AccountCircle from '@material-ui/icons/AccountCircle'
-import Table from '@material-ui/core/Table'
-import TableBody from '@material-ui/core/TableBody'
-import TableCell from '@material-ui/core/TableCell'
-import TableHead from '@material-ui/core/TableHead'
-import TableRow from '@material-ui/core/TableRow'
-import Paper from '@material-ui/core/Paper'
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
 import DirectoryIcon from '@material-ui/icons/Folder'
@@ -28,10 +15,8 @@ import ExpansionPanelActions from '@material-ui/core/ExpansionPanelActions'
 import Chip from '@material-ui/core/Chip'
 import { distanceInWords } from 'date-fns'
 
-import withRoot from '../elements/utils/withRoot'
-import { FsNode } from '../models/FsNode';
-import { Select } from '@material-ui/core';
-import { ApiUtils } from '../services/api';
+import { FsNode } from '../../models/FsNode'
+import { ApiUtils } from '../../services/api'
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -65,8 +50,7 @@ const styles = (theme: Theme) => createStyles({
   row: {
     flexGrow: 1,
     display: 'flex',
-    flexDirection: 'row',
-    //overflow: 'auto'
+    flexDirection: 'row'
   },
   columnImage: {
     flexBasis: 200,

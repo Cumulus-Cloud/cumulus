@@ -1,3 +1,4 @@
+import { toggleDirectoryCreationPopup } from './../actions/popup/popupActions'
 import { connect, Dispatch } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 
@@ -6,18 +7,15 @@ import { FsActions, getDirectory } from '../actions/fs/fsActions'
 import GlobalState from '../actions/state'
 
 function mapStateToProps(state: GlobalState) {
-  return {
-    currentDirectory: state.fs.current,
-    showLoader: state.fs.loadingCurrent
-  }
+  return {}
 }
 
-function mapDispatchToProps(dispatch: Dispatch<FsActions>) {
+function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    onChangePath: (path: string, contentOffset: number) => {
-      dispatch(getDirectory(path, contentOffset))
+    showCreationPopup: () => {
+      dispatch(toggleDirectoryCreationPopup(true))
     }
   }
 }
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(AppPage) as any) // TODO typing
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(AppPage)) // TODO typing

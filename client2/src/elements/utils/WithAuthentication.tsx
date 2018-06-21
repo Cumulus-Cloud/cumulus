@@ -34,7 +34,6 @@ class WithAuthenticationElement extends React.Component<Props, {}> {
 
 
 function mapStateToProps(state: GlobalState) {
-  console.log(state)
   return {
     connected: !!state.auth.connected,
     loading: state.auth.loading

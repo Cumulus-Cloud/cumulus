@@ -15,12 +15,6 @@ const reducer: Reducer<FsState, FsActions> = (state: FsState = initialState, act
       return { ...state, loadingCurrent: false, current: action.payload.directory, error: undefined }
     case 'FS/GET_DIRECTORY_FAILURE':
       return { ...state, loadingCurrent: false, current: undefined, error: action.payload.error }
-    case 'FS/CREATE_DIRECTORY':
-      return { ...state, error: undefined }
-    case 'FS/CREATE_DIRECTORY_SUCCESS':
-      return { ...state, error: undefined }
-    case 'FS/CREATE_DIRECTORY_FAILURE':
-      return { ...state, error: action.payload.error }
     default:
       return state
   }

@@ -8,7 +8,7 @@ import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import Typography from '@material-ui/core/Typography'
 import Zoom from '@material-ui/core/Zoom'
 import CloudIcon from '@material-ui/icons/CloudQueue'
-import { Route, Redirect, match } from 'react-router-dom'
+import { Route, Redirect, match, Switch } from 'react-router-dom'
 import { withRouter } from 'react-router-dom'
 import * as H from 'history'
 
@@ -105,10 +105,16 @@ class Login extends React.Component<PropsWithStyle, State> {
                 Cumulus
               </Typography>
             </div>
-            <Route exact path="/auth/sign-in" render={() => <SignInContainer/>}/>
-            <Route exact path="/auth/sign-up" render={() => <SignUpContainer/>}/>
-            <Route exact path="/auth/sign-up-confirmation" render={() => <SignUpConfirmation/>}/>
-            <Route render={() => <Redirect to="/auth/sign-in"/>}/>
+            <Switch>
+              <Route exact path="/auth/sign-in" render={() => <SignInContainer/>}/>
+              <Route exact path="/auth/sign-up" render={() => <SignUpContainer/>}/>
+              <Route exact path="/auth/sign-up-confirmation" render={() => <SignUpConfirmation/>}/>
+              <Route render={(p) => {
+                console.log(p)
+                return (<Redirect to="/auth/sign-in"/>)
+              
+              }}/>
+            </Switch>
           </Paper>
         </Grow>
       </div>

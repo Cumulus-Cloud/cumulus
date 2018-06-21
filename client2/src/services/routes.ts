@@ -7,7 +7,9 @@ const Routes = {
     emailConfirmation: '/auth/email-confirmation'
   },
   app: {
-    fs: '/app/fs/'
+    fs: '/app/fs',
+    fs_matcher: '/app/fs:path(.+)',
+    createDirectory_matcher: '/app/fs/:path(.+#action=create-directory)'
   }
 }
 

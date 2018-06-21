@@ -2,7 +2,6 @@ import { Theme, Direction } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import * as React from 'react'
-import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
 import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
@@ -50,37 +49,27 @@ import DialogTitle from '@material-ui/core/DialogTitle'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer'
 import withMobileDialog, { WithMobileDialogOptions } from '@material-ui/core/withMobileDialog'
+import { Route, Redirect, match, RouteComponentProps, Switch } from 'react-router-dom'
+import { withRouter } from 'react-router-dom'
+import * as H from 'history'
 
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
 import withRoot from '../elements/utils/withRoot'
-import FileListElement from '../elements/FileListElement'
+import FileListElement from '../elements/fs/FileListElement'
 import CumulusAppBar from '../elements/CumulusAppBar';
 import { User } from '../models/User';
-import BreadCrumb from '../elements/BreadCrumb';
+import BreadCrumb from '../elements/fs/BreadCrumb';
 import CumulusDrawer from '../elements/CumulusDrawer';
 import { Grow } from '@material-ui/core';
 import { Directory } from '../models/FsNode';
+import CreationPopupContainer from '../elements/fs/creation/CreationPopupContainer'
+import Routes from '../services/routes';
+import FilesList from '../elements/fs/FilesList';
+import FilesListContainer from '../elements/fs/FilesListContainer';
 
 
-const Home = () => (
-<div>
-    <h2>Home</h2>
-    <Link to="/about">
-        About
-    </Link>
-</div>
-)
-  
-const About = () => (
-<div>
-    <h2>About</h2>
-    <Link to="/">
-        Go back
-    </Link>
-</div>
-)
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -156,10 +145,7 @@ const styles = (theme: Theme) => createStyles({
 })
 
 interface Props {
-  onChangePath: (path: string, contentOffset: number) => void
-  currentDirectory: Directory
-  showLoader: boolean
-  fullScreen: boolean
+  showCreationPopup: () => void
 }
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
@@ -176,20 +162,13 @@ class AppPage extends React.Component<PropsWithStyle, State> {
     super(props)
     this.state = { popupOpened: false, drawer: false }
   }
+  
 
-  componentDidMount() {
-    this.props.onChangePath('/', 0) // TODO handle pagination
+  showCreationPopup() {
+    this.props.showCreationPopup()
   }
 
-  onChangePath(path: string) {
-    this.props.onChangePath(path, 0) // TODO handle pagination
-  }
-
-  showPopup() {
-    this.setState({...this.state, popupOpened: !this.state.popupOpened })
-  }
-
-  drawerToggle() {
+  toggleDrawer() {
     this.setState({...this.state, drawer: !this.state.drawer })
   }
 
@@ -202,7 +181,7 @@ class AppPage extends React.Component<PropsWithStyle, State> {
   }
 
   render() {
-    const { currentDirectory, showLoader, classes, fullScreen } = this.props
+    const { classes } = this.props
 
     // TODO real user
     const user: User = {
@@ -215,7 +194,7 @@ class AppPage extends React.Component<PropsWithStyle, State> {
     const searchElements = searchListItem
     const actionElements = (
       <div>
-        <ListItem button onClick={() => this.showPopup()} >
+        <ListItem button onClick={() => this.showCreationPopup()} >
           <ListItemIcon>
             <CreateNewFolderIcon />
           </ListItemIcon>
@@ -237,112 +216,48 @@ class AppPage extends React.Component<PropsWithStyle, State> {
     )
     const contextualActionElements = otherMailFolderListItems
 
-    // TODO file list in another component ! + change route according to location & vice versa
-    // The drawer will also be part of that (preparation for other pages of the app)
-
-    const breadCrumb = currentDirectory && currentDirectory.path !== '/' ? // Do not show for an empty path (root directory)
-      <BreadCrumb path={currentDirectory.path} onPathSelected={(path) => this.onChangePath(path)} /> :
-      <span/>
-
-    const fileList = currentDirectory && !showLoader ?
-      currentDirectory.content.map((node) => (
-        <FileListElement
-          key={node.id}
-          fsNode={node}
-          selected={false}
-          onSelected={() => console.log('select')}
-          onDeselected={() => console.log('select')}
-          onClicked={() => this.onChangePath(node.path)}
-        />
-      )) :
-      []
-
-    // TODO pop-up. State from redux or controlled ? To be defined
-
-    // TODO router ton match on /fs for the file etc..
 
     return (
       <Grow in={true}>
         <div className={classes.root}>
           <CumulusAppBar 
             user={user}
-            showDrawer={() => this.drawerToggle()}
+            showDrawer={() => this.toggleDrawer()}
             showAccountPanel={() => { return }}
             showAdminPanel={() => { return }}
             logout={() => { return }}
           />
           <CumulusDrawer
-            onDrawerToggle={() => this.drawerToggle()}
+            onDrawerToggle={() => this.toggleDrawer()}
             showDynamicDrawer={this.state.drawer}
             searchElements={searchElements}
             actionElements={actionElements}
             contextualActionElements={contextualActionElements}
           />
-          <main className={classes.content}>
-            <span>
-              {breadCrumb}
-              <div className={classes.testRoot}>
-                {
-                  showLoader ?
-                  <div>
-                    <CircularProgress className={classes.loader} size={100} color="primary"/>
-                  </div> :
-                  <Slide direction="up" in={true}>
-                    <div>
-                      {
-                        fileList.length == 0 ?
-                        <Typography variant="caption" className={classes.emptyDirectory} >
-                          <InfoIcon className={classes.emptyDirectoryIcon}/>
-                          {'Ce dossier est vide'} 
-                        </Typography> :
-                        fileList
-                      }
-                    </div>
-                  </Slide>
-                }
-              </div>
-            </span>
-          </main>
 
-          <Dialog
-            fullScreen={fullScreen}
-            open={this.state.popupOpened}
-            onClose={() => this.showPopup()}
-            aria-labelledby="responsive-dialog-title"
-          >
-            <DialogTitle id="responsive-dialog-title">
-              Creation of a new directory
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Name of the new directory
-              </DialogContentText>
-              <TextField
-                autoFocus
-                margin="dense"
-                id="name"
-                label="Name"
-                type="text"
-                fullWidth
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => this.showPopup()}>
-                Cancel
-              </Button>
-              <Button onClick={() => this.showPopup()} color="primary" autoFocus>
-                Create
-              </Button>
-            </DialogActions>
-          </Dialog>
+          <Switch>
+            <Route path={Routes.app.fs_matcher} render={(p: RouteComponentProps<{ path: string }>) => {
+                return (
+                  <FilesListContainer initialPath={p.match.params.path} />
+                )
+              }}/>
+            <Route render={() => <Redirect to={`${Routes.app.fs}/`} />} />
+          </Switch>
+
+          <CreationPopupContainer />
+
         </div>  
 
       </Grow>
     )
   }
 }
+  /*
+  <Route path={Routes.app.createDirectory} render={() => <CreationPopupContainer open={true} />}/>
+  <Route path={Routes.app.fs} render={() => <h1>{"hello"}</h1>}/>
+  */
 
-export default withRoot(withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ()(AppPage)))
+export default withRoot(withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ({ breakpoint: 'xs' })(AppPage)))
 
 // TODO..
 const searchListItem = (

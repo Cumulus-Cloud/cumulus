@@ -61,56 +61,7 @@ export const getDirectoryFailure: ActionCreator<GetDirectoryFailureAction> =
     }
   })
 
-export interface CreateDirectoryAction extends Action {
-  type: 'FS/CREATE_DIRECTORY'
-  payload: {
-    path: string
-  }
-}
-
-export const createDirectory: ActionCreator<CreateDirectoryAction> =
-  (path: string) => ({
-    type: 'FS/CREATE_DIRECTORY',
-    payload: {
-      path
-    }
-  })
-
-export interface CreateDirectorySuccessAction extends Action {
-  type: 'FS/CREATE_DIRECTORY_SUCCESS'
-  payload: {
-    directory: Directory
-  }
-}
-
-export const createDirectorySuccess: ActionCreator<CreateDirectorySuccessAction> =
-  (directory: Directory) => ({
-    type: 'FS/CREATE_DIRECTORY_SUCCESS',
-    payload: {
-      directory
-    }
-  })
-
-
-export interface CreateDirectoryFailureAction extends Action {
-  type: 'FS/CREATE_DIRECTORY_FAILURE'
-  payload: {
-    error: ApiError
-  }
-}
-
-export const createDirectoryFailure: ActionCreator<CreateDirectoryFailureAction> =
-  (error: ApiError) => ({
-    type: 'FS/CREATE_DIRECTORY_FAILURE',
-    payload: {
-      error
-    }
-  })
-
 export type FsActions =
   GetDirectoryAction |
   GetDirectorySuccessAction |
-  GetDirectoryFailureAction |
-  CreateDirectoryAction |
-  CreateDirectorySuccessAction |
-  CreateDirectoryFailureAction
+  GetDirectoryFailureAction
