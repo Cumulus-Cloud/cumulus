@@ -5,6 +5,7 @@ import * as React from 'react'
 // A theme with custom primary and secondary color.
 const theme = createMuiTheme({
   palette: {
+    //type: 'dark',
     primary: {
       main: '#29A7A0',
       contrastText: '#FFF',

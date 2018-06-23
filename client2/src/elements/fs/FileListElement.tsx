@@ -19,7 +19,11 @@ import { FsNode } from '../../models/FsNode'
 import { ApiUtils } from '../../services/api'
 
 const styles = (theme: Theme) => createStyles({
-  root: {
+  root: {},
+  rootSelected: {
+    backgroundColor: '#eafaf9' // TODO derive from theme
+  },
+  details: {
     [theme.breakpoints.down('xs')]: {
       flexDirection: 'column'
     }
@@ -151,7 +155,7 @@ class FileListElement extends React.Component<PropsWithStyle, State> {
     const title = 
         <Typography
           onClick={fsNode.nodeType === 'DIRECTORY' ? () => this.onClicked() : undefined}
-          color={selected ? 'primary' : 'inherit'}
+          color="inherit"
           className={selected ? classes.headingSelected : classes.heading}
         >
           {fsNode.name}
@@ -218,12 +222,12 @@ class FileListElement extends React.Component<PropsWithStyle, State> {
     })()
        
     return (
-      <ExpansionPanel expanded={this.state.expanded} >
+      <ExpansionPanel className={selected ? classes.rootSelected : classes.root} expanded={this.state.expanded} >
         <ExpansionPanelSummary expandIcon={expandIcon} >
         {icon}
         {title}
         </ExpansionPanelSummary>
-        <ExpansionPanelDetails  className={classes.root}>
+        <ExpansionPanelDetails className={classes.details}>
           {preview}
           <div className={classes.column}>
 

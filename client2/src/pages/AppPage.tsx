@@ -68,6 +68,7 @@ import CreationPopupContainer from '../elements/fs/creation/CreationPopupContain
 import Routes from '../services/routes';
 import FilesList from '../elements/fs/FilesList';
 import FilesListContainer from '../elements/fs/FilesListContainer';
+import UploadProgressPopup from '../elements/fs/upload/UploadProgressPopup';
 
 
 
@@ -245,6 +246,8 @@ class AppPage extends React.Component<PropsWithStyle, State> {
           </Switch>
 
           <CreationPopupContainer />
+
+          <UploadProgressPopup />
 
         </div>  
 

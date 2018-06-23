@@ -6,10 +6,10 @@ import { of, concat } from 'rxjs'
 import Api from '../../../services/api'
 import { ApiError } from '../../../models/ApiError'
 import { User } from '../../../models/User'
-import { SignInActions, SignInAction, SignInSuccessAction, signInFailure, signInSuccess } from './signInActions'
+import { SignInActions, SignInAction, signInFailure, signInSuccess } from './signInActions'
 import SignInState from './signInState'
 import Routes from '../../../services/routes'
-import { signedIn } from '../auth/authenticationActions';
+import { signedIn } from '../auth/authenticationActions'
 
 type EpicType = Epic<SignInActions, SignInActions, SignInState>
 

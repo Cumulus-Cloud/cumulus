@@ -14,7 +14,9 @@
   "dependencies": {
     "@material-ui/core": "^1.2.0",
     "@material-ui/icons": "^1.1.0",
+    "@types/classnames": "^2.2.4",
     "axios": "^0.18.0",
+    "classnames": "^2.2.6",
     "connected-react-router": "^4.3.0",
     "date-fns": "^1.29.0",
     "react": "^16.4.0",
