@@ -69,6 +69,7 @@ import Routes from '../services/routes';
 import FilesList from '../elements/fs/FilesList';
 import FilesListContainer from '../elements/fs/FilesListContainer';
 import UploadProgressPopup from '../elements/fs/upload/UploadProgressPopup';
+import UploadPopupContainer from '../elements/fs/upload/UploadPopupContainer';
 
 
 
@@ -147,6 +148,7 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   showCreationPopup: () => void
+  showUploadPopup: () => void
 }
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
@@ -163,10 +165,13 @@ class AppPage extends React.Component<PropsWithStyle, State> {
     super(props)
     this.state = { popupOpened: false, drawer: false }
   }
-  
 
   showCreationPopup() {
     this.props.showCreationPopup()
+  }
+
+  showUploadPopup() {
+    this.props.showUploadPopup()
   }
 
   toggleDrawer() {
@@ -201,7 +206,7 @@ class AppPage extends React.Component<PropsWithStyle, State> {
           </ListItemIcon>
           <ListItemText primary="Create Directory" />
         </ListItem>
-        <ListItem button>
+        <ListItem button onClick={() => this.showUploadPopup()} >
           <ListItemIcon>
             <CloudUpload />
           </ListItemIcon>
@@ -246,6 +251,7 @@ class AppPage extends React.Component<PropsWithStyle, State> {
           </Switch>
 
           <CreationPopupContainer />
+          <UploadPopupContainer />
 
           <UploadProgressPopup />
 

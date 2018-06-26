@@ -45,14 +45,14 @@ const styles = (theme: Theme) => createStyles({
     color: theme.palette.primary.contrastText
   },
   expand: {
-    transform: 'rotate(0deg)',
+    transform: 'rotate(180deg)',
     transition: theme.transitions.create('transform', {
       duration: theme.transitions.duration.shortest
     }),
     marginLeft: 'auto'
   },
   expandOpen: {
-    transform: 'rotate(180deg)',
+    transform: 'rotate(0deg)',
   },
   content: {
     padding: 0,

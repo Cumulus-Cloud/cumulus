@@ -42,15 +42,15 @@ interface Props {
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
 interface State {
-  directoryName: string
+  fileName: string
 }
 
 
-class CreationPopup extends React.Component<PropsWithStyle, State> {
+class UploadPopup extends React.Component<PropsWithStyle, State> {
 
   constructor(props: PropsWithStyle) {
     super(props)
-    this.state = { directoryName: '' }
+    this.state = { fileName: '' }
   }
 
   onClose() {
@@ -60,11 +60,19 @@ class CreationPopup extends React.Component<PropsWithStyle, State> {
   onCreateDirectory() {
     // TODO check the provided string for forbidden char
     const basePath = this.props.current ? this.props.current.path : '/'
-    this.props.onCreateDirectory(`${basePath}/${this.state.directoryName}`)
+    this.props.onCreateDirectory(`${basePath}/${this.state.fileName}`)
   }
 
-  onDirectoryNameChange(directoryName: string) {
-    this.setState({ directoryName })
+  onFileNameChange(fileName: string) {
+    this.setState({ fileName })
+  }
+
+  onFilesChange(files: FileList | null) {
+    if(files !== null) {
+      for(let i = 0; i < files.length; i++) {
+        console.log(files[i])
+      }
+    }
   }
 
   render() {
@@ -79,19 +87,23 @@ class CreationPopup extends React.Component<PropsWithStyle, State> {
       >
         <div  className={classes.root} >
           <DialogTitle id="responsive-dialog-title">
-            Créer un nouveau dossier
+            Mettre en ligne un nouveau fichier
           </DialogTitle>
           <DialogContent>
             <TextField
               autoFocus
               margin="dense"
               id="name"
-              label="Nom dossier"
+              label="Nom du fichier"
               type="text"
+              disabled={true}
               fullWidth
-              onChange={(e) => this.onDirectoryNameChange(e.target.value)}
+              onChange={(e) => this.onFileNameChange(e.target.value)}
               error={!!error}
             />
+          </DialogContent>
+          <DialogContent>
+            <input type="file" onChange={(e) => this.onFilesChange(e.target.files) } />
           </DialogContent>
           <DialogContentText>
             
@@ -101,7 +113,7 @@ class CreationPopup extends React.Component<PropsWithStyle, State> {
               Annuler
             </Button>
             <Button onClick={() => this.onCreateDirectory()} disabled={loading} color="primary" autoFocus>
-              Créer le dossier
+              Envoyer le fichier selectionné
               {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
             </Button>
           </DialogActions>
@@ -112,4 +124,4 @@ class CreationPopup extends React.Component<PropsWithStyle, State> {
 
 }
 
-export default withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ({ breakpoint: 'xs' })(CreationPopup))
+export default withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ({ breakpoint: 'xs' })(UploadPopup))

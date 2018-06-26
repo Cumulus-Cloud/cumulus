@@ -1,14 +1,14 @@
 import { connect, Dispatch } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 
-import CreationPopup from './CreationPopup'
+import UploadPopup from './UploadPopup'
 import GlobalState from '../../../actions/state'
 import { createDirectory } from '../../../actions/fs/directoryCreation/createDirectoryActions'
 import { togglePopup, PopupTypes } from '../../../actions/popup/popupActions'
 
 function mapStateToProps(state: GlobalState) {
   return {
-    open: state.popup.DIRECTORY_CREATION,
+    open: state.popup.FILE_UPLOAD,
     current: state.fs.current,
     loading: state.createDirectory.loading,
     error: state.createDirectory.error
@@ -18,7 +18,7 @@ function mapStateToProps(state: GlobalState) {
 function mapDispatchToProps(dispatch: Dispatch, props: GlobalState) {
   return {
     onClose: () => {
-      dispatch(togglePopup(PopupTypes.directoryCreation, false))
+      dispatch(togglePopup(PopupTypes.fileUpload, false))
     },
     onCreateDirectory: (path: string) => {
       dispatch(createDirectory(path))
@@ -26,4 +26,4 @@ function mapDispatchToProps(dispatch: Dispatch, props: GlobalState) {
   }
 }
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(CreationPopup)) // TODO typing
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(UploadPopup)) // TODO typing

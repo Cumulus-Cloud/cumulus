@@ -8,7 +8,6 @@ import { createStore, applyMiddleware, combineReducers } from 'redux'
 import { createEpicMiddleware, combineEpics } from 'redux-observable'
 
 import FsState from './fs/fsState'
-import CreateDirectoryState from './fs/directoryCreation/createDirectoryState'
 import AuthenticationState from './user/auth/authenticationState'
 import SignInState from './user/signIn/signInState'
 import SignUpState from './user/signUp/signUpState'
@@ -87,7 +86,7 @@ const epicMiddleware = createEpicMiddleware<Actions, Actions, GlobalState>()
 const routerMiddleware = createRouterMiddleware(history)
 
 // Create & export the global store
-const store = createStore<GlobalState, Actions, any, any>(
+const store = createStore<GlobalState>(
   connectRouter(history)(reducer), // new root reducer with router state
   applyMiddleware(routerMiddleware, epicMiddleware)
 )

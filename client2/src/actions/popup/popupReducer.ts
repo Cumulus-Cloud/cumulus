@@ -1,16 +1,17 @@
-import { Reducer } from 'redux'
+import { Reducer, AnyAction } from 'redux'
 
 import { PopupActions } from './popupActions'
 import PopupState from './popupState'
 
 const initialState: PopupState = {
-  directoryCreation: false
+  'DIRECTORY_CREATION': false,
+  'FILE_UPLOAD' : false
 }
 
-const reducer: Reducer<PopupState, PopupActions> = (state: PopupState = initialState, action: PopupActions) => {
+const reducer: Reducer<PopupState> = (state: PopupState = initialState, action: AnyAction) => {
   switch(action.type) {
-    case 'POPUP/TOOGLE_DIRECTORY_CREATION':
-      return { ...state, directoryCreation: action.payload.show }
+    case 'POPUP/TOOGLE':
+      return { ...state, [action.payload.type]: action.payload.show }
     default:
       return state
   }

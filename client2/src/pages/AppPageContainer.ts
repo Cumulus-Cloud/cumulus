@@ -1,4 +1,4 @@
-import { toggleDirectoryCreationPopup } from './../actions/popup/popupActions'
+import { togglePopup, PopupTypes } from './../actions/popup/popupActions'
 import { connect, Dispatch } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 
@@ -13,7 +13,10 @@ function mapStateToProps(state: GlobalState) {
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     showCreationPopup: () => {
-      dispatch(toggleDirectoryCreationPopup(true))
+      dispatch(togglePopup(PopupTypes.directoryCreation, true))
+    },
+    showUploadPopup: () => {
+      dispatch(togglePopup(PopupTypes.fileUpload, true))
     }
   }
 }
