@@ -6,12 +6,9 @@ case class LangUpdatePayload(
   lang: String
 )
 
-
 object LangUpdatePayload {
 
   implicit val reads: Reads[LangUpdatePayload] =
     Json.reads[LangUpdatePayload]
 
 }
-
-

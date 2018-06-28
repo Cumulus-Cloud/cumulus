@@ -20,9 +20,9 @@ GET     /api/users/me                    io.cumulus.controllers.UserController.m
 POST    /api/users/lang                  io.cumulus.controllers.UserController.changeLang
 POST    /api/users/password              io.cumulus.controllers.UserController.changePassword
 POST    /api/users/emailValidationResend io.cumulus.controllers.UserController.resendValidationEmail
+POST    /api/users/firstPassword         io.cumulus.controllers.UserController.setFirstPassword
 GET     /api/users/sessions              io.cumulus.controllers.UserController.listSessions(limit: Option[Int], offset: Option[Int])
 GET     /api/users/sessions/:ref         io.cumulus.controllers.UserController.getSession(ref: java.util.UUID)
-POST    /api/users/firstPassword         io.cumulus.controllers.UserController.setFirstPassword
 POST    /api/users/sessions/:ref/revoke  io.cumulus.controllers.UserController.revokeSession(ref: java.util.UUID)
 
 GET     /validateEmail                   io.cumulus.controllers.UserController.validateEmail(userLogin: String, emailCode: String)
