@@ -72,7 +72,6 @@ import UploadProgressPopup from '../elements/fs/upload/UploadProgressPopup';
 import UploadPopupContainer from '../elements/fs/upload/UploadPopupContainer';
 
 
-
 const styles = (theme: Theme) => createStyles({
   root: {
     flexGrow: 1,

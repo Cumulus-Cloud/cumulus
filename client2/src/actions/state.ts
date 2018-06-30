@@ -3,7 +3,8 @@ import CreateDirectoryState from "./fs/directoryCreation/createDirectoryState"
 import AuthenticationState from "./user/auth/authenticationState"
 import SignInState from "./user/signIn/signInState"
 import SignUpState from "./user/signUp/signUpState"
-import PopupState from "./popup/popupState";
+import PopupState from "./popup/popupState"
+import FileUploadState from "./fs/fileUpload/fileUploadState"
 
 export default interface GlobalState {
   auth: AuthenticationState
@@ -11,5 +12,6 @@ export default interface GlobalState {
   signUp: SignUpState
   fs: FsState
   createDirectory: CreateDirectoryState
+  fileUpload: FileUploadState
   popup: PopupState
 }

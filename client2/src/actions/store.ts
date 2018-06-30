@@ -1,3 +1,4 @@
+import { FileUploadActions } from './fs/fileUpload/fileUploadActions'
 import { FsActions } from './fs/fsActions'
 import { CreateDirectoryActions, createDirectory } from './fs/directoryCreation/createDirectoryActions'
 import { AuthenticationActions } from './user/auth/authenticationActions'
@@ -23,6 +24,7 @@ import signInReducer from './user/signIn/signInReducer'
 import signUpReducer from './user/signUp/signUpReducer'
 import fsReducer from './fs/fsReducer'
 import createDirectoryReducer from './fs/directoryCreation/createDirectoryReducer'
+import fileUploadReducer from './fs/fileUpload/fileUploadReducer'
 import popupReducer from './popup/popupReducer'
 
 import { createBrowserHistory } from 'history'
@@ -67,6 +69,7 @@ const reducer = combineReducers<GlobalState>({
   signUp: signUpReducer,
   fs: fsReducer,
   createDirectory: createDirectoryReducer,
+  fileUpload: fileUploadReducer,
   popup: popupReducer
 })
 
@@ -77,6 +80,7 @@ type Actions =
   SignUpActions |
   FsActions |
   CreateDirectoryActions |
+  FileUploadActions |
   PopupActions
 
 // Create an epic middleware for our epics
