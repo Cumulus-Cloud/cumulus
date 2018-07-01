@@ -1,3 +1,4 @@
+import { PopupTypes } from './../../popup/popupActions'
 import { Epic } from 'redux-observable'
 import { filter, flatMap, mergeMap } from 'rxjs/operators'
 import { of, concat } from 'rxjs'
@@ -8,7 +9,7 @@ import { ApiError } from '../../../models/ApiError'
 import { CreateDirectoryActions, CreateDirectoryAction, createDirectoryFailure, createDirectorySuccess, CreateDirectorySuccessAction } from './createDirectoryActions'
 import { getDirectory } from '../fsActions'
 import GlobalState from '../../state';
-import { toggleDirectoryCreationPopup } from '../../popup/popupActions';
+import { togglePopup } from '../../popup/popupActions'
 
 type EpicType = Epic<CreateDirectoryActions, CreateDirectoryActions, GlobalState>
 
@@ -27,7 +28,7 @@ export const createDirectoryEpic: EpicType = (action$, $state) =>
         return concat(
           of(createDirectorySuccess(result)),
           of(getDirectory(currentPath)), // Reload the current directory
-          of(toggleDirectoryCreationPopup(false)) // Close the popup
+          of(togglePopup(PopupTypes.directoryCreation, false)) // Close the popup
         )
       }
     })

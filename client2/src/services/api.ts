@@ -1,3 +1,4 @@
+import { EnrichedFile } from './../models/EnrichedFile'
 import axios from 'axios'
 
 import { ApiError } from './../models/ApiError'
@@ -39,12 +40,12 @@ export const ApiUtils = {
     return queryString === '' ? '' : `?${queryString}`
   },
 
-  post<B, R>(path: string, body: B, queryParams: Map<string, string> = new Map()): Promise<ApiError | R> {
-    return this.withPayload<B, R>('POST', path, body, queryParams)
+  post<B, R>(path: string, body: B, queryParams: Map<string, string> = new Map(), onProgress: (p: number) => void = () => {}): Promise<ApiError | R> {
+    return this.withPayload<B, R>('POST', path, body, queryParams, onProgress)
   },
 
-  put<B, R>(path: string, body: B, queryParams: Map<string, string> = new Map()): Promise<ApiError | R> {
-    return this.withPayload<B, R>('PUT', path, body, queryParams)
+  put<B, R>(path: string, body: B, queryParams: Map<string, string> = new Map(), onProgress: (p: number) => void = () => {}): Promise<ApiError | R> {
+    return this.withPayload<B, R>('PUT', path, body, queryParams, onProgress)
   },
 
   get<R>(path: string, queryParams: Map<string, string> = new Map()): Promise<ApiError | R> {
@@ -55,12 +56,15 @@ export const ApiUtils = {
     return this.withoutPayload('DELETE', path, queryParams)
   },
 
-  withPayload<B, R>(method: string, path: string, body: B, queryParams: Map<string, string> = new Map()): Promise<ApiError | R> {
+  withPayload<B, R>(method: string, path: string, body: B, queryParams: Map<string, string>, onProgress: (p: number) => void): Promise<ApiError | R> {
     return axios
       .request({
         method: method,
         url: `${urlBase}/api${path}${this.serializeQueryParams(queryParams)}`,
-        onUploadProgress: (progressEvent) => console.log(progressEvent.loaded),
+        onUploadProgress: (progressEvent) => {
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+          onProgress(progress)
+        },
         data: body,
         validateStatus: () => true
       })
@@ -177,6 +181,25 @@ const Api = {
 
     createDirectory(path: string): Promise<ApiError | Directory> {
       return ApiUtils.put(`/fs${path}`, {})
+    },
+
+    uploadFile(file: EnrichedFile, onProgress: (percentage: number) => void): Promise<ApiError | any> {
+
+      function fileReader(file: EnrichedFile){
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            resolve(reader.result)
+          };
+    
+          reader.readAsArrayBuffer(file.file)
+        })
+      }
+
+      return fileReader(file).then((result) => {
+        // TODO need path
+        return ApiUtils.post(`/upload/${file.filename}`, result, new Map(), onProgress)
+      })
     },
 
     updateFile(path: string, operation: FsOperation): Promise<ApiError | FsNode> {

@@ -7,9 +7,6 @@ import { ApiError } from '../../models/ApiError'
 import FsState from './fsState'
 import { FsActions, GetDirectoryAction, getDirectorySuccess, getDirectoryFailure } from './fsActions'
 
-import { push, routerActions } from 'connected-react-router'
-import { AnyAction } from 'redux';
-
 type EpicType = Epic<FsActions, FsActions, FsState>
 
 export const getDirectoryEpic: EpicType = (action$) =>

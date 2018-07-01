@@ -1,10 +1,9 @@
-import { selectUploadFile, deleteUploadFile, updateUploadFile } from './../../../actions/fs/fileUpload/fileUploadActions'
+import { selectUploadFile, deleteUploadFile, updateUploadFile, uploadAllFiles } from './../../../actions/fs/fileUpload/fileUploadActions'
 import { connect, Dispatch } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 
 import UploadPopup from './UploadPopup'
 import GlobalState from '../../../actions/state'
-import { createDirectory } from '../../../actions/fs/directoryCreation/createDirectoryActions'
 import { togglePopup, PopupTypes } from '../../../actions/popup/popupActions'
 import { EnrichedFile } from '../../../models/EnrichedFile'
 
@@ -32,8 +31,8 @@ function mapDispatchToProps(dispatch: Dispatch, props: GlobalState) {
     onClose: () => {
       dispatch(togglePopup(PopupTypes.fileUpload, false))
     },
-    onCreateDirectory: (path: string) => {
-      dispatch(createDirectory(path))
+    onUploadFiles: () => {
+      dispatch(uploadAllFiles())
     }
   }
 }

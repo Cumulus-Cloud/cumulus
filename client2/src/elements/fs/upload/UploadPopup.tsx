@@ -66,7 +66,7 @@ interface Props {
   onFilesSelected: (files: EnrichedFile[]) => void
   onDeleteFile: (file: EnrichedFile) => void
   onUpdateFile: (file: EnrichedFile) => void
-  onCreateDirectory: (name: string) => void
+  onUploadFiles: () => void
   open: boolean
   loading: boolean
   fullScreen: boolean
@@ -90,9 +90,10 @@ class UploadPopup extends React.Component<PropsWithStyle, State> {
     this.props.onClose()
   }
 
-  onCreateDirectory() {
+  onUploadFiles() {
     // TODO check the provided string for forbidden char
- 
+    console.log('Starting the file upload')
+    this.props.onUploadFiles()
   }
 
   onUpdateFile(updatedFile: EnrichedFile) {
@@ -175,7 +176,7 @@ class UploadPopup extends React.Component<PropsWithStyle, State> {
             <Button onClick={() => this.onClose()} disabled={loading}>
               Annuler
             </Button>
-            <Button onClick={() => this.onCreateDirectory()} disabled={files.length === 0 || loading} color="primary" autoFocus>
+            <Button onClick={() => this.onUploadFiles()} disabled={files.length === 0 || loading} color="primary" autoFocus>
               {files.length > 0 ? "Envoyer les fichiers selectionnés" : "Envoyer le fichier selectionné"}
               {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
             </Button>

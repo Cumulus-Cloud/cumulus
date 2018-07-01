@@ -15,6 +15,7 @@ import SignUpState from './user/signUp/signUpState'
 
 import { getDirectoryEpic } from './fs/fsEpics'
 import { createDirectoryEpic } from './fs/directoryCreation/createDirectoryEpics'
+import { uploadFileEpic, uploadAllFilesEpic } from './fs/fileUpload/fileUploadEpics'
 import { testSignedInEpic } from './user/auth/authenticationEpics'
 import { signInEpic } from './user/signIn/signInEpics'
 import { signUpEpic } from './user/signUp/signUpEpics'
@@ -40,6 +41,7 @@ export const history = createBrowserHistory()
 // FS expics
 const fsEpics              = combineEpics<FsActions, FsActions, FsState>(getDirectoryEpic)
 const createDirectoryEpics = combineEpics<CreateDirectoryActions, CreateDirectoryActions, GlobalState>(createDirectoryEpic)
+const uploadFileEpics      = combineEpics<FileUploadActions, FileUploadActions, GlobalState>(uploadAllFilesEpic, uploadFileEpic)
 // delete fsNode
 // upload file(s)
 // download file
@@ -60,7 +62,7 @@ const signUpEpics = combineEpics<SignUpActions, SignUpActions, SignUpState>(sign
 // Update user
 // Revoker all user sessions
 
-const allEpics = combineEpics(fsEpics, createDirectoryEpics, authEpics, signInEpics, signUpEpics)
+const allEpics = combineEpics(fsEpics, createDirectoryEpics, uploadFileEpics, authEpics, signInEpics, signUpEpics)
 
 // Combine all the reducers with a global state
 const reducer = combineReducers<GlobalState>({

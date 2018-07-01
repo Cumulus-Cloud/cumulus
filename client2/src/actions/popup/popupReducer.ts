@@ -11,6 +11,7 @@ const initialState: PopupState = {
 const reducer: Reducer<PopupState> = (state: PopupState = initialState, action: AnyAction) => {
   switch(action.type) {
     case 'POPUP/TOOGLE':
+      console.log(action.payload.type)
       return { ...state, [action.payload.type]: action.payload.show }
     default:
       return state
