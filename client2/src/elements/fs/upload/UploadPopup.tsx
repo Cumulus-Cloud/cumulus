@@ -10,11 +10,12 @@ import DialogTitle from '@material-ui/core/DialogTitle'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
 import Slide from '@material-ui/core/Slide'
+import uuid = require('uuid/v4')
 
 import { ApiError } from '../../../models/ApiError'
 import { Directory } from '../../../models/FsNode'
 import UploadFile from './UploadFile'
-import { EnrichedFile } from '../../../models/EnrichedFile';
+import { EnrichedFile } from '../../../models/EnrichedFile'
 
 
 const styles = (theme: Theme) => createStyles({
@@ -106,7 +107,7 @@ class UploadPopup extends React.Component<PropsWithStyle, State> {
       for(let i = 0; i < fileList.length; i++) {
         const file = fileList[i]
         files.push({
-          id: i,
+          id: uuid(),
           filename: file.name,
           compressed: false,
           crypted: true,

@@ -1,6 +1,6 @@
 
 export interface EnrichedFile {
-  id: number
+  id: string
   file: File
   filename: string
   compressed: boolean

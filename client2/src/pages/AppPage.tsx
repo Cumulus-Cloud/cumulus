@@ -70,6 +70,7 @@ import FilesList from '../elements/fs/FilesList';
 import FilesListContainer from '../elements/fs/FilesListContainer';
 import UploadProgressPopup from '../elements/fs/upload/UploadProgressPopup';
 import UploadPopupContainer from '../elements/fs/upload/UploadPopupContainer';
+import UploadProgressPopupContainer from '../elements/fs/upload/UploadProgressPopupContainer';
 
 
 const styles = (theme: Theme) => createStyles({
@@ -252,7 +253,7 @@ class AppPage extends React.Component<PropsWithStyle, State> {
           <CreationPopupContainer />
           <UploadPopupContainer />
 
-          <UploadProgressPopup />
+          <UploadProgressPopupContainer />
 
         </div>  
 

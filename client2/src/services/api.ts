@@ -62,7 +62,7 @@ export const ApiUtils = {
         method: method,
         url: `${urlBase}/api${path}${this.serializeQueryParams(queryParams)}`,
         onUploadProgress: (progressEvent) => {
-          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+          const progress = (progressEvent.loaded * 100) / progressEvent.total
           onProgress(progress)
         },
         data: body,
@@ -198,6 +198,7 @@ const Api = {
 
       return fileReader(file).then((result) => {
         // TODO need path
+        // TODO add compression and cipher
         return ApiUtils.post(`/upload/${file.filename}`, result, new Map(), onProgress)
       })
     },

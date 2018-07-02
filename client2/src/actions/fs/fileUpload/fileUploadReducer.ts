@@ -2,20 +2,11 @@ import { Reducer } from 'redux'
 
 import FileUploadState from './fileUploadState'
 import { FileUploadActions } from './fileUploadActions'
-import { FileUploadingState } from './fileUploadState'
+
 
 const initialState: FileUploadState = {
   files: [],
   uploading: []
-}
-
-function updateField<T>(filter: (t: T) => boolean, update: (t: T) => T, items: T[]) {
-  return items.map((i) => {
-    if(filter(i))
-      return update(i)
-    else
-      return i
-  })
 }
 
 const reducer: Reducer<FileUploadState, FileUploadActions> = (state: FileUploadState = initialState, action: FileUploadActions) => {
@@ -23,7 +14,7 @@ const reducer: Reducer<FileUploadState, FileUploadActions> = (state: FileUploadS
   switch(action.type) {
     case 'FS/SELECT_UPLOAD_FILE': {
       const files = action.payload.files
-      const updatedFiles = state.files.concat(files).map((f, i) => { return { ...f, id: i } })
+      const updatedFiles = state.files.concat(files)
 
       return { ...state, files: updatedFiles }
     }
@@ -48,6 +39,7 @@ const reducer: Reducer<FileUploadState, FileUploadActions> = (state: FileUploadS
         file: uploadedFile,
         loading: true,
         start: new Date(),
+        progressOverTime: [ { date: new Date(), progress: 0 } ],
         progress: 0
       }
 
@@ -57,7 +49,11 @@ const reducer: Reducer<FileUploadState, FileUploadActions> = (state: FileUploadS
       const { progression, file } = action.payload
       const updatedUploads = state.uploading.map((upload) => {
         if(upload.file.id === file.id)
-          return { ...upload, progress: progression }
+          return {
+            ...upload,
+            progressOverTime: [ ...upload.progressOverTime, { date: new Date(), progress: progression } ],
+            progress: progression, 
+          }
         else
           return upload
       })

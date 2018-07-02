@@ -96,7 +96,7 @@ export const uploadFileProgess: ActionCreator<UploadFileProgressAction> =
 export interface UploadFileSuccessAction extends Action {
   type: 'FS/UPLOAD_FILE/SUCCESS'
   payload: {
-    file: EnrichedFile // TODO return type
+    file: EnrichedFile // TODO return uploaded file
   }
 }
 

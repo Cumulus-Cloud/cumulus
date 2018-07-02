@@ -43,11 +43,11 @@ export const uploadFileEpic: EpicType = (action$, $state) =>
         Api.fs.uploadFile(file, onProgress)
           .then((result: ApiError | any) => {
             if('errors' in result) {
-              observer.next(uploadFileFailure(result))
+              observer.next(uploadFileFailure(file, result))
               observer.complete()
             } else {
               const currentPath = $state.value.fs.current ? $state.value.fs.current.path : ''
-              observer.next(uploadFileSuccess(result))
+              observer.next(uploadFileSuccess(file, result)) // TODO use result ?
               //observer.next(getDirectory(currentPath)) // Reload the current directory
               observer.complete()
             }

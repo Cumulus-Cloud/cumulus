@@ -21,6 +21,8 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import CloseIcon from '@material-ui/icons/Close';
 import Collapse from '@material-ui/core/Collapse';
 import { LinearProgress } from '@material-ui/core';
+import { FileUploadingState, computeUploadingSpeed } from '../../../actions/fs/fileUpload/fileUploadState';
+import { humanSpeed } from '../../../services/utils';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -100,7 +102,10 @@ const styles = (theme: Theme) => createStyles({
   }
 })
 
-interface Props {}
+interface Props {
+  onClose: () => void
+  files: FileUploadingState[]
+}
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
@@ -120,8 +125,38 @@ class UploadProgressPopup extends React.Component<PropsWithStyle, State> {
   }
 
   render() {
-    const { classes } = this.props
-    const bull = <span className={classes.bullet}>•</span>;
+    const { classes, files } = this.props
+
+    // TODO show error
+
+    const uploadsInfo = files.map((upload) => {
+      // TODO better ID
+      return (
+        <span key={upload.file.id} >
+          <ListItem button className={classes.fileItem} >
+            <ListItemText className={classes.fileIcon} >
+              <FileDownloadButton />
+            </ListItemText>
+            <ListItemText>
+              {upload.file.filename}
+              {
+                upload.loading && (
+                  upload.progress < 100 ?
+                  <LinearProgress variant="determinate" value={upload.progress} /> :
+                  <LinearProgress variant="indeterminate" />
+                )
+              }
+              {
+                (upload.loading && upload.progress < 100) && (
+                  <Typography className={classes.downloadSpeed} variant="caption" >{humanSpeed(computeUploadingSpeed(upload), 's')}</Typography>
+                )
+              }
+            </ListItemText>
+          </ListItem>
+          <Divider />
+        </span>
+      )
+    })
 
     return (
       <div className={classes.root} >
@@ -153,52 +188,7 @@ class UploadProgressPopup extends React.Component<PropsWithStyle, State> {
           <Collapse in={this.state.expanded} timeout="auto" unmountOnExit>
             <CardContent className={classes.content} style={{ padding: 0 }} >
               <List component="nav" style={{ padding: 0 }} >
-                <ListItem button className={classes.fileItem} >
-                  <ListItemText className={classes.fileIcon} >
-                    <FileDownloadButton />
-                  </ListItemText>
-                  <ListItemText>
-                    Bidule.png
-                    <LinearProgress variant="determinate" value={80} />
-                    <Typography className={classes.downloadSpeed} variant="caption" >134 Ko/s</Typography>
-                  </ListItemText>
-                </ListItem>
-                <Divider />
-                <ListItem button className={classes.fileItem} >
-                  <ListItemText className={classes.fileIcon} >
-                    <FileDownloadButton />
-                  </ListItemText>
-                  <ListItemText>
-                    Bidule.png
-                    <LinearProgress variant="determinate" value={60} />
-                    <Typography className={classes.downloadSpeed} variant="caption" >234 Ko/s</Typography>
-                  </ListItemText>
-                </ListItem>
-                <Divider />
-                <ListItem button divider className={classes.fileItem} >
-                  <ListItemText className={classes.fileIcon} >
-                    <FileButton />
-                  </ListItemText>
-                  <ListItemText>
-                    Bidule.png
-                  </ListItemText>
-                </ListItem>
-                <ListItem button divider className={classes.fileItem} >
-                  <ListItemText className={classes.fileIcon} >
-                    <FileButton />
-                  </ListItemText>
-                  <ListItemText>
-                    Bidule.png
-                  </ListItemText>
-                </ListItem>
-                <ListItem button divider className={classes.fileItem} >
-                  <ListItemText className={classes.fileIcon} >
-                    <FileButton />
-                  </ListItemText>
-                  <ListItemText>
-                    Bidule.png
-                  </ListItemText>
-                </ListItem>
+                {uploadsInfo}
               </List>
             </CardContent>
           </Collapse>
