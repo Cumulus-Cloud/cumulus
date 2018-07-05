@@ -67,7 +67,8 @@ class SignInForm extends React.Component<PropsWithStyle, State> {
     this.props.onSignUp()
   }
 
-  onSignIn() {
+  onSignIn(e: React.FormEvent) {
+    e.preventDefault()
     // TODO check that each field is here
     this.props.onSignIn(this.state.login, this.state.password)
   }
@@ -85,7 +86,7 @@ class SignInForm extends React.Component<PropsWithStyle, State> {
 
     return (
       <Grow in={true}>
-        <div>
+        <form onSubmit={(e) => this.onSignIn(e)} >
           <div className={classes.root}>
             <TextField
               id="login-input"
@@ -121,12 +122,12 @@ class SignInForm extends React.Component<PropsWithStyle, State> {
             <Button color="primary" disabled={loading} onClick={() => this.onSignUp()}>
               S'inscrire
             </Button>
-            <Button color="primary" disabled={loading} onClick={() => this.onSignIn()}>
+            <Button color="primary" disabled={loading} type="submit">
               Se connecter
               {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
             </Button>
           </div>
-        </div>
+        </form>
       </Grow>
     )
   }

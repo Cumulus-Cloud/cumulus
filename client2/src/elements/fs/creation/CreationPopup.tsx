@@ -57,7 +57,8 @@ class CreationPopup extends React.Component<PropsWithStyle, State> {
     this.props.onClose()
   }
 
-  onCreateDirectory() {
+  onCreateDirectory(e: React.FormEvent) {
+    e.preventDefault()
     // TODO check the provided string for forbidden char
     const basePath = this.props.current ? this.props.current.path : '/'
     this.props.onCreateDirectory(`${basePath}/${this.state.directoryName}`)
@@ -77,7 +78,7 @@ class CreationPopup extends React.Component<PropsWithStyle, State> {
         onClose={() => this.onClose()}
         aria-labelledby="responsive-dialog-title"
       >
-        <div  className={classes.root} >
+        <form onSubmit={(e) => this.onCreateDirectory(e)} className={classes.root} >
           <DialogTitle id="responsive-dialog-title">
             Créer un nouveau dossier
           </DialogTitle>
@@ -100,12 +101,12 @@ class CreationPopup extends React.Component<PropsWithStyle, State> {
             <Button onClick={() => this.onClose()} disabled={loading}>
               Annuler
             </Button>
-            <Button onClick={() => this.onCreateDirectory()} disabled={loading} color="primary" autoFocus>
+            <Button disabled={loading} color="primary" type="submit" >
               Créer le dossier
               {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
             </Button>
           </DialogActions>
-        </div>
+        </form>
       </Dialog>
     )
   }
