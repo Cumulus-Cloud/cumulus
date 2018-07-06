@@ -1,11 +1,12 @@
 import { Action } from 'redux'
 import { ActionCreator } from 'react-redux'
 
-export type PopupType = 'DIRECTORY_CREATION' | 'FILE_UPLOAD'
+export type PopupType = 'DIRECTORY_CREATION' | 'FILE_UPLOAD' | 'FILE_UPLOAD_PROGRESS'
 
 export const PopupTypes = {
   directoryCreation: 'DIRECTORY_CREATION',
-  fileUpload: 'FILE_UPLOAD'
+  fileUpload: 'FILE_UPLOAD',
+  fileUploadProgress: 'FILE_UPLOAD_PROGRESS'
 }
 
 export interface TogglePopupAction extends Action {

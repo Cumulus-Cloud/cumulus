@@ -1,15 +1,12 @@
 import * as React from 'react'
 import { withStyles, Theme, WithStyles } from '@material-ui/core/styles'
 import Card from '@material-ui/core/Card'
-import CardActions from '@material-ui/core/CardActions'
 import CardContent from '@material-ui/core/CardContent'
-import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
 import createStyles from '@material-ui/core/styles/createStyles'
 import CardHeader from '@material-ui/core/CardHeader'
 import IconButton from '@material-ui/core/IconButton'
 import FileDownloadButton from '@material-ui/icons/FileDownload'
-import FileButton from '@material-ui/icons/InsertDriveFile'
 import classnames from 'classnames'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
@@ -25,6 +22,9 @@ import { FileUploadingState, computeUploadingSpeed } from '../../../actions/fs/f
 import { humanSpeed } from '../../../services/utils';
 
 const styles = (theme: Theme) => createStyles({
+  closed: {
+    display: 'none'
+  },
   root: {
     position: 'absolute',
     bottom: 20,
@@ -104,6 +104,7 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   onClose: () => void
+  open: boolean
   files: FileUploadingState[]
 }
 
@@ -120,14 +121,27 @@ class UploadProgressPopup extends React.Component<PropsWithStyle, State> {
     this.state = { expanded: true }
   }
 
-  handleExpandClick() {
+  onToggleExpand() {
     this.setState({ expanded: !this.state.expanded })
   }
 
+  onClose() {
+    this.props.onClose()
+  }
+
   render() {
-    const { classes, files } = this.props
+    const { classes, files, open } = this.props
+
+    console.log(open)
+    console.log({ display: open ? "visible" : "none" })
 
     // TODO show error
+    
+    const uploadsInprogess = files.filter((f) => f.loading).length
+    const uploadsTerminated = files.length - uploadsInprogess
+
+    console.log(uploadsInprogess)
+    console.log(uploadsTerminated)
 
     const uploadsInfo = files.map((upload) => {
       // TODO better ID
@@ -159,7 +173,7 @@ class UploadProgressPopup extends React.Component<PropsWithStyle, State> {
     })
 
     return (
-      <div className={classes.root} >
+      <div className={classnames(classes.root, { [classes.closed]: !open })} >
         <Card className={classes.card}>
 
           <CardHeader
@@ -171,18 +185,18 @@ class UploadProgressPopup extends React.Component<PropsWithStyle, State> {
                 className={classnames(classes.expand, classes.headerButton, {
                   [classes.expandOpen]: this.state.expanded,
                 })}
-                onClick={() => this.handleExpandClick()}
+                onClick={() => this.onToggleExpand()}
                 aria-expanded={this.state.expanded}
                 aria-label="Show more"
               >
                 <ExpandMoreIcon />
               </IconButton>
-              <IconButton className={classes.headerButton} >
+              <IconButton className={classes.headerButton} disabled={uploadsInprogess !== 0} onClick={() => this.onClose()} >
                 <CloseIcon />
               </IconButton>
               </div>
             }
-            title={<span className={classes.headerText}>2 uploads en cours</span>}
+            title={<span className={classes.headerText}>{uploadsInprogess} uploads en cours, {uploadsTerminated} uploads terminés</span>}
           />
           
           <Collapse in={this.state.expanded} timeout="auto" unmountOnExit>

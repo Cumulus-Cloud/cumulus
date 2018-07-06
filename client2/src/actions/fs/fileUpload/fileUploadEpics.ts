@@ -1,15 +1,13 @@
 import { FileUploadActions, UploadAllFilesAction, uploadFile, uploadFileFailure, uploadFileProgess, uploadFileSuccess, UploadFileAction } from './fileUploadActions'
-import { PopupTypes, togglePopup } from './../../popup/popupActions'
+import { AnyAction } from 'redux'
 import { Epic } from 'redux-observable'
 import { filter, flatMap, mergeMap } from 'rxjs/operators'
-import { ajax } from 'rxjs/ajax';
-import { of, concat, Subject, Observable, Subscriber, Observer } from 'rxjs'
+import { of, concat, Observable, Observer } from 'rxjs'
 
 import Api from '../../../services/api'
 import GlobalState from '../../state'
-import { ApiError } from '../../../models/ApiError';
-import { getDirectory } from '../fsActions';
-import { AnyAction } from 'redux';
+import { ApiError } from '../../../models/ApiError'
+import { PopupTypes, togglePopup } from './../../popup/popupActions'
 
 type EpicType = Epic<AnyAction, AnyAction, GlobalState>
 
@@ -34,7 +32,8 @@ export const uploadFileEpic: EpicType = (action$, $state) =>
       const file = action.payload.file
       console.log('Starting upload')
 
-      return Observable.create((observer: Observer<FileUploadActions>) => {
+      // Start the upload
+      const upload = Observable.create((observer: Observer<FileUploadActions>) => {
         const onProgress = (progress: number) => {
           console.log(progress)
           observer.next(uploadFileProgess(file, progress))
@@ -46,9 +45,9 @@ export const uploadFileEpic: EpicType = (action$, $state) =>
               observer.next(uploadFileFailure(file, result))
               observer.complete()
             } else {
-              const currentPath = $state.value.fs.current ? $state.value.fs.current.path : ''
+              const path = $state.value.fs.current ? $state.value.fs.current.path : '/'
               observer.next(uploadFileSuccess(file, result)) // TODO use result ?
-              //observer.next(getDirectory(currentPath)) // Reload the current directory
+              //observer.next(getDirectory(path)) // Reload the current directory
               observer.complete()
             }
           })
@@ -57,5 +56,10 @@ export const uploadFileEpic: EpicType = (action$, $state) =>
             observer.complete()
           })
       })
+
+      return concat(
+        of(togglePopup(PopupTypes.fileUploadProgress, true)), // Show the upload progress popup
+        upload
+      )
     })
   )
