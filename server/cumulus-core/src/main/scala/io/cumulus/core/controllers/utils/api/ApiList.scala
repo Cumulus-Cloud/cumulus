@@ -8,6 +8,7 @@ case class ApiList[T](items: Seq[T], total: Option[Int] = None) {
 }
 
 object ApiList {
+
   implicit def writes[T](implicit wr: Writes[T]): Writes[ApiList[T]] = Writes { res =>
     val js = Json.obj(
       "items" -> JsArray(res.items.map(i => wr.writes(i))),
@@ -15,4 +16,5 @@ object ApiList {
     )
     res.total.map(t => js ++ Json.obj("total" -> t)).getOrElse(js)
   }
+
 }

@@ -20,9 +20,10 @@ import io.cumulus.core.utils.{Base64, Crypto}
   */
 class Cipher(cipher: javax.crypto.Cipher) extends GraphStage[FlowShape[ByteString, ByteString]] {
 
-  val in = Inlet[ByteString]("FileCipher.in")
-  val out = Outlet[ByteString]("FileCipher.out")
-  override val shape = FlowShape.of(in, out)
+  val in: Inlet[ByteString]   = Inlet[ByteString]("FileCipher.in")
+  val out: Outlet[ByteString] = Outlet[ByteString]("FileCipher.out")
+
+  override val shape: FlowShape[ByteString, ByteString] = FlowShape.of(in, out)
 
   override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = new GraphStageLogic(shape) {
 

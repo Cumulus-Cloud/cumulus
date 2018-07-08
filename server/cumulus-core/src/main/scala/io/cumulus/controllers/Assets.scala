@@ -31,7 +31,8 @@ class Assets(
       assets.at(file = file.name)
   }
 
-  val favicon: Action[AnyContent] = assets.versioned("favicon.ico")
+  val favicon: Action[AnyContent] =
+    assets.versioned("favicon.ico")
 
   def messages: Action[Unit] = Action(parse.empty) { implicit req =>
     Ok(jsMessages(Some("window.Messages"))(messagesApi.preferred(req)))

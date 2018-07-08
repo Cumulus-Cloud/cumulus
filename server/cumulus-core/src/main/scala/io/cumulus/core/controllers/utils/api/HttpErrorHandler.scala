@@ -7,9 +7,12 @@ import play.api.mvc.{RequestHeader, Result, Results}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 
 class HttpErrorHandler(implicit val messagesApi: MessagesApi) extends play.api.http.HttpErrorHandler with I18nSupport {
+
   val logger = play.api.Logger(this.getClass)
+
   def onClientError(request: RequestHeader, statusCode: Int, message: String = ""): Future[Result] = {
     implicit val messages: Messages = messagesApi.preferred(request)
+
     statusCode match {
       case BAD_REQUEST => Future.successful(ApiErrors.badRequest(message).toResult)
       case NOT_FOUND   => Future.successful(ApiErrors.routeNotFound(request.method, request.path).toResult)

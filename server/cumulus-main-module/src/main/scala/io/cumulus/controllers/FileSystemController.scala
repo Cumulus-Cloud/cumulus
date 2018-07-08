@@ -68,8 +68,8 @@ class FileSystemController(
     * @param name Name to look for. Approximation are allowed.
     * @param nodeType The optional type of node to look for.
     * @param mimeType The optional mime type to look for.
-    * @param limit The maximum number of children elements (for a directory) to return. Used for pagination.
-    * @param offset The offset of children elements (for a directory) to return. Used for pagination.
+    * @param limit The maximum number of elements to be returned. Used for pagination.
+    * @param offset The offset of elements to be returned. Used for pagination.
     */
   def search(
     path: Path,
