@@ -5,6 +5,7 @@ import SignInState from "./user/signIn/signInState"
 import SignUpState from "./user/signUp/signUpState"
 import PopupState from "./popup/popupState"
 import FileUploadState from "./fs/fileUpload/fileUploadState"
+import SnackbarState from "./snackbar/snackbarState"
 
 export default interface GlobalState {
   auth: AuthenticationState
@@ -14,4 +15,5 @@ export default interface GlobalState {
   createDirectory: CreateDirectoryState
   fileUpload: FileUploadState
   popup: PopupState
+  snackbar: SnackbarState
 }

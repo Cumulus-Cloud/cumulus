@@ -10,6 +10,7 @@ import { CreateDirectoryActions, CreateDirectoryAction, createDirectoryFailure, 
 import { getDirectory } from '../fsActions'
 import GlobalState from '../../state';
 import { togglePopup } from '../../popup/popupActions'
+import { showSnakebar } from '../../snackbar/snackbarActions';
 
 type EpicType = Epic<CreateDirectoryActions, CreateDirectoryActions, GlobalState>
 
@@ -27,8 +28,12 @@ export const createDirectoryEpic: EpicType = (action$, $state) =>
         const currentPath = $state.value.fs.current ? $state.value.fs.current.path : ''
         return concat(
           of(createDirectorySuccess(result)),
-          of(getDirectory(currentPath)), // Reload the current directory
-          of(togglePopup(PopupTypes.directoryCreation, false)) // Close the popup
+          of(getDirectory(currentPath)),                              // Reload the current directory
+          of(togglePopup(PopupTypes.directoryCreation, false)),       // Close the popup
+          of(showSnakebar(`Dossier « ${result.name} » créé avec succès`)), // Show a snakebar
+          of(showSnakebar(`Dossier « ${result.name} » créé avec succès2`)), // Show a snakebar
+          of(showSnakebar(`Dossier « ${result.name} » créé avec succès3`)), // Show a snakebar
+          of(showSnakebar(`Dossier « ${result.name} » créé avec succès4`)) // Show a snakebar
         )
       }
     })

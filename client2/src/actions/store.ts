@@ -12,6 +12,8 @@ import FsState from './fs/fsState'
 import AuthenticationState from './user/auth/authenticationState'
 import SignInState from './user/signIn/signInState'
 import SignUpState from './user/signUp/signUpState'
+import { PopupActions } from './popup/popupActions'
+import { SnackbarActions } from './snackbar/snackbarActions'
 
 import { getDirectoryEpic } from './fs/fsEpics'
 import { createDirectoryEpic } from './fs/directoryCreation/createDirectoryEpics'
@@ -27,12 +29,12 @@ import fsReducer from './fs/fsReducer'
 import createDirectoryReducer from './fs/directoryCreation/createDirectoryReducer'
 import fileUploadReducer from './fs/fileUpload/fileUploadReducer'
 import popupReducer from './popup/popupReducer'
+import snackbarReducer from './snackbar/snackbarReducer'
 
 import { createBrowserHistory } from 'history'
 import GlobalState from './state'
 
 import { connectRouter, routerMiddleware as createRouterMiddleware } from 'connected-react-router'
-import { PopupActions } from './popup/popupActions';
 
 export const history = createBrowserHistory()
 
@@ -72,7 +74,8 @@ const reducer = combineReducers<GlobalState>({
   fs: fsReducer,
   createDirectory: createDirectoryReducer,
   fileUpload: fileUploadReducer,
-  popup: popupReducer
+  popup: popupReducer,
+  snackbar: snackbarReducer
 })
 
 // Combine all the action types
@@ -83,7 +86,8 @@ type Actions =
   FsActions |
   CreateDirectoryActions |
   FileUploadActions |
-  PopupActions
+  PopupActions |
+  SnackbarActions
 
 // Create an epic middleware for our epics
 const epicMiddleware = createEpicMiddleware<Actions, Actions, GlobalState>()
