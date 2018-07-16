@@ -1,23 +1,19 @@
+import { createStore, applyMiddleware, combineReducers } from 'redux'
+import { createEpicMiddleware, combineEpics } from 'redux-observable'
+import { createBrowserHistory } from 'history'
+
 import { FileUploadActions } from './fs/fileUpload/fileUploadActions'
 import { FsActions } from './fs/fsActions'
-import { CreateDirectoryActions, createDirectory } from './fs/directoryCreation/createDirectoryActions'
+import { CreateDirectoryActions } from './fs/directoryCreation/createDirectoryActions'
 import { AuthenticationActions } from './user/auth/authenticationActions'
 import { SignInActions } from './user/signIn/signInActions'
 import { SignUpActions } from './user/signUp/signUpActions'
-
-import { createStore, applyMiddleware, combineReducers } from 'redux'
-import { createEpicMiddleware, combineEpics } from 'redux-observable'
-
-import FsState from './fs/fsState'
-import AuthenticationState from './user/auth/authenticationState'
-import SignInState from './user/signIn/signInState'
-import SignUpState from './user/signUp/signUpState'
 import { PopupActions } from './popup/popupActions'
 import { SnackbarActions } from './snackbar/snackbarActions'
 
 import { getDirectoryEpic } from './fs/fsEpics'
-import { createDirectoryEpic } from './fs/directoryCreation/createDirectoryEpics'
-import { uploadFileEpic, uploadAllFilesEpic } from './fs/fileUpload/fileUploadEpics'
+import { createDirectoryEpic, createDirectorySuccessEpic } from './fs/directoryCreation/createDirectoryEpics'
+import { uploadFileEpic, uploadAllFilesEpic, uploadFileSuccessEpic } from './fs/fileUpload/fileUploadEpics'
 import { testSignedInEpic } from './user/auth/authenticationEpics'
 import { signInEpic } from './user/signIn/signInEpics'
 import { signUpEpic } from './user/signUp/signUpEpics'
@@ -31,7 +27,6 @@ import fileUploadReducer from './fs/fileUpload/fileUploadReducer'
 import popupReducer from './popup/popupReducer'
 import snackbarReducer from './snackbar/snackbarReducer'
 
-import { createBrowserHistory } from 'history'
 import GlobalState from './state'
 
 import { connectRouter, routerMiddleware as createRouterMiddleware } from 'connected-react-router'
@@ -40,10 +35,10 @@ export const history = createBrowserHistory()
 
 // Import all the epics and combine them
 
-// FS expics
-const fsEpics              = combineEpics<FsActions, FsActions, FsState>(getDirectoryEpic)
-const createDirectoryEpics = combineEpics<CreateDirectoryActions, CreateDirectoryActions, GlobalState>(createDirectoryEpic)
-const uploadFileEpics      = combineEpics<FileUploadActions, FileUploadActions, GlobalState>(uploadAllFilesEpic, uploadFileEpic)
+// FS epics
+const fsEpics              = combineEpics(getDirectoryEpic)
+const createDirectoryEpics = combineEpics(createDirectoryEpic, createDirectorySuccessEpic)
+const uploadFileEpics      = combineEpics(uploadAllFilesEpic, uploadFileEpic, uploadFileSuccessEpic)
 // delete fsNode
 // upload file(s)
 // download file
@@ -52,9 +47,9 @@ const uploadFileEpics      = combineEpics<FileUploadActions, FileUploadActions, 
 // delete sharing
 // search
 // User epics
-const authEpics   = combineEpics<AuthenticationActions, AuthenticationActions, AuthenticationState>(testSignedInEpic)
-const signInEpics = combineEpics<SignInActions, SignInActions, SignInState>(signInEpic)
-const signUpEpics = combineEpics<SignUpActions, SignUpActions, SignUpState>(signUpEpic)
+const authEpics   = combineEpics(testSignedInEpic)
+const signInEpics = combineEpics(signInEpic)
+const signUpEpics = combineEpics(signUpEpic)
 // show sessions
 // revoke session
 // log out (revoke current session)
@@ -96,7 +91,7 @@ const epicMiddleware = createEpicMiddleware<Actions, Actions, GlobalState>()
 const routerMiddleware = createRouterMiddleware(history)
 
 // Create & export the global store
-const store = createStore<GlobalState>(
+const store = createStore(
   connectRouter(history)(reducer), // new root reducer with router state
   applyMiddleware(routerMiddleware, epicMiddleware)
 )

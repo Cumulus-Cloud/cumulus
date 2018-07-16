@@ -10,7 +10,6 @@ const initialState: FileUploadState = {
 }
 
 const reducer: Reducer<FileUploadState, FileUploadActions> = (state: FileUploadState = initialState, action: FileUploadActions) => {
-  console.log(action.type)
   switch(action.type) {
     case 'FS/SELECT_UPLOAD_FILE': {
       const files = action.payload.files

@@ -6,7 +6,6 @@ import Snackbar from '@material-ui/core/Snackbar'
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 
-
 const styles = (theme: Theme) => createStyles({
   root: {
     position: 'fixed',
@@ -15,13 +14,11 @@ const styles = (theme: Theme) => createStyles({
     display: 'flex',
     flexDirection: 'column',
     margin: 'auto',
-    left: '50%',
-    right: 'auto',
-    transform: 'translateX(-50%)'
+    left: theme.spacing.unit * 2
   },
   snackbar: {
     position: 'relative',
-    marginBottom: theme.spacing.unit * 4
+    marginBottom: theme.spacing.unit * 2
   },
   close: {
     width: theme.spacing.unit * 4,
@@ -36,39 +33,49 @@ interface Props {
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
-interface State {}
+interface State {
+  closed: string[] // List of closed 
+}
 
 
 class Snackbars extends React.Component<PropsWithStyle, State> {
 
   constructor(props: PropsWithStyle) {
     super(props)
-    this.state = {}
+    this.state = { closed: [] }
   }
 
   onClose(id: string) {
-    console.log(">>>>>" + id)
+    this.setState({ closed: this.state.closed.concat([ id ]) })
+  }
+
+  onExited(id: string) {
+    this.setState({ closed: this.state.closed.filter(i => i !== id) })
     this.props.onClose(id)
   }
 
   render() {
     const { classes, messages } = this.props
 
-    const snackbars = messages.map((message) => {
+    const snackbars = messages.map((message, i) => {
       return (
         <Snackbar
           className={classes.snackbar}
           key={message.id}
-          open={true}
-          autoHideDuration={150000}
-          onClose={() => this.onClose(message.id)}
+          open={this.state.closed.indexOf(message.id) < 0}
+          autoHideDuration={3500}
+          onClose={(_, reason: string) => {
+            if(reason !== 'clickaway')
+              this.onClose(message.id)
+          }}
+          onExited={() => this.onExited(message.id)}
           ContentProps={{
             'aria-describedby': 'message-id',
           }}
           message={<span id="message-id">{message.message}</span>}
           action={[
             <IconButton
-              key="close"
+              key={`close`}
               aria-label="Close"
               color="inherit"
               className={classes.close}

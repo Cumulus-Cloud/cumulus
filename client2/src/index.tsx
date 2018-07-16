@@ -32,12 +32,7 @@ ReactDOM.render(
             fallback={
               <Switch>
                 <Route path="/auth" render={() => <LoginPage/>} />
-                <Route render={(p) => {
-                console.log("index")
-                console.log(p)
-                return (<Redirect to="/auth/sign-in"/>)
-              
-              }}/>
+                <Route render={() => <Redirect to="/auth/sign-in"/>}/>
               </Switch>  
             }
             loader={loader}

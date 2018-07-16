@@ -1,8 +1,8 @@
 
 type PopupState = {
   messages: {
-    id: String,
-    message: String
+    id: string,
+    message: string
   }[]
 }
 

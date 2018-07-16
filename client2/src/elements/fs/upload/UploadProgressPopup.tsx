@@ -9,6 +9,7 @@ import IconButton from '@material-ui/core/IconButton'
 import FileDownloadButton from '@material-ui/icons/FileDownload'
 import classnames from 'classnames'
 import List from '@material-ui/core/List'
+import Slide from '@material-ui/core/Slide'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemText from '@material-ui/core/ListItemText'
 import Divider from '@material-ui/core/Divider'
@@ -22,9 +23,6 @@ import { FileUploadingState, computeUploadingSpeed } from '../../../actions/fs/f
 import { humanSpeed } from '../../../services/utils';
 
 const styles = (theme: Theme) => createStyles({
-  closed: {
-    display: 'none'
-  },
   root: {
     position: 'absolute',
     bottom: 20,
@@ -131,17 +129,10 @@ class UploadProgressPopup extends React.Component<PropsWithStyle, State> {
 
   render() {
     const { classes, files, open } = this.props
-
-    console.log(open)
-    console.log({ display: open ? "visible" : "none" })
-
     // TODO show error
     
     const uploadsInprogess = files.filter((f) => f.loading).length
     const uploadsTerminated = files.length - uploadsInprogess
-
-    console.log(uploadsInprogess)
-    console.log(uploadsTerminated)
 
     const uploadsInfo = files.map((upload) => {
       // TODO better ID
@@ -173,41 +164,43 @@ class UploadProgressPopup extends React.Component<PropsWithStyle, State> {
     })
 
     return (
-      <div className={classnames(classes.root, { [classes.closed]: !open })} >
-        <Card className={classes.card}>
+      <Slide direction="up" in={open} mountOnEnter unmountOnExit>
+        <div className={classnames(classes.root)} >
+          <Card className={classes.card}>
 
-          <CardHeader
-            className={classes.header}
-            color="white"
-            action={
-              <div>
-              <IconButton
-                className={classnames(classes.expand, classes.headerButton, {
-                  [classes.expandOpen]: this.state.expanded,
-                })}
-                onClick={() => this.onToggleExpand()}
-                aria-expanded={this.state.expanded}
-                aria-label="Show more"
-              >
-                <ExpandMoreIcon />
-              </IconButton>
-              <IconButton className={classes.headerButton} disabled={uploadsInprogess !== 0} onClick={() => this.onClose()} >
-                <CloseIcon />
-              </IconButton>
-              </div>
-            }
-            title={<span className={classes.headerText}>{uploadsInprogess} uploads en cours, {uploadsTerminated} uploads terminés</span>}
-          />
-          
-          <Collapse in={this.state.expanded} timeout="auto" unmountOnExit>
-            <CardContent className={classes.content} style={{ padding: 0 }} >
-              <List component="nav" style={{ padding: 0 }} >
-                {uploadsInfo}
-              </List>
-            </CardContent>
-          </Collapse>
-        </Card>
-      </div>
+            <CardHeader
+              className={classes.header}
+              color="white"
+              action={
+                <div>
+                <IconButton
+                  className={classnames(classes.expand, classes.headerButton, {
+                    [classes.expandOpen]: this.state.expanded,
+                  })}
+                  onClick={() => this.onToggleExpand()}
+                  aria-expanded={this.state.expanded}
+                  aria-label="Show more"
+                >
+                  <ExpandMoreIcon />
+                </IconButton>
+                <IconButton className={classes.headerButton} disabled={uploadsInprogess !== 0} onClick={() => this.onClose()} >
+                  <CloseIcon />
+                </IconButton>
+                </div>
+              }
+              title={<span className={classes.headerText}>{uploadsInprogess} uploads en cours, {uploadsTerminated} uploads terminés</span>}
+            />
+            
+            <Collapse in={this.state.expanded} timeout="auto" unmountOnExit>
+              <CardContent className={classes.content} style={{ padding: 0 }} >
+                <List component="nav" style={{ padding: 0 }} >
+                  {uploadsInfo}
+                </List>
+              </CardContent>
+            </Collapse>
+          </Card>
+        </div>
+      </Slide>
     )
   }
 

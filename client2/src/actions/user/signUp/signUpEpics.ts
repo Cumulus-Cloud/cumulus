@@ -25,7 +25,7 @@ export const signUpEpic: EpicType = (action$) =>
       } else {
         return concat(
           of(signUpSuccess(result)),
-          of(push(Routes.auth.signInConfirmation))
+          of(push(Routes.auth.signInConfirmation)) // TODO do in other epic
         )
       }
     })

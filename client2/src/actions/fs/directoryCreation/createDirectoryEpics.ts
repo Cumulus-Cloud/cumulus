@@ -6,7 +6,7 @@ import { of, concat } from 'rxjs'
 import { Directory } from './../../../models/FsNode'
 import Api from '../../../services/api'
 import { ApiError } from '../../../models/ApiError'
-import { CreateDirectoryActions, CreateDirectoryAction, createDirectoryFailure, createDirectorySuccess, CreateDirectorySuccessAction } from './createDirectoryActions'
+import { CreateDirectoryActions, CreateDirectoryAction, createDirectoryFailure, createDirectorySuccess, CreateDirectorySuccessAction, CreateDirectorySuccessAction } from './createDirectoryActions'
 import { getDirectory } from '../fsActions'
 import GlobalState from '../../state';
 import { togglePopup } from '../../popup/popupActions'
@@ -22,19 +22,25 @@ export const createDirectoryEpic: EpicType = (action$, $state) =>
       return Api.fs.createDirectory(path)
     }),
     flatMap((result: ApiError | Directory) => {
-      if('errors' in result) {
+      if('errors' in result)
         return of(createDirectoryFailure(result))
-      } else {
-        const currentPath = $state.value.fs.current ? $state.value.fs.current.path : ''
-        return concat(
-          of(createDirectorySuccess(result)),
-          of(getDirectory(currentPath)),                              // Reload the current directory
-          of(togglePopup(PopupTypes.directoryCreation, false)),       // Close the popup
-          of(showSnakebar(`Dossier « ${result.name} » créé avec succès`)), // Show a snakebar
-          of(showSnakebar(`Dossier « ${result.name} » créé avec succès2`)), // Show a snakebar
-          of(showSnakebar(`Dossier « ${result.name} » créé avec succès3`)), // Show a snakebar
-          of(showSnakebar(`Dossier « ${result.name} » créé avec succès4`)) // Show a snakebar
-        )
-      }
+      else
+        return of(createDirectorySuccess(result))
+    })
+  )
+
+
+export const createDirectorySuccessEpic: EpicType = (action$, $state) =>
+  action$.pipe(
+    filter((action: CreateDirectoryActions) => action.type === 'FS/CREATE_DIRECTORY/SUCCESS'),
+    mergeMap((action: CreateDirectorySuccessAction) => {
+      const currentPath = $state.value.fs.current ? $state.value.fs.current.path : '/'
+      const name = action.payload.directory.name
+
+      return concat(
+        of(getDirectory(currentPath)),                           // Reload the current directory
+        of(togglePopup(PopupTypes.directoryCreation, false)),    // Close the popup
+        of(showSnakebar(`Dossier « ${name} » créé avec succès`)) // Show a snakebar
+      )
     })
   )

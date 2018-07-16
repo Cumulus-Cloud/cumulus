@@ -9,6 +9,7 @@ import Slide from '@material-ui/core/Slide'
 import Fade from '@material-ui/core/Fade'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Dropzone from 'react-dropzone'
+import uuid = require('uuid/v4')
 
 import FileListElement from '../../elements/fs/FileListElement'
 import BreadCrumb from '../../elements/fs/BreadCrumb'
@@ -91,29 +92,46 @@ const styles = (theme: Theme) => createStyles({
 })
 
 interface Props {
+  /** Called when the path should be updated, meaning when the path was changed within the app, or via the browser */
   onChangePath: (path: string, contentOffset: number) => void
+  /** List of files selected for the upload */
   onFileUpload: (files: EnrichedFile[]) => void
+  /** Initial real path, comming from the browser path */
   initialPath: string
+  /** Loaded current directory, from the store */
   currentDirectory?: Directory
+  /** Loading error */
   error?: ApiError
+  /** If the store is loading the data */
   loading: boolean
 }
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
 interface State {
+  /** If the user is hovering the dropzone */
   dropzoneActive: boolean
+  /** If the path  */
+  shouldReloadPath: boolean
 }
 
 class FilesList extends React.Component<PropsWithStyle, State> {
 
   constructor(props: PropsWithStyle) {
     super(props)
-    this.state = { dropzoneActive: false }
+    this.state = { dropzoneActive: false, shouldReloadPath: false }
   }
 
-  componentDidMount() {
-    this.props.onChangePath(this.props.initialPath, 0) // TODO handle pagination
+  componentDidUpdate() {
+    const { loading, currentDirectory, initialPath } = this.props
+
+    // Needs to update if not during a loading, and if the two path have changed (in that case the 'real' path wins)
+    // This will likely occure during the first loading, or if the user use the browser history to navigate
+    const needToUpdatePath =
+      !loading && (currentDirectory ? initialPath !== currentDirectory.path : true)
+
+    if(needToUpdatePath)
+      this.props.onChangePath(initialPath, 0) // TODO handle pagination
   }
 
   onChangePath(path: string) {
@@ -121,9 +139,9 @@ class FilesList extends React.Component<PropsWithStyle, State> {
   }
   
   droppedFiles(files: File[]) {
-    const enrichedFiles = files.map((file, i) => {
+    const enrichedFiles = files.map((file) => {
       return {
-        id: i,
+        id: uuid(),
         filename: file.name,
         compressed: false,
         crypted: true,

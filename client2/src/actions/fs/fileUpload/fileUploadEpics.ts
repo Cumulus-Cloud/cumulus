@@ -1,4 +1,4 @@
-import { FileUploadActions, UploadAllFilesAction, uploadFile, uploadFileFailure, uploadFileProgess, uploadFileSuccess, UploadFileAction } from './fileUploadActions'
+import { FileUploadActions, UploadAllFilesAction, uploadFile, uploadFileFailure, uploadFileProgess, uploadFileSuccess, UploadFileAction, UploadFileSuccessAction } from './fileUploadActions'
 import { AnyAction } from 'redux'
 import { Epic } from 'redux-observable'
 import { filter, flatMap, mergeMap } from 'rxjs/operators'
@@ -8,15 +8,16 @@ import Api from '../../../services/api'
 import GlobalState from '../../state'
 import { ApiError } from '../../../models/ApiError'
 import { PopupTypes, togglePopup } from './../../popup/popupActions'
+import { showSnakebar } from '../../snackbar/snackbarActions';
+import { getDirectory } from '../fsActions';
 
 type EpicType = Epic<AnyAction, AnyAction, GlobalState>
 
 export const uploadAllFilesEpic: EpicType = (action$, $state) =>
   action$.pipe(
-    filter((action: UploadAllFilesAction) => action.type === 'FS/UPLOAD_ALL_FILES'),
+    filter((action: FileUploadActions) => action.type === 'FS/UPLOAD_ALL_FILES'),
     flatMap((_: UploadAllFilesAction) => {
       const files = $state.value.fileUpload.files
-      console.log('Starting uploads')
 
       return files
         .map((f) => uploadFile(f) as AnyAction)
@@ -27,15 +28,13 @@ export const uploadAllFilesEpic: EpicType = (action$, $state) =>
 
 export const uploadFileEpic: EpicType = (action$, $state) =>
   action$.pipe(
-    filter((action: UploadFileAction) => action.type === 'FS/UPLOAD_FILE'),
+    filter((action: FileUploadActions) => action.type === 'FS/UPLOAD_FILE'),
     mergeMap((action: UploadFileAction) => {
       const file = action.payload.file
-      console.log('Starting upload')
 
       // Start the upload
       const upload = Observable.create((observer: Observer<FileUploadActions>) => {
         const onProgress = (progress: number) => {
-          console.log(progress)
           observer.next(uploadFileProgess(file, progress))
         }
 
@@ -45,14 +44,13 @@ export const uploadFileEpic: EpicType = (action$, $state) =>
               observer.next(uploadFileFailure(file, result))
               observer.complete()
             } else {
-              const path = $state.value.fs.current ? $state.value.fs.current.path : '/'
               observer.next(uploadFileSuccess(file, result)) // TODO use result ?
-              //observer.next(getDirectory(path)) // Reload the current directory
               observer.complete()
             }
           })
           .catch((e) => {
-            // TODO handle error
+            // TODO handle error better ?
+            observer.next(uploadFileFailure(file, e)) // TODO e format is not what we expect
             observer.complete()
           })
       })
@@ -60,6 +58,20 @@ export const uploadFileEpic: EpicType = (action$, $state) =>
       return concat(
         of(togglePopup(PopupTypes.fileUploadProgress, true)), // Show the upload progress popup
         upload
+      )
+    })
+  )
+
+export const uploadFileSuccessEpic: EpicType = (action$, $state) =>
+  action$.pipe(
+    filter((action: FileUploadActions) => action.type === 'FS/UPLOAD_FILE/SUCCESS'),
+    mergeMap((action: UploadFileSuccessAction) => {
+      const currentPath = $state.value.fs.current ? $state.value.fs.current.path : '/'
+      const filename = action.payload.file.filename
+
+      return concat(
+        // of(getDirectory(currentPath)),                                       // Reload the current directory
+        of(showSnakebar(`Fichier « ${filename} » mis en ligne avec succès`)) // Show a snakebar
       )
     })
   )

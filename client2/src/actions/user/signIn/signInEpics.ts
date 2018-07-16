@@ -26,7 +26,7 @@ export const signInEpic: EpicType = (action$) =>
       } else {
         return concat(
           of(signedIn(result)),
-          of(signInSuccess(result)),
+          of(signInSuccess(result)), // TODO do in other epic
           of(push(`${Routes.app.fs}/`))
         )
       }

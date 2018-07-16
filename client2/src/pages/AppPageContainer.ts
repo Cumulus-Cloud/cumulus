@@ -3,7 +3,6 @@ import { connect, Dispatch } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 
 import AppPage from './AppPage'
-import { FsActions, getDirectory } from '../actions/fs/fsActions'
 import GlobalState from '../actions/state'
 
 function mapStateToProps(state: GlobalState) {

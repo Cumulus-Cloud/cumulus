@@ -198,6 +198,7 @@ class AppPage extends React.Component<PropsWithStyle, State> {
 
           <Switch>
             <Route path={Routes.app.fs_matcher} render={(p: RouteComponentProps<{ path: string }>) => {
+                console.log("real path", p.match.params.path)
                 return (
                   <FilesListContainer initialPath={p.match.params.path} />
                 )
