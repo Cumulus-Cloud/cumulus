@@ -9,6 +9,7 @@ import Slide from '@material-ui/core/Slide'
 import Fade from '@material-ui/core/Fade'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Dropzone from 'react-dropzone'
+import Waypoint from 'react-waypoint'
 import uuid = require('uuid/v4')
 
 import FileListElement from '../../elements/fs/FileListElement'
@@ -105,6 +106,13 @@ interface Props {
   /** If the store is loading the data */
   loading: boolean
 }
+
+// TODO handle pagination :
+// - add paginationLoading to load elements after the loader elements
+// - add a spinner if the loading takes too much time
+// - keep track of the pagination (what load next? is there more to load?)
+// - move up the waypoint to start loading before the end (50 elements + a 2/3 ?)
+// - how handle new elements and not lost scroll ?
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
@@ -220,7 +228,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
                       <InfoIcon className={classes.emptyDirectoryIcon}/>
                       {'Ce dossier est vide'} 
                     </Typography> :
-                    fileList
+                    fileList.concat(<Waypoint key="waypoint" onEnter={() => console.log("Hello")} />)
                   }
                 </div>
               </Slide>

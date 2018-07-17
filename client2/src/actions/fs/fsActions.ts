@@ -1,6 +1,6 @@
 import { GetDirectoryFailureAction } from './fsActions'
 import { ApiError } from './../../models/ApiError'
-import { Directory } from './../../models/FsNode'
+import { Directory, FsNode } from './../../models/FsNode'
 import { Action } from 'redux'
 import { ActionCreator } from 'react-redux'
 
@@ -11,17 +11,15 @@ import { ActionCreator } from 'react-redux'
 export interface GetDirectoryAction extends Action {
   type: 'FS/GET_DIRECTORY'
   payload: {
-    path: string,
-    contentOffset: number
+    path: string
   }
 }
 
 export const getDirectory: ActionCreator<GetDirectoryAction> =
-  (path: string, contentOffset: number) => ({
+  (path: string) => ({
     type: 'FS/GET_DIRECTORY',
     payload: {
-      path,
-      contentOffset
+      path
     }
   })
 
@@ -61,7 +59,60 @@ export const getDirectoryFailure: ActionCreator<GetDirectoryFailureAction> =
     }
   })
 
+/**
+ * Get the requested directory's content.
+ */
+export interface GetDirectoryContentAction extends Action {
+  type: 'FS/GET_DIRECTORY_CONTENT'
+  payload: {
+    contentOffset: number
+  }
+}
+
+export const getDirectoryContent: ActionCreator<GetDirectoryContentAction> =
+  (contentOffset: number) => ({
+    type: 'FS/GET_DIRECTORY_CONTENT',
+    payload: {
+      contentOffset
+    }
+  })
+
+export interface GetDirectoryContentSuccessAction extends Action {
+  type: 'FS/GET_DIRECTORY_CONTENT/SUCCESS'
+  payload: {
+    content: FsNode[],
+    hasMore: boolean
+  }
+}
+
+export const getDirectoryContentSuccess: ActionCreator<GetDirectoryContentSuccessAction> =
+  (content: FsNode[], hasMore: boolean) => ({
+    type: 'FS/GET_DIRECTORY_CONTENT/SUCCESS',
+    payload: {
+      content,
+      hasMore
+    }
+  })
+
+export interface GetDirectoryContentFailureAction extends Action {
+  type: 'FS/GET_DIRECTORY_CONTENT/FAILURE'
+  payload: {
+    error: ApiError
+  }
+}
+  
+export const getDirectoryContentFailure: ActionCreator<GetDirectoryContentFailureAction> =
+  (error: ApiError) => ({
+    type: 'FS/GET_DIRECTORY_CONTENT/FAILURE',
+    payload: {
+      error
+    }
+  })
+
 export type FsActions =
   GetDirectoryAction |
   GetDirectorySuccessAction |
-  GetDirectoryFailureAction
+  GetDirectoryFailureAction |
+  GetDirectoryContentAction |
+  GetDirectoryContentSuccessAction |
+  GetDirectoryContentFailureAction
