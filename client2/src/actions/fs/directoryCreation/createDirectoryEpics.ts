@@ -6,7 +6,7 @@ import { of, concat } from 'rxjs'
 import { Directory } from './../../../models/FsNode'
 import Api from '../../../services/api'
 import { ApiError } from '../../../models/ApiError'
-import { CreateDirectoryActions, CreateDirectoryAction, createDirectoryFailure, createDirectorySuccess, CreateDirectorySuccessAction, CreateDirectorySuccessAction } from './createDirectoryActions'
+import { CreateDirectoryActions, CreateDirectoryAction, createDirectoryFailure, createDirectorySuccess, CreateDirectorySuccessAction } from './createDirectoryActions'
 import { getDirectory } from '../fsActions'
 import GlobalState from '../../state';
 import { togglePopup } from '../../popup/popupActions'

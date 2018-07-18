@@ -7,8 +7,9 @@ import Api from '../../services/api'
 import { ApiError } from '../../models/ApiError'
 import FsState from './fsState'
 import { FsActions, GetDirectoryAction, GetDirectoryContentAction, getDirectorySuccess, getDirectoryFailure, getDirectoryContentSuccess, getDirectoryContentFailure } from './fsActions'
+import GlobalState from '../state';
 
-type EpicType = Epic<FsActions, FsActions, FsState>
+type EpicType = Epic<FsActions, FsActions, GlobalState>
 
 export const getDirectoryEpic: EpicType = (action$) =>
   action$.pipe(
@@ -21,10 +22,7 @@ export const getDirectoryEpic: EpicType = (action$) =>
       if('errors' in result)
         return of(getDirectoryFailure(result))
       else
-        return concat(
-          of(getDirectorySuccess(result)),
-          of(getDirectoryContentSuccess(result.content))
-        )
+        return of(getDirectorySuccess(result))
     })
   )
 
@@ -32,8 +30,11 @@ export const getDirectoryContentEpic: EpicType = (action$, $state) =>
   action$.pipe(
     filter((action: FsActions) => action.type === 'FS/GET_DIRECTORY_CONTENT'),
     mergeMap((action: GetDirectoryContentAction) => {
-      const path = $state.value.current ? $state.value.current.path : '/'
-      const offset = $state.value.content ? $state.value.content.length : 0
+      const path = $state.value.fs.current ? $state.value.fs.current.path : '/'
+      const offset = $state.value.fs.content ? $state.value.fs.content.length : 0
+
+      console.log(offset)
+      console.log($state)
 
       return Api.fs.getDirectory(path, offset)
     }),

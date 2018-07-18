@@ -11,7 +11,7 @@ import { SignUpActions } from './user/signUp/signUpActions'
 import { PopupActions } from './popup/popupActions'
 import { SnackbarActions } from './snackbar/snackbarActions'
 
-import { getDirectoryEpic } from './fs/fsEpics'
+import { getDirectoryEpic, getDirectoryContentEpic } from './fs/fsEpics'
 import { createDirectoryEpic, createDirectorySuccessEpic } from './fs/directoryCreation/createDirectoryEpics'
 import { uploadFileEpic, uploadAllFilesEpic, uploadFileSuccessEpic } from './fs/fileUpload/fileUploadEpics'
 import { testSignedInEpic } from './user/auth/authenticationEpics'
@@ -36,7 +36,7 @@ export const history = createBrowserHistory()
 // Import all the epics and combine them
 
 // FS epics
-const fsEpics              = combineEpics(getDirectoryEpic)
+const fsEpics              = combineEpics(getDirectoryEpic, getDirectoryContentEpic)
 const createDirectoryEpics = combineEpics(createDirectoryEpic, createDirectorySuccessEpic)
 const uploadFileEpics      = combineEpics(uploadAllFilesEpic, uploadFileEpic, uploadFileSuccessEpic)
 // delete fsNode

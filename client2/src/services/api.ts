@@ -23,7 +23,7 @@ export const ApiUtils = {
 
   urlBase: urlBase,
 
-  maxResultDefault: 30,
+  maxResultDefault: 90,
 
   pagination(limit: number = 30, offset: number = 0): Map<string, string> {
     return new Map([['offset', `${offset}`], ['limit', `${limit}`]])
@@ -143,7 +143,7 @@ const Api = {
       return ApiUtils.get<FsNode>(`/fs${path}`)
     },
 
-    getDirectory(path: string, contentLimit?: number, contentOffset?: number): Promise<ApiError | Directory> {
+    getDirectory(path: string, contentOffset?: number, contentLimit?: number): Promise<ApiError | Directory> {
       return ApiUtils.get<FsNode>(
         `/fs${path}`,
         new Map([['contentOffset', `${contentOffset || 0}`], ['contentLimit', `${contentLimit || ApiUtils.maxResultDefault}`]])
