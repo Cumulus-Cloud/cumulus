@@ -14,7 +14,7 @@ const reducer: Reducer<FsState, FsActions> = (state: FsState = initialState, act
       return {
         ...state,
         loadingCurrent: true,
-        loadingContent: true,
+        loadingContent: false,
         error: undefined
       }
     case 'FS/GET_DIRECTORY_SUCCESS':

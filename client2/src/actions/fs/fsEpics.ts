@@ -34,7 +34,6 @@ export const getDirectoryContentEpic: EpicType = (action$, $state) =>
       const offset = $state.value.fs.content ? $state.value.fs.content.length : 0
 
       console.log(offset)
-      console.log($state)
 
       return Api.fs.getDirectory(path, offset)
     }),

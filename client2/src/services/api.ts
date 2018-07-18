@@ -23,7 +23,7 @@ export const ApiUtils = {
 
   urlBase: urlBase,
 
-  maxResultDefault: 90,
+  maxResultDefault: 30,
 
   pagination(limit: number = 30, offset: number = 0): Map<string, string> {
     return new Map([['offset', `${offset}`], ['limit', `${limit}`]])

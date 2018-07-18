@@ -10,12 +10,17 @@ import Fade from '@material-ui/core/Fade'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Dropzone from 'react-dropzone'
 import uuid = require('uuid/v4')
+import Paper from '@material-ui/core/Paper';
+import DirectoryIcon from '@material-ui/icons/Folder'
+import FileIcon from '@material-ui/icons/InsertDriveFile'
+import { distanceInWords } from 'date-fns'
+import Waypoint from 'react-waypoint'
+import Sticky from 'react-sticky-el'
 
 import BreadCrumb from '../../elements/fs/BreadCrumb'
 import { Directory, FsNode } from '../../models/FsNode'
 import { ApiError } from '../../models/ApiError'
-import { EnrichedFile } from '../../models/EnrichedFile'
-import FileListTable from './FileListTable'
+import { EnrichedFile } from '../../models/EnrichedFile';
 
 
 const styles = (theme: Theme) => createStyles({
@@ -82,6 +87,77 @@ const styles = (theme: Theme) => createStyles({
     marginRight: 'auto',
     marginLeft: 'auto'
   },
+  contentTypeIcon: {
+    color: 'rgba(0, 0, 0, 0.54)',
+    marginRight: theme.spacing.unit * 2
+  },
+  contentName: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden', 
+    textOverflow: 'ellipsis',
+    margin: 0,
+    flex: 4,
+    padding: theme.spacing.unit * 2,
+    display: 'flex',
+    alignItems: 'center'
+  },
+  contentNameValue: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden', 
+    textOverflow: 'ellipsis'
+  },
+  contentModification: {
+    flex: 2,
+    padding: theme.spacing.unit * 2
+  },
+  contentSize: {
+    flex: 1,
+    padding: theme.spacing.unit * 2
+  },
+  contentHeadRow: {
+    display: 'flex',
+    borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
+    height: '66px',
+    alignItems: 'center'
+  },
+  contentRow: {
+    display: 'flex',
+    borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
+    height: '45px',
+    alignItems: 'center'
+  },
+  contentTableElement: {
+    whiteSpace: 'nowrap'
+  },
+  contentTable: {
+    boxShadow: 'none',
+    border: '1px solid rgba(0, 0, 0, 0.12)',
+    borderTop: 0
+    //overflow: 'auto'
+  },
+  contentTableHead: {
+    boxShadow: 'none',
+    backgroundColor: 'white',
+    borderTop: '1px solid rgba(0, 0, 0, 0.12)',
+    borderBottom: 0,
+    position: 'sticky',
+    top: '-16px'
+  },
+  contentTableHeadBack: {
+    border: '1px solid rgba(0, 0, 0, 0.12)',
+    backgroundColor: 'white',
+    width: '100%',
+    height: '60px',
+    top: '16px',
+    //marginTop: '-80px'
+  },
+  contentTableHeadBackground: {
+    backgroundColor: '#fafafa',
+    width: '100%',
+    height: '80px',
+    top: '-25px',
+    marginTop: '-80px'
+  },
   loader: {
     margin: 'auto',
     display: 'block',
@@ -117,6 +193,13 @@ interface Props {
   /** Loading error */
   error?: ApiError
 }
+
+// TODO handle pagination :
+// - add paginationLoading to load elements after the loader elements
+// - add a spinner if the loading takes too much time
+// - keep track of the pagination (what load next? is there more to load?)
+// - move up the waypoint to start loading before the end (50 elements + a 2/3 ?)
+// - how handle new elements and not lost scroll ?
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
@@ -178,6 +261,13 @@ class FilesList extends React.Component<PropsWithStyle, State> {
     this.setState({ dropzoneActive: false })
   }
 
+  // TODO
+  // - See if its possible to have y scroll with sticky element
+  // - If not possible, maybe remake the table with divs and flex to handle the scrolling and the sticky headers
+  // - Also, to have better control on elements sizing..
+  // - If possible, then ok
+  // - Add the breadcrumb to the sticky part, to allow scrolling with it
+
   render() {
     const { currentDirectory, currentDirectoryContent, loading, contentLoading, classes } = this.props
     const { dropzoneActive } = this.state
@@ -187,7 +277,27 @@ class FilesList extends React.Component<PropsWithStyle, State> {
       <span/>
 
     const now = new Date()
-    const content = currentDirectoryContent ? currentDirectoryContent : []
+
+    const fileList = currentDirectoryContent && !loading ?
+      currentDirectoryContent.map((node) => {
+          
+      const icon =
+        node.nodeType === 'DIRECTORY' ?
+          <DirectoryIcon /> :
+          <FileIcon />
+
+        return (
+          <div className={classes.contentRow} key={node.id}>
+            <Typography variant="body1" className={classes.contentName} onClick={() => node.nodeType === 'DIRECTORY' ? this.onChangePath(node.path) : undefined } >
+              <span className={classes.contentTypeIcon} >{icon}</span>
+              <span className={classes.contentNameValue} >{node.name}</span>
+            </Typography>
+            <Typography variant="body1" className={classes.contentModification} >{distanceInWords(new Date(node.modification), now)}</Typography>
+            <Typography variant="body1" className={classes.contentSize} >{node.nodeType == 'FILE' ? node.humanReadableSize : '-'}</Typography>
+          </div>
+        )
+      }) :
+      []
 
     // TODO show errors
 
@@ -223,25 +333,31 @@ class FilesList extends React.Component<PropsWithStyle, State> {
                 <Slide direction="up" in={true}>
                   <div>
                     {
-                      content.length == 0 ?
+                      fileList.length == 0 ?
                       <Typography variant="caption" className={classes.emptyDirectory} >
                         <InfoIcon className={classes.emptyDirectoryIcon}/>
                         {'Ce dossier est vide'} 
                       </Typography> :
-                      <FileListTable
-                        onShowNodeDetail={(node) => console.log(node)}
-                        onSelectedDirectory={(dir) => this.onChangePath(dir.path)}
-                        onLoadMoreContent={() => this.onLoadMoreContent()}
-                        loading={contentLoading}
-                        hasMore={true}
-                        content={content}
-                      />
+                      <Paper className={classes.contentTable} >
+                        <div>
+                          <div className={classes.contentTableHead}>
+                            <div className={classes.contentHeadRow} >
+                              <Typography variant="caption" className={classes.contentName} >Nom</Typography>
+                              <Typography variant="caption" className={classes.contentModification}>Modification</Typography>
+                              <Typography variant="caption" className={classes.contentSize}>Taille</Typography>
+                            </div>
+                          </div>
+                          <div>
+                            {fileList.concat([ <Waypoint key="waypoint" onEnter={() => this.onLoadMoreContent()} /> ])}
+                          </div>
+                        </div>
+                      </Paper>
                     }
                   </div>
                 </Slide>
               }
               { // Note: outside of the <Slide/> to avoid breaking the sticky header with the loading animation
-                contentLoading ?
+                contentLoading || true ?
                 <div>
                   <div>
                     <CircularProgress className={classes.loaderContent} size={20} color="primary"/>
