@@ -15,7 +15,7 @@ import BreadCrumb from '../../elements/fs/BreadCrumb'
 import { Directory, FsNode } from '../../models/FsNode'
 import { ApiError } from '../../models/ApiError'
 import { EnrichedFile } from '../../models/EnrichedFile'
-import FileListTable from './FileListTable'
+import FileListTableContainer from './FileListTableContainer'
 
 
 const styles = (theme: Theme) => createStyles({
@@ -102,8 +102,6 @@ interface Props {
   onChangePath: (path: string, contentOffset: number) => void
   /** List of files selected for the upload */
   onFileUpload: (files: EnrichedFile[]) => void
-  /** When more content needs to be loaded */
-  onLoadMoreContent: (offset: number) => void
   /** Initial real path, comming from the browser path */
   initialPath: string
   /** Loaded current directory, from the store. */
@@ -146,11 +144,6 @@ class FilesList extends React.Component<PropsWithStyle, State> {
 
   onChangePath(path: string) {
     this.props.onChangePath(path, 0) // TODO handle pagination
-  }
-
-  onLoadMoreContent() {
-    console.log('waypoint')
-    this.props.onLoadMoreContent(0) // TODO
   }
   
   droppedFiles(files: File[]) {
@@ -228,14 +221,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
                         <InfoIcon className={classes.emptyDirectoryIcon}/>
                         {'Ce dossier est vide'} 
                       </Typography> :
-                      <FileListTable
-                        onShowNodeDetail={(node) => console.log(node)}
-                        onSelectedDirectory={(dir) => this.onChangePath(dir.path)}
-                        onLoadMoreContent={() => this.onLoadMoreContent()}
-                        loading={contentLoading}
-                        hasMore={true}
-                        content={content}
-                      />
+                      <FileListTableContainer />
                     }
                   </div>
                 </Slide>

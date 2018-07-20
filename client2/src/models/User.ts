@@ -1,4 +1,3 @@
-import { SSL_OP_CRYPTOPRO_TLSEXT_BUG } from "constants";
 
 export type Role = 'admin' | 'user'
 
@@ -10,5 +9,6 @@ export interface User {
 }
 
 export function isAdmin(user: User): boolean {
+  console.log(user)
   return user.roles.indexOf('admin') >= 0
 }

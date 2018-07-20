@@ -109,10 +109,66 @@ export const getDirectoryContentFailure: ActionCreator<GetDirectoryContentFailur
     }
   })
 
+export interface SelectNodeAction extends Action {
+  type: 'FS/SELECT_NODE'
+  payload: {
+    id: string
+  }
+}
+  
+export const selectNode: ActionCreator<SelectNodeAction> =
+  (id: string) => ({
+    type: 'FS/SELECT_NODE',
+    payload: {
+      id
+    }
+  })
+
+export interface SelectAllNodesAction extends Action {
+  type: 'FS/SELECT_ALL_NODES'
+  payload: {}
+}
+  
+export const selectAllNodes: ActionCreator<SelectAllNodesAction> =
+  () => ({
+    type: 'FS/SELECT_ALL_NODES',
+    payload: {}
+  })
+
+export interface DeselectNodeAction extends Action {
+  type: 'FS/DESELECT_NODE'
+  payload: {
+    id: string
+  }
+}
+  
+export const deselectNode: ActionCreator<DeselectNodeAction> =
+  (id: string) => ({
+    type: 'FS/DESELECT_NODE',
+    payload: {
+      id
+    }
+  })
+
+export interface DeselectAllNodesAction extends Action {
+  type: 'FS/DESELECT_ALL_NODES'
+  payload: {}
+}
+  
+export const deselectAllNodes: ActionCreator<DeselectAllNodesAction> =
+  () => ({
+    type: 'FS/DESELECT_ALL_NODES',
+    payload: {}
+  })
+
 export type FsActions =
   GetDirectoryAction |
   GetDirectorySuccessAction |
   GetDirectoryFailureAction |
   GetDirectoryContentAction |
   GetDirectoryContentSuccessAction |
-  GetDirectoryContentFailureAction
+  GetDirectoryContentFailureAction |
+  SelectNodeAction |
+  SelectAllNodesAction |
+  DeselectNodeAction |
+  DeselectAllNodesAction

@@ -1,4 +1,4 @@
-import { Theme, Direction } from '@material-ui/core/styles/createMuiTheme'
+import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import * as React from 'react'
@@ -12,8 +12,8 @@ import DeleteIcon from '@material-ui/icons/Delete'
 import ShareIcon from '@material-ui/icons/Share'
 import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder'
 import TextField from '@material-ui/core/TextField'
-import withMobileDialog, { WithMobileDialogOptions } from '@material-ui/core/withMobileDialog'
-import { Route, Redirect, match, RouteComponentProps, Switch } from 'react-router-dom'
+import withMobileDialog from '@material-ui/core/withMobileDialog'
+import { Route, Redirect, RouteComponentProps, Switch } from 'react-router-dom'
 
 import withRoot from '../elements/utils/withRoot'
 import CumulusAppBar from '../elements/CumulusAppBar'
@@ -22,10 +22,11 @@ import CumulusDrawer from '../elements/CumulusDrawer'
 import { Grow } from '@material-ui/core'
 import CreationPopupContainer from '../elements/fs/creation/CreationPopupContainer'
 import Routes from '../services/routes'
-import FilesListContainer from '../elements/fs/FilesListContainer'
+import FileListContainer from '../elements/fs/FileListContainer'
 import UploadPopupContainer from '../elements/fs/upload/UploadPopupContainer'
 import UploadProgressPopupContainer from '../elements/fs/upload/UploadProgressPopupContainer'
 import SnackbarsContainer from '../elements/notification/snackbarsContainer'
+import { FsNode } from '../models/FsNode';
 
 
 const styles = (theme: Theme) => createStyles({
@@ -104,6 +105,8 @@ const styles = (theme: Theme) => createStyles({
 interface Props {
   showCreationPopup: () => void
   showUploadPopup: () => void
+  selection: FsNode[]
+  user?: User
 }
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
@@ -142,14 +145,14 @@ class AppPage extends React.Component<PropsWithStyle, State> {
   }
 
   render() {
-    const { classes } = this.props
+    const { selection, user, classes } = this.props
 
     // TODO real user
-    const user: User = {
-      id: '1',
-      login: 'Vuzi',
+    const defaultUser: User = {
+      id: '0',
+      login: 'default',
       creation: "",
-      roles: [ 'user', 'admin' ]
+      roles: [ ]
     }
 
     const searchElements = searchListItem
@@ -159,30 +162,61 @@ class AppPage extends React.Component<PropsWithStyle, State> {
           <ListItemIcon>
             <CreateNewFolderIcon />
           </ListItemIcon>
-          <ListItemText primary="Create Directory" />
+          <ListItemText primary="Créer un dossier" />
         </ListItem>
         <ListItem button onClick={() => this.showUploadPopup()} >
           <ListItemIcon>
             <CloudUpload />
           </ListItemIcon>
-          <ListItemText primary="Upload File" />
+          <ListItemText primary="Uploader un fichier" />
         </ListItem>
         <ListItem button>
           <ListItemIcon>
             <ShareIcon />
           </ListItemIcon>
-          <ListItemText primary="Share Directory" />
+          <ListItemText primary="Partager un dossier" />
         </ListItem>
       </div>
     )
-    const contextualActionElements = otherMailFolderListItems
+    const contextualActionElements = (
+      <div>
+        <ListItem disableRipple button disabled={selection.length <= 0} style={{ paddingRight: '0px' }} >
+          <ListItemText
+            primary={
+              selection.length <= 0 ? 'Aucun fichier selectionné' : (
+                selection.length === 1 ? '1 fichier selectionné' :
+                `${selection.length} fichiers selectionés`
+              )
+            }
+          />
+        </ListItem>
+        <ListItem button disabled={selection.length <= 0}>
+          <ListItemIcon>
+            <CompareArrowsIcon />
+          </ListItemIcon>
+          <ListItemText primary="Déplacer la sélection" />
+        </ListItem>
+        <ListItem button disabled={selection.length <= 0}>
+          <ListItemIcon>
+            <DeleteIcon />
+          </ListItemIcon>
+          <ListItemText primary="Supprimer la sélection" />
+        </ListItem>
+        <ListItem button disabled={selection.length <= 0}>
+          <ListItemIcon>
+            <ShareIcon />
+          </ListItemIcon>
+          <ListItemText primary="Partager la sélection" />
+        </ListItem>
+      </div>
+    )
 
 
     return (
       <Grow in={true}>
         <div className={classes.root}>
           <CumulusAppBar 
-            user={user}
+            user={user || defaultUser}
             showDrawer={() => this.toggleDrawer()}
             showAccountPanel={() => { return }}
             showAdminPanel={() => { return }}
@@ -200,7 +234,7 @@ class AppPage extends React.Component<PropsWithStyle, State> {
             <Route path={Routes.app.fs_matcher} render={(p: RouteComponentProps<{ path: string }>) => {
                 console.log("real path", p.match.params.path)
                 return (
-                  <FilesListContainer initialPath={p.match.params.path} />
+                  <FileListContainer initialPath={p.match.params.path} />
                 )
               }}/>
             <Route render={() => <Redirect to={`${Routes.app.fs}/`} />} />
@@ -279,6 +313,12 @@ const mailFolderListItems = (
 
 const otherMailFolderListItems = (
   <div>
+    <ListItem button disabled>
+      <ListItemIcon>
+        <CompareArrowsIcon />
+      </ListItemIcon>
+      <ListItemText primary="Move selected" />
+    </ListItem>
     <ListItem button disabled>
       <ListItemIcon>
         <CompareArrowsIcon />

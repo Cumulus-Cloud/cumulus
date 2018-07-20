@@ -1,3 +1,5 @@
+import { selectAllNodes } from './../actions/fs/fsActions'
+import { filter } from 'rxjs/operators'
 import { togglePopup, PopupTypes } from './../actions/popup/popupActions'
 import { connect, Dispatch } from 'react-redux'
 import { withRouter } from 'react-router-dom'
@@ -6,7 +8,14 @@ import AppPage from './AppPage'
 import GlobalState from '../actions/state'
 
 function mapStateToProps(state: GlobalState) {
-  return {}
+  const content = state.fs.content || []
+  const selection = state.fs.selectedContent
+
+  return {
+    selection:
+      selection.type === 'ALL' ? content : (selection.type === 'NONE' ? [] : content.filter((node) => selection.selectedElements.indexOf(node.id) >= 0)),
+    user: state.auth.user
+  }
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {

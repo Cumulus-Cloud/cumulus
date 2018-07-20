@@ -98,7 +98,7 @@ const Api = {
       return ApiUtils.get('/users/me')
     },
 
-    signIn(login: string, password: string): Promise<ApiError | User> {
+    signIn(login: string, password: string): Promise<ApiError | { token: string, user: User }> {
       return ApiUtils.post('/users/login', { login, password })
     },
   

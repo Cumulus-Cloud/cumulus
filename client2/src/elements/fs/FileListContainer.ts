@@ -1,14 +1,14 @@
-import { EnrichedFile } from './../../models/EnrichedFile'
-import { selectUploadFile } from './../../actions/fs/fileUpload/fileUploadActions'
 import { connect, Dispatch } from 'react-redux'
 import { withRouter } from 'react-router-dom'
-
-import GlobalState from '../../actions/state'
-import { getDirectory, getDirectoryContent } from '../../actions/fs/fsActions'
-import { PopupTypes, togglePopup } from './../../actions/popup/popupActions'
-import FilesList from './FilesList'
 import { push } from 'connected-react-router'
-import Routes from '../../services/routes';
+import Routes from '../../services/routes'
+
+import { EnrichedFile } from './../../models/EnrichedFile'
+import { selectUploadFile } from './../../actions/fs/fileUpload/fileUploadActions'
+import GlobalState from '../../actions/state'
+import { getDirectory } from '../../actions/fs/fsActions'
+import { PopupTypes, togglePopup } from './../../actions/popup/popupActions'
+import FileList from './FileList'
 
 function mapStateToProps(state: GlobalState) {
   return {
@@ -29,11 +29,8 @@ function mapDispatchToProps(dispatch: Dispatch, props: GlobalState) {
     onFileUpload: (files: EnrichedFile[]) => {
       dispatch(selectUploadFile(files))
       dispatch(togglePopup(PopupTypes.fileUpload, true))
-    },
-    onLoadMoreContent: (offset: number) => {
-      dispatch(getDirectoryContent(offset))
     }
   }
 }
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(FilesList)) // TODO typing
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(FileList)) // TODO typing

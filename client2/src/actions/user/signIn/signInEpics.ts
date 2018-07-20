@@ -20,13 +20,14 @@ export const signInEpic: EpicType = (action$) =>
       const { login, password } = action.payload
       return Api.user.signIn(login, password)
     }),
-    flatMap((result: ApiError | User) => {
+    flatMap((result: ApiError | { user: User} ) => {
+      console.log(result)
       if('errors' in result) {
         return of(signInFailure(result))
       } else {
         return concat(
-          of(signedIn(result)),
-          of(signInSuccess(result)), // TODO do in other epic
+          of(signedIn(result.user)),
+          of(signInSuccess(result.user)), // TODO do in other epic
           of(push(`${Routes.app.fs}/`))
         )
       }

@@ -12,6 +12,7 @@ import classnames from 'classnames'
 
 import { Directory, FsNode } from '../../models/FsNode'
 import { Checkbox } from '@material-ui/core';
+import { FsNodeSelection } from '../../actions/fs/fsState';
 
 
 const styles = (theme: Theme) => createStyles({
@@ -93,7 +94,15 @@ interface Props {
   /** When details for a node are requested. */
   onShowNodeDetail: (node: FsNode) => void
   /** When a directory is selected, to change the viewer current directory. */
-  onSelectedDirectory: (directory: Directory) => void
+  onNavigateDirectory: (directory: Directory) => void
+  /** When a node is selected. */
+  onSelectedNode: (node: FsNode) => void
+  /** When all node are selected. */
+  onSelectAllNodes: () => void
+  /** When a node is deselected. */
+  onDeselectNode: (node: FsNode) => void
+  /** When all node are deselected. */
+  onDeselectAllNodes: () => void
   /** When more content needs to be loaded. */
   onLoadMoreContent: (offset: number) => void
   /** If more content is loading. */
@@ -102,12 +111,13 @@ interface Props {
   hasMore: boolean
   /** Content of the loaded current directory. */
   content: FsNode[]
+  /** List of selected nodes. */
+  selection: FsNodeSelection
 }
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
 interface State {
-  selected: string[],
   showCheckboxes: boolean
 }
 
@@ -116,15 +126,20 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
   constructor(props: PropsWithStyle) {
     super(props)
 
-    this.state = { selected: [], showCheckboxes: false }
+    this.state = { showCheckboxes: false }
   }
 
-  onSelectedDirectory(directory: Directory) {
-    this.props.onSelectedDirectory(directory)
+  isNodeSelected(node: FsNode): boolean {
+    const { selection } = this.props
+    return selection.type === 'ALL' || (selection.type === 'SOME' && selection.selectedElements.indexOf(node.id) >= 0)
   }
 
   onShowNodeDetail(node: FsNode) {
     this.props.onShowNodeDetail(node)
+  }
+
+  onNavigateDirectory(directory: Directory) {
+    this.props.onNavigateDirectory(directory)
   }
 
   onLoadMoreContent() {
@@ -132,31 +147,63 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
   }
 
   onSelectNode(node: FsNode) {
-    if(this.state.selected.indexOf(node.id) < 0)
-      this.setState({ ...this.state, selected: this.state.selected.concat([ node.id ]), showCheckboxes: true })
+    this.setState({ showCheckboxes: true })
+    this.props.onSelectedNode(node)
   }
 
-  onSelectAllNode() {
-    this.setState({ ...this.state, selected: this.props.content.map((node) => node.id), showCheckboxes: true })
+  onSelectAllNodes() {
+    this.setState({ showCheckboxes: true })
+    this.props.onSelectAllNodes()
   }
 
   onDeselectNode(node: FsNode) {
-    this.setState({ ...this.state, selected: this.state.selected.filter((id) => id != node.id) })
+    this.setState({ showCheckboxes: true })
+    this.props.onDeselectNode(node)
   }
 
-  onDeselectAllNode() {
-    this.setState({ ...this.state, selected: [] })
+  onDeselectAllNodes() {
+    this.setState({ showCheckboxes: true })
+    this.props.onDeselectAllNodes()
+  }
+
+  onClickNode(node: FsNode) {
+    if(node.nodeType === 'DIRECTORY')
+      this.onNavigateDirectory(node)
+    else
+      this.onShowNodeDetail(node)
+  }
+
+  onToggleNodeSelection(node: FsNode) {
+    if(!this.isNodeSelected(node))
+      this.onSelectNode(node)
+    else
+      this.onDeselectNode(node)
+  }
+
+  onToggleAllNodesSelection() {
+    const { selection } = this.props
+    
+    switch(selection.type) {
+      case 'ALL':
+        return this.onDeselectAllNodes()
+      case 'NONE':
+        return this.onSelectAllNodes()
+      case 'SOME':
+        return this.onSelectAllNodes()
+    }
   }
 
   render() {
-    const { content, loading, classes } = this.props
-    const { selected, showCheckboxes } = this.state
+    const { content, loading, classes, selection } = this.props
+    const { showCheckboxes } = this.state
 
     const now = new Date()
 
+    console.log(selection)
+
     const fileList =
       content.map((node) => {
-        const isSelected = selected.indexOf(node.id) >= 0
+        const isSelected = selection.type === 'ALL' || (selection.type === 'SOME' && selection.selectedElements.indexOf(node.id) >= 0)
 
         const checkbox =
           showCheckboxes ? (
@@ -172,32 +219,29 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
 
         return (
           <div
+            onDragStart={(e) => e.dataTransfer.setData('text', node.id)}
             className={classnames(classes.contentRow, { [classes.contentRowSelected]: isSelected})}
             key={node.id}
             onClick={() => {
               if(!isSelected)
                 this.onSelectNode(node)
               else
-              this.onDeselectNode(node)
+                this.onDeselectNode(node)
             }}
           >
-            <div className={classes.contentCheck}>{checkbox}</div>
+            <div className={classes.contentCheck}>
+              {checkbox}
+            </div>
             <Typography variant="body1" className={classnames(classes.contentName, { [classes.contentSelected]: isSelected })}>
               <span className={classnames(classes.contentTypeIcon, { [classes.contentSelected]: isSelected })} >{icon}</span>
-              <span
-                className={classes.contentNameValue} 
-                onClick={() => {
-                  if(node.nodeType === 'DIRECTORY')
-                    this.onSelectedDirectory(node)
-                  else
-                    this.onShowNodeDetail(node)
-                }}
-              >
-                {node.name}
-              </span>
+              <span className={classes.contentNameValue} onClick={() => this.onClickNode(node)}>{node.name}</span>
             </Typography>
-            <Typography variant="body1" className={classes.contentModification} >{distanceInWords(new Date(node.modification), now)}</Typography>
-            <Typography variant="body1" className={classes.contentSize} >{node.nodeType === 'DIRECTORY' ? '-' : node.humanReadableSize}</Typography>
+            <Typography variant="body1" className={classes.contentModification} >
+              {distanceInWords(new Date(node.modification), now)}
+            </Typography>
+            <Typography variant="body1" className={classes.contentSize} >
+              {node.nodeType === 'DIRECTORY' ? '-' : node.humanReadableSize}
+            </Typography>
           </div>
         )
       })
@@ -211,7 +255,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
             <div className={classes.contentHeadRow} >
               { showCheckboxes ?
                 <div className={classes.contentCheck}>
-                  <Checkbox indeterminate onClick={() => this.onSelectAllNode()} />
+                  <Checkbox checked={selection.type === 'ALL'} indeterminate={selection.type === 'SOME'} onClick={() => this.onToggleAllNodesSelection()} />
                 </div> :
                 <span/>
               }
