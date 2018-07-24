@@ -8,6 +8,10 @@ import DirectoryIcon from '@material-ui/icons/Folder'
 import FileIcon from '@material-ui/icons/InsertDriveFile'
 import { distanceInWords } from 'date-fns'
 import Waypoint from 'react-waypoint'
+import IconButton from '@material-ui/core/IconButton'
+import Menu from '@material-ui/core/Menu'
+import MenuItem from '@material-ui/core/MenuItem'
+import MoreVertIcon from '@material-ui/icons/MoreVert'
 import classnames from 'classnames'
 
 import { Directory, FsNode } from '../../models/FsNode'
@@ -56,7 +60,8 @@ const styles = (theme: Theme) => createStyles({
     display: 'flex',
     borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
     height: '66px',
-    alignItems: 'center'
+    alignItems: 'center',
+    paddingRight: '61px' // Let space for the menu icon
   },
   contentRow: {
     display: 'flex',
@@ -118,7 +123,8 @@ interface Props {
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
 interface State {
-  showCheckboxes: boolean
+  showCheckboxes: boolean,
+  selectedMenu?: { nodeId: string, anchor: HTMLElement }
 }
 
 class FilesListTable extends React.Component<PropsWithStyle, State> {
@@ -126,7 +132,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
   constructor(props: PropsWithStyle) {
     super(props)
 
-    this.state = { showCheckboxes: false }
+    this.state = { showCheckboxes: false, selectedMenu: undefined }
   }
 
   isNodeSelected(node: FsNode): boolean {
@@ -193,13 +199,22 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     }
   }
 
+  onToggleMenu<T>(node: FsNode, event: React.SyntheticEvent<T>) {
+    const { selectedMenu } = this.state
+
+    event.stopPropagation()
+
+    if(selectedMenu && selectedMenu.nodeId === node.id)
+      this.setState({ selectedMenu: undefined })
+    else
+      this.setState({ selectedMenu: { nodeId: node.id, anchor: event.target } })
+  }
+
   render() {
     const { content, loading, classes, selection } = this.props
-    const { showCheckboxes } = this.state
+    const { showCheckboxes, selectedMenu } = this.state
 
     const now = new Date()
-
-    console.log(selection)
 
     const fileList =
       content.map((node) => {
@@ -216,6 +231,28 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
           node.nodeType === 'DIRECTORY' ?
             <DirectoryIcon /> :
             <FileIcon />
+
+        const menu =
+          <div>
+            <IconButton
+              aria-label="More"
+              aria-haspopup="true"
+              onClick={(e) => this.onToggleMenu(node, e)}
+            >
+              <MoreVertIcon />
+            </IconButton>
+            <Menu
+              id="simple-menu"
+              anchorEl={selectedMenu ? selectedMenu.anchor : undefined}
+              open={!!selectedMenu && (selectedMenu.nodeId === node.id)}
+              onClose={(e) => this.onToggleMenu(node, e)}
+            >
+              <MenuItem onClick={(e) => { this.onToggleMenu(node, e); this.onShowNodeDetail(node)}} >Détails</MenuItem>
+              <MenuItem>Télécharger</MenuItem>
+              <MenuItem>Supprimer</MenuItem>
+              <MenuItem>Partager</MenuItem>
+            </Menu>
+          </div>
 
         return (
           <div
@@ -242,6 +279,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
             <Typography variant="body1" className={classes.contentSize} >
               {node.nodeType === 'DIRECTORY' ? '-' : node.humanReadableSize}
             </Typography>
+            {menu}
           </div>
         )
       })

@@ -2,7 +2,7 @@ import { connect, Dispatch } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 
 import GlobalState from '../../actions/state'
-import { getDirectory, getDirectoryContent, selectNode, selectAllNodes, deselectNode, deselectAllNodes } from '../../actions/fs/fsActions'
+import { getDirectory, getDirectoryContent, selectNode, selectAllNodes, deselectNode, deselectAllNodes, showNodeDetails } from '../../actions/fs/fsActions'
 import { PopupTypes, togglePopup } from './../../actions/popup/popupActions'
 import FilesListTable from './FileListTable'
 import { push } from 'connected-react-router'
@@ -21,7 +21,8 @@ function mapStateToProps(state: GlobalState) {
 function mapDispatchToProps(dispatch: Dispatch, props: GlobalState) {
   return {
     onShowNodeDetail: (node: FsNode) => {
-      console.log("TODO onShowNodeDetail")
+      dispatch(showNodeDetails(node.id))
+      dispatch(togglePopup(PopupTypes.nodeDetails, true))
     },
     onNavigateDirectory: (directory: Directory) => {
       dispatch(push(`${Routes.app.fs}${directory.path}`))

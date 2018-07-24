@@ -27,6 +27,8 @@ export default interface FsState {
   content?: FsNode[]
   /** List of selected elements */
   selectedContent: FsNodeSelection
+  /** Detailed node */
+  detailed?: FsNode
   /** If an error occured. */
   error?: ApiError
 }

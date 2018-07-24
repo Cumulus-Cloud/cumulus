@@ -1,0 +1,288 @@
+import * as React from 'react'
+import { Theme, Direction } from '@material-ui/core/styles/createMuiTheme'
+import createStyles from '@material-ui/core/styles/createStyles'
+import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
+import Button from '@material-ui/core/Button'
+import TextField from '@material-ui/core/TextField'
+import Dialog from '@material-ui/core/Dialog'
+import DialogActions from '@material-ui/core/DialogActions'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogContentText from '@material-ui/core/DialogContentText'
+import DialogTitle from '@material-ui/core/DialogTitle'
+import CircularProgress from '@material-ui/core/CircularProgress'
+import withMobileDialog from '@material-ui/core/withMobileDialog'
+import Typography from '@material-ui/core/Typography'
+import ExpansionPanel from '@material-ui/core/ExpansionPanel'
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
+import DirectoryIcon from '@material-ui/icons/Folder'
+import FileIcon from '@material-ui/icons/InsertDriveFile'
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+import Divider from '@material-ui/core/Divider'
+import ExpansionPanelActions from '@material-ui/core/ExpansionPanelActions'
+import Chip from '@material-ui/core/Chip'
+import { distanceInWords } from 'date-fns'
+
+import { ApiError } from '../../../models/ApiError'
+import { Directory, File, FsNode } from '../../../models/FsNode'
+import { ApiUtils } from '../../../services/api'
+
+const styles = (theme: Theme) => createStyles({
+  root: {
+    minWidth: 450
+  },
+  buttonProgress: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
+  },
+  details: {
+    display: 'flex',
+    [theme.breakpoints.down('xs')]: {
+      flexDirection: 'column'
+    }
+  },
+  heading: {
+    paddingLeft: 15,
+    paddingTop: 2,
+    fontSize: theme.typography.pxToRem(15),
+    fontWeight: theme.typography.fontWeightRegular
+  },
+  headingSelected: {
+    paddingLeft: 15,
+    paddingTop: 2,
+    fontSize: theme.typography.pxToRem(15),
+    fontWeight: theme.typography.fontWeightRegular
+  },
+  button: {
+    width: 50,
+    height: 45,
+    marginTop: 20,
+    display: 'block'
+  },
+  column: {
+    flexGrow: 1,
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  row: {
+    flexGrow: 1,
+    display: 'flex',
+    flexDirection: 'row'
+  },
+  columnImage: {
+    flexBasis: 200,
+    [theme.breakpoints.down('xs')]: {
+      textAlign: 'center',
+      paddingBottom: theme.spacing.unit * 2
+    }
+  },
+  previewImage: {
+    border: '1px solid rgba(0, 0, 0, 0.12)',
+    heigh: 200,
+    width: 200,
+    [theme.breakpoints.down('xs')]: {
+      width: '100%'
+    }
+  },
+  columnInner: {
+    paddingTop: 3,
+    padding: theme.spacing.unit * 2,
+    [theme.breakpoints.down('xs')]: {
+      padding:  theme.spacing.unit
+    },
+    flexGrow: 1,
+    justifyContent: 'center',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  info: {
+    display: 'inline'
+  },
+  helper: {
+    borderLeft: `2px solid ${theme.palette.divider}`,
+    padding: `${theme.spacing.unit}px ${theme.spacing.unit * 2}px`,
+  },
+  link: {
+    color: theme.palette.primary.main,
+    textDecoration: 'none',
+    '&:hover': {
+      textDecoration: 'underline',
+    }
+  },
+  chip: {
+    marginRight: 5,
+    marginTop: 2
+  }
+})
+
+interface Props {
+  onClose: () => void
+  onDownload: () => void
+  onDelete: () => void
+  onShare: () => void
+  open: boolean
+  loading: boolean
+  fullScreen: boolean
+  node?: FsNode
+  error?: Error
+}
+
+type PropsWithStyle = Props & WithStyles<typeof styles>
+
+interface State {}
+
+
+class DetailPopup extends React.Component<PropsWithStyle, State> {
+
+  constructor(props: PropsWithStyle) {
+    super(props)
+    this.state = {}
+  }
+
+  onClose() {
+    this.props.onClose()
+  }
+
+  onDownload() {
+    this.props.onDownload()
+  }
+
+  onDelete() {
+    this.props.onDelete()
+  }
+
+  onShare() {
+    this.props.onShare()
+  }
+  
+
+  render() {
+    const { classes, fullScreen, node, open, error, loading } = this.props
+  
+    if(node) {
+
+      const now = new Date()
+
+      const icon =
+        node.nodeType === 'DIRECTORY' ?
+          <DirectoryIcon/> :
+          <FileIcon/>
+
+      const title = 
+          <Typography className={classes.heading}>
+            {node.name}
+          </Typography>
+
+      const preview =
+        node.nodeType == 'FILE' && node.hasThumbnail ?
+        <div className={classes.columnImage}>
+          <img className={classes.previewImage} src={`${ApiUtils.urlBase}/api/thumbnail/${node.path}`} />
+        </div> :
+        <div/>
+
+      const details =
+        node.nodeType == 'FILE' ?
+          [
+            <div className={classes.columnInner} key={'file_info_1'} >
+              <Typography variant="caption">
+                <div className={classes.info}>{'Taille du fichier :'}</div>
+                <div className={classes.info}>{`${node.humanReadableSize}`}</div>
+              </Typography>
+              <br/>
+              <Typography variant="caption">
+                <div className={classes.info}>{'Création :'}</div>
+                <div className={classes.info}>{`${distanceInWords(new Date(node.creation), now)}`}</div>
+              </Typography>
+              <br/>
+              <Typography variant="caption">
+                <div className={classes.info}>{'Modification :'}</div>
+                <div className={classes.info}>{`${distanceInWords(new Date(node.creation), now)}`}</div>
+              </Typography>
+            </div>,
+            <div className={classes.columnInner} key={"file_info_2"}>
+              <Typography variant="caption">
+                <div className={classes.info}>{'Type de fichier :'}</div>
+                <div className={classes.info}>{`${node.mimeType}`}</div> 
+              </Typography>
+              <br/>
+              <Typography variant="caption">
+                <div className={classes.info}>{'Compression :'}</div>
+                <div className={classes.info}>{`${node.compression ? node.compression : 'aucune'}`} </div>
+              </Typography>
+              <br/>
+              <Typography variant="caption">
+                <div className={classes.info}>{'Chiffrement :'}</div>
+                <div className={classes.info}>{`${node.cipher ? node.cipher : 'aucun'}`}</div>
+              </Typography>
+            </div>
+          ] : [
+            <div className={classes.columnInner} key={"dir_info_1"}>
+              <Typography variant="caption">
+                {`Création : ${distanceInWords(new Date(node.creation), now)}`}
+              </Typography>
+              <br/>
+              <Typography variant="caption">
+                {`Modification : ${distanceInWords(new Date(node.creation), now)}`}
+              </Typography>
+            </div>,
+            <div className={classes.columnInner} key={"dir_info_2"}>
+            
+            </div>
+          ]
+
+      return (
+        <Dialog
+          fullScreen={fullScreen}
+          open={open}
+          onClose={() => this.onClose()}
+          aria-labelledby="responsive-dialog-title"
+        >
+          <DialogTitle id="responsive-dialog-title">
+            {`Détails de ${node.name}`}
+          </DialogTitle>
+          <DialogContent>
+            <div className={classes.details}>
+              {preview}
+              <div className={classes.column}>
+
+                <div className={classes.row}>
+                {details}
+                </div>
+                <div className={classes.columnInner}>
+                  <div>
+                    <Chip className={classes.chip} label={'Some tag 1'} key={1} />
+                    <Chip className={classes.chip} label={'Some tag 2'} key={2} />
+                    <Chip className={classes.chip} label={'Some tag 3'} key={3} />
+                    <Chip className={classes.chip} label={'Some tag 4'} key={4} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+          <DialogActions>
+            <Button size="small">Delete</Button>
+            <Button size="small">Move</Button>
+            <Button size="small" color="primary">Share</Button>
+            <Button size="small" color="primary">Download</Button>
+          </DialogActions>
+        </Dialog>
+      )
+    } else 
+      return <span/>
+  }
+
+  /*
+
+  <Button disabled={loading} color="primary" type="submit" >
+    Créer le dossier
+    {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
+  </Button>
+
+  */
+
+}
+
+export default withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ({ breakpoint: 'xs' })(DetailPopup))

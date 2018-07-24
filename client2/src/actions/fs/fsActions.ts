@@ -161,6 +161,21 @@ export const deselectAllNodes: ActionCreator<DeselectAllNodesAction> =
     payload: {}
   })
 
+export interface ShowNodeDetailsAction extends Action {
+  type: 'FS/SHOW_NODE_DETAILS'
+  payload: {
+    id: string
+  }
+}
+    
+export const showNodeDetails: ActionCreator<ShowNodeDetailsAction> =
+  (id: string) => ({
+    type: 'FS/SHOW_NODE_DETAILS',
+    payload: {
+      id
+    }
+  })
+
 export type FsActions =
   GetDirectoryAction |
   GetDirectorySuccessAction |
@@ -171,4 +186,5 @@ export type FsActions =
   SelectNodeAction |
   SelectAllNodesAction |
   DeselectNodeAction |
-  DeselectAllNodesAction
+  DeselectAllNodesAction |
+  ShowNodeDetailsAction

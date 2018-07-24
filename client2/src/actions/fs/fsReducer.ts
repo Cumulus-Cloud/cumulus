@@ -78,49 +78,52 @@ const reducer: Reducer<FsState, FsActions> = (state: FsState = initialState, act
             }
           }
       }
-      case 'FS/SELECT_ALL_NODES' :
-        console.log('all')
-        return {
-          ...state,
-          selectedContent: {
-            type: 'ALL'
-          }
+    case 'FS/SELECT_ALL_NODES' :
+      return {
+        ...state,
+        selectedContent: {
+          type: 'ALL'
         }
-      case 'FS/DESELECT_NODE':
-        switch(state.selectedContent.type) {
-          case 'ALL': {
-            const selection = (state.content || []).map((node) => node.id).filter((id) => id !== action.payload.id)
-            return {
-              ...state,
-              selectedContent: {
-                type: 'SOME',
-                selectedElements: selection
-              }
-            }
-          }
-          case 'NONE':
-            return state
-          case 'SOME': {
-            const selection = state.selectedContent.selectedElements.filter((id) => id !== action.payload.id)
-            return {
-              ...state,
-              selectedContent : selection.length <= 0 ? {
-                type: 'NONE'
-              } : {
-                type: 'SOME',
-                selectedElements: selection
-              }
+      }
+    case 'FS/DESELECT_NODE':
+      switch(state.selectedContent.type) {
+        case 'ALL': {
+          const selection = (state.content || []).map((node) => node.id).filter((id) => id !== action.payload.id)
+          return {
+            ...state,
+            selectedContent: {
+              type: 'SOME',
+              selectedElements: selection
             }
           }
         }
-      case 'FS/DESELECT_ALL_NODES':
-        console.log('deselect')
-        return {
-          ...state,
-          selectedContent: {
-            type: 'NONE'
+        case 'NONE':
+          return state
+        case 'SOME': {
+          const selection = state.selectedContent.selectedElements.filter((id) => id !== action.payload.id)
+          return {
+            ...state,
+            selectedContent : selection.length <= 0 ? {
+              type: 'NONE'
+            } : {
+              type: 'SOME',
+              selectedElements: selection
+            }
           }
         }
+      }
+    case 'FS/DESELECT_ALL_NODES':
+      return {
+        ...state,
+        selectedContent: {
+          type: 'NONE'
+        }
+      }
+    case 'FS/SHOW_NODE_DETAILS':
+      return {
+        ...state,
+        detailed: (state.content || []).find((node) => node.id === action.payload.id)
+      }
     default:
       return state
   }
