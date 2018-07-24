@@ -12,11 +12,11 @@ import IconButton from '@material-ui/core/IconButton'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
-import classnames from 'classnames'
+import classnames = require('classnames')
 
 import { Directory, FsNode } from '../../models/FsNode'
-import { Checkbox } from '@material-ui/core';
-import { FsNodeSelection } from '../../actions/fs/fsState';
+import { Checkbox } from '@material-ui/core'
+import { FsNodeSelection } from '../../actions/fs/fsState'
 
 
 const styles = (theme: Theme) => createStyles({
@@ -207,7 +207,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     if(selectedMenu && selectedMenu.nodeId === node.id)
       this.setState({ selectedMenu: undefined })
     else
-      this.setState({ selectedMenu: { nodeId: node.id, anchor: event.target } })
+      this.setState({ selectedMenu: { nodeId: node.id, anchor: event.target as any } })
   }
 
   render() {

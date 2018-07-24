@@ -3,6 +3,18 @@
     "target": "es6",
     "module": "commonjs",
     "strict": true,
-    "jsx": "react"
-  }
+    "jsx": "react",
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "types" : [],
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true
+  },
+  "include": [
+      "src/**/*"
+  ]
 }

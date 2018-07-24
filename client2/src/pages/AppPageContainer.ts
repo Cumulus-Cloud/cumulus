@@ -1,8 +1,5 @@
-import { selectAllNodes } from './../actions/fs/fsActions'
-import { filter } from 'rxjs/operators'
 import { togglePopup, PopupTypes } from './../actions/popup/popupActions'
 import { connect, Dispatch } from 'react-redux'
-import { withRouter } from 'react-router-dom'
 
 import AppPage from './AppPage'
 import GlobalState from '../actions/state'
@@ -29,4 +26,4 @@ function mapDispatchToProps(dispatch: Dispatch) {
   }
 }
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(AppPage)) // TODO typing
+export default connect(mapStateToProps, mapDispatchToProps)(AppPage) // TODO typing

@@ -1,31 +1,21 @@
 import * as React from 'react'
-import { Theme, Direction } from '@material-ui/core/styles/createMuiTheme'
+import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import Button from '@material-ui/core/Button'
-import TextField from '@material-ui/core/TextField'
 import Dialog from '@material-ui/core/Dialog'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
-import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
-import CircularProgress from '@material-ui/core/CircularProgress'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
 import Typography from '@material-ui/core/Typography'
-import ExpansionPanel from '@material-ui/core/ExpansionPanel'
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
 import DirectoryIcon from '@material-ui/icons/Folder'
 import FileIcon from '@material-ui/icons/InsertDriveFile'
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
-import Divider from '@material-ui/core/Divider'
-import ExpansionPanelActions from '@material-ui/core/ExpansionPanelActions'
 import Chip from '@material-ui/core/Chip'
 import { distanceInWords } from 'date-fns'
 
-import { ApiError } from '../../../models/ApiError'
-import { Directory, File, FsNode } from '../../../models/FsNode'
 import { ApiUtils } from '../../../services/api'
+import { FsNode } from '../../../models/FsNode'
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -135,7 +125,7 @@ type PropsWithStyle = Props & WithStyles<typeof styles>
 interface State {}
 
 
-class DetailPopup extends React.Component<PropsWithStyle, State> {
+class DetailsPopup extends React.Component<PropsWithStyle, State> {
 
   constructor(props: PropsWithStyle) {
     super(props)
@@ -285,4 +275,4 @@ class DetailPopup extends React.Component<PropsWithStyle, State> {
 
 }
 
-export default withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ({ breakpoint: 'xs' })(DetailPopup))
+export default withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ({ breakpoint: 'xs' })(DetailsPopup))

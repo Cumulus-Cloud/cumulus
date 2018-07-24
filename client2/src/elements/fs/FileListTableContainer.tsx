@@ -1,5 +1,4 @@
 import { connect, Dispatch } from 'react-redux'
-import { withRouter } from 'react-router-dom'
 
 import GlobalState from '../../actions/state'
 import { getDirectory, getDirectoryContent, selectNode, selectAllNodes, deselectNode, deselectAllNodes, showNodeDetails } from '../../actions/fs/fsActions'
@@ -46,4 +45,4 @@ function mapDispatchToProps(dispatch: Dispatch, props: GlobalState) {
   }
 }
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(FilesListTable)) // TODO typing
+export default connect(mapStateToProps, mapDispatchToProps)(FilesListTable)

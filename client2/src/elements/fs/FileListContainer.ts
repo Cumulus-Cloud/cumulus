@@ -33,4 +33,4 @@ function mapDispatchToProps(dispatch: Dispatch, props: GlobalState) {
   }
 }
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(FileList)) // TODO typing
+export default connect(mapStateToProps, mapDispatchToProps)(FileList)
