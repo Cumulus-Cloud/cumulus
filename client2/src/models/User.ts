@@ -9,6 +9,5 @@ export interface User {
 }
 
 export function isAdmin(user: User): boolean {
-  console.log(user)
   return user.roles.indexOf('admin') >= 0
 }

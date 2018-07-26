@@ -5,9 +5,8 @@ import { of, concat } from 'rxjs'
 import { Directory } from './../../models/FsNode'
 import Api from '../../services/api'
 import { ApiError } from '../../models/ApiError'
-import FsState from './fsState'
 import { FsActions, GetDirectoryAction, GetDirectoryContentAction, getDirectorySuccess, getDirectoryFailure, getDirectoryContentSuccess, getDirectoryContentFailure } from './fsActions'
-import GlobalState from '../state';
+import GlobalState from '../state'
 
 type EpicType = Epic<FsActions, FsActions, GlobalState>
 
@@ -32,8 +31,6 @@ export const getDirectoryContentEpic: EpicType = (action$, $state) =>
     mergeMap((action: GetDirectoryContentAction) => {
       const path = $state.value.fs.current ? $state.value.fs.current.path : '/'
       const offset = $state.value.fs.content ? $state.value.fs.content.length : 0
-
-      console.log(offset)
 
       return Api.fs.getDirectory(path, offset)
     }),

@@ -123,10 +123,15 @@ interface Props {
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
 interface State {
+  /** If the checkboxes should be displayed. By default the checkboxes are hiddens. */
   showCheckboxes: boolean,
+  /** Select menu on a specified node. */
   selectedMenu?: { nodeId: string, anchor: HTMLElement }
 }
 
+/**
+ * Agnostic node list representation, using a table (or at least looking like a table).
+ */
 class FilesListTable extends React.Component<PropsWithStyle, State> {
 
   constructor(props: PropsWithStyle) {
@@ -135,58 +140,58 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     this.state = { showCheckboxes: false, selectedMenu: undefined }
   }
 
-  isNodeSelected(node: FsNode): boolean {
+  private isNodeSelected(node: FsNode): boolean {
     const { selection } = this.props
     return selection.type === 'ALL' || (selection.type === 'SOME' && selection.selectedElements.indexOf(node.id) >= 0)
   }
 
-  onShowNodeDetail(node: FsNode) {
+  private onShowNodeDetail(node: FsNode) {
     this.props.onShowNodeDetail(node)
   }
 
-  onNavigateDirectory(directory: Directory) {
+  private onNavigateDirectory(directory: Directory) {
     this.props.onNavigateDirectory(directory)
   }
 
-  onLoadMoreContent() {
+  private onLoadMoreContent() {
     this.props.onLoadMoreContent(this.props.content.length)
   }
 
-  onSelectNode(node: FsNode) {
+  private onSelectNode(node: FsNode) {
     this.setState({ showCheckboxes: true })
     this.props.onSelectedNode(node)
   }
 
-  onSelectAllNodes() {
+  private onSelectAllNodes() {
     this.setState({ showCheckboxes: true })
     this.props.onSelectAllNodes()
   }
 
-  onDeselectNode(node: FsNode) {
+  private onDeselectNode(node: FsNode) {
     this.setState({ showCheckboxes: true })
     this.props.onDeselectNode(node)
   }
 
-  onDeselectAllNodes() {
+  private onDeselectAllNodes() {
     this.setState({ showCheckboxes: true })
     this.props.onDeselectAllNodes()
   }
 
-  onClickNode(node: FsNode) {
+  private onClickNode(node: FsNode) {
     if(node.nodeType === 'DIRECTORY')
       this.onNavigateDirectory(node)
     else
       this.onShowNodeDetail(node)
   }
 
-  onToggleNodeSelection(node: FsNode) {
+  private onToggleNodeSelection(node: FsNode) {
     if(!this.isNodeSelected(node))
       this.onSelectNode(node)
     else
       this.onDeselectNode(node)
   }
 
-  onToggleAllNodesSelection() {
+  private onToggleAllNodesSelection() {
     const { selection } = this.props
     
     switch(selection.type) {
@@ -199,7 +204,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     }
   }
 
-  onToggleMenu<T>(node: FsNode, event: React.SyntheticEvent<T>) {
+  private onToggleMenu<T>(node: FsNode, event: React.SyntheticEvent<T>) {
     const { selectedMenu } = this.state
 
     event.stopPropagation()
@@ -225,7 +230,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
             isSelected ?
               <Checkbox key={node.id + '_checked'} className={classes.contentCheck} checked={true} defaultChecked={true} onClick={() => this.onDeselectNode(node) } /> :
               <Checkbox key={node.id + '_not-checked'} className={classes.contentCheck} onClick={() => this.onSelectNode(node) } />
-          ) : <span/>
+          ) : <Checkbox key={node.id + '_not-checked'} style={{ display: 'none' }} />
 
         const icon =
           node.nodeType === 'DIRECTORY' ?
@@ -271,7 +276,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
             </div>
             <Typography variant="body1" className={classnames(classes.contentName, { [classes.contentSelected]: isSelected })}>
               <span className={classnames(classes.contentTypeIcon, { [classes.contentSelected]: isSelected })} >{icon}</span>
-              <span className={classes.contentNameValue} onClick={() => this.onClickNode(node)}>{node.name}</span>
+              <span className={classes.contentNameValue} onClick={(e) => {this.onClickNode(node); e.stopPropagation()}}>{node.name}</span>
             </Typography>
             <Typography variant="body1" className={classes.contentModification} >
               {distanceInWords(new Date(node.modification), now)}

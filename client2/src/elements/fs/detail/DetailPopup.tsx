@@ -19,7 +19,7 @@ import { FsNode } from '../../../models/FsNode'
 
 const styles = (theme: Theme) => createStyles({
   root: {
-    minWidth: 450
+    maxWidth: 700
   },
   buttonProgress: {
     position: 'absolute',
@@ -229,6 +229,7 @@ class DetailsPopup extends React.Component<PropsWithStyle, State> {
           open={open}
           onClose={() => this.onClose()}
           aria-labelledby="responsive-dialog-title"
+          PaperProps={{ className: classes.root }}
         >
           <DialogTitle id="responsive-dialog-title">
             {`Détails de ${node.name}`}
@@ -237,7 +238,6 @@ class DetailsPopup extends React.Component<PropsWithStyle, State> {
             <div className={classes.details}>
               {preview}
               <div className={classes.column}>
-
                 <div className={classes.row}>
                 {details}
                 </div>

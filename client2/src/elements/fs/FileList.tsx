@@ -128,9 +128,14 @@ class FilesList extends React.Component<PropsWithStyle, State> {
   constructor(props: PropsWithStyle) {
     super(props)
     this.state = { dropzoneActive: false }
+    this.checkIfPathNeedsRefresh()
   }
 
   componentDidUpdate() {
+    this.checkIfPathNeedsRefresh()
+  }
+
+  private checkIfPathNeedsRefresh() {
     const { loading, currentDirectory, initialPath } = this.props
 
     // Needs to update if not during a loading, and if the two path have changed (in that case the 'real' path wins)
