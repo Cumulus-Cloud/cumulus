@@ -38,9 +38,11 @@ export const createDirectorySuccessEpic: EpicType = (action$, $state) =>
       const name = action.payload.directory.name
 
       return concat(
-        of(getDirectory(currentPath)),                           // Reload the current directory
-        of(togglePopup(PopupTypes.directoryCreation, false)),    // Close the popup
-        of(showSnakebar(`Dossier « ${name} » créé avec succès`)) // Show a snakebar
+        of(getDirectory(currentPath)),                                              // Reload the current directory
+        of(togglePopup('DIRECTORY_CREATION', false)($state.value.router.location)), // Close the popup
+        of(showSnakebar(`Dossier « ${name} » créé avec succès`))                    // Show a snakebar
       )
     })
   )
+
+// TODO handler errors

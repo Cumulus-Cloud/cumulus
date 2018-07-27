@@ -152,7 +152,9 @@ class UploadProgressPopup extends React.Component<PropsWithStyle, State> {
               }
               {
                 (upload.loading && upload.progress < 100) && (
-                  <Typography className={classes.downloadSpeed} variant="caption" >{humanSpeed(computeUploadingSpeed(upload), 's')}</Typography>
+                  <Typography className={classes.downloadSpeed} variant="caption" >
+                    {humanSpeed(computeUploadingSpeed(upload), 's')}
+                  </Typography>
                 )
               }
             </ListItemText>

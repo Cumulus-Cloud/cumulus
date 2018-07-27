@@ -8,8 +8,8 @@ import Api from '../../../services/api'
 import GlobalState from '../../state'
 import { ApiError } from '../../../models/ApiError'
 import { PopupTypes, togglePopup } from './../../popup/popupActions'
-import { showSnakebar } from '../../snackbar/snackbarActions';
-import { getDirectory } from '../fsActions';
+import { showSnakebar } from '../../snackbar/snackbarActions'
+import { getDirectory } from '../fsActions'
 
 type EpicType = Epic<AnyAction, AnyAction, GlobalState>
 
@@ -21,7 +21,7 @@ export const uploadAllFilesEpic: EpicType = (action$, $state) =>
 
       return files
         .map((f) => uploadFile(f) as AnyAction)
-        .concat([ togglePopup(PopupTypes.fileUpload, false) ])
+        .concat([ togglePopup('FILE_UPLOAD', false)($state.value.router.location) ])
     })
   )
 
@@ -56,7 +56,7 @@ export const uploadFileEpic: EpicType = (action$, $state) =>
       })
 
       return concat(
-        of(togglePopup(PopupTypes.fileUploadProgress, true)), // Show the upload progress popup
+        of(togglePopup('FILE_UPLOAD', true)($state.value.router.location)), // Show the upload progress popup
         upload
       )
     })

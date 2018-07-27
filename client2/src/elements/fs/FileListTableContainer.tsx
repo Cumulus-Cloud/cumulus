@@ -1,12 +1,13 @@
 import { connect, Dispatch } from 'react-redux'
 
 import GlobalState from '../../actions/state'
-import { getDirectory, getDirectoryContent, selectNode, selectAllNodes, deselectNode, deselectAllNodes, showNodeDetails } from '../../actions/fs/fsActions'
-import { PopupTypes, togglePopup } from './../../actions/popup/popupActions'
+import { getDirectoryContent, selectNode, selectAllNodes, deselectNode, deselectAllNodes, showNodeDetails } from '../../actions/fs/fsActions'
+import { togglePopup } from './../../actions/popup/popupActions'
 import FilesListTable from './FileListTable'
 import { push } from 'connected-react-router'
 import Routes from '../../services/routes';
 import { FsNode, Directory } from '../../models/FsNode';
+import { withRouter, RouteComponentProps } from 'react-router';
 
 function mapStateToProps(state: GlobalState) {
   return {
@@ -17,15 +18,14 @@ function mapStateToProps(state: GlobalState) {
   }
 }
 
-function mapDispatchToProps(dispatch: Dispatch, props: GlobalState) {
+function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps<{}>) {
   return {
     onShowNodeDetail: (node: FsNode) => {
-      dispatch(showNodeDetails(node.id))
-      dispatch(togglePopup(PopupTypes.nodeDetails, true))
+      dispatch(showNodeDetails(node.id)) // TODO pass in popup path...
+      dispatch(togglePopup('NODE_DETAILS', true, node.name)(props.location))
     },
     onNavigateDirectory: (directory: Directory) => {
       dispatch(push(`${Routes.app.fs}${directory.path}`))
-      dispatch(getDirectory(directory.path))
     },
     onSelectedNode: (node: FsNode) => {
       dispatch(selectNode(node.id))
@@ -45,4 +45,4 @@ function mapDispatchToProps(dispatch: Dispatch, props: GlobalState) {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(FilesListTable)
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(FilesListTable))

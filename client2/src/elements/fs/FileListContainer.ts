@@ -1,17 +1,18 @@
 import { connect, Dispatch } from 'react-redux'
-import { withRouter } from 'react-router-dom'
+import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { push } from 'connected-react-router'
 import Routes from '../../services/routes'
 
 import { EnrichedFile } from './../../models/EnrichedFile'
-import { selectUploadFile } from './../../actions/fs/fileUpload/fileUploadActions'
+import { selectUploadFile, uploadFileShowProgress } from './../../actions/fs/fileUpload/fileUploadActions'
 import GlobalState from '../../actions/state'
 import { getDirectory } from '../../actions/fs/fsActions'
-import { PopupTypes, togglePopup } from './../../actions/popup/popupActions'
 import FileList from './FileList'
 
 function mapStateToProps(state: GlobalState) {
+
   return {
+    initialPath: (state as any).router.location.pathname.substring(7), // TODO cleaner
     currentDirectory: state.fs.current,
     currentDirectoryContent: state.fs.content,
     loading: state.fs.loadingCurrent,
@@ -20,17 +21,20 @@ function mapStateToProps(state: GlobalState) {
   }
 }
 
-function mapDispatchToProps(dispatch: Dispatch, props: GlobalState) {
+function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps<{}>) {
   return {
     onChangePath: (path: string, contentOffset: number) => {
-      dispatch(push(`${Routes.app.fs}${path}`))
+      dispatch(push(`${Routes.app.fs}${path}${props.location.search}`))
+      dispatch(getDirectory(path, contentOffset))
+    },
+    onLoadDirectory: (path: string, contentOffset: number) => {
       dispatch(getDirectory(path, contentOffset))
     },
     onFileUpload: (files: EnrichedFile[]) => {
       dispatch(selectUploadFile(files))
-      dispatch(togglePopup(PopupTypes.fileUpload, true))
+      dispatch(uploadFileShowProgress())
     }
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(FileList)
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(FileList))

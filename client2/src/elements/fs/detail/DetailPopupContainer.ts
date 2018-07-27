@@ -1,23 +1,31 @@
 import { connect, Dispatch } from 'react-redux'
+import { withRouter, RouteComponentProps } from 'react-router-dom'
 
 import DetailPopup from './DetailPopup'
 import GlobalState from '../../../actions/state'
-import { togglePopup, PopupTypes } from '../../../actions/popup/popupActions'
+import { togglePopup, isSelected } from '../../../actions/popup/popupActions'
+
 
 function mapStateToProps(state: GlobalState) {
+  const selection = isSelected('NODE_DETAILS')(state.router.location)
+
+  // TODO handle pagination (ask for specific file reload)
+  const node = state.fs.detailed || (state.fs.content || []).find((n) => n.name === selection.param)
+
   return {
-    open: state.popup.NODE_DETAILS && !!state.fs.detailed,
+    open: selection.selected && !!node,
     loading: state.createDirectory.loading,
-    node: state.fs.detailed,
+    node: node,
     error: state.createDirectory.error
   }
 }
 
-function mapDispatchToProps(dispatch: Dispatch, props: GlobalState) {
+function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps<{}>) {
   return {
     onClose: () => {
-      dispatch(togglePopup(PopupTypes.nodeDetails, false))
+      dispatch(togglePopup('NODE_DETAILS', false)(props.location))
     },
+    
     onDownload: () => {
       console.log('TODO onDownload')
     },
@@ -30,4 +38,4 @@ function mapDispatchToProps(dispatch: Dispatch, props: GlobalState) {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(DetailPopup)
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(DetailPopup)) // TODO fix typing

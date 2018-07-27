@@ -1,4 +1,4 @@
-import difference_in_milliseconds from 'date-fns/difference_in_milliseconds'
+import difference_in_milliseconds = require('date-fns/difference_in_milliseconds')
 
 import { ApiError } from './../../../models/ApiError'
 import { EnrichedFile } from "../../../models/EnrichedFile"
@@ -6,6 +6,21 @@ import { EnrichedFile } from "../../../models/EnrichedFile"
 interface FileUploadingStateTimeProgess {
   date: Date
   progress: number
+}
+
+export interface FileUploadingState {
+  file: EnrichedFile
+  progressOverTime: FileUploadingStateTimeProgess[]
+  progress: number
+  loading: boolean
+  start: Date
+  error?: ApiError
+}
+
+export default interface FileUploadState {
+  files: EnrichedFile[],
+  uploading: FileUploadingState[],
+  showUploadInProgress: boolean
 }
 
 export function computeUploadingSpeed(uploadingState: FileUploadingState): number {
@@ -30,18 +45,4 @@ export function computeUploadingSpeed(uploadingState: FileUploadingState): numbe
   })
 
   return Math.round(speeds.reduce((p, c) => p + c, 0) / speeds.length)
-}
-
-export interface FileUploadingState {
-  file: EnrichedFile
-  progressOverTime: FileUploadingStateTimeProgess[]
-  progress: number
-  loading: boolean
-  start: Date
-  error?: ApiError
-}
-
-export default interface FileUploadState {
-  files: EnrichedFile[],
-  uploading: FileUploadingState[]
 }

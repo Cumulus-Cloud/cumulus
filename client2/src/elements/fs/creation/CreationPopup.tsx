@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Theme, Direction } from '@material-ui/core/styles/createMuiTheme'
+import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import Button from '@material-ui/core/Button'
@@ -11,6 +11,7 @@ import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
+import { WithWidthProps } from '@material-ui/core/withWidth'
 
 import { ApiError } from '../../../models/ApiError'
 import { Directory } from '../../../models/FsNode'
@@ -39,7 +40,7 @@ interface Props {
   error?: ApiError
 }
 
-type PropsWithStyle = Props & WithStyles<typeof styles>
+type PropsWithStyle = Props & WithStyles<typeof styles> & Partial<WithWidthProps>
 
 interface State {
   directoryName: string

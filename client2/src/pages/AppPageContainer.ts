@@ -1,8 +1,9 @@
-import { togglePopup, PopupTypes } from './../actions/popup/popupActions'
+import { togglePopup } from './../actions/popup/popupActions'
 import { connect, Dispatch } from 'react-redux'
 
 import AppPage from './AppPage'
 import GlobalState from '../actions/state'
+import { withRouter, RouteComponentProps } from 'react-router'
 
 function mapStateToProps(state: GlobalState) {
   const content = state.fs.content || []
@@ -15,15 +16,15 @@ function mapStateToProps(state: GlobalState) {
   }
 }
 
-function mapDispatchToProps(dispatch: Dispatch) {
+function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps<{}>) {
   return {
     showCreationPopup: () => {
-      dispatch(togglePopup(PopupTypes.directoryCreation, true))
+      dispatch(togglePopup('DIRECTORY_CREATION', true)(props.location))
     },
     showUploadPopup: () => {
-      dispatch(togglePopup(PopupTypes.fileUpload, true))
+      dispatch(togglePopup('FILE_UPLOAD', true)(props.location))
     }
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(AppPage) // TODO typing
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(AppPage))

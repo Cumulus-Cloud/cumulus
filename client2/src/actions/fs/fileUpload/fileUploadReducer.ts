@@ -6,7 +6,8 @@ import { FileUploadActions } from './fileUploadActions'
 
 const initialState: FileUploadState = {
   files: [],
-  uploading: []
+  uploading: [],
+  showUploadInProgress: false
 }
 
 const reducer: Reducer<FileUploadState, FileUploadActions> = (state: FileUploadState = initialState, action: FileUploadActions) => {
@@ -42,7 +43,7 @@ const reducer: Reducer<FileUploadState, FileUploadActions> = (state: FileUploadS
         progress: 0
       }
 
-      return { files: [], uploading: state.uploading.concat([uploadingFile])}
+      return { ...state, files: [], uploading: state.uploading.concat([uploadingFile]) }
     }
     case 'FS/UPLOAD_FILE/PROGRESS': {
       const { progression, file } = action.payload
@@ -81,6 +82,10 @@ const reducer: Reducer<FileUploadState, FileUploadActions> = (state: FileUploadS
 
       return { ...state, uploading: updatedUploads}
     }
+    case 'FS/UPLOAD_FILE/SHOW_PROGRESS':
+      return { ...state, showUploadInProgress: true }
+    case 'FS/UPLOAD_FILE/HIDE_PROGRESS':
+      return { ...state, showUploadInProgress: false }
     default:
       return state
   }

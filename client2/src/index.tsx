@@ -43,4 +43,3 @@ ReactDOM.render(
   </Provider>,
   document.querySelector('#app')
 )
- // ?redirect=${p.location.pathname}

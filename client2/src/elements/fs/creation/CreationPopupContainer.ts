@@ -1,24 +1,27 @@
 import { connect, Dispatch } from 'react-redux'
-import { withRouter } from 'react-router-dom'
+import { withRouter, RouteComponentProps } from 'react-router-dom'
 
 import CreationPopup from './CreationPopup'
 import GlobalState from '../../../actions/state'
 import { createDirectory } from '../../../actions/fs/directoryCreation/createDirectoryActions'
-import { togglePopup, PopupTypes } from '../../../actions/popup/popupActions'
+import { togglePopup, isSelected } from '../../../actions/popup/popupActions'
+
 
 function mapStateToProps(state: GlobalState) {
+  const selection = isSelected('DIRECTORY_CREATION')(state.router.location)
+
   return {
-    open: state.popup.DIRECTORY_CREATION,
+    open: selection.selected,
     current: state.fs.current,
     loading: state.createDirectory.loading,
     error: state.createDirectory.error
   }
 }
 
-function mapDispatchToProps(dispatch: Dispatch, props: GlobalState) {
+function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps<{}>) {
   return {
     onClose: () => {
-      dispatch(togglePopup(PopupTypes.directoryCreation, false))
+      dispatch(togglePopup('DIRECTORY_CREATION', false)(props.location))
     },
     onCreateDirectory: (path: string) => {
       dispatch(createDirectory(path))

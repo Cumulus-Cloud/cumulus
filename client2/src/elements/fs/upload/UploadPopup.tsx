@@ -102,6 +102,8 @@ class UploadPopup extends React.Component<PropsWithStyle, State> {
   }
 
   onFileSelected(fileList: FileList | null) {
+    const { current } = this.props
+
     if(fileList !== null) {
       let files = []
       for(let i = 0; i < fileList.length; i++) {
@@ -109,6 +111,7 @@ class UploadPopup extends React.Component<PropsWithStyle, State> {
         files.push({
           id: uuid(),
           filename: file.name,
+          location: current ? current.path : '/',
           compressed: false,
           crypted: true,
           file

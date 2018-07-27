@@ -3,7 +3,7 @@ import { withRouter } from 'react-router-dom'
 import { push } from 'connected-react-router'
 
 import SignInForm from './SignInForm'
-import { SignInActions, signIn } from '../../actions/user/signIn/signInActions'
+import { signIn } from '../../actions/user/signIn/signInActions'
 import GlobalState from '../../actions/state'
 import Routes from '../../services/routes';
 

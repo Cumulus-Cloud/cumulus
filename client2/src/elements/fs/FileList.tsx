@@ -98,8 +98,10 @@ const styles = (theme: Theme) => createStyles({
 })
 
 interface Props {
-  /** Called when the path should be updated, meaning when the path was changed within the app, or via the browser */
+  /** Called when the path should be updated, meaning when the path was changed within the app. */
   onChangePath: (path: string, contentOffset: number) => void
+  /** Called when the current directory should be loaded from the api. */
+  onLoadDirectory: (path: string, contentOffset: number) => void
   /** List of files selected for the upload */
   onFileUpload: (files: EnrichedFile[]) => void
   /** Initial real path, comming from the browser path */
@@ -144,7 +146,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
       !loading && (currentDirectory ? initialPath !== currentDirectory.path : true)
 
     if(needToUpdatePath)
-      this.props.onChangePath(initialPath, 0) // TODO handle pagination
+      this.props.onLoadDirectory(initialPath, 0) // TODO handle pagination
   }
 
   onChangePath(path: string) {

@@ -197,9 +197,8 @@ const Api = {
       }
 
       return fileReader(file).then((result) => {
-        // TODO need path
         // TODO add compression and cipher
-        return ApiUtils.post(`/upload/${file.filename}`, result, new Map(), onProgress)
+        return ApiUtils.post(`/upload/${file.location}/${file.filename}`, result, new Map(), onProgress)
       })
     },
 

@@ -28,6 +28,7 @@ import UploadProgressPopupContainer from '../elements/fs/upload/UploadProgressPo
 import SnackbarsContainer from '../elements/notification/snackbarsContainer'
 import { FsNode } from '../models/FsNode';
 import DetailPopupContainer from '../elements/fs/detail/DetailPopupContainer';
+import { ConnectedRouter } from 'connected-react-router';
 
 
 const styles = (theme: Theme) => createStyles({
@@ -232,17 +233,13 @@ class AppPage extends React.Component<PropsWithStyle, State> {
           />
 
           <Switch>
-            <Route path={Routes.app.fs_matcher} render={(p: RouteComponentProps<{ path: string }>) => {
-                return (
-                  <FileListContainer initialPath={p.match.params.path} />
-                )
-              }}/>
+            <Route path={Routes.app.fs_matcher} component={FileListContainer}/>
             <Route render={() => <Redirect to={`${Routes.app.fs}/`} />} />
           </Switch>
 
-          <CreationPopupContainer />
-          <UploadPopupContainer />
-          <DetailPopupContainer />
+          <CreationPopupContainer/>
+          <UploadPopupContainer/>
+          <DetailPopupContainer/>
 
           <UploadProgressPopupContainer />
 

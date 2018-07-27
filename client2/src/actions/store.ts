@@ -8,7 +8,6 @@ import { CreateDirectoryActions } from './fs/directoryCreation/createDirectoryAc
 import { AuthenticationActions } from './user/auth/authenticationActions'
 import { SignInActions } from './user/signIn/signInActions'
 import { SignUpActions } from './user/signUp/signUpActions'
-import { PopupActions } from './popup/popupActions'
 import { SnackbarActions } from './snackbar/snackbarActions'
 
 import { getDirectoryEpic, getDirectoryContentEpic } from './fs/fsEpics'
@@ -24,7 +23,6 @@ import signUpReducer from './user/signUp/signUpReducer'
 import fsReducer from './fs/fsReducer'
 import createDirectoryReducer from './fs/directoryCreation/createDirectoryReducer'
 import fileUploadReducer from './fs/fileUpload/fileUploadReducer'
-import popupReducer from './popup/popupReducer'
 import snackbarReducer from './snackbar/snackbarReducer'
 
 import GlobalState from './state'
@@ -69,8 +67,8 @@ const reducer = combineReducers<GlobalState>({
   fs: fsReducer,
   createDirectory: createDirectoryReducer,
   fileUpload: fileUploadReducer,
-  popup: popupReducer,
-  snackbar: snackbarReducer
+  snackbar: snackbarReducer,
+  router: {} as any // Injecter by connected react router
 })
 
 // Combine all the action types
@@ -81,7 +79,6 @@ type Actions =
   FsActions |
   CreateDirectoryActions |
   FileUploadActions |
-  PopupActions |
   SnackbarActions
 
 // Create an epic middleware for our epics

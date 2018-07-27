@@ -126,6 +126,27 @@ export const uploadFileFailure: ActionCreator<UploadFileFailureAction> =
     }
   })
 
+export interface UploadFileShowProgressAction extends Action {
+  type: 'FS/UPLOAD_FILE/SHOW_PROGRESS'
+  payload: {}
+}
+
+export const uploadFileShowProgress: ActionCreator<UploadFileShowProgressAction> =
+  () => ({
+    type: 'FS/UPLOAD_FILE/SHOW_PROGRESS',
+    payload: {}
+  })
+
+export interface UploadFileHideProgressAction extends Action {
+  type: 'FS/UPLOAD_FILE/HIDE_PROGRESS'
+  payload: {}
+}
+
+export const uploadFileHideProgress: ActionCreator<UploadFileHideProgressAction> =
+  () => ({
+    type: 'FS/UPLOAD_FILE/HIDE_PROGRESS',
+    payload: {}
+  })
 
 export type FileUploadActions =
   SelectUploadFileAction |
@@ -135,4 +156,6 @@ export type FileUploadActions =
   UploadFileAction |
   UploadFileProgressAction |
   UploadFileSuccessAction |
-  UploadFileFailureAction
+  UploadFileFailureAction |
+  UploadFileShowProgressAction |
+  UploadFileHideProgressAction

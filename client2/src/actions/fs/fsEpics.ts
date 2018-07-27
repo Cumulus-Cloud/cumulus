@@ -1,6 +1,6 @@
 import { Epic } from 'redux-observable'
 import { filter, map, flatMap, mergeMap } from 'rxjs/operators'
-import { of, concat } from 'rxjs'
+import { of } from 'rxjs'
 
 import { Directory } from './../../models/FsNode'
 import Api from '../../services/api'

@@ -12,6 +12,7 @@ import Typography from '@material-ui/core/Typography'
 import DirectoryIcon from '@material-ui/icons/Folder'
 import FileIcon from '@material-ui/icons/InsertDriveFile'
 import Chip from '@material-ui/core/Chip'
+import { WithWidthProps } from '@material-ui/core/withWidth'
 import { distanceInWords } from 'date-fns'
 
 import { ApiUtils } from '../../../services/api'
@@ -120,7 +121,7 @@ interface Props {
   error?: Error
 }
 
-type PropsWithStyle = Props & WithStyles<typeof styles>
+type PropsWithStyle = Props & WithStyles<typeof styles> & Partial<WithWidthProps>
 
 interface State {}
 
@@ -223,13 +224,14 @@ class DetailsPopup extends React.Component<PropsWithStyle, State> {
             </div>
           ]
 
+      // TODO PaperProps={{ className: classes.root }}
+
       return (
         <Dialog
           fullScreen={fullScreen}
           open={open}
           onClose={() => this.onClose()}
           aria-labelledby="responsive-dialog-title"
-          PaperProps={{ className: classes.root }}
         >
           <DialogTitle id="responsive-dialog-title">
             {`Détails de ${node.name}`}

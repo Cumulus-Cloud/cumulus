@@ -12,10 +12,10 @@ import IconButton from '@material-ui/core/IconButton'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
+import { Checkbox } from '@material-ui/core'
 import classnames = require('classnames')
 
 import { Directory, FsNode } from '../../models/FsNode'
-import { Checkbox } from '@material-ui/core'
 import { FsNodeSelection } from '../../actions/fs/fsState'
 
 

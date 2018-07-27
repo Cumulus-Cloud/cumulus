@@ -1,15 +1,18 @@
 import { selectUploadFile, deleteUploadFile, updateUploadFile, uploadAllFiles } from './../../../actions/fs/fileUpload/fileUploadActions'
 import { connect, Dispatch } from 'react-redux'
-import { withRouter } from 'react-router-dom'
+import { withRouter, RouteComponentProps } from 'react-router-dom'
 
 import UploadPopup from './UploadPopup'
 import GlobalState from '../../../actions/state'
-import { togglePopup, PopupTypes } from '../../../actions/popup/popupActions'
+import { togglePopup, isSelected } from '../../../actions/popup/popupActions'
 import { EnrichedFile } from '../../../models/EnrichedFile'
+import { push } from 'connected-react-router';
 
 function mapStateToProps(state: GlobalState) {
+  const selection = isSelected('FILE_UPLOAD')(state.router.location)
+
   return {
-    open: state.popup.FILE_UPLOAD,
+    open: selection.selected,
     current: state.fs.current,
     files: state.fileUpload.files,
     loading: state.createDirectory.loading,
@@ -17,7 +20,7 @@ function mapStateToProps(state: GlobalState) {
   }
 }
 
-function mapDispatchToProps(dispatch: Dispatch, props: GlobalState) {
+function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps<{}>) {
   return {
     onFilesSelected: (files: EnrichedFile[]) => {
       dispatch(selectUploadFile(files))
@@ -29,7 +32,7 @@ function mapDispatchToProps(dispatch: Dispatch, props: GlobalState) {
       dispatch(updateUploadFile(updatedFile))
     },
     onClose: () => {
-      dispatch(togglePopup(PopupTypes.fileUpload, false))
+      dispatch(togglePopup('FILE_UPLOAD', false)(props.location))
     },
     onUploadFiles: () => {
       dispatch(uploadAllFiles())
