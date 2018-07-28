@@ -12,6 +12,7 @@ const styles = (theme: Theme) => createStyles({
     width: '100%',
     maxWidth: 800,
     paddingLeft: theme.spacing.unit * 3,
+    marginBottom: theme.spacing.unit * 2,
     display: 'flex',
     overflow: 'auto'
   },

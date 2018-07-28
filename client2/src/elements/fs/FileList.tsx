@@ -24,8 +24,12 @@ const styles = (theme: Theme) => createStyles({
     backgroundColor: theme.palette.background.default,
     padding: theme.spacing.unit * 3,
     paddingLeft: theme.spacing.unit * 3,
-    marginTop: theme.mixins.toolbar.minHeight,
-    minWidth: 0
+    marginTop: 56,
+    [theme.breakpoints.up('sm')]: {
+      marginTop: 64,
+    },
+    minWidth: 0,
+    display: 'flex'
   },
   dropzone: {
     position: 'fixed',
@@ -40,7 +44,10 @@ const styles = (theme: Theme) => createStyles({
     display: 'flex'
   },
   dropzoneWrapper: {
-    position: 'relative'
+    position: 'relative',
+    display: 'flex', 
+    flex: 1,
+    flexDirection: 'column'
   },
   dropzoneInner: {
     border: '5px lightgray dotted',
@@ -65,12 +72,17 @@ const styles = (theme: Theme) => createStyles({
     marginTop: theme.spacing.unit * 2,
     marginBottom: theme.spacing.unit
   },
-  content: {
+  contentWrapper: {
     width: '100%',
-    marginTop: theme.spacing.unit * 2,
     maxWidth: 800,
     marginRight: 'auto',
-    marginLeft: 'auto'
+    marginLeft: 'auto',
+    display: 'flex',
+    flex: 1
+  },
+  content: {
+    display: 'flex',
+    flex: 1
   },
   loader: {
     margin: 'auto',
@@ -79,6 +91,8 @@ const styles = (theme: Theme) => createStyles({
   },
   emptyDirectory: {
     display: 'flex',
+    flex: 1,
+    height: '50px',
     alignItems: 'center',
     justifyContent: 'center'
   },
@@ -139,11 +153,11 @@ class FilesList extends React.Component<PropsWithStyle, State> {
       this.props.onLoadDirectory(initialPath, 0) // TODO handle pagination
   }
 
-  onChangePath(path: string) {
+  private onChangePath(path: string) {
     this.props.onChangePath(path, 0) // TODO handle pagination
   }
   
-  droppedFiles(files: File[]) {
+  private droppedFiles(files: File[]) {
     const { currentDirectory } = this.props 
     const enrichedFiles = files.map((file) => {
       return {
@@ -160,11 +174,11 @@ class FilesList extends React.Component<PropsWithStyle, State> {
     this.setState({ dropzoneActive: false })
   }
 
-  onDragEnter() {
+  private onDragEnter() {
     this.setState({ dropzoneActive: true })
   }
 
-  onDragLeave() {
+  private onDragLeave() {
     this.setState({ dropzoneActive: false })
   }
 
@@ -182,7 +196,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
     // TODO show errors
 
     return (
-      <main className={classes.root}>
+      <main className={classes.root} >
         <Dropzone
           disableClick  
           className={classes.dropzoneWrapper}
@@ -202,44 +216,49 @@ class FilesList extends React.Component<PropsWithStyle, State> {
             </div>
           </Fade>
         }
-          <span>
-            {breadCrumb}
-            <div className={classes.content}>
-              {
-                loading ?
-                <div>
-                  <CircularProgress className={classes.loader} size={100} color="primary"/>
-                </div> :
-                <Slide direction="up" in={true}>
-                  <div>
-                    {
-                      content.length == 0 ?
-                      <Typography variant="caption" className={classes.emptyDirectory} >
-                        <InfoIcon className={classes.emptyDirectoryIcon}/>
-                        {'Ce dossier est vide'} 
-                      </Typography> :
-                      <FileListTableContainer />
-                    }
-                  </div>
-                </Slide>
-              }
-              { // Note: outside of the <Slide/> to avoid breaking the sticky header with the loading animation
-                contentLoading ?
-                <div>
-                  <div>
-                    <CircularProgress className={classes.loaderContent} size={20} color="primary"/>
-                  </div>
-                  <Typography variant="caption" className={classes.emptyDirectory} >
-                    {'Chargement de plus de contenu..'} 
-                  </Typography>
+          {breadCrumb}
+          <div className={classes.contentWrapper} >
+            {
+              loading ?
+              <div>
+                <CircularProgress className={classes.loader} size={100} color="primary"/>
+              </div> :
+              <Slide direction="up" in={true}>
+                <div className={classes.content} >
+                  {
+                    content.length == 0 ?
+                    <Typography variant="caption" className={classes.emptyDirectory} >
+                      <InfoIcon className={classes.emptyDirectoryIcon}/>
+                      {'Ce dossier est vide'} 
+                    </Typography> :
+                    <FileListTableContainer />
+                  }
                 </div>
-                : <span/>
-              }
-            </div>
-          </span>
+              </Slide>
+            }
+          </div>
         </Dropzone>
       </main>
     )
+
+    /*
+      TODO content loader for previous infinite scroll
+
+      { // Note: outside of the <Slide/> to avoid breaking the sticky header with the loading animation
+        contentLoading ?
+        <div>
+          <div>
+            <CircularProgress className={classes.loaderContent} size={20} color="primary"/>
+          </div>
+          <Typography variant="caption" className={classes.emptyDirectory} >
+            {'Chargement de plus de contenu..'} 
+          </Typography>
+        </div>
+        : <span/>
+      }
+
+    */
+
   }
 
 }

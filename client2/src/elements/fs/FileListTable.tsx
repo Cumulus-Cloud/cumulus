@@ -20,6 +20,40 @@ import { FsNodeSelection } from '../../actions/fs/fsState'
 
 
 const styles = (theme: Theme) => createStyles({
+  root: {
+    boxShadow: 'none',
+    border: '1px solid rgba(0, 0, 0, 0.12)',
+    borderTop: 0,
+    marginTop: 0,
+    transition: 'margin 250ms',
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1
+  },
+  transition: {
+    marginTop: theme.spacing.unit * -3,
+    marginBottom: theme.spacing.unit * -3,
+    borderBottom: 0,
+    transition: 'margin 250ms'
+  },
+  transitionWithBreadCrumb: {
+    marginTop: (theme.spacing.unit * -5) - 40, // Minus size of the breadcrum + extra margin
+    marginBottom: theme.spacing.unit * -3,
+    borderBottom: 0,
+    transition: 'margin 250ms'
+  },
+  contentTableHead: {
+    zIndex: 99,
+    boxShadow: 'none',
+    backgroundColor: 'white',
+    borderTop: '1px solid rgba(0, 0, 0, 0.12)',
+    borderBottom: 0,
+    position: 'sticky',
+    top: '-16px'
+  },
+  contentTableBody: {
+    flex: 1
+  },
   contentTypeIcon: {
     color: 'rgba(0, 0, 0, 0.54)',
     marginRight: theme.spacing.unit * 2,
@@ -78,49 +112,8 @@ const styles = (theme: Theme) => createStyles({
     ['&:hover'] : {
       backgroundColor: 'rgba(41, 167, 160, 0.18)'
     }
-  },
-  contentTable: {
-    boxShadow: 'none',
-    border: '1px solid rgba(0, 0, 0, 0.12)',
-    borderTop: 0,
-    marginTop: 0,
-    transition: 'margin 250ms'
-  },
-  contentTableTransition: {
-    marginTop: '-32px',
-    transition: 'margin 250ms'
-  },
-  contentTableTransitionWithBreadCrumb: {
-    marginTop: '-71px',
-    transition: 'margin 250ms'
-  },
-  contentTableHead: {
-    zIndex: 99,
-    boxShadow: 'none',
-    backgroundColor: 'white',
-    borderTop: '1px solid rgba(0, 0, 0, 0.12)',
-    borderBottom: 0,
-    position: 'sticky',
-    top: '-16px'
-  },
-  contentTableSizeRoot: {
-    height: 'calc(100% - 195px)',
-    transition: 'height 250ms'
-  },
-  contentTableSize: {
-    height: 'calc(100% - 235px)',
-    transition: 'height 250ms'
-  },
-  contentTableSizeExtended: {
-    height: 'calc(100% - 131px)',
-    transition: 'height 250ms'
   }
 })
-
-// TODO
-// - Clean up CSS and structure (use flex to get all the space, and just plays with margin at the end)
-// - Simplify structure of the Table element, use flex everywhere
-
 
 interface Props {
   /** When details for a node are requested. */
@@ -246,125 +239,123 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
       this.setState({ selectedMenu: { nodeId: node.id, anchor: event.target as any } })
   }
 
-  render() {
-    const { current, content, loading, classes, selection } = this.props
+  private renderRow(props: ListRowProps, node: FsNode): React.ReactElement<{}> {
+    const { classes, selection } = this.props
     const { showCheckboxes, selectedMenu } = this.state
+
+    const now = new Date()
+
+    const isSelected = selection.type === 'ALL' || (selection.type === 'SOME' && selection.selectedElements.indexOf(node.id) >= 0)
+
+    const checkbox =
+      showCheckboxes ? (
+        isSelected ?
+          <Checkbox key={node.id + '_checked'} className={classes.contentCheck} checked={true} defaultChecked={true} onClick={() => this.onDeselectNode(node) } /> :
+          <Checkbox key={node.id + '_not-checked'} className={classes.contentCheck} onClick={() => this.onSelectNode(node) } />
+      ) : <Checkbox key={node.id + '_not-checked'} style={{ display: 'none' }} />
+
+    const icon =
+      node.nodeType === 'DIRECTORY' ?
+        <DirectoryIcon /> :
+        <FileIcon />
+
+    const menu =
+      <div>
+        <IconButton
+          aria-label="More"
+          aria-haspopup="true"
+          onClick={(e) => this.onToggleMenu(node, e)}
+        >
+          <MoreVertIcon />
+        </IconButton>
+        <Menu
+          id="simple-menu"
+          anchorEl={selectedMenu ? selectedMenu.anchor : undefined}
+          open={!!selectedMenu && (selectedMenu.nodeId === node.id)}
+          onClose={(e) => this.onToggleMenu(node, e)}
+        >
+          <MenuItem onClick={(e) => { this.onToggleMenu(node, e); this.onShowNodeDetail(node)}} >Détails</MenuItem>
+          <MenuItem>Télécharger</MenuItem>
+          <MenuItem>Supprimer</MenuItem>
+          <MenuItem>Partager</MenuItem>
+        </Menu>
+      </div>
+
+    return (
+      <div
+        onDragStart={(e) => e.dataTransfer.setData('text', node.id)}
+        className={classnames(classes.contentRow, { [classes.contentRowSelected]: isSelected })}
+        key={node.id}
+        style={props.style}
+        onClick={() => {
+          if(!isSelected)
+            this.onSelectNode(node)
+          else
+            this.onDeselectNode(node)
+        }}
+      >
+        <div className={classes.contentCheck}>
+          {checkbox}
+        </div>
+        <Typography variant="body1" className={classnames(classes.contentName, { [classes.contentSelected]: isSelected })}>
+          <span className={classnames(classes.contentTypeIcon, { [classes.contentSelected]: isSelected })} >{icon}</span>
+          <span className={classes.contentNameValue} onClick={(e) => {this.onClickNode(node); e.stopPropagation()}}>{node.name}</span>
+        </Typography>
+        <Typography variant="body1" className={classes.contentModification} >
+          {distanceInWords(new Date(node.modification), now)}
+        </Typography>
+        <Typography variant="body1" className={classes.contentSize} >
+          {node.nodeType === 'DIRECTORY' ? '-' : node.humanReadableSize}
+        </Typography>
+        {menu}
+      </div>
+    )
+  }
+
+  render() {
+    const { current, content, classes, selection } = this.props
+    const { showCheckboxes } = this.state
 
     const marginTop = this.state.scrollTop > 32
     const isRoot = current ? current.path === '/' : true
-    const now = new Date()
 
     // TODO show errors ?
 
-    const rowRenderer = (props: ListRowProps) => {
-      const node = content[props.index]
-      const isSelected = selection.type === 'ALL' || (selection.type === 'SOME' && selection.selectedElements.indexOf(node.id) >= 0)
-
-      const checkbox =
-        showCheckboxes ? (
-          isSelected ?
-            <Checkbox key={node.id + '_checked'} className={classes.contentCheck} checked={true} defaultChecked={true} onClick={() => this.onDeselectNode(node) } /> :
-            <Checkbox key={node.id + '_not-checked'} className={classes.contentCheck} onClick={() => this.onSelectNode(node) } />
-        ) : <Checkbox key={node.id + '_not-checked'} style={{ display: 'none' }} />
-
-      const icon =
-        node.nodeType === 'DIRECTORY' ?
-          <DirectoryIcon /> :
-          <FileIcon />
-
-      const menu =
-        <div>
-          <IconButton
-            aria-label="More"
-            aria-haspopup="true"
-            onClick={(e) => this.onToggleMenu(node, e)}
-          >
-            <MoreVertIcon />
-          </IconButton>
-          <Menu
-            id="simple-menu"
-            anchorEl={selectedMenu ? selectedMenu.anchor : undefined}
-            open={!!selectedMenu && (selectedMenu.nodeId === node.id)}
-            onClose={(e) => this.onToggleMenu(node, e)}
-          >
-            <MenuItem onClick={(e) => { this.onToggleMenu(node, e); this.onShowNodeDetail(node)}} >Détails</MenuItem>
-            <MenuItem>Télécharger</MenuItem>
-            <MenuItem>Supprimer</MenuItem>
-            <MenuItem>Partager</MenuItem>
-          </Menu>
-        </div>
-
-      return (
-        <div
-          onDragStart={(e) => e.dataTransfer.setData('text', node.id)}
-          className={classnames(classes.contentRow, { [classes.contentRowSelected]: isSelected })}
-          key={node.id}
-          style={props.style}
-          onClick={() => {
-            if(!isSelected)
-              this.onSelectNode(node)
-            else
-              this.onDeselectNode(node)
-          }}
-        >
-          <div className={classes.contentCheck}>
-            {checkbox}
-          </div>
-          <Typography variant="body1" className={classnames(classes.contentName, { [classes.contentSelected]: isSelected })}>
-            <span className={classnames(classes.contentTypeIcon, { [classes.contentSelected]: isSelected })} >{icon}</span>
-            <span className={classes.contentNameValue} onClick={(e) => {this.onClickNode(node); e.stopPropagation()}}>{node.name}</span>
-          </Typography>
-          <Typography variant="body1" className={classes.contentModification} >
-            {distanceInWords(new Date(node.modification), now)}
-          </Typography>
-          <Typography variant="body1" className={classes.contentSize} >
-            {node.nodeType === 'DIRECTORY' ? '-' : node.humanReadableSize}
-          </Typography>
-          {menu}
-        </div>
-      )
-    }
-
     return (
-      <Paper className={classnames(classes.contentTable, { [classes.contentTableTransition]: marginTop && isRoot,  [classes.contentTableTransitionWithBreadCrumb]: marginTop && !isRoot })} >
-        <div>
-          <div className={classes.contentTableHead}>
-            <div className={classes.contentHeadRow} >
-              { showCheckboxes ?
-                <div className={classes.contentCheck}>
-                  <Checkbox checked={selection.type === 'ALL'} indeterminate={selection.type === 'SOME'} onClick={() => this.onToggleAllNodesSelection()} />
-                </div> :
-                <span/>
-              }
-              <Typography variant="caption" className={classes.contentName} >Nom</Typography>
-              <Typography variant="caption" className={classes.contentModification}>Modification</Typography>
-              <Typography variant="caption" className={classes.contentSize}>Taille</Typography>
-            </div>
+      <Paper className={classnames(classes.root, { [classes.transition]: marginTop && isRoot,  [classes.transitionWithBreadCrumb]: marginTop && !isRoot })} >
+        <div className={classes.contentTableHead}>
+          <div className={classes.contentHeadRow} >
+            { showCheckboxes ?
+              <div className={classes.contentCheck}>
+                <Checkbox checked={selection.type === 'ALL'} indeterminate={selection.type === 'SOME'} onClick={() => this.onToggleAllNodesSelection()} />
+              </div> :
+              <span/>
+            }
+            <Typography variant="caption" className={classes.contentName} >Nom</Typography>
+            <Typography variant="caption" className={classes.contentModification}>Modification</Typography>
+            <Typography variant="caption" className={classes.contentSize}>Taille</Typography>
           </div>
-          <div className={classnames({ [classes.contentTableSizeRoot]: isRoot && !marginTop , [classes.contentTableSize]: !isRoot && !marginTop, [classes.contentTableSizeExtended]: marginTop })} >
-            <AutoSizer>
-              {({ height, width }) => {
-                console.log(height)
-                console.log(width)
-                return (
-                  <List 
-                    style={{ outline: 'none' }}
-                    scr
-                    height={height}
-                    width={width}
-                    onScroll={(e: any) => this.setState({ scrollTop: e.scrollTop })}
-                    rowCount={content.length}
-                    rowHeight={45}
-                    rowRenderer={rowRenderer}
-                  />
-                )
-              }}
-            </AutoSizer>
-          </div>
+        </div>
+        <div className={classes.contentTableBody} >
+          <AutoSizer>
+            {({ height, width }) => {
+              return (
+                <List 
+                  style={{ outline: 'none' }}
+                  scr
+                  height={height}
+                  width={width}
+                  onScroll={(e: any) => this.setState({ scrollTop: e.scrollTop })}
+                  rowCount={content.length}
+                  rowHeight={45}
+                  rowRenderer={(props: ListRowProps) => this.renderRow(props, content[props.index])}
+                />
+              )
+            }}
+          </AutoSizer>
         </div>
       </Paper>
     )
-    
   }
 
 }
