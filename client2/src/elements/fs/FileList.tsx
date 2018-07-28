@@ -23,22 +23,9 @@ const styles = (theme: Theme) => createStyles({
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
     padding: theme.spacing.unit * 3,
-    paddingLeft: theme.spacing.unit * 4, // +1 for the scrollbar
+    paddingLeft: theme.spacing.unit * 3,
     marginTop: theme.mixins.toolbar.minHeight,
-    minWidth: 0,
-    overflowY: 'scroll',
-    ['&::-webkit-scrollbar']: {
-      width: theme.spacing.unit
-    },
-    ['&::-webkit-scrollbar-track']: {
-      background: theme.palette.background.paper
-    },
-    ['&::-webkit-scrollbar-thumb']: {
-      background: '#CCC'
-    },
-    ['&::-webkit-scrollbar-thumb:hover']: {
-      background: '#BBB'
-    }
+    minWidth: 0
   },
   dropzone: {
     position: 'fixed',
@@ -51,6 +38,9 @@ const styles = (theme: Theme) => createStyles({
     color: '#fff',
     zIndex: 9999,
     display: 'flex'
+  },
+  dropzoneWrapper: {
+    position: 'relative'
   },
   dropzoneInner: {
     border: '5px lightgray dotted',
@@ -195,7 +185,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
       <main className={classes.root}>
         <Dropzone
           disableClick  
-          style={{position: "relative"}}
+          className={classes.dropzoneWrapper}
           onDrop={(files) => this.droppedFiles(files)}
           onDragEnter={() => this.onDragEnter()}
           onDragLeave={() => this.onDragLeave()}

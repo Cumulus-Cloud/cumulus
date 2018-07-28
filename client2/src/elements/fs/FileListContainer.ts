@@ -4,10 +4,11 @@ import { push } from 'connected-react-router'
 import Routes from '../../services/routes'
 
 import { EnrichedFile } from './../../models/EnrichedFile'
-import { selectUploadFile, uploadFileShowProgress } from './../../actions/fs/fileUpload/fileUploadActions'
+import { selectUploadFile } from './../../actions/fs/fileUpload/fileUploadActions'
 import GlobalState from '../../actions/state'
 import { getDirectory } from '../../actions/fs/fsActions'
 import FileList from './FileList'
+import { togglePopup } from '../../actions/popup/popupActions'
 
 function mapStateToProps(state: GlobalState) {
 
@@ -32,7 +33,7 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps<{}>) 
     },
     onFileUpload: (files: EnrichedFile[]) => {
       dispatch(selectUploadFile(files))
-      dispatch(uploadFileShowProgress())
+      dispatch(togglePopup('FILE_UPLOAD', true)(props.location))
     }
   }
 }

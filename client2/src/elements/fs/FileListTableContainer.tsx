@@ -13,6 +13,7 @@ function mapStateToProps(state: GlobalState) {
   return {
     loading: state.fs.loadingContent,
     hasMore: true, // TODO detect if more content is available
+    current: state.fs.current,
     content: state.fs.content || [],
     selection: state.fs.selectedContent
   }

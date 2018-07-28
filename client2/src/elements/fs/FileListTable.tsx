@@ -7,13 +7,13 @@ import Paper from '@material-ui/core/Paper'
 import DirectoryIcon from '@material-ui/icons/Folder'
 import FileIcon from '@material-ui/icons/InsertDriveFile'
 import { distanceInWords } from 'date-fns'
-import Waypoint from 'react-waypoint'
 import IconButton from '@material-ui/core/IconButton'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import { Checkbox } from '@material-ui/core'
 import classnames = require('classnames')
+import { List, ListRowProps, AutoSizer } from 'react-virtualized'
 
 import { Directory, FsNode } from '../../models/FsNode'
 import { FsNodeSelection } from '../../actions/fs/fsState'
@@ -82,7 +82,17 @@ const styles = (theme: Theme) => createStyles({
   contentTable: {
     boxShadow: 'none',
     border: '1px solid rgba(0, 0, 0, 0.12)',
-    borderTop: 0
+    borderTop: 0,
+    marginTop: 0,
+    transition: 'margin 250ms'
+  },
+  contentTableTransition: {
+    marginTop: '-32px',
+    transition: 'margin 250ms'
+  },
+  contentTableTransitionWithBreadCrumb: {
+    marginTop: '-71px',
+    transition: 'margin 250ms'
   },
   contentTableHead: {
     zIndex: 99,
@@ -92,8 +102,25 @@ const styles = (theme: Theme) => createStyles({
     borderBottom: 0,
     position: 'sticky',
     top: '-16px'
+  },
+  contentTableSizeRoot: {
+    height: 'calc(100% - 195px)',
+    transition: 'height 250ms'
+  },
+  contentTableSize: {
+    height: 'calc(100% - 235px)',
+    transition: 'height 250ms'
+  },
+  contentTableSizeExtended: {
+    height: 'calc(100% - 131px)',
+    transition: 'height 250ms'
   }
 })
+
+// TODO
+// - Clean up CSS and structure (use flex to get all the space, and just plays with margin at the end)
+// - Simplify structure of the Table element, use flex everywhere
+
 
 interface Props {
   /** When details for a node are requested. */
@@ -114,6 +141,8 @@ interface Props {
   loading: boolean
   /** If there is more content to load. */
   hasMore: boolean
+  /** Current node */
+  current?: FsNode
   /** Content of the loaded current directory. */
   content: FsNode[]
   /** List of selected nodes. */
@@ -127,6 +156,8 @@ interface State {
   showCheckboxes: boolean,
   /** Select menu on a specified node. */
   selectedMenu?: { nodeId: string, anchor: HTMLElement }
+
+  scrollTop: number
 }
 
 /**
@@ -137,7 +168,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
   constructor(props: PropsWithStyle) {
     super(props)
 
-    this.state = { showCheckboxes: false, selectedMenu: undefined }
+    this.state = { showCheckboxes: false, selectedMenu: undefined, scrollTop: 0 }
   }
 
   private isNodeSelected(node: FsNode): boolean {
@@ -216,83 +247,86 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
   }
 
   render() {
-    const { content, loading, classes, selection } = this.props
+    const { current, content, loading, classes, selection } = this.props
     const { showCheckboxes, selectedMenu } = this.state
 
+    const marginTop = this.state.scrollTop > 32
+    const isRoot = current ? current.path === '/' : true
     const now = new Date()
-
-    const fileList =
-      content.map((node) => {
-        const isSelected = selection.type === 'ALL' || (selection.type === 'SOME' && selection.selectedElements.indexOf(node.id) >= 0)
-
-        const checkbox =
-          showCheckboxes ? (
-            isSelected ?
-              <Checkbox key={node.id + '_checked'} className={classes.contentCheck} checked={true} defaultChecked={true} onClick={() => this.onDeselectNode(node) } /> :
-              <Checkbox key={node.id + '_not-checked'} className={classes.contentCheck} onClick={() => this.onSelectNode(node) } />
-          ) : <Checkbox key={node.id + '_not-checked'} style={{ display: 'none' }} />
-
-        const icon =
-          node.nodeType === 'DIRECTORY' ?
-            <DirectoryIcon /> :
-            <FileIcon />
-
-        const menu =
-          <div>
-            <IconButton
-              aria-label="More"
-              aria-haspopup="true"
-              onClick={(e) => this.onToggleMenu(node, e)}
-            >
-              <MoreVertIcon />
-            </IconButton>
-            <Menu
-              id="simple-menu"
-              anchorEl={selectedMenu ? selectedMenu.anchor : undefined}
-              open={!!selectedMenu && (selectedMenu.nodeId === node.id)}
-              onClose={(e) => this.onToggleMenu(node, e)}
-            >
-              <MenuItem onClick={(e) => { this.onToggleMenu(node, e); this.onShowNodeDetail(node)}} >Détails</MenuItem>
-              <MenuItem>Télécharger</MenuItem>
-              <MenuItem>Supprimer</MenuItem>
-              <MenuItem>Partager</MenuItem>
-            </Menu>
-          </div>
-
-        return (
-          <div
-            onDragStart={(e) => e.dataTransfer.setData('text', node.id)}
-            className={classnames(classes.contentRow, { [classes.contentRowSelected]: isSelected})}
-            key={node.id}
-            onClick={() => {
-              if(!isSelected)
-                this.onSelectNode(node)
-              else
-                this.onDeselectNode(node)
-            }}
-          >
-            <div className={classes.contentCheck}>
-              {checkbox}
-            </div>
-            <Typography variant="body1" className={classnames(classes.contentName, { [classes.contentSelected]: isSelected })}>
-              <span className={classnames(classes.contentTypeIcon, { [classes.contentSelected]: isSelected })} >{icon}</span>
-              <span className={classes.contentNameValue} onClick={(e) => {this.onClickNode(node); e.stopPropagation()}}>{node.name}</span>
-            </Typography>
-            <Typography variant="body1" className={classes.contentModification} >
-              {distanceInWords(new Date(node.modification), now)}
-            </Typography>
-            <Typography variant="body1" className={classes.contentSize} >
-              {node.nodeType === 'DIRECTORY' ? '-' : node.humanReadableSize}
-            </Typography>
-            {menu}
-          </div>
-        )
-      })
 
     // TODO show errors ?
 
+    const rowRenderer = (props: ListRowProps) => {
+      const node = content[props.index]
+      const isSelected = selection.type === 'ALL' || (selection.type === 'SOME' && selection.selectedElements.indexOf(node.id) >= 0)
+
+      const checkbox =
+        showCheckboxes ? (
+          isSelected ?
+            <Checkbox key={node.id + '_checked'} className={classes.contentCheck} checked={true} defaultChecked={true} onClick={() => this.onDeselectNode(node) } /> :
+            <Checkbox key={node.id + '_not-checked'} className={classes.contentCheck} onClick={() => this.onSelectNode(node) } />
+        ) : <Checkbox key={node.id + '_not-checked'} style={{ display: 'none' }} />
+
+      const icon =
+        node.nodeType === 'DIRECTORY' ?
+          <DirectoryIcon /> :
+          <FileIcon />
+
+      const menu =
+        <div>
+          <IconButton
+            aria-label="More"
+            aria-haspopup="true"
+            onClick={(e) => this.onToggleMenu(node, e)}
+          >
+            <MoreVertIcon />
+          </IconButton>
+          <Menu
+            id="simple-menu"
+            anchorEl={selectedMenu ? selectedMenu.anchor : undefined}
+            open={!!selectedMenu && (selectedMenu.nodeId === node.id)}
+            onClose={(e) => this.onToggleMenu(node, e)}
+          >
+            <MenuItem onClick={(e) => { this.onToggleMenu(node, e); this.onShowNodeDetail(node)}} >Détails</MenuItem>
+            <MenuItem>Télécharger</MenuItem>
+            <MenuItem>Supprimer</MenuItem>
+            <MenuItem>Partager</MenuItem>
+          </Menu>
+        </div>
+
+      return (
+        <div
+          onDragStart={(e) => e.dataTransfer.setData('text', node.id)}
+          className={classnames(classes.contentRow, { [classes.contentRowSelected]: isSelected })}
+          key={node.id}
+          style={props.style}
+          onClick={() => {
+            if(!isSelected)
+              this.onSelectNode(node)
+            else
+              this.onDeselectNode(node)
+          }}
+        >
+          <div className={classes.contentCheck}>
+            {checkbox}
+          </div>
+          <Typography variant="body1" className={classnames(classes.contentName, { [classes.contentSelected]: isSelected })}>
+            <span className={classnames(classes.contentTypeIcon, { [classes.contentSelected]: isSelected })} >{icon}</span>
+            <span className={classes.contentNameValue} onClick={(e) => {this.onClickNode(node); e.stopPropagation()}}>{node.name}</span>
+          </Typography>
+          <Typography variant="body1" className={classes.contentModification} >
+            {distanceInWords(new Date(node.modification), now)}
+          </Typography>
+          <Typography variant="body1" className={classes.contentSize} >
+            {node.nodeType === 'DIRECTORY' ? '-' : node.humanReadableSize}
+          </Typography>
+          {menu}
+        </div>
+      )
+    }
+
     return (
-      <Paper className={classes.contentTable} >
+      <Paper className={classnames(classes.contentTable, { [classes.contentTableTransition]: marginTop && isRoot,  [classes.contentTableTransitionWithBreadCrumb]: marginTop && !isRoot })} >
         <div>
           <div className={classes.contentTableHead}>
             <div className={classes.contentHeadRow} >
@@ -307,12 +341,30 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
               <Typography variant="caption" className={classes.contentSize}>Taille</Typography>
             </div>
           </div>
-          <div>
-            {fileList.concat([ <Waypoint key="waypoint" onEnter={() => !loading ? this.onLoadMoreContent() : undefined } /> ])}
+          <div className={classnames({ [classes.contentTableSizeRoot]: isRoot && !marginTop , [classes.contentTableSize]: !isRoot && !marginTop, [classes.contentTableSizeExtended]: marginTop })} >
+            <AutoSizer>
+              {({ height, width }) => {
+                console.log(height)
+                console.log(width)
+                return (
+                  <List 
+                    style={{ outline: 'none' }}
+                    scr
+                    height={height}
+                    width={width}
+                    onScroll={(e: any) => this.setState({ scrollTop: e.scrollTop })}
+                    rowCount={content.length}
+                    rowHeight={45}
+                    rowRenderer={rowRenderer}
+                  />
+                )
+              }}
+            </AutoSizer>
           </div>
         </div>
       </Paper>
     )
+    
   }
 
 }
