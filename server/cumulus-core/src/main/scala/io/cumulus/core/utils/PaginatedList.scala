@@ -28,13 +28,11 @@ object PaginatedList {
     PaginatedList(Seq.empty, 0)
 
   implicit def writer[T](implicit writer: Writes[T]): Writes[PaginatedList[T]] = OWrites { list =>
-    val js = Json.obj(
+    Json.obj(
       "items"  -> JsArray(list.items.map(i => writer.writes(i))),
       "size"   -> list.items.size,
       "offset" -> list.offset
     )
-
-    js
   }
 
   implicit def reader[T](implicit reader: Reads[T]): Reads[PaginatedList[T]] = (

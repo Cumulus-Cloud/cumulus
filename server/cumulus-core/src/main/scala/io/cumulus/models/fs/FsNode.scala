@@ -62,7 +62,7 @@ object FsNode {
   implicit val writes: OWrites[FsNode] = writes(File.writes, Directory.writes)
   implicit val format: OFormat[FsNode] = OFormat(reads, writes)
 
-  // We want different non-implicit writers en readers for the database
+  // We want different non-implicit writers and readers for the database
   val internalReads: Reads[FsNode]    = reads(File.internalReads, Directory.internalReads)
   val internalWrites: OWrites[FsNode] = writes(File.internalWrites, Directory.internalWrites)
   val internalFormat: OFormat[FsNode] = OFormat(internalReads, internalWrites)
@@ -78,7 +78,7 @@ case class Directory(
   hidden: Boolean,
   owner: UUID,
   permissions: Seq[Permission],
-  content: Seq[FsNode] // TODO pagination here
+  content: Seq[FsNode]
 ) extends FsNode {
 
   def modified(now: LocalDateTime): Directory =

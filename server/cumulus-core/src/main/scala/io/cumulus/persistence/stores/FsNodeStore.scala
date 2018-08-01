@@ -113,7 +113,7 @@ class FsNodeStore(
 
   private val fsNodeIndexParse: RowParser[FsNodeIndex] =
     SqlParser.get[String](pathField) ~
-      SqlParser.get[FsNodeType](nodeTypeField) map {
+    SqlParser.get[FsNodeType](nodeTypeField) map {
       case path ~ nodeType =>
         FsNodeIndex(path, nodeType)
     }

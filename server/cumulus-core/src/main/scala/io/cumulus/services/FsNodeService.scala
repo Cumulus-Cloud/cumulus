@@ -6,6 +6,7 @@ import io.cumulus.core.Logging
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.{QueryBuilder, QueryE, QueryPagination}
 import io.cumulus.core.utils.PaginatedList
+import io.cumulus.core.utils.PaginatedList._
 import io.cumulus.core.validation.AppError
 import io.cumulus.models._
 import io.cumulus.models.fs._
@@ -59,17 +60,19 @@ class FsNodeService(
     * @param user The user performing the operation.
     * @param contentPagination The pagination for the contained elements.
     */
-  def findDirectory(path: Path, contentPagination: QueryPagination)(implicit user: User): Future[Either[AppError, Directory]] = {
+  def findDirectory(path: Path, contentPagination: QueryPagination)(implicit user: User): Future[Either[AppError, Directory]] =
+    getDirectory(path, contentPagination).commit()
 
-    for {
-      // Find the node
-      node <- find(path, contentPagination)
-
-      // Check if the node is a directory
-      directory <- QueryE.pure(isDirectoryValidation(node))
-    } yield directory
-
-  }.commit()
+  /**
+    * Finds the content of a directory by its path and owner. Will fail if the element does not exist or is not a directory.
+    * @param path The path of the directory.
+    * @param user The user performing the operation.
+    * @param contentPagination The pagination for the contained elements.
+    */
+  def findContent(path: Path, contentPagination: QueryPagination)(implicit user: User): Future[Either[AppError, PaginatedList[FsNode]]] =
+    getDirectory(path, contentPagination)
+      .map(_.content.toPaginatedList(contentPagination.offset))
+      .commit()
 
   /**
     * Finds a filesystem node by its path and owner. If the node is a directory, it will also contains the contained
@@ -288,7 +291,7 @@ class FsNodeService(
       updatedNode <- {
         node match {
           // For directory we want to find the contained fsNode, so we need an extra query
-          case directory: Directory =>
+          case directory: Directory if contentPagination.limit > 0 =>
             QueryE.lift {
               fsNodeStore.findContainedByPathAndUser(
                 path = path,
@@ -356,9 +359,20 @@ class FsNodeService(
     QueryE.getOrNotFound(fsNodeStore.findByPathAndUser(path, user))
   }
 
-  /** Gets a node and lock it for the transaction */
+  /** Gets a node and lock it for the transaction. */
   private def getNodeWithLock(path: Path)(implicit user: User) = {
     QueryE.getOrNotFound(fsNodeStore.findAndLockByPathAndUser(path, user))
+  }
+
+  /** Get a directory, and the node contained. */
+  private def getDirectory(path: Path, contentPagination: QueryPagination)(implicit user: User) = {
+    for {
+      // Find the node
+      node <- find(path, contentPagination)
+
+      // Check if the node is a directory
+      directory <- QueryE.pure(isDirectoryValidation(node))
+    } yield directory
   }
 
   /** Checks that a node is a file. */

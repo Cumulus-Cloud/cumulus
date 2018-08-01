@@ -5,11 +5,11 @@ import akka.util.ByteString
 import cats.data.EitherT
 import cats.implicits._
 import io.cumulus.controllers.payloads.fs._
-import io.cumulus.controllers.utils.{UserAuthentication, FileDownloaderUtils}
+import io.cumulus.controllers.utils.{FileDownloaderUtils, UserAuthentication}
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.bodyParser.{BodyParserJson, BodyParserStream}
-import io.cumulus.core.persistence.query.QueryPagination
+import io.cumulus.core.persistence.query.{QueryOrderingDirection, QueryPagination}
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.Path
 import io.cumulus.models.fs.{Directory, FsNodeType}
@@ -58,6 +58,23 @@ class FileSystemController(
         val pagination = QueryPagination(contentLimit, contentOffset)
 
         fsNodeService.findNode(path, pagination)
+      }
+    }
+
+  /**
+    * Gets the content of a directory by its path.
+    *
+    * @param path The path of the directory.
+    * @param contentLimit The maximum number of children elements to return. Used for pagination.
+    * @param contentOffset The offset of children elements to return. Used for pagination.
+    */
+  def getContent(path: Path, contentLimit: Option[Int], contentOffset: Option[Int]): Action[AnyContent] =
+    AuthenticatedAction.async { implicit request =>
+      ApiResponse {
+        // TODO add ordering
+        val pagination = QueryPagination(contentLimit, contentOffset)
+
+        fsNodeService.findContent(path, pagination)
       }
     }
 
