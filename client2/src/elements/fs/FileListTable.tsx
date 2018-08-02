@@ -11,9 +11,9 @@ import IconButton from '@material-ui/core/IconButton'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
-import { Checkbox } from '@material-ui/core'
+import { Checkbox, Button, Chip, CircularProgress } from '@material-ui/core'
 import classnames = require('classnames')
-import { List, ListRowProps, AutoSizer } from 'react-virtualized'
+import { List, ListRowProps, AutoSizer, InfiniteLoader } from 'react-virtualized'
 
 import { Directory, FsNode } from '../../models/FsNode'
 import { FsNodeSelection } from '../../actions/fs/fsState'
@@ -112,6 +112,27 @@ const styles = (theme: Theme) => createStyles({
     ['&:hover'] : {
       backgroundColor: 'rgba(41, 167, 160, 0.18)'
     }
+  },
+  rowLoadMore: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 0
+  },
+  loader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  loaderSpinner: {
+    display: 'block',
+    marginRight: theme.spacing.unit,
+    marginBottom: 0
+  },
+  loaderText: {
+    display: 'flex',
+    height: '50px',
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 })
 
@@ -135,7 +156,7 @@ interface Props {
   /** If there is more content to load. */
   hasMore: boolean
   /** Current node */
-  current?: FsNode
+  current?: Directory
   /** Content of the loaded current directory. */
   content: FsNode[]
   /** List of selected nodes. */
@@ -149,7 +170,7 @@ interface State {
   showCheckboxes: boolean,
   /** Select menu on a specified node. */
   selectedMenu?: { nodeId: string, anchor: HTMLElement }
-
+  /** State of the scroll of the table. */
   scrollTop: number
 }
 
@@ -177,8 +198,13 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     this.props.onNavigateDirectory(directory)
   }
 
+  private isRowLoaded(index: number) {
+    return !!this.props.content[index]
+  }
+
   private onLoadMoreContent() {
     this.props.onLoadMoreContent(this.props.content.length)
+    return Promise.resolve()
   }
 
   private onSelectNode(node: FsNode) {
@@ -239,6 +265,25 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
       this.setState({ selectedMenu: { nodeId: node.id, anchor: event.target as any } })
   }
 
+  private renderLoadingMoreRow(props: ListRowProps): React.ReactElement<{}> {
+    const { classes } = this.props
+
+    return (
+      <div
+        key={"load_more"}
+        style={props.style}
+        className={classes.loader}
+      >
+        <div className={classes.loaderSpinner} >
+          <CircularProgress size={20} color="primary"/>
+        </div>
+        <Typography variant="caption" className={classes.loaderText} >
+          {'Chargement de plus de contenu..'} 
+        </Typography>
+      </div>
+    )
+  }
+
   private renderRow(props: ListRowProps, node: FsNode): React.ReactElement<{}> {
     const { classes, selection } = this.props
     const { showCheckboxes, selectedMenu } = this.state
@@ -283,7 +328,6 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
 
     return (
       <div
-        onDragStart={(e) => e.dataTransfer.setData('text', node.id)}
         className={classnames(classes.contentRow, { [classes.contentRowSelected]: isSelected })}
         key={node.id}
         style={props.style}
@@ -320,42 +364,53 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     const isRoot = current ? current.path === '/' : true
 
     // TODO show errors ?
-
-    return (
-      <Paper className={classnames(classes.root, { [classes.transition]: marginTop && isRoot,  [classes.transitionWithBreadCrumb]: marginTop && !isRoot })} >
-        <div className={classes.contentTableHead}>
-          <div className={classes.contentHeadRow} >
-            { showCheckboxes ?
-              <div className={classes.contentCheck}>
-                <Checkbox checked={selection.type === 'ALL'} indeterminate={selection.type === 'SOME'} onClick={() => this.onToggleAllNodesSelection()} />
-              </div> :
-              <span/>
-            }
-            <Typography variant="caption" className={classes.contentName} >Nom</Typography>
-            <Typography variant="caption" className={classes.contentModification}>Modification</Typography>
-            <Typography variant="caption" className={classes.contentSize}>Taille</Typography>
+    if(current) {
+      return (
+        <Paper className={classnames(classes.root, { [classes.transition]: marginTop && isRoot,  [classes.transitionWithBreadCrumb]: marginTop && !isRoot })} >
+          <div className={classes.contentTableHead}>
+            <div className={classes.contentHeadRow} >
+              { showCheckboxes ?
+                <div className={classes.contentCheck}>
+                  <Checkbox checked={selection.type === 'ALL'} indeterminate={selection.type === 'SOME'} onClick={() => this.onToggleAllNodesSelection()} />
+                </div> :
+                <span/>
+              }
+              <Typography variant="caption" className={classes.contentName} >Nom</Typography>
+              <Typography variant="caption" className={classes.contentModification}>Modification</Typography>
+              <Typography variant="caption" className={classes.contentSize}>Taille</Typography>
+            </div>
           </div>
-        </div>
-        <div className={classes.contentTableBody} >
-          <AutoSizer>
-            {({ height, width }) => {
-              return (
-                <List 
-                  style={{ outline: 'none' }}
-                  scr
-                  height={height}
-                  width={width}
-                  onScroll={(e: any) => this.setState({ scrollTop: e.scrollTop })}
-                  rowCount={content.length}
-                  rowHeight={45}
-                  rowRenderer={(props: ListRowProps) => this.renderRow(props, content[props.index])}
-                />
-              )
-            }}
-          </AutoSizer>
-        </div>
-      </Paper>
-    )
+          <div className={classes.contentTableBody} >
+
+            <InfiniteLoader
+              isRowLoaded={(props) => this.isRowLoaded(props.index)}
+              loadMoreRows={(props) => this.onLoadMoreContent()}
+              rowCount={current.size}
+            >
+            {({ onRowsRendered, registerChild }) => (
+              <AutoSizer>
+                {({ height, width }) => {
+                  return (
+                    <List 
+                      onRowsRendered={onRowsRendered}
+                      ref={registerChild}
+                      style={{ outline: 'none' }}
+                      height={height}
+                      width={width}
+                      onScroll={(e: any) => this.setState({ scrollTop: e.scrollTop })}
+                      rowCount={content.length + 1}
+                      rowHeight={45}
+                      rowRenderer={(props: ListRowProps) => props.index < content.length ? this.renderRow(props, content[props.index]) : this.renderLoadingMoreRow(props) }
+                    />
+                  )
+                }}
+              </AutoSizer>
+            )}
+            </InfiniteLoader>
+          </div>
+        </Paper>
+      )
+    }
   }
 
 }

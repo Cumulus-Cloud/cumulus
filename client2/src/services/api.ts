@@ -23,9 +23,9 @@ export const ApiUtils = {
 
   urlBase: urlBase,
 
-  maxResultDefault: 50000, // TODO what value to use ?
+  maxResultDefault: 100, // TODO what value to use ?
 
-  pagination(limit: number = 50000, offset: number = 0): Map<string, string> {
+  pagination(limit: number = 100, offset: number = 0): Map<string, string> {
     return new Map([['offset', `${offset}`], ['limit', `${limit}`]])
   },
 

@@ -13,7 +13,7 @@ import ShareIcon from '@material-ui/icons/Share'
 import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder'
 import TextField from '@material-ui/core/TextField'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
-import { Route, Redirect, RouteComponentProps, Switch } from 'react-router-dom'
+import { Route, Redirect, Switch } from 'react-router-dom'
 
 import withRoot from '../elements/utils/withRoot'
 import CumulusAppBar from '../elements/CumulusAppBar'
@@ -27,8 +27,7 @@ import UploadPopupContainer from '../elements/fs/upload/UploadPopupContainer'
 import UploadProgressPopupContainer from '../elements/fs/upload/UploadProgressPopupContainer'
 import SnackbarsContainer from '../elements/notification/snackbarsContainer'
 import { FsNode } from '../models/FsNode';
-import DetailPopupContainer from '../elements/fs/detail/DetailPopupContainer';
-import { ConnectedRouter } from 'connected-react-router';
+import DetailPopupContainer from '../elements/fs/detail/DetailPopupContainer'
 
 
 const styles = (theme: Theme) => createStyles({

@@ -72,7 +72,7 @@ const styles = (theme: Theme) => createStyles({
   },
   previewImage: {
     border: '1px solid rgba(0, 0, 0, 0.12)',
-    heigh: 200,
+    height: 200,
     width: 200,
     [theme.breakpoints.down('xs')]: {
       width: '100%'

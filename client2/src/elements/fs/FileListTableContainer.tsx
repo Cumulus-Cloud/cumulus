@@ -2,7 +2,7 @@ import { connect, Dispatch } from 'react-redux'
 
 import GlobalState from '../../actions/state'
 import { getDirectoryContent, selectNode, selectAllNodes, deselectNode, deselectAllNodes, showNodeDetails } from '../../actions/fs/fsActions'
-import { togglePopup } from './../../actions/popup/popupActions'
+import { togglePopup, isSelected } from './../../actions/popup/popupActions'
 import FilesListTable from './FileListTable'
 import { push } from 'connected-react-router'
 import Routes from '../../services/routes';
@@ -10,12 +10,15 @@ import { FsNode, Directory } from '../../models/FsNode';
 import { withRouter, RouteComponentProps } from 'react-router';
 
 function mapStateToProps(state: GlobalState) {
+  const selection = isSelected('NODE_DETAILS')(state.router.location)
+
   return {
     loading: state.fs.loadingContent,
     hasMore: true, // TODO detect if more content is available
     current: state.fs.current,
     content: state.fs.content || [],
-    selection: state.fs.selectedContent
+    selection: state.fs.selectedContent,
+    focus: selection.param
   }
 }
 

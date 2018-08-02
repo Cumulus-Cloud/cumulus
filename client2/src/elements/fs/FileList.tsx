@@ -206,8 +206,8 @@ class FilesList extends React.Component<PropsWithStyle, State> {
         >
         { dropzoneActive &&
           <Fade in={true} >
-            <div className={classes.dropzone}>
-              <div className={classes.dropzoneInner}>
+            <div className={classes.dropzone} >
+              <div className={classes.dropzoneInner} >
                 <CloudIcon className={classes.dropzoneIcon} />
                 <Typography variant="display1" className={classes.dropzoneText} >
                   Lâcher pour ajouter au dossier courant
@@ -220,7 +220,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
           <div className={classes.contentWrapper} >
             {
               loading ?
-              <div>
+              <div className={classes.content} >
                 <CircularProgress className={classes.loader} size={100} color="primary"/>
               </div> :
               <Slide direction="up" in={true}>
