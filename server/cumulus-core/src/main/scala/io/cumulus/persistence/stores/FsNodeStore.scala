@@ -10,7 +10,7 @@ import io.cumulus.core.persistence.query._
 import io.cumulus.core.utils.PaginatedList
 import io.cumulus.core.utils.PaginatedList._
 import io.cumulus.models.Path
-import io.cumulus.models.fs.{Directory, FsNode, FsNodeIndex, FsNodeType}
+import io.cumulus.models.fs.{FsNode, FsNodeIndex, FsNodeType}
 import io.cumulus.models.user.User
 import io.cumulus.persistence.stores.FsNodeStore._
 import io.cumulus.persistence.stores.orderings.FsNodeOrdering
@@ -47,6 +47,17 @@ class FsNodeStore(
     }
 
   /**
+    * Find by a primary key and a provided user, used as the owner.
+    * @param id The ID of the node.
+    * @param user The owner of the element.
+    */
+  def findByIdAndUser(id: UUID, user: User): Query[CumulusDB, Option[FsNode]] =
+    qb { implicit c =>
+      SQL"SELECT #$metadataField FROM #$table WHERE #$pkField = $id AND #$ownerField = ${user.id}"
+        .as(rowParser.singleOpt)
+    }
+
+  /**
     * Find by a provided path and a provided user, used as the owner.
     * @param path The path to look for.
     * @param user The owner of the element.
@@ -58,7 +69,18 @@ class FsNodeStore(
     }
 
   /**
-    * Find the contained elements for a provided path and user.
+    * Find by a provided path and a provided user, used as the owner.
+    * @param id The ID of the node.
+    * @param user The owner of the element.
+    */
+  def findAndLockByIdAndUser(id: UUID, user: User): Query[CumulusDB, Option[FsNode]] =
+    qb { implicit c =>
+      SQL"SELECT #$metadataField FROM #$table WHERE #$pkField = $id AND #$ownerField = ${user.id} FOR UPDATE"
+        .as(rowParser.singleOpt)
+    }
+
+  /**
+    * Find the contained elements for a provided path and user. Paginated.
     * @param path The parent path of the elements to look for.
     * @param user The owner of the elements.
     */
@@ -75,6 +97,24 @@ class FsNodeStore(
       SQL"SELECT #$metadataField FROM #$table WHERE #$ownerField = ${user.id} AND #$pathField ~ $regex #${ordering.toORDER} #${pagination.toLIMIT}"
         .as(rowParser.*)
         .toPaginatedList(pagination.offset)
+    }
+  }
+
+  /**
+    * Count the contained elements for a provided path and user.
+    * @param path The parent path of the elements to look for.
+    * @param user The owner of the elements.
+    */
+  def countContainedByPathAndUser(
+    path: Path,
+    user: User
+  ): Query[CumulusDB, Double] = {
+    // Match directory starting by the location, but only on the direct level
+    val regex = if (path.isRoot) "^/[^/]+$" else s"^${path.toString}/[^/]+$$"
+
+    qb { implicit c =>
+      SQL"SELECT COUNT(*) FROM #$table WHERE #$ownerField = ${user.id} AND #$pathField ~ $regex"
+        .as(SqlParser.scalar[Double].single)
     }
   }
 
@@ -118,26 +158,18 @@ class FsNodeStore(
         FsNodeIndex(path, nodeType)
     }
 
-  def getParams(fsNode: FsNode): Seq[NamedParameter] = {
-    val updatedFsNode = fsNode match {
-      case directory: Directory =>
-        directory.copy(content = Seq.empty) // Always remove content for directories
-      case other =>
-        other
-    }
-
+  def getParams(node: FsNode): Seq[NamedParameter] =
     Seq(
-      'id           -> updatedFsNode.id,
-      'path         -> updatedFsNode.path.toString,
-      'name         -> updatedFsNode.path.name,
-      'node_type    -> updatedFsNode.nodeType,
-      'creation     -> updatedFsNode.creation,
-      'modification -> updatedFsNode.modification,
-      'hidden       -> updatedFsNode.hidden,
-      'user_id      -> updatedFsNode.owner,
-      'metadata     -> FsNode.internalFormat.writes(updatedFsNode)
+      'id           -> node.id,
+      'path         -> node.path.toString,
+      'name         -> node.path.name,
+      'node_type    -> node.nodeType,
+      'creation     -> node.creation,
+      'modification -> node.modification,
+      'hidden       -> node.hidden,
+      'user_id      -> node.owner,
+      'metadata     -> FsNode.internalFormat.writes(node)
     )
-  }
 
 }
 

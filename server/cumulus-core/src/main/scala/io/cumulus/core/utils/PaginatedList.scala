@@ -1,6 +1,5 @@
 package io.cumulus.core.utils
 
-import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 case class PaginatedList[T](
@@ -33,13 +32,6 @@ object PaginatedList {
       "size"   -> list.items.size,
       "offset" -> list.offset
     )
-  }
-
-  implicit def reader[T](implicit reader: Reads[T]): Reads[PaginatedList[T]] = (
-    (__ \ "items").read[Seq[T]] ~
-    (__ \ "offset").read[Int]
-  ) { (items: Seq[T], offset: Int) =>
-      PaginatedList(items, offset)
   }
 
 }

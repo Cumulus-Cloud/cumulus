@@ -1,12 +1,12 @@
 package io.cumulus.services
 
 import java.time.LocalDateTime
+import java.util.UUID
 
 import io.cumulus.core.Logging
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.{QueryBuilder, QueryE, QueryPagination}
 import io.cumulus.core.utils.PaginatedList
-import io.cumulus.core.utils.PaginatedList._
 import io.cumulus.core.validation.AppError
 import io.cumulus.models._
 import io.cumulus.models.fs._
@@ -14,7 +14,6 @@ import io.cumulus.models.user.User
 import io.cumulus.persistence.storage.StorageReference
 import io.cumulus.persistence.stores.filters.FsNodeFilter
 import io.cumulus.persistence.stores.orderings.FsNodeOrdering
-import io.cumulus.persistence.stores.orderings.FsNodeOrderingType.{OrderByFilenameAsc, OrderByNodeType}
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore}
 import play.api.libs.json.__
 
@@ -31,6 +30,7 @@ class FsNodeService(
 
   /**
     * Return the index (all the files) for the current user.
+    *
     * @param user The user performing the operation.
     */
   def getIndex(implicit user: User): Future[Right[Nothing, List[FsNodeIndex]]] = {
@@ -38,15 +38,34 @@ class FsNodeService(
   }
 
   /**
-    * Finds a file by its path and owner. Will fail if the element does not exist or is not a file.
-    * @param path The path of the file.
+    * Finds a filesystem node by its path and owner.
+    *
+    * @param path The path of the node.
     * @param user The user performing the operation.
     */
-  def findFile(path: Path)(implicit user: User): Future[Either[AppError, File]] = {
+  def findNode(path: Path)(implicit user: User): Future[Either[AppError, FsNode]] =
+    getNode(path).commit()
+
+  /**
+    * Finds a filesystem node by its ID.
+    *
+    * @param id The unique ID of the node.
+    * @param user The user performing the operation.
+    */
+  def findNode(id: UUID)(implicit user: User): Future[Either[AppError, FsNode]] =
+    getNode(id).commit()
+
+  /**
+    * Finds a file by its ID and owner. Will fail if the element does not exist or is not a file.
+    *
+    * @param id The unique ID of the file.
+    * @param user The user performing the operation.
+    */
+  def findFile(id: UUID)(implicit user: User): Future[Either[AppError, File]] = {
 
     for {
       // Find the node
-      node <- find(path, QueryPagination.empty)
+      node <- getNode(id)
 
       // Check if the node is a file
       file <- QueryE.pure(isFileValidation(node))
@@ -55,37 +74,45 @@ class FsNodeService(
   }.commit()
 
   /**
-    * Finds a directory by its path and owner. Will fail if the element does not exist or is not a directory.
-    * @param path The path of the directory.
+    * Finds a directory by its ID and owner. Will fail if the element does not exist or is not a directory.
+    * @param id The unique ID of the directory.
     * @param user The user performing the operation.
-    * @param contentPagination The pagination for the contained elements.
     */
-  def findDirectory(path: Path, contentPagination: QueryPagination)(implicit user: User): Future[Either[AppError, Directory]] =
-    getDirectory(path, contentPagination).commit()
+  def findDirectory(id: UUID)(implicit user: User): Future[Either[AppError, Directory]] =
+    getDirectory(id).commit()
 
   /**
-    * Finds the content of a directory by its path and owner. Will fail if the element does not exist or is not a directory.
-    * @param path The path of the directory.
+    * Finds the content of a directory by its ID and owner. Will fail if the element does not exist or is not a directory.
+    *
+    * @param id The unique ID of the directory.
     * @param user The user performing the operation.
-    * @param contentPagination The pagination for the contained elements.
+    * @param pagination The pagination for the contained elements.
+    * @param ordering The ordering to use. If changed between paginated result, pages may be incoherent because the
+    *                 pages order will be changed.
     */
-  def findContent(path: Path, contentPagination: QueryPagination)(implicit user: User): Future[Either[AppError, PaginatedList[FsNode]]] =
-    getDirectory(path, contentPagination)
-      .map(_.content.toPaginatedList(contentPagination.offset))
-      .commit()
+  def findContent(
+    id: UUID,
+    pagination: QueryPagination,
+    ordering: FsNodeOrdering
+  )(implicit user: User): Future[Either[AppError, DirectoryWithContent]] = {
 
-  /**
-    * Finds a filesystem node by its path and owner. If the node is a directory, it will also contains the contained
-    * nodes.
-    * @param path The path of the node.
-    * @param user The user performing the operation.
-    * @param contentPagination The pagination for the contained elements.
-    */
-  def findNode(path: Path, contentPagination: QueryPagination)(implicit user: User): Future[Either[AppError, FsNode]] =
-    find(path, contentPagination).commit()
+    for {
+      // Get the directory
+      directory <- getDirectory(id)
+
+      // Get the paginated content
+      content <- QueryE.lift(fsNodeStore.findContainedByPathAndUser(directory.path, user, pagination, ordering))
+
+      // Get the total number of entries
+      total <- QueryE.lift(fsNodeStore.countContainedByPathAndUser(directory.path, user))
+
+    } yield DirectoryWithContent(directory, content, total)
+
+  }.commit()
 
   /**
     * Search through all the user's nodes.
+    *
     * @param parent The node parent.
     * @param name The node's partial name.
     * @param nodeType The optional node type.
@@ -112,17 +139,29 @@ class FsNodeService(
     * Check that a new node can be created. Used to non-atomically check for a new file that the uploaded file can be
     * created and to avoid useless computation. Node that verifications will still be made during the final file
     * creation.
-    * @param path The new file path.
+    *
+    * @param id The parent directory unique ID.
+    * @param filename The filename of the file to be soon created.
     * @param user The user performing the operation.
     */
-  def checkForNewNode(path: Path)(implicit user: User): Future[Either[AppError, Path]] = {
+  def checkForNewNode(id: UUID, filename: String)(implicit user: User): Future[Either[AppError, Path]] = {
 
     for {
+      // Get the parent
+      parentDirectory <- getDirectory(id)
+
+      // Sanitize the filename
+      path <- QueryE.pure {
+        val name = Path.sanitize(filename)
+
+        if (name.contains("/"))
+          Left(AppError.validation("validation.fs-node.invalid-filename", filename))
+        else
+          Right(parentDirectory.path ++ name)
+      }
+
       // Check if something with the same path already exists for the current user
       _ <- doesntAlreadyExists(path)
-
-      // Check that the parent exists and is a directory
-      _ <- getParent(path)
 
     } yield path
 
@@ -193,32 +232,32 @@ class FsNodeService(
 
   /**
     * Moves a node to the provided path. The destination should not already exists and a directory parent.
-    * @param path The node to move.
+    * @param id The unique ID of the node to move.
     * @param to The new path of the node.
     * @param user The user performing the operation.
     */
-  def moveNode(path: Path, to: Path)(implicit user: User): Future[Either[AppError, FsNode]] = {
+  def moveNode(id: UUID, to: Path)(implicit user: User): Future[Either[AppError, FsNode]] = {
 
     for {
+      // Search the node & its parent by path and owner
+      node       <- getNodeWithLock(id)
+      nodeParent <- getParentWithLock(node.path)
+
       // Test if the moved node is not the fs root
       _ <- QueryE.pure {
-        if(path.isRoot)
+        if(node.path.isRoot)
           Left(AppError.validation("validation.fs-node.root-move"))
         else
           Right(())
       }
-
-      // Search the node & its parent by path and owner
-      node       <- getNodeWithLock(path)
-      nodeParent <- getParentWithLock(node.path)
 
       // Search the target node
       _ <- doesntAlreadyExists(to)
 
       // Check that the moved node is not moved inside itself
       _ <- QueryE.pure {
-        if(node.nodeType == FsNodeType.DIRECTORY && to.isChildOf(path))
-          Left(AppError.validation("validation.fs-node.inside-move", path))
+        if(node.nodeType == FsNodeType.DIRECTORY && to.isChildOf(node.path))
+          Left(AppError.validation("validation.fs-node.inside-move", node.path))
         else
           Right(())
       }
@@ -237,30 +276,30 @@ class FsNodeService(
   }.commit()
 
   /**
-    * Deletes a node in the file system. The deleted node should ne be a directory with children, and should not be
+    * Deletes a node in the file system. The deleted node should not be a directory with children, and should not be
     * shared or have any children shared. The content will not be deleted.
     *
-    * @param path The path of the node.
+    * @param id The unique ID of the node.
     * @param user The user performing the operation.
     */
-  def deleteNode(path: Path)(implicit user: User): Future[Either[AppError, FsNode]] = {
+  def deleteNode(id: UUID)(implicit user: User): Future[Either[AppError, FsNode]] = {
 
     for {
+      // Search the node by path and owner
+      node <- getNodeWithLock(id)
+
       // Test if the deleted node is not the fs root
       _ <- QueryE.pure {
-        if(path.isRoot)
+        if(node.path.isRoot)
           Left(AppError.validation("validation.fs-node.root-delete"))
         else
           Right(())
       }
 
-      // Search the node by path and owner
-      node <- getNodeWithLock(path)
-
       // Check that no children element exists
-      _ <- QueryE(fsNodeStore.findContainedByPathAndUser(path, user, QueryPagination.first).map {
+      _ <- QueryE(fsNodeStore.findContainedByPathAndUser(node.path, user, QueryPagination.first).map {
         case contained if contained.nonEmpty =>
-          Left(AppError.validation("validation.fs-node.non-empty", path))
+          Left(AppError.validation("validation.fs-node.non-empty", node.path))
         case _ =>
           Right(())
       })
@@ -279,34 +318,6 @@ class FsNodeService(
     } yield node
 
   }.commit()
-
-  /** Find a node by path and owner */
-  private def find(path: Path, contentPagination: QueryPagination)(implicit user: User): QueryE[CumulusDB, FsNode] = {
-
-    for {
-      // Search the node by path and owner
-      node <- getNode(path)
-
-      // Update the node if the node is a directory
-      updatedNode <- {
-        node match {
-          // For directory we want to find the contained fsNode, so we need an extra query
-          case directory: Directory if contentPagination.limit > 0 =>
-            QueryE.lift {
-              fsNodeStore.findContainedByPathAndUser(
-                path = path,
-                user = user,
-                pagination = contentPagination,
-                ordering = FsNodeOrdering.of(OrderByNodeType, OrderByFilenameAsc)
-              )
-            }.map(c => directory.copy(content = c.items))
-          case other: FsNode =>
-            QueryE.pure(other)
-        }
-      }
-    } yield updatedNode
-
-  }
 
   /**
     * Creates a node into the filesystem. The path of the node should be unique and its parent should exists.
@@ -355,8 +366,17 @@ class FsNodeService(
   }
 
   /** Gets a node and returns an error if the node doesn't exist. */
-  private def getNode(path: Path)(implicit user: User) = {
+  private def getNode(path: Path)(implicit user: User) =
     QueryE.getOrNotFound(fsNodeStore.findByPathAndUser(path, user))
+
+  /** Gets a node and returns an error if the node doesn't exist. */
+  private def getNode(id: UUID)(implicit user: User) = {
+    QueryE.getOrNotFound(fsNodeStore.findByIdAndUser(id, user))
+  }
+
+  /** Gets a node and lock it for the transaction. */
+  private def getNodeWithLock(id: UUID)(implicit user: User) = {
+    QueryE.getOrNotFound(fsNodeStore.findAndLockByIdAndUser(id, user))
   }
 
   /** Gets a node and lock it for the transaction. */
@@ -364,11 +384,11 @@ class FsNodeService(
     QueryE.getOrNotFound(fsNodeStore.findAndLockByPathAndUser(path, user))
   }
 
-  /** Get a directory, and the node contained. */
-  private def getDirectory(path: Path, contentPagination: QueryPagination)(implicit user: User) = {
+  /** Get a directory. */
+  private def getDirectory(id: UUID)(implicit user: User) = {
     for {
       // Find the node
-      node <- find(path, contentPagination)
+      node <- getNode(id)
 
       // Check if the node is a directory
       directory <- QueryE.pure(isDirectoryValidation(node))
@@ -392,18 +412,6 @@ class FsNodeService(
       case _ =>
         Left(AppError.validation("validation.fs-node.not-directory", node.path))
     }
-
-  /** Gets the parent directory of the element or returns a not found error. */
-  private def getParent(path: Path)(implicit user: User): QueryE[CumulusDB, Directory] = {
-    QueryE {
-      fsNodeStore.findByPathAndUser(path.parent, user).map {
-        case Some(directory: Directory) =>
-          Right(directory)
-        case _ =>
-          Left(AppError.validation(__ \ "path", "validation.fs-node.no-parent", path.parent))
-      }
-    }
-  }
 
   /** Gets the parent directory of the element and lock it for the transaction. */
   private def getParentWithLock(path: Path)(implicit user: User): QueryE[CumulusDB, Directory] = {

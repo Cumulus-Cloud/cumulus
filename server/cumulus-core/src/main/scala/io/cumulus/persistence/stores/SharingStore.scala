@@ -9,7 +9,6 @@ import io.cumulus.core.persistence.anorm.{AnormPKOperations, AnormRepository, An
 import io.cumulus.core.persistence.query.{Query, QueryBuilder, QueryPagination}
 import io.cumulus.core.utils.PaginatedList
 import io.cumulus.core.utils.PaginatedList._
-import io.cumulus.models._
 import io.cumulus.models.fs.FsNode
 import io.cumulus.models.sharing.Sharing
 import io.cumulus.models.user.User
@@ -26,57 +25,40 @@ class SharingStore(
   val pkField: String = SharingStore.pkField
 
   /**
-    * Find the sharings information for a provided user.
+    * Find the sharing for a provided reference.
+    *
+    * @param reference The unique reference to search.
+    */
+  def findByReference(reference: String): Query[CumulusDB, Option[Sharing]] =
+    qb { implicit c =>
+
+      SQL"""
+          SELECT #$table.#$metadataField
+          FROM #$table
+          WHERE #$referenceField = $reference
+        """.as(rowParser.singleOpt)
+    }
+
+  /**
+    * Find the sharings for a provided user.
+    *
     * @param user The user.
     * @param pagination The pagination to use.
     */
-  def findInfoByUser(user: User, pagination: QueryPagination): Query[CumulusDB, PaginatedList[SharingInfo]] =
+  def findByUser(user: User, pagination: QueryPagination): Query[CumulusDB, PaginatedList[Sharing]] =
     qb { implicit c =>
-      SQL"""
-          SELECT #$table.#$metadataField, #${FsNodeStore.table}.#${FsNodeStore.metadataField}
-          FROM #$table
-          INNER JOIN #${FsNodeStore.table}
-          ON #$table.#$fsNodeField = #${FsNodeStore.table}.#${FsNodeStore.pkField}
-          WHERE #$table.#$ownerField = ${user.id}
-          #${pagination.toLIMIT}
-        """.as(withFsNodeRowParser.*).toPaginatedList(pagination.offset)
-    }
 
-  /**
-    * Find the sharings information for a provided node.
-    * @param fsNode The node.
-    * @param pagination The pagination to use.
-    */
-  def findInfoByNode(fsNode: FsNode, pagination: QueryPagination): Query[CumulusDB, PaginatedList[SharingInfo]] =
-    qb { implicit c =>
       SQL"""
-          SELECT #$table.#$metadataField, #${FsNodeStore.table}.#${FsNodeStore.metadataField}
+          SELECT #$table.#$metadataField
           FROM #$table
-          INNER JOIN #${FsNodeStore.table}
-          ON #$table.#$fsNodeField = #${FsNodeStore.table}.#${FsNodeStore.pkField}
-          WHERE #$table.#$fsNodeField = ${fsNode.id}
+          WHERE #$ownerField = ${user.id}
           #${pagination.toLIMIT}
-        """.as(withFsNodeRowParser.*).toPaginatedList(pagination.offset)
+        """.as(rowParser.*).toPaginatedList(pagination.offset)
     }
 
   /**
     * Find the sharings for a provided node.
-    * @param reference The unique reference to search.
-    */
-  def findInfoByReference(reference: String): Query[CumulusDB, Option[SharingInfo]] =
-    qb { implicit c =>
-
-      SQL"""
-          SELECT #$table.#$metadataField, #${FsNodeStore.table}.#${FsNodeStore.metadataField}
-          FROM #$table
-          INNER JOIN #${FsNodeStore.table}
-          ON #$table.#$fsNodeField = #${FsNodeStore.table}.#${FsNodeStore.pkField}
-          WHERE #$referenceField = $reference
-        """.as(withFsNodeRowParser.singleOpt)
-    }
-
-  /**
-    * Find the sharings for a provided node.
+    *
     * @param fsNode The shared node.
     * @param pagination The pagination to use.
     */
@@ -93,6 +75,7 @@ class SharingStore(
 
   /**
     * Find and lock the sharings for a provided node.
+    *
     * @param fsNode The shared node.
     */
   def findAndLockByNode(fsNode: FsNode): Query[CumulusDB, List[Sharing]] =
@@ -105,19 +88,6 @@ class SharingStore(
           FOR UPDATE
         """.as(rowParser.*)
     }
-
-  val withFsNodeRowParser: RowParser[SharingInfo] = {
-    implicit def sharingColumn: Column[Sharing] = AnormSupport.column[Sharing](Sharing.internalFormat)
-    implicit def fsNodeColumn: Column[FsNode]   = AnormSupport.column[FsNode](FsNode.internalFormat)
-
-    (
-      SqlParser.get[Sharing](s"$table.$metadataField") ~
-      SqlParser.get[FsNode](s"${FsNodeStore.table}.${FsNodeStore.metadataField}")
-    ).map {
-      case sharing ~ fsNode =>
-        SharingInfo(sharing, fsNode)
-    }
-  }
 
   val rowParser: RowParser[Sharing] = {
     implicit val sharingColumn: Column[Sharing] =
