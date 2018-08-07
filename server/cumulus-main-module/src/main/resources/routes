@@ -30,7 +30,7 @@ GET     /validateEmail                   io.cumulus.controllers.UserController.v
 # API - FS routes
 GET     /api/fs/index                    io.cumulus.controllers.FileSystemController.index
 GET     /api/fs/search                   io.cumulus.controllers.FileSystemController.search(path: io.cumulus.models.Path, name: String, nodeType: Option[io.cumulus.models.fs.FsNodeType], `type`: Option[String], limit: Option[Int], offset: Option[Int])
-PUT     /api/fs                          io.cumulus.controllers.FileSystemController.create(path: io.cumulus.models.Path)
+PUT     /api/fs                          io.cumulus.controllers.FileSystemController.create
 GET     /api/fs                          io.cumulus.controllers.FileSystemController.getByPath(path: io.cumulus.models.Path)
 GET     /api/fs/:nodeId                  io.cumulus.controllers.FileSystemController.get(nodeId: java.util.UUID)
 GET     /api/fs/:nodeId/content          io.cumulus.controllers.FileSystemController.getContent(nodeId: java.util.UUID, limit: Option[Int], offset: Option[Int], order: Option[io.cumulus.persistence.stores.orderings.FsNodeOrdering])

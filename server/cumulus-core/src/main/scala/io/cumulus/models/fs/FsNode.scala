@@ -252,7 +252,7 @@ object File {
 case class DirectoryWithContent(
   directory: Directory,
   content: PaginatedList[FsNode],
-  totalContentLength: Double
+  totalContentLength: Long
 )
 
 object DirectoryWithContent {
@@ -260,7 +260,7 @@ object DirectoryWithContent {
   implicit lazy val writer: OWrites[DirectoryWithContent] = (
     (JsPath \ "directory").write[Directory](Directory.format) and
     (JsPath \ "content").write[PaginatedList[FsNode]](PaginatedList.writer[FsNode](FsNode.writer)) and
-    (JsPath \ "name").write[Double]
+    (JsPath \ "totalContentLength").write[Long]
   ){ directoryContent =>
     (
       directoryContent.directory,

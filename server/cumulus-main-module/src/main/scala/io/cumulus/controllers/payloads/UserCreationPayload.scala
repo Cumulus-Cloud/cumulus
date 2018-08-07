@@ -11,7 +11,7 @@ case class UserCreationPayload(
 
 object UserCreationPayload {
 
-  implicit val reads: Reads[UserCreationPayload] =
+  implicit val reader: Reads[UserCreationPayload] =
     (
       (__ \ "login").read[String](minLength[String](4) keepAnd maxLength[String](64)) and
       (__ \ "email").read[String](pattern("^.+@.+$".r) keepAnd maxLength[String](255))

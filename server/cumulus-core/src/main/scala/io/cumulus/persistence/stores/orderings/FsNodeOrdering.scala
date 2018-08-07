@@ -5,7 +5,7 @@ import enumeratum.{Enum, EnumEntry}
 import io.cumulus.core.persistence.query.QueryOrderingDirection.{ASC, DESC}
 import io.cumulus.core.persistence.query.{QueryOrdering, QueryOrderingDirection, SqlOrdering}
 import io.cumulus.persistence.stores.FsNodeStore._
-import io.cumulus.persistence.stores.orderings.FsNodeOrderingType.OrderByNodeType
+import io.cumulus.persistence.stores.orderings.FsNodeOrderingType.{OrderByFilenameAsc, OrderByNodeType}
 import play.api.mvc.QueryStringBindable
 
 
@@ -47,7 +47,7 @@ object FsNodeOrdering {
     FsNodeOrdering(Seq.empty)
 
   val default: FsNodeOrdering =
-    FsNodeOrdering.of(OrderByNodeType)
+    FsNodeOrdering.of(OrderByNodeType, OrderByFilenameAsc)
 
   def of(orders: FsNodeOrderingType*): FsNodeOrdering =
     FsNodeOrdering(orders)

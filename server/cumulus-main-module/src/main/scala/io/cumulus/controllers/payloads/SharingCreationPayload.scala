@@ -13,7 +13,7 @@ case class SharingCreationPayload(
 
 object SharingCreationPayload {
 
-  implicit val reads: Reads[SharingCreationPayload] =
+  implicit val reader: Reads[SharingCreationPayload] =
     Json.reads[SharingCreationPayload]
 
 }

@@ -108,13 +108,13 @@ class FsNodeStore(
   def countContainedByPathAndUser(
     path: Path,
     user: User
-  ): Query[CumulusDB, Double] = {
+  ): Query[CumulusDB, Long] = {
     // Match directory starting by the location, but only on the direct level
     val regex = if (path.isRoot) "^/[^/]+$" else s"^${path.toString}/[^/]+$$"
 
     qb { implicit c =>
       SQL"SELECT COUNT(*) FROM #$table WHERE #$ownerField = ${user.id} AND #$pathField ~ $regex"
-        .as(SqlParser.scalar[Double].single)
+        .as(SqlParser.scalar[Long].single)
     }
   }
 

@@ -6,7 +6,7 @@ import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import cats.data.EitherT
 import cats.implicits._
-import io.cumulus.controllers.payloads.FsNodeUpdatePayload
+import io.cumulus.controllers.payloads.{DirectoryCreationPayload, FsNodeUpdatePayload}
 import io.cumulus.controllers.utils.{FileDownloaderUtils, UserAuthentication}
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.ApiUtils
@@ -51,10 +51,11 @@ class FileSystemController(
     *
     * @param path The path of the new directory.
     */
-  def create(path: Path): Action[AnyContent] =
-    AuthenticatedAction.async { implicit request =>
+  def create: Action[DirectoryCreationPayload] =
+    AuthenticatedAction.async(parseJson[DirectoryCreationPayload]) { implicit request =>
       ApiResponse {
-        val directory = Directory.create(request.authenticatedSession.user, path)
+        val payload = request.body
+        val directory = Directory.create(request.authenticatedSession.user, payload.path)
 
         fsNodeService.createDirectory(directory)
       }

@@ -9,7 +9,7 @@ case class FsNodeUpdatePayload(
 
 object FsNodeUpdatePayload {
 
-  implicit val reads: Reads[FsNodeUpdatePayload] =
+  implicit val reader: Reads[FsNodeUpdatePayload] =
     Json.reads[FsNodeUpdatePayload]
 
 }
