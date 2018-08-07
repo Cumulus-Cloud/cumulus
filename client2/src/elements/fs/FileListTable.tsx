@@ -154,11 +154,12 @@ interface Props {
   /** If more content is loading. */
   loading: boolean
   /** If there is more content to load. */
-  hasMore: boolean
   /** Current node */
   current?: Directory
   /** Content of the loaded current directory. */
   content: FsNode[]
+  /** Maximum number of contained node. */
+  contentSize: number
   /** List of selected nodes. */
   selection: FsNodeSelection
 }
@@ -203,7 +204,8 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
   }
 
   private onLoadMoreContent() {
-    this.props.onLoadMoreContent(this.props.content.length)
+    if(!this.props.loading)
+      this.props.onLoadMoreContent(this.props.content.length)
     return Promise.resolve()
   }
 
@@ -357,7 +359,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
   }
 
   render() {
-    const { current, content, classes, selection } = this.props
+    const { current, content, contentSize, classes, selection } = this.props
     const { showCheckboxes } = this.state
 
     const marginTop = this.state.scrollTop > 32
@@ -376,16 +378,16 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
                 <span/>
               }
               <Typography variant="caption" className={classes.contentName} >Nom</Typography>
-              <Typography variant="caption" className={classes.contentModification}>Modification</Typography>
-              <Typography variant="caption" className={classes.contentSize}>Taille</Typography>
+              <Typography variant="caption" className={classes.contentModification} >Modification</Typography>
+              <Typography variant="caption" className={classes.contentSize} >Taille</Typography>
             </div>
           </div>
           <div className={classes.contentTableBody} >
 
             <InfiniteLoader
               isRowLoaded={(props) => this.isRowLoaded(props.index)}
-              loadMoreRows={(props) => this.onLoadMoreContent()}
-              rowCount={current.size}
+              loadMoreRows={() => this.onLoadMoreContent()}
+              rowCount={contentSize}
             >
             {({ onRowsRendered, registerChild }) => (
               <AutoSizer>
@@ -398,9 +400,13 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
                       height={height}
                       width={width}
                       onScroll={(e: any) => this.setState({ scrollTop: e.scrollTop })}
-                      rowCount={content.length + 1}
+                      rowCount={content.length + (contentSize === content.length ? 0 : 1)}
                       rowHeight={45}
-                      rowRenderer={(props: ListRowProps) => props.index < content.length ? this.renderRow(props, content[props.index]) : this.renderLoadingMoreRow(props) }
+                      rowRenderer={ (props: ListRowProps) =>
+                        props.index < content.length ?
+                          this.renderRow(props, content[props.index]) :
+                          this.renderLoadingMoreRow(props)
+                      }
                     />
                   )
                 }}

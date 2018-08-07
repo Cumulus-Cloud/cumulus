@@ -14,9 +14,9 @@ function mapStateToProps(state: GlobalState) {
 
   return {
     loading: state.fs.loadingContent,
-    hasMore: true, // TODO detect if more content is available
     current: state.fs.current,
     content: state.fs.content || [],
+    contentSize: state.fs.contentSize || 0,
     selection: state.fs.selectedContent,
     focus: selection.param
   }

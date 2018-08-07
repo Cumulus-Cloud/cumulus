@@ -170,7 +170,7 @@ class DetailsPopup extends React.Component<PropsWithStyle, State> {
       const preview =
         node.nodeType == 'FILE' && node.hasThumbnail ?
         <div className={classes.columnImage}>
-          <img className={classes.previewImage} src={`${ApiUtils.urlBase}/api/thumbnail/${node.path}`} />
+          <img className={classes.previewImage} src={`${ApiUtils.urlBase}/api/fs/${node.id}/thumbnail`} />
         </div> :
         <div/>
 

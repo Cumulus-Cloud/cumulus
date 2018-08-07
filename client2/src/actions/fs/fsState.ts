@@ -25,6 +25,8 @@ export default interface FsState {
   current?: Directory
   /** The content of the current directory. Displayed and selectable. */
   content?: FsNode[]
+  /** The maximum number of element in the current directory */
+  contentSize?: number,
   /** List of selected elements */
   selectedContent: FsNodeSelection
   /** Detailed node */

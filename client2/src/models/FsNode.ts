@@ -1,3 +1,4 @@
+import { ApiList } from './utils'
 import { Metadata, PDFDocumentMetadata } from './FsNode'
 
 export type FsNodeType = 'DIRECTORY' | 'FILE'
@@ -70,11 +71,15 @@ export interface Directory {
   modification: string
   hidden: boolean
   owner: string
-  content: FsNode[]
 }
 
 export type FsNode =  File | Directory
 
+export interface DirectoryWithContent {
+  directory: Directory,
+  content: ApiList<FsNode>,
+  totalContentLength: number
+}
 
 export interface FsOperationCreate {
   operationType: 'CREATE'

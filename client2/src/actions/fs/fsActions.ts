@@ -81,16 +81,16 @@ export interface GetDirectoryContentSuccessAction extends Action {
   type: 'FS/GET_DIRECTORY_CONTENT/SUCCESS'
   payload: {
     content: FsNode[],
-    hasMore: boolean
+    contentSize: number
   }
 }
 
 export const getDirectoryContentSuccess: ActionCreator<GetDirectoryContentSuccessAction> =
-  (content: FsNode[], hasMore: boolean) => ({
+  (content: FsNode[], contentSize: number) => ({
     type: 'FS/GET_DIRECTORY_CONTENT/SUCCESS',
     payload: {
       content,
-      hasMore
+      contentSize
     }
   })
 

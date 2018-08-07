@@ -1,23 +1,14 @@
+import { getDirectory } from './../actions/fs/fsActions'
 import { EnrichedFile } from './../models/EnrichedFile'
 import axios from 'axios'
 
 import { ApiError } from './../models/ApiError'
-import { Directory, File, FsNode, FsOperation } from './../models/FsNode'
+import { Directory, File, FsNode, FsOperation, DirectoryWithContent } from './../models/FsNode'
 import { User } from '../models/User'
 import { AppSession } from '../models/AppSession'
+import { ApiList } from '../models/utils';
 
 const urlBase = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:9000'
-
-interface ApiList<T> {
-  items: T[]
-  size: number
-}
-
-interface ApiPaginatedList<T> {
-  items: T[]
-  size: number
-  offset: number
-}
 
 export const ApiUtils = {
 
@@ -123,7 +114,7 @@ const Api = {
     },
 
     sessions: {
-      all(offset: number): Promise<ApiError | ApiPaginatedList<AppSession>> {
+      all(offset: number): Promise<ApiError | ApiList<AppSession>> {
         return ApiUtils.get('/users/sessions', ApiUtils.pagination(offset = offset))
       },
 
@@ -140,15 +131,11 @@ const Api = {
 
   fs: {
     get(path: string): Promise<ApiError | FsNode> {
-      return ApiUtils.get<FsNode>(`/fs${path}`)
+      return ApiUtils.get<FsNode>(`/fs`, new Map([[ 'path', path ]]))
     },
 
-    getDirectory(path: string, contentOffset?: number, contentLimit?: number): Promise<ApiError | Directory> {
-      return ApiUtils.get<FsNode>(
-        `/fs${path}`,
-        new Map([['contentOffset', `${contentOffset || 0}`], ['contentLimit', `${contentLimit || ApiUtils.maxResultDefault}`]])
-      ).then((result) => {
-        
+    getDirectory(path: string): Promise<ApiError | Directory> {
+      return this.get(path).then((result) => {
         if('errors' in result)
           return result
         if(result.nodeType == 'DIRECTORY')
@@ -164,7 +151,7 @@ const Api = {
     },
 
     getFile(path: string): Promise<ApiError | File> {
-      return ApiUtils.get<FsNode>(`/fs${path}`).then((result) => {
+      return this.get(path).then((result) => {
         if('errors' in result)
           return result
         if(result.nodeType == 'FILE')
@@ -179,18 +166,26 @@ const Api = {
       })
     },
 
-    createDirectory(path: string): Promise<ApiError | Directory> {
-      return ApiUtils.put(`/fs${path}`, {})
+    getContent(id: string, contentOffset?: number, contentLimit?: number): Promise<ApiError | DirectoryWithContent> {
+      return ApiUtils.get<DirectoryWithContent>(
+        `/fs/${id}/content`,
+        ApiUtils.pagination(contentLimit || ApiUtils.maxResultDefault, contentOffset || 0)
+      )
     },
 
-    uploadFile(file: EnrichedFile, onProgress: (percentage: number) => void): Promise<ApiError | any> {
+    createDirectory(path: string): Promise<ApiError | Directory> {
+      return ApiUtils.put(`/fs`, { path: path })
+    },
 
-      function fileReader(file: EnrichedFile){
+    uploadFile(parentId: string, file: EnrichedFile, onProgress: (percentage: number) => void): Promise<ApiError | any> {
+
+      // TODO error handling
+      function fileReader(file: EnrichedFile) {
         return new Promise((resolve, reject) => {
           const reader = new FileReader();
-          reader.onload = (e) => {
+          reader.onload = () => {
             resolve(reader.result)
-          };
+          }
     
           reader.readAsArrayBuffer(file.file)
         })
@@ -198,7 +193,16 @@ const Api = {
 
       return fileReader(file).then((result) => {
         // TODO add compression and cipher
-        return ApiUtils.post(`/upload/${file.location}/${file.filename}`, result, new Map(), onProgress)
+        return ApiUtils.post(
+          `/fs/${parentId}/upload`,
+          result,
+          new Map([
+            [ 'filename', file.filename ],
+            [ 'cipher', file.crypted ? 'AES' : '' ],
+            [ 'compression', file.compressed ? 'DEFLATE' : '' ]
+          ]),
+          onProgress
+        )
       })
     },
 
@@ -208,7 +212,7 @@ const Api = {
 
     deleteFile(path: string): Promise<ApiError | void> {
       return ApiUtils.delete(`/fs${path}`)
-    },
+    }
 
   }
 

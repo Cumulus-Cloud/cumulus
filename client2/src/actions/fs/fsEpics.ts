@@ -1,11 +1,11 @@
 import { Epic } from 'redux-observable'
 import { filter, map, flatMap, mergeMap } from 'rxjs/operators'
-import { of } from 'rxjs'
+import { concat, of } from 'rxjs'
 
-import { Directory } from './../../models/FsNode'
+import { Directory, DirectoryWithContent } from './../../models/FsNode'
 import Api from '../../services/api'
 import { ApiError } from '../../models/ApiError'
-import { FsActions, GetDirectoryAction, GetDirectoryContentAction, getDirectorySuccess, getDirectoryFailure, getDirectoryContentSuccess, getDirectoryContentFailure } from './fsActions'
+import { FsActions, GetDirectoryAction, GetDirectoryContentAction, getDirectorySuccess, getDirectoryFailure, getDirectoryContentSuccess, getDirectoryContentFailure, getDirectoryContent } from './fsActions'
 import GlobalState from '../state'
 
 type EpicType = Epic<FsActions, FsActions, GlobalState>
@@ -15,29 +15,30 @@ export const getDirectoryEpic: EpicType = (action$) =>
     filter((action: FsActions) => action.type === 'FS/GET_DIRECTORY'),
     mergeMap((action: GetDirectoryAction) => {
       const { path } = action.payload
-      return Api.fs.getDirectory(path, 0)
+      return Api.fs.getDirectory(path)
     }),
     flatMap((result: ApiError | Directory) => {
       if('errors' in result)
         return of(getDirectoryFailure(result))
       else
-        return of(getDirectorySuccess(result))
+        return concat(of(getDirectorySuccess(result), getDirectoryContent(0)))
     })
   )
 
 export const getDirectoryContentEpic: EpicType = (action$, $state) =>
   action$.pipe(
     filter((action: FsActions) => action.type === 'FS/GET_DIRECTORY_CONTENT'),
-    mergeMap((action: GetDirectoryContentAction) => {
-      const path = $state.value.fs.current ? $state.value.fs.current.path : '/'
+    mergeMap((_: GetDirectoryContentAction) => {
+      const id = $state.value.fs.current ? $state.value.fs.current.id : ''
       const offset = $state.value.fs.content ? $state.value.fs.content.length : 0
 
-      return Api.fs.getDirectory(path, offset)
+      return Api.fs.getContent(id, offset)
     }),
-    map((result: ApiError | Directory) => {
+    map((result: ApiError | DirectoryWithContent) => {
+      console.log(result)
       if('errors' in result)
         return getDirectoryContentFailure(result)
       else
-        return getDirectoryContentSuccess(result.content)
+        return getDirectoryContentSuccess(result.content.items, result.totalContentLength)
     })
   )

@@ -25,7 +25,8 @@ const reducer: Reducer<FsState, FsActions> = (state: FsState = initialState, act
         loadingCurrent: false,
         loadingContent: false,
         current: action.payload.directory,
-        content: action.payload.directory.content, // We switched directory, so also switch the content
+        content: undefined, // We switched directory, so also switch the loaded content
+        contentSize: undefined,
         error: undefined
       }
     case 'FS/GET_DIRECTORY_FAILURE':
@@ -49,6 +50,7 @@ const reducer: Reducer<FsState, FsActions> = (state: FsState = initialState, act
         ...state,
         loadingContent: false,
         content: state.content ? state.content.concat(action.payload.content) : action.payload.content,
+        contentSize: action.payload.contentSize,
         error: undefined
       }
     case 'FS/GET_DIRECTORY_CONTENT/FAILURE':
