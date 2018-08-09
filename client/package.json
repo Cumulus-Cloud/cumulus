@@ -39,7 +39,7 @@
     "redux-devtools-extension": "2.13.2",
     "redux-observable": "1.0.0-alpha.3",
     "redux-persist": "5.9.1",
-    "reset-css": "3.0.0",
+    "reset-css": "4.0.1",
     "rxjs": "6.2.0",
     "ts-debounce": "0.3.2",
     "typesafe-actions": "2.0.4",
