@@ -14,6 +14,8 @@ import Visibility from '@material-ui/icons/Visibility'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import VisibilityOff from '@material-ui/icons/VisibilityOff'
 
+import { withStore } from '../../index'
+import { withRouter } from 'react-router-dom'
 import { ApiError } from '../../models/ApiError'
 
 
@@ -45,14 +47,14 @@ const styles = (theme: Theme) => createStyles({
   }
 })
 
-interface Props {
+interface ContextProps {
   loading: boolean
   error?: ApiError
   onSignIn:() => void
   onSignUp:(login: string, email: string, password: string) => void
 }
 
-type PropsWithStyle = Props & WithStyles<typeof styles>
+type PropsWithStyle = ContextProps & WithStyles<typeof styles>
 
 interface State {
   showPassword: boolean
@@ -174,4 +176,19 @@ class SignUpForm extends React.Component<PropsWithStyle, State> {
   }
 }
 
-export default withStyles(styles)<PropsWithStyle> (SignUpForm)
+const SignUpFormWithStyle = withStyles(styles)<PropsWithStyle> (SignUpForm)
+
+const SignInFormWithContext = (
+  withRouter(({ history }) => (
+    withStore(ctx => (
+      <SignUpFormWithStyle
+        loading={ctx.state.signUp.loading}
+        error={ctx.state.signUp.error}
+        onSignIn={() => history.push('/auth/sign-in') }
+        onSignUp={(login: string, email: string, password: string) => ctx.actions.signUpUser({ login, email, password }) }
+      />
+    ))
+  ))
+)
+
+export default SignInFormWithContext

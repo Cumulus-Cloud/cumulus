@@ -3,7 +3,7 @@ import { ApiError } from '../../../models/ApiError'
 
 export default interface SignUpState {
   /** True if the sign up is in progress. */
-  loading: Boolean
+  loading: boolean
   /** If the sign up has failed. */
   error?: ApiError
   /** The created user. */

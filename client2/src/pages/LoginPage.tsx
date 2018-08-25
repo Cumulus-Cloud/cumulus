@@ -13,9 +13,9 @@ import { withRouter } from 'react-router-dom'
 import * as H from 'history'
 
 import withRoot from '../elements/utils/withRoot'
-import SignUpContainer from '../elements/login/SignUpContainer';
-import SignInContainer from '../elements/login/SignInContainer';
-import SignUpConfirmation from '../elements/login/SignUpConfirmation';
+import SignUpConfirmation from '../elements/login/SignUpConfirmation'
+import SignIn from '../elements/login/SignInForm'
+import SignUp from '../elements/login/SignUpForm';
 
 
 const styles = (theme: Theme) => createStyles({
@@ -106,10 +106,10 @@ class Login extends React.Component<PropsWithStyle, State> {
               </Typography>
             </div>
             <Switch>
-              <Route exact path="/auth/sign-in" render={() => <SignInContainer/>}/>
-              <Route exact path="/auth/sign-up" render={() => <SignUpContainer/>}/>
+              <Route exact path="/auth/sign-in" render={() => <SignIn/>}/>
+              <Route exact path="/auth/sign-up" render={() => <SignUp/>}/>
               <Route exact path="/auth/sign-up-confirmation" render={() => <SignUpConfirmation/>}/>
-              <Route render={(p) => <Redirect to="/auth/sign-in"/>}/>
+              <Route render={() => <Redirect to="/auth/sign-in"/>}/>
             </Switch>
           </Paper>
         </Grow>

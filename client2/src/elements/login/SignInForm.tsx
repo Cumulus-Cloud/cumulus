@@ -8,6 +8,8 @@ import TextField from '@material-ui/core/TextField'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import { Typography } from '@material-ui/core'
 
+import { withStore } from '../../index'
+import { withRouter } from 'react-router-dom'
 import { ApiError } from '../../models/ApiError'
 
 const styles = (theme: Theme) => createStyles({
@@ -41,14 +43,14 @@ const styles = (theme: Theme) => createStyles({
   }
 })
 
-interface Props {
+interface ContextProps {
   loading: boolean
   error?: ApiError
   onSignUp: () => void
   onSignIn: (login: string, password: string) => void
 }
 
-type PropsWithStyle = Props & WithStyles<typeof styles>
+type PropsWithStyle = ContextProps & WithStyles<typeof styles>
 
 interface State {
   login: string
@@ -133,4 +135,19 @@ class SignInForm extends React.Component<PropsWithStyle, State> {
   }
 }
 
-export default withStyles(styles)<PropsWithStyle> (SignInForm)
+const SignInFormWithStyle = withStyles(styles)<PropsWithStyle> (SignInForm)
+
+const SignInFormWithContext = (
+  withRouter(({ history }) => (
+    withStore(ctx => (
+      <SignInFormWithStyle
+        loading={ctx.state.signIn.loading}
+        error={ctx.state.signIn.error}
+        onSignUp={() => history.push('/auth/sign-up') }
+        onSignIn={(login: string, password: string) => ctx.actions.signInUser({ login, password }) }
+      />
+    ))
+  ))
+)
+
+export default SignInFormWithContext
