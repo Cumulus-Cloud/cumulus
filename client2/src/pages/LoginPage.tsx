@@ -68,7 +68,6 @@ const styles = (theme: Theme) => createStyles({
 })
 
 interface Props {
-
   history: H.History
   location: H.Location
   match: match<{}>
@@ -119,4 +118,4 @@ class Login extends React.Component<PropsWithStyle, State> {
   }
 }
 
-export default withRoot(withRouter(withStyles(styles) <PropsWithStyle> (Login)))
+export default withRouter(withStyles(styles) <PropsWithStyle> (Login))

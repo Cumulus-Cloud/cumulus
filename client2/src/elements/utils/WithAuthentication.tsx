@@ -1,19 +1,20 @@
 import * as React from 'react'
-import { Dispatch, connect } from 'react-redux'
 
-import GlobalState from '../../actions/state'
-import { AuthenticationActions, testSignedIn } from '../../actions/user/auth/authenticationActions'
+import { withStore } from '../..'
 
 interface Props {
-  onLoad: () => void
-  connected: boolean
-  loading: boolean
   authenticated: JSX.Element
   fallback: JSX.Element
   loader: JSX.Element
 }
 
-class WithAuthenticationElement extends React.Component<Props, {}> {
+interface ContextProps {
+  onLoad: () => void
+  connected: boolean
+  loading: boolean
+}
+
+class WithAuthenticationElement extends React.Component<Props & ContextProps, {}> {
 
   componentDidMount() {
     this.props.onLoad()
@@ -21,6 +22,7 @@ class WithAuthenticationElement extends React.Component<Props, {}> {
 
   render() {
     const { connected, loading, authenticated, fallback, loader } = this.props
+
 
     if(connected)
       return authenticated
@@ -32,20 +34,15 @@ class WithAuthenticationElement extends React.Component<Props, {}> {
 
 }
 
+const WithAuthentication = (props: Props) => (
+  withStore(ctx => (
+    <WithAuthenticationElement
+      {...props}
+      onLoad={() => ctx.actions.testUserAuth()}
+      connected={ctx.state.auth.connected}
+      loading={ctx.state.auth.loading}
+    />
+  ))
+)
 
-function mapStateToProps(state: GlobalState) {
-  return {
-    connected: !!state.auth.connected,
-    loading: state.auth.loading
-  }
-}
-
-function mapDispatchToProps(dispatch: Dispatch<AuthenticationActions>) {
-  return {
-    onLoad: () => {
-      dispatch(testSignedIn())
-    }
-  }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(WithAuthenticationElement)
+export default WithAuthentication

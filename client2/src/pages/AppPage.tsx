@@ -15,19 +15,20 @@ import TextField from '@material-ui/core/TextField'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
 import { Route, Redirect, Switch } from 'react-router-dom'
 
-import withRoot from '../elements/utils/withRoot'
+import { withStore } from '../index'
 import CumulusAppBar from '../elements/CumulusAppBar'
 import { User } from '../models/User'
 import CumulusDrawer from '../elements/CumulusDrawer'
 import { Grow } from '@material-ui/core'
 import CreationPopupContainer from '../elements/fs/creation/CreationPopupContainer'
 import Routes from '../services/routes'
-import FileListContainer from '../elements/fs/FileListContainer'
+import FileList from '../elements/fs/FileList'
 import UploadPopupContainer from '../elements/fs/upload/UploadPopupContainer'
 import UploadProgressPopupContainer from '../elements/fs/upload/UploadProgressPopupContainer'
 import SnackbarsContainer from '../elements/notification/snackbarsContainer'
 import { FsNode } from '../models/FsNode';
 import DetailPopupContainer from '../elements/fs/detail/DetailPopupContainer'
+import withRoot from '../elements/utils/withRoot';
 
 
 const styles = (theme: Theme) => createStyles({
@@ -107,7 +108,7 @@ interface Props {
   showCreationPopup: () => void
   showUploadPopup: () => void
   selection: FsNode[]
-  user?: User
+  user: User
 }
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
@@ -148,15 +149,33 @@ class AppPage extends React.Component<PropsWithStyle, State> {
   render() {
     const { selection, user, classes } = this.props
 
-    // TODO real user
-    const defaultUser: User = {
-      id: '0',
-      login: 'default',
-      creation: "",
-      roles: [ ]
-    }
+    const searchElements = (
+      <div>
+        <ListItem button style={{ height: 50 }}>
+          <ListItemIcon>
+            <SearchIcon />
+          </ListItemIcon>
+          <ListItem>
+            <TextField
+              id="search"
+              type="search"
+              margin="none"
+              placeholder="Search..."
+              style={{
+                marginBottom: 0,
+                marginLeft: -9,
+                width: 136
+              }}
+    
+              InputProps={{
+                disableUnderline: true
+              }}
+            />
+          </ListItem>
+        </ListItem>
+      </div>
+    )
 
-    const searchElements = searchListItem
     const actionElements = (
       <div>
         <ListItem button onClick={() => this.showCreationPopup()} >
@@ -212,12 +231,11 @@ class AppPage extends React.Component<PropsWithStyle, State> {
       </div>
     )
 
-
     return (
       <Grow in={true}>
         <div className={classes.root}>
           <CumulusAppBar 
-            user={user || defaultUser}
+            user={user}
             showDrawer={() => this.toggleDrawer()}
             showAccountPanel={() => { return }}
             showAdminPanel={() => { return }}
@@ -232,9 +250,21 @@ class AppPage extends React.Component<PropsWithStyle, State> {
           />
 
           <Switch>
-            <Route path={Routes.app.fs_matcher} component={FileListContainer}/>
+            <Route path={Routes.app.fs_matcher} component={FileList}/>
             <Route render={() => <Redirect to={`${Routes.app.fs}/`} />} />
           </Switch>
+
+
+
+        </div>
+
+      </Grow>
+    )
+  }
+}
+
+/*
+
 
           <CreationPopupContainer/>
           <UploadPopupContainer/>
@@ -243,96 +273,30 @@ class AppPage extends React.Component<PropsWithStyle, State> {
           <UploadProgressPopupContainer />
 
           <SnackbarsContainer />
+*/
 
-        </div>
+const AppPageWithStyle = withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ({ breakpoint: 'xs' })(AppPage))
 
-      </Grow>
+const AppPageWithContext = () => (
+  withStore(ctx => {
+    const selectedContent = ctx.state.fs.selectedContent
+    const content = ctx.state.fs.content || []
+    const selection = selectedContent.type === 'ALL' ? content : (selectedContent.type === 'NONE' ? [] : content.filter((node) => selectedContent.selectedElements.indexOf(node.id) >= 0))
+   
+    const user = ctx.state.auth.user
+  
+    if(!user) // Should not happend
+      throw new Error('App page accessed without authentication')
+    
+    return (
+      <AppPageWithStyle
+        selection={selection}
+        user={user}
+        showCreationPopup={() => console.log('TODO')}
+        showUploadPopup={() => console.log('TODO')}
+      />
     )
-  }
-}
-  /*
-  <Route path={Routes.app.createDirectory} render={() => <CreationPopupContainer open={true} />}/>
-  <Route path={Routes.app.fs} render={() => <h1>{"hello"}</h1>}/>
-  */
+  })
+)
 
-export default withRoot(withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ({ breakpoint: 'xs' })(AppPage)))
-
-// TODO..
-const searchListItem = (
-  <div>
-    <ListItem button style={{ height: 50 }}>
-      <ListItemIcon>
-        <SearchIcon />
-      </ListItemIcon>
-      <ListItem>
-        <TextField
-          id="search"
-          type="search"
-          margin="none"
-          placeholder="Search..."
-          style={{
-            marginBottom: 0,
-            marginLeft: -9,
-            width: 136
-          }}
-
-          InputProps={{
-            disableUnderline: true
-          }}
-        />
-      </ListItem>
-    </ListItem>
-  </div>
-);
-
-const mailFolderListItems = (
-  <div>
-    <ListItem button>
-      <ListItemIcon>
-        <CreateNewFolderIcon />
-      </ListItemIcon>
-      <ListItemText primary="Create Directory" />
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <CloudUpload />
-      </ListItemIcon>
-      <ListItemText primary="Upload File" />
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <ShareIcon />
-      </ListItemIcon>
-      <ListItemText primary="Share Directory" />
-    </ListItem>
-  </div>
-);
-
-const otherMailFolderListItems = (
-  <div>
-    <ListItem button disabled>
-      <ListItemIcon>
-        <CompareArrowsIcon />
-      </ListItemIcon>
-      <ListItemText primary="Move selected" />
-    </ListItem>
-    <ListItem button disabled>
-      <ListItemIcon>
-        <CompareArrowsIcon />
-      </ListItemIcon>
-      <ListItemText primary="Move selected" />
-    </ListItem>
-    <ListItem button disabled>
-      <ListItemIcon>
-        <DeleteIcon />
-      </ListItemIcon>
-      <ListItemText primary="Delete selected" />
-    </ListItem>
-    <ListItem button disabled >
-      <ListItemIcon>
-        <ShareIcon />
-      </ListItemIcon>
-      <ListItemText primary="Share selected" />
-    </ListItem>
-  </div>
-);
+export default AppPageWithContext

@@ -1,3 +1,4 @@
+import { History } from 'history'
 import { push } from 'connected-react-router'
 
 export type PopupType = 'DIRECTORY_CREATION' | 'FILE_UPLOAD' | 'FILE_UPLOAD_PROGRESS' | 'NODE_DETAILS'
@@ -34,9 +35,9 @@ export const isSelected = (type: PopupType) => (location: { pathname: string, se
 /**
  * Returns an action to toggle a popup, using the provided location. Should be dispatched as a regular action.
  */
-export const togglePopup = (type: PopupType, show: boolean, param?: string) => (location: { pathname: string }) => {
+export const togglePopup = (type: PopupType, show: boolean, param?: string) => (router: History) => {
   if(show)
-    return push(`${location.pathname}?action=${type}${param ? `&param=${param}` : ''}`)
+    return router.push(`${location.pathname}?action=${type}${param ? `&param=${param}` : ''}`)
   else
-    return push(location.pathname)
+    return router.push(location.pathname)
 }

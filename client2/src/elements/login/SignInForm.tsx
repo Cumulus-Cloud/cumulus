@@ -9,7 +9,6 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import { Typography } from '@material-ui/core'
 
 import { withStore } from '../../index'
-import { withRouter } from 'react-router-dom'
 import { ApiError } from '../../models/ApiError'
 
 const styles = (theme: Theme) => createStyles({
@@ -137,16 +136,14 @@ class SignInForm extends React.Component<PropsWithStyle, State> {
 
 const SignInFormWithStyle = withStyles(styles)<PropsWithStyle> (SignInForm)
 
-const SignInFormWithContext = (
-  withRouter(({ history }) => (
-    withStore(ctx => (
-      <SignInFormWithStyle
-        loading={ctx.state.signIn.loading}
-        error={ctx.state.signIn.error}
-        onSignUp={() => history.push('/auth/sign-up') }
-        onSignIn={(login: string, password: string) => ctx.actions.signInUser({ login, password }) }
-      />
-    ))
+const SignInFormWithContext = () => (
+  withStore(ctx => (
+    <SignInFormWithStyle
+      loading={ctx.state.signIn.loading}
+      error={ctx.state.signIn.error}
+      onSignUp={() => ctx.state.router.push('/auth/sign-up') }
+      onSignIn={(login: string, password: string) => ctx.actions.signInUser({ login, password }) }
+    />
   ))
 )
 

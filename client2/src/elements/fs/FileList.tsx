@@ -11,11 +11,13 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import Dropzone from 'react-dropzone'
 import uuid = require('uuid/v4')
 
+import Routes from '../../services/routes'
+import { withStore } from '../../index'
 import BreadCrumb from '../../elements/fs/BreadCrumb'
 import { Directory, FsNode } from '../../models/FsNode'
 import { ApiError } from '../../models/ApiError'
 import { EnrichedFile } from '../../models/EnrichedFile'
-import FileListTableContainer from './FileListTableContainer'
+import FileListTable from './FileListTable'
 
 
 const styles = (theme: Theme) => createStyles({
@@ -103,9 +105,9 @@ const styles = (theme: Theme) => createStyles({
 
 interface Props {
   /** Called when the path should be updated, meaning when the path was changed within the app. */
-  onChangePath: (path: string, contentOffset: number) => void
+  onChangePath: (path: string) => void
   /** Called when the current directory should be loaded from the api. */
-  onLoadDirectory: (path: string, contentOffset: number) => void
+  onLoadDirectory: (path: string) => void
   /** List of files selected for the upload */
   onFileUpload: (files: EnrichedFile[]) => void
   /** Initial real path, comming from the browser path */
@@ -150,11 +152,11 @@ class FilesList extends React.Component<PropsWithStyle, State> {
       !loading && (currentDirectory ? initialPath !== currentDirectory.path : true)
 
     if(needToUpdatePath)
-      this.props.onLoadDirectory(initialPath, 0) // TODO handle pagination
+      this.props.onLoadDirectory(initialPath)
   }
 
   private onChangePath(path: string) {
-    this.props.onChangePath(path, 0) // TODO handle pagination
+    this.props.onChangePath(path)
   }
   
   private droppedFiles(files: File[]) {
@@ -231,7 +233,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
                       <InfoIcon className={classes.emptyDirectoryIcon}/>
                       {'Ce dossier est vide'} 
                     </Typography> :
-                    <FileListTableContainer />
+                    <FileListTable />
                   }
                 </div>
               </Slide>
@@ -241,26 +243,41 @@ class FilesList extends React.Component<PropsWithStyle, State> {
       </main>
     )
 
-    /*
-      TODO content loader for previous infinite scroll
-
-      { // Note: outside of the <Slide/> to avoid breaking the sticky header with the loading animation
-        contentLoading ?
-        <div>
-          <div>
-            <CircularProgress className={classes.loaderContent} size={20} color="primary"/>
-          </div>
-          <Typography variant="caption" className={classes.emptyDirectory} >
-            {'Chargement de plus de contenu..'} 
-          </Typography>
-        </div>
-        : <span/>
-      }
-
-    */
-
   }
 
 }
+ 
+const FileListWithStyle = withStyles(styles) <PropsWithStyle> (FilesList)
 
-export default withStyles(styles) <PropsWithStyle> (FilesList)
+const AFileListWithContext = () => (
+  withStore(ctx => {
+    const state = ctx.state
+    const router = state.router
+    
+    return (
+      <FileListWithStyle
+        initialPath={router.location.pathname.substring(7)}
+        currentDirectory={state.fs.current}
+        currentDirectoryContent={state.fs.content}
+        loading={state.fs.loadingCurrent}
+        contentLoading={state.fs.loadingContent}
+        error={state.fs.error}
+        onChangePath={(path: string) => {
+
+          router.push(`${Routes.app.fs}${path}${router.location.search}`)
+          ctx.actions.getDirectory(path)
+        }}
+        onLoadDirectory={(path: string) => {
+          ctx.actions.getDirectory(path)
+        }}
+        onFileUpload={(files: EnrichedFile[]) => {
+          // TODO
+          //dispatch(selectUploadFile(files))
+          //dispatch(togglePopup('FILE_UPLOAD', true)(props.location))
+        }}
+      />
+    )
+  })
+)
+
+export default AFileListWithContext

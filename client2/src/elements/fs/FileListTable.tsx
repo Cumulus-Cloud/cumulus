@@ -15,6 +15,9 @@ import { Checkbox, Button, Chip, CircularProgress } from '@material-ui/core'
 import classnames = require('classnames')
 import { List, ListRowProps, AutoSizer, InfiniteLoader } from 'react-virtualized'
 
+import Routes from '../../services/routes'
+import { togglePopup, isSelected } from './../../actions/popup/popupActions'
+import { withStore } from '../../index'
 import { Directory, FsNode } from '../../models/FsNode'
 import { FsNodeSelection } from '../../actions/fs/fsState'
 
@@ -421,4 +424,45 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
 
 }
 
-export default withStyles(styles) <PropsWithStyle> (FilesListTable)
+const FilesListTableWithStyle = withStyles(styles) <PropsWithStyle> (FilesListTable)
+
+const FilesListTableWithContext = () => (
+  withStore(ctx => {
+    const state = ctx.state
+    const router = state.router
+
+    return (
+      <FilesListTableWithStyle
+        loading={state.fs.loadingContent}
+        current={state.fs.current}
+        content={state.fs.content || []}
+        contentSize={state.fs.contentSize || 0}
+        selection={state.fs.selectedContent}
+        onShowNodeDetail={(node: FsNode) => {
+          ctx.actions.showNodeDetails(node.id) // TODO pass in popup path...
+          togglePopup('NODE_DETAILS', true, node.name)(router)
+        }}
+        onNavigateDirectory={(directory: Directory) => {
+          router.push(`${Routes.app.fs}${directory.path}`)
+        }}
+        onSelectedNode={(node: FsNode) => {
+          ctx.actions.selectNode(node.id)
+        }}
+        onSelectAllNodes={() => {
+          ctx.actions.selectAllNodes()
+        }}
+        onDeselectNode={(node: FsNode) => {
+          ctx.actions.deselectNode(node.id)
+        }}
+        onDeselectAllNodes={() => {
+          ctx.actions.deselectAllNodes()
+        }}
+        onLoadMoreContent={() => {
+          ctx.actions.getDirectoryContent()
+        }}
+      />
+    )
+  })
+)
+
+export default FilesListTableWithContext

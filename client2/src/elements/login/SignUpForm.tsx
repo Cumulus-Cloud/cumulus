@@ -15,7 +15,6 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import VisibilityOff from '@material-ui/icons/VisibilityOff'
 
 import { withStore } from '../../index'
-import { withRouter } from 'react-router-dom'
 import { ApiError } from '../../models/ApiError'
 
 
@@ -178,16 +177,14 @@ class SignUpForm extends React.Component<PropsWithStyle, State> {
 
 const SignUpFormWithStyle = withStyles(styles)<PropsWithStyle> (SignUpForm)
 
-const SignInFormWithContext = (
-  withRouter(({ history }) => (
-    withStore(ctx => (
-      <SignUpFormWithStyle
-        loading={ctx.state.signUp.loading}
-        error={ctx.state.signUp.error}
-        onSignIn={() => history.push('/auth/sign-in') }
-        onSignUp={(login: string, email: string, password: string) => ctx.actions.signUpUser({ login, email, password }) }
-      />
-    ))
+const SignInFormWithContext = () => (
+  withStore(ctx => (
+    <SignUpFormWithStyle
+      loading={ctx.state.signUp.loading}
+      error={ctx.state.signUp.error}
+      onSignIn={() => ctx.state.router.push('/auth/sign-in') }
+      onSignUp={(login: string, email: string, password: string) => ctx.actions.signUpUser({ login, email, password }) }
+    />
   ))
 )
 
