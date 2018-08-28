@@ -6,11 +6,13 @@ import Typography from '@material-ui/core/Typography'
 import InfoIcon from '@material-ui/icons/Info'
 import CloudIcon from '@material-ui/icons/CloudUpload'
 import Slide from '@material-ui/core/Slide'
+import Grow from '@material-ui/core/Grow'
 import Fade from '@material-ui/core/Fade'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Dropzone from 'react-dropzone'
 import uuid = require('uuid/v4')
 
+import { togglePopup } from '../../actions/popup/popupActions'
 import Routes from '../../services/routes'
 import { withStore } from '../../index'
 import BreadCrumb from '../../elements/fs/BreadCrumb'
@@ -221,7 +223,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
           {breadCrumb}
           <div className={classes.contentWrapper} >
             {
-              loading ?
+              loading || (contentLoading && content.length === 0) ?
               <div className={classes.content} >
                 <CircularProgress className={classes.loader} size={100} color="primary"/>
               </div> :
@@ -263,7 +265,6 @@ const AFileListWithContext = () => (
         contentLoading={state.fs.loadingContent}
         error={state.fs.error}
         onChangePath={(path: string) => {
-
           router.push(`${Routes.app.fs}${path}${router.location.search}`)
           ctx.actions.getDirectory(path)
         }}
@@ -271,9 +272,8 @@ const AFileListWithContext = () => (
           ctx.actions.getDirectory(path)
         }}
         onFileUpload={(files: EnrichedFile[]) => {
-          // TODO
-          //dispatch(selectUploadFile(files))
-          //dispatch(togglePopup('FILE_UPLOAD', true)(props.location))
+          ctx.actions.selectUploadFile(files)
+          togglePopup('FILE_UPLOAD', true)(ctx.state.router)
         }}
       />
     )

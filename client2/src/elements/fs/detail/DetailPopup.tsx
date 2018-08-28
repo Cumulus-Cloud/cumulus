@@ -15,6 +15,8 @@ import Chip from '@material-ui/core/Chip'
 import { WithWidthProps } from '@material-ui/core/withWidth'
 import { distanceInWords } from 'date-fns'
 
+import { withStore } from '../../../index'
+import { togglePopup, isSelected } from '../../../actions/popup/popupActions'
 import { ApiUtils } from '../../../services/api'
 import { FsNode } from '../../../models/FsNode'
 
@@ -73,10 +75,7 @@ const styles = (theme: Theme) => createStyles({
   previewImage: {
     border: '1px solid rgba(0, 0, 0, 0.12)',
     height: 200,
-    width: 200,
-    [theme.breakpoints.down('xs')]: {
-      width: '100%'
-    }
+    width: 200
   },
   columnInner: {
     paddingTop: 3,
@@ -115,8 +114,8 @@ interface Props {
   onDelete: () => void
   onShare: () => void
   open: boolean
+  fullScreen?: boolean
   loading: boolean
-  fullScreen: boolean
   node?: FsNode
   error?: Error
 }
@@ -124,7 +123,6 @@ interface Props {
 type PropsWithStyle = Props & WithStyles<typeof styles> & Partial<WithWidthProps>
 
 interface State {}
-
 
 class DetailsPopup extends React.Component<PropsWithStyle, State> {
 
@@ -266,15 +264,40 @@ class DetailsPopup extends React.Component<PropsWithStyle, State> {
       return <span/>
   }
 
-  /*
-
-  <Button disabled={loading} color="primary" type="submit" >
-    Créer le dossier
-    {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
-  </Button>
-
-  */
-
 }
 
-export default withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ({ breakpoint: 'xs' })(DetailsPopup))
+const DetailsPopupWithStyle = withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ({ breakpoint: 'xs' })(DetailsPopup))
+
+const CreationPopupWithContext = () => (
+  withStore(ctx => {
+    const state = ctx.state
+    const router = state.router
+
+    const selection = isSelected('NODE_DETAILS')(router.location)
+      
+    // TODO handle pagination (ask for specific file reload)
+    const node = state.fs.detailed || (state.fs.content || []).find((n) => n.name === selection.param)
+
+    return (
+      <DetailsPopupWithStyle
+        open={selection.selected}
+        loading={state.createDirectory.loading}
+        node={node}
+        onClose={() => {
+          togglePopup('NODE_DETAILS', false)(router)
+        }}
+        onDownload={() => {
+          console.log('TODO onDownload')
+        }}
+        onDelete={() => {
+          console.log('TODO onDelete')
+        }}
+        onShare={() => {
+          console.log('TODO onDownload')
+        }}
+      />
+    )
+  })
+)
+
+export default CreationPopupWithContext

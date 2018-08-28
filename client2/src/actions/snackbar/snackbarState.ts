@@ -1,9 +1,9 @@
 
-type PopupState = {
+type SnackbarState = {
   messages: {
     id: string,
     message: string
   }[]
 }
 
-export default PopupState
+export default SnackbarState

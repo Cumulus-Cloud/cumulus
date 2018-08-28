@@ -13,13 +13,23 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
 import { WithWidthProps } from '@material-ui/core/withWidth'
 
+import { withStore } from '../../../index'
+import { togglePopup, isSelected } from '../../../actions/popup/popupActions'
 import { ApiError } from '../../../models/ApiError'
 import { Directory } from '../../../models/FsNode'
 
 
-const styles = (_: Theme) => createStyles({
+const styles = (theme: Theme) => createStyles({
   root: {
-    minWidth: 450
+    minWidth: 450,
+    flexDirection: 'column',
+    [theme.breakpoints.down('xs')]: {
+      height: '100%',
+      display: 'flex'
+    }
+  },
+  content: {
+    flex: 1
   },
   buttonProgress: {
     position: 'absolute',
@@ -34,8 +44,8 @@ interface Props {
   onClose: () => void
   onCreateDirectory: (name: string) => void
   open: boolean
+  fullScreen?: boolean
   loading: boolean
-  fullScreen: boolean
   current?: Directory
   error?: ApiError
 }
@@ -77,27 +87,24 @@ class CreationPopup extends React.Component<PropsWithStyle, State> {
         fullScreen={fullScreen}
         open={open}
         onClose={() => this.onClose()}
-        aria-labelledby="responsive-dialog-title"
       >
         <form onSubmit={(e) => this.onCreateDirectory(e)} className={classes.root} >
           <DialogTitle id="responsive-dialog-title">
             Créer un nouveau dossier
           </DialogTitle>
-          <DialogContent>
+          <DialogContent className={classes.content} >
             <TextField
               autoFocus
               margin="dense"
               id="name"
               label="Nom dossier"
               type="text"
+              disabled={loading}
               fullWidth
               onChange={(e) => this.onDirectoryNameChange(e.target.value)}
               error={!!error}
             />
           </DialogContent>
-          <DialogContentText>
-            
-          </DialogContentText>
           <DialogActions>
             <Button onClick={() => this.onClose()} disabled={loading}>
               Annuler
@@ -114,4 +121,33 @@ class CreationPopup extends React.Component<PropsWithStyle, State> {
 
 }
 
-export default withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ({ breakpoint: 'xs' })(CreationPopup))
+const CreationPopupWithStyle = withStyles(styles)(withMobileDialog<PropsWithStyle> ({ breakpoint: 'xs' })(CreationPopup))
+
+const CreationPopupWithContext = () => (
+  withStore(ctx => {
+    const state = ctx.state
+    const router = state.router
+
+    const selection = isSelected('DIRECTORY_CREATION')(router.location)
+    
+    return (
+      <CreationPopupWithStyle
+        open={selection.selected}
+        current={state.fs.current}
+        loading={state.createDirectory.loading}
+        error={state.createDirectory.error}
+        onClose={() => {
+          togglePopup('DIRECTORY_CREATION', false)(router)
+        }}
+        onCreateDirectory={(path: string) => {
+          ctx.actions.createDirectory(path).then((state) => {
+            if(!state.createDirectory.error)
+              togglePopup('DIRECTORY_CREATION', false)(router)
+          })
+        }}
+      />
+    )
+  })
+)
+
+export default CreationPopupWithContext

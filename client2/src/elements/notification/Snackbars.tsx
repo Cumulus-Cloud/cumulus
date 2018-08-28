@@ -6,6 +6,8 @@ import Snackbar from '@material-ui/core/Snackbar'
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 
+import { withStore } from '../../index'
+
 const styles = (theme: Theme) => createStyles({
   root: {
     position: 'fixed',
@@ -97,4 +99,15 @@ class Snackbars extends React.Component<PropsWithStyle, State> {
 
 }
 
-export default withStyles(styles) <PropsWithStyle> (Snackbars)
+const SnackbarWithStyle = withStyles(styles) <PropsWithStyle> (Snackbars)
+
+const SnackbarWithContext = () => (
+  withStore(ctx => (
+    <SnackbarWithStyle
+      onClose={(id: string) => ctx.actions.hideSnackbar(id)}
+      messages={ctx.state.snackbar.messages}
+    />
+  ))
+)
+
+export default SnackbarWithContext

@@ -7,12 +7,12 @@ import Dialog from '@material-ui/core/Dialog'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
-import CircularProgress from '@material-ui/core/CircularProgress'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
 import Slide from '@material-ui/core/Slide'
 import uuid = require('uuid/v4')
 
-import { ApiError } from '../../../models/ApiError'
+import { togglePopup, isSelected } from '../../../actions/popup/popupActions'
+import { withStore } from '../../../index'
 import { Directory } from '../../../models/FsNode'
 import UploadFile from './UploadFile'
 import { EnrichedFile } from '../../../models/EnrichedFile'
@@ -20,13 +20,32 @@ import { EnrichedFile } from '../../../models/EnrichedFile'
 
 const styles = (theme: Theme) => createStyles({
   root: {
-    minWidth: 450
+    minWidth: 450,
+    flexDirection: 'column',
+    [theme.breakpoints.down('xs')]: {
+      height: '100%',
+      display: 'flex'
+    }
+  },
+  content: {
+    flex: 1,
+    [theme.breakpoints.up('xs')]: {
+      maxHeight: '400px' // Avoid having a too high popup
+    },
+    [theme.breakpoints.down('xs')]: {
+      maxHeight: 'unset' // Not needed when fullscreen
+    }
   },
   fileHeader: {
     display: 'flex'
   },
   input: {
     display: 'none'
+  },
+  inputContainer: {
+    flex: 'unset',
+    minHeight: '40px',
+    padding: '20px'
   },
   fileName: {
     flex: 1
@@ -69,11 +88,9 @@ interface Props {
   onUpdateFile: (file: EnrichedFile) => void
   onUploadFiles: () => void
   open: boolean
-  loading: boolean
-  fullScreen: boolean
+  fullScreen?: boolean
   files: EnrichedFile[]
   current?: Directory
-  error?: ApiError
 }
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
@@ -127,7 +144,7 @@ class UploadPopup extends React.Component<PropsWithStyle, State> {
   }
 
   render() {
-    const { classes, files, fullScreen, open, error, loading } = this.props
+    const { classes, files, fullScreen, open } = this.props
 
     const fileList = files.map((file, i) => {
       return (
@@ -151,7 +168,7 @@ class UploadPopup extends React.Component<PropsWithStyle, State> {
           <DialogTitle id="responsive-dialog-title">
             Mettre en ligne un nouveau fichier
           </DialogTitle>
-          <DialogContent>
+          <DialogContent className={classes.content} >
             {
               files.length === 0 ?
               <span/> :
@@ -162,7 +179,7 @@ class UploadPopup extends React.Component<PropsWithStyle, State> {
               </Slide>
             }
           </DialogContent>
-          <DialogContent>
+          <DialogContent className={classes.inputContainer} >
             <input
               className={classes.input}
               id="raised-button-file"
@@ -177,12 +194,11 @@ class UploadPopup extends React.Component<PropsWithStyle, State> {
             </label>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => this.onClose()} disabled={loading}>
+            <Button onClick={() => this.onClose()}>
               Annuler
             </Button>
-            <Button onClick={() => this.onUploadFiles()} disabled={files.length === 0 || loading} color="primary" autoFocus>
+            <Button onClick={() => this.onUploadFiles()} disabled={files.length === 0} color="primary" autoFocus>
               {files.length > 0 ? "Envoyer les fichiers selectionnés" : "Envoyer le fichier selectionné"}
-              {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
             </Button>
           </DialogActions>
         </div>
@@ -192,4 +208,39 @@ class UploadPopup extends React.Component<PropsWithStyle, State> {
 
 }
 
-export default withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ({ breakpoint: 'xs' })(UploadPopup))
+const UploadPopupWithStyle = withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ({ breakpoint: 'xs' })(UploadPopup))
+
+const CreationPopupWithContext = () => (
+  withStore(ctx => {
+    const state = ctx.state
+    const router = state.router
+
+    const selection = isSelected('FILE_UPLOAD')(router.location)
+
+    return (
+      <UploadPopupWithStyle
+        open={selection.selected}
+        current={state.fs.current}
+        files={state.fileUpload.files}
+        onFilesSelected={(files: EnrichedFile[]) => {
+          ctx.actions.selectUploadFile(files)
+        }}
+        onDeleteFile={(deletedFile: EnrichedFile) => {
+          ctx.actions.deleteUploadFile(deletedFile)
+        }}
+        onUpdateFile={(updatedFile: EnrichedFile) => {
+          ctx.actions.updateUploadFile(updatedFile)
+        }}
+        onClose={() => {
+          togglePopup('FILE_UPLOAD', false)(router)
+        }}
+        onUploadFiles={() => {
+          togglePopup('FILE_UPLOAD', false)(router)
+          ctx.actions.uploadAllFiles()
+        }}
+      />
+    )
+  })
+)
+
+export default CreationPopupWithContext

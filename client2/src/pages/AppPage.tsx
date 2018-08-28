@@ -15,21 +15,20 @@ import TextField from '@material-ui/core/TextField'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
 import { Route, Redirect, Switch } from 'react-router-dom'
 
+import { togglePopup } from '../actions/popup/popupActions'
 import { withStore } from '../index'
 import CumulusAppBar from '../elements/CumulusAppBar'
 import { User } from '../models/User'
 import CumulusDrawer from '../elements/CumulusDrawer'
 import { Grow } from '@material-ui/core'
-import CreationPopupContainer from '../elements/fs/creation/CreationPopupContainer'
+import CreationPopup from '../elements/fs/creation/CreationPopup'
 import Routes from '../services/routes'
 import FileList from '../elements/fs/FileList'
-import UploadPopupContainer from '../elements/fs/upload/UploadPopupContainer'
-import UploadProgressPopupContainer from '../elements/fs/upload/UploadProgressPopupContainer'
-import SnackbarsContainer from '../elements/notification/snackbarsContainer'
-import { FsNode } from '../models/FsNode';
-import DetailPopupContainer from '../elements/fs/detail/DetailPopupContainer'
-import withRoot from '../elements/utils/withRoot';
-
+import UploadPopup from '../elements/fs/upload/UploadPopup'
+import UploadProgressPopup from '../elements/fs/upload/UploadProgressPopup'
+import Snackbars from '../elements/notification/Snackbars'
+import { FsNode } from '../models/FsNode'
+import DetailPopup from '../elements/fs/detail/DetailPopup'
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -138,6 +137,10 @@ class AppPage extends React.Component<PropsWithStyle, State> {
     this.setState({...this.state, drawer: !this.state.drawer })
   }
 
+  forceDrawer(state: boolean) {
+    this.setState({...this.state, drawer: state })
+  }
+
   openMenu(e: EventTarget) {
     this.setState({...this.state, anchorEl: e })
   }
@@ -178,13 +181,19 @@ class AppPage extends React.Component<PropsWithStyle, State> {
 
     const actionElements = (
       <div>
-        <ListItem button onClick={() => this.showCreationPopup()} >
+        <ListItem button onClick={() => {
+          this.forceDrawer(false) // TODO fix focus stolen
+          this.showCreationPopup()
+        }} >
           <ListItemIcon>
             <CreateNewFolderIcon />
           </ListItemIcon>
           <ListItemText primary="Créer un dossier" />
         </ListItem>
-        <ListItem button onClick={() => this.showUploadPopup()} >
+        <ListItem button onClick={() => {
+          this.forceDrawer(false) // TODO fix focus stolen
+          this.showUploadPopup()
+        }} >
           <ListItemIcon>
             <CloudUpload />
           </ListItemIcon>
@@ -254,7 +263,11 @@ class AppPage extends React.Component<PropsWithStyle, State> {
             <Route render={() => <Redirect to={`${Routes.app.fs}/`} />} />
           </Switch>
 
-
+          <CreationPopup />
+          <UploadPopup />
+          <DetailPopup />
+          <UploadProgressPopup />
+          <Snackbars />
 
         </div>
 
@@ -262,18 +275,6 @@ class AppPage extends React.Component<PropsWithStyle, State> {
     )
   }
 }
-
-/*
-
-
-          <CreationPopupContainer/>
-          <UploadPopupContainer/>
-          <DetailPopupContainer/>
-
-          <UploadProgressPopupContainer />
-
-          <SnackbarsContainer />
-*/
 
 const AppPageWithStyle = withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ({ breakpoint: 'xs' })(AppPage))
 
@@ -292,8 +293,8 @@ const AppPageWithContext = () => (
       <AppPageWithStyle
         selection={selection}
         user={user}
-        showCreationPopup={() => console.log('TODO')}
-        showUploadPopup={() => console.log('TODO')}
+        showCreationPopup={() => togglePopup('DIRECTORY_CREATION', true)(ctx.state.router)}
+        showUploadPopup={() => togglePopup('FILE_UPLOAD', true)(ctx.state.router)}
       />
     )
   })

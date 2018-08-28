@@ -5,7 +5,7 @@ import * as React from 'react'
 type FirstArgument<T> = T extends (arg1: infer U, ...args: any[]) => any ? U : any
 
 // Type for an action impacting the state
-export type Action<T, S, ACTIONS extends Actions<S, ACTIONS>> = (param: T, setState: (update: (s: S) => Partial<S>) => void, getContext: () => ContextState<S, ACTIONS>) => void | Promise<void>
+export type Action<T, S, ACTIONS extends Actions<S, ACTIONS>> = (param: T, setState: (update: ((s: S) => Partial<S>) | Partial<S> ) => void, getContext: () => ContextState<S, ACTIONS>) => void | Promise<void>
 export type PureAction<S, ACTIONS extends Actions<S, ACTIONS>> = Action<undefined, S, ACTIONS>
 
 // Type for all the actions of a given store
@@ -14,12 +14,12 @@ type Actions<S, ACTIONS extends Actions<S, ACTIONS>> = {
 }
 
 // Type for update action, derived from the user-defined action 
-type UpdateActionWithParameter<T> = (param: T) => Promise<void>
-type UpdateAction = () => Promise<void>
+type UpdateActionWithParameter<T, S> = (param: T) => Promise<S>
+type UpdateAction<S> = () => Promise<S>
 
 // Type for all the update action, derived from the user-defined action 
 type UpdateActions<S, ACTIONS extends Actions<S, ACTIONS>> = {
-  [key in keyof ACTIONS]: FirstArgument<ACTIONS[key]> extends undefined ? UpdateAction : UpdateActionWithParameter<FirstArgument<ACTIONS[key]>> // Magic, allow to have the right key and type
+  [key in keyof ACTIONS]: FirstArgument<ACTIONS[key]> extends undefined ? UpdateAction<S> : UpdateActionWithParameter<FirstArgument<ACTIONS[key]>, S> // Magic, allow to have the right key and type
 }
 
 // Type definition of the context
@@ -63,19 +63,21 @@ export function createStore<STATE extends Object, ACTIONS extends Actions<STATE,
       }))
     }
 
-    doAction<T>(action: Action<T, STATE, ACTIONS>): (value: T) => Promise<void> {
+    doAction<T>(action: Action<T, STATE, ACTIONS>): (value: T) => Promise<STATE> {
       return (value: T) => {
         const ret =
           action(
             value,
-            (update: ((s: STATE) => Partial<STATE>)) => this.setState(state => ({ state: Object.assign({}, state.state, update(state.state)) })),
+            (update: ((s: STATE) => Partial<STATE>) | Partial<STATE>) => (
+              this.setState(state => ({state: Object.assign({}, state.state, update instanceof Function ? update(state.state) : update) }))
+            ),
             () => this.state
           )
         
         if(ret instanceof Promise)
-          return ret
+          return ret.then(() => (() => this.state.state)())
         else
-          return Promise.resolve()
+          return Promise.resolve(this.state.state)
       }
     }
 

@@ -152,7 +152,7 @@ class FsNodeService(
 
       // Sanitize the filename
       path <- QueryE.pure {
-        val name = Path.sanitize(filename)
+        val name = Path.sanitize(filename).substring(1)
 
         if (name.contains("/"))
           Left(AppError.validation("validation.fs-node.invalid-filename", filename))

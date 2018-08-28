@@ -1,12 +1,11 @@
-import { getDirectory } from './../actions/fs/fsActions'
-import { EnrichedFile } from './../models/EnrichedFile'
 import axios from 'axios'
 
 import { ApiError } from './../models/ApiError'
+import { EnrichedFile } from './../models/EnrichedFile'
 import { Directory, File, FsNode, FsOperation, DirectoryWithContent } from './../models/FsNode'
 import { User } from '../models/User'
 import { AppSession } from '../models/AppSession'
-import { ApiList } from '../models/utils';
+import { ApiList } from '../models/utils'
 
 const urlBase = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:9000'
 
@@ -14,9 +13,9 @@ export const ApiUtils = {
 
   urlBase: urlBase,
 
-  maxResultDefault: 100, // TODO what value to use ?
+  maxResultDefault: 20, // TODO what value to use ?
 
-  pagination(limit: number = 100, offset: number = 0): Map<string, string> {
+  pagination(limit: number = 20, offset: number = 0): Map<string, string> {
     return new Map([['offset', `${offset}`], ['limit', `${limit}`]])
   },
 
@@ -24,11 +23,14 @@ export const ApiUtils = {
     const queryString =
       Array.from(queryParams.entries())
       .map((value) => {
-        return `${encodeURIComponent(value[0])}=${encodeURIComponent(value[1])}` 
+        if(value[1] !== '')
+          return `${encodeURIComponent(value[0])}=${encodeURIComponent(value[1])}&` 
+        else
+          return ''
       })
-      .join('&')
+      .join('')
 
-    return queryString === '' ? '' : `?${queryString}`
+    return queryString === '' ? '' : `?${queryString.substring(0, queryString.length - 1)}`
   },
 
   post<B, R>(path: string, body: B, queryParams: Map<string, string> = new Map(), onProgress: (p: number) => void = () => {}): Promise<ApiError | R> {
@@ -184,7 +186,7 @@ const Api = {
         return new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => {
-            resolve(reader.result)
+            resolve(reader.result) // TODO fix
           }
     
           reader.readAsArrayBuffer(file.file)

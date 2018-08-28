@@ -15,11 +15,12 @@ import ListItemText from '@material-ui/core/ListItemText'
 import Divider from '@material-ui/core/Divider'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 
-import CloseIcon from '@material-ui/icons/Close';
-import Collapse from '@material-ui/core/Collapse';
-import { LinearProgress } from '@material-ui/core';
-import { FileUploadingState, computeUploadingSpeed } from '../../../actions/fs/fileUpload/fileUploadState';
-import { humanSpeed } from '../../../services/utils';
+import { withStore } from '../../../index'
+import CloseIcon from '@material-ui/icons/Close'
+import Collapse from '@material-ui/core/Collapse'
+import { LinearProgress } from '@material-ui/core'
+import { FileUploadingState, computeUploadingSpeed } from '../../../actions/fs/fileUpload/fileUploadState'
+import { humanSpeed } from '../../../services/utils'
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -207,4 +208,23 @@ class UploadProgressPopup extends React.Component<PropsWithStyle, State> {
 
 }
 
-export default withStyles(styles)(UploadProgressPopup)
+const UploadProgressPopupWithStyle = withStyles(styles)(UploadProgressPopup)
+
+const UploadProgressPopupWithContext = () => (
+  withStore(ctx => {
+    const state = ctx.state
+    const router = state.router
+
+    return (
+      <UploadProgressPopupWithStyle
+        open={state.fileUpload.showUploadInProgress}
+        files={state.fileUpload.uploading}
+        onClose={() => {
+          ctx.actions.hideUploadProgress()
+        }}
+      />
+    )
+  })
+)
+
+export default UploadProgressPopupWithContext
