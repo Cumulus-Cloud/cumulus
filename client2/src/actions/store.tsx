@@ -1,34 +1,29 @@
 import * as React from 'react'
+import { ComponentType } from 'react'
 
+import { Difference } from '../utils/types'
 
-// Helper to extract the infered type of the first argument of a function
-type FirstArgument<T> = T extends (arg1: infer U, ...args: any[]) => any ? U : any
+// Helpers
+export type StateUpdater<S> = (update: ((s: S) => Partial<S>) | Partial<S>) => void
+export type StateReader<S> = () => Readonly<S>
+export type Dispatcher<S> = (action: Action<S>) => Promise<S>
 
-// Type for an action impacting the state
-export type Action<T, S, ACTIONS extends Actions<S, ACTIONS>> = (param: T, setState: (update: ((s: S) => Partial<S>) | Partial<S> ) => void, getContext: () => ContextState<S, ACTIONS>) => void | Promise<void>
-export type PureAction<S, ACTIONS extends Actions<S, ACTIONS>> = Action<undefined, S, ACTIONS>
+// Actions type
+export type Action<S> = (setState: StateUpdater<S>, getState: StateReader<S>, dispatch: Dispatcher<S>) => void | Promise<void> 
+export type ActionFactory<T, S> = (param :T) => Action<S>
 
-// Type for all the actions of a given store
-type Actions<S, ACTIONS extends Actions<S, ACTIONS>> = {
-  [key: string]: Action<any, S, ACTIONS> // Any because we can't guess the right type (but this has no impact on the typing)
+// Helper to create actions
+export function createAction<T, S>(
+  action: (param :T, setState: StateUpdater<S>, getState: StateReader<S>, dispatch: Dispatcher<S>) => void | Promise<void>
+): (param :T) => (setState: StateUpdater<S>, getState: StateReader<S>, dispatch: Dispatcher<S>) => void | Promise<void> {
+
+  return (param: T) => (setState: StateUpdater<S>, getState: StateReader<S>, dispatch: Dispatcher<S>) => action(param, setState, getState, dispatch)
 }
+export function createPureAction<S>(
+  action: (setState: StateUpdater<S>, getState: StateReader<S>, dispatch: Dispatcher<S>) => void | Promise<void>
+): () =>(setState: StateUpdater<S>, getState: StateReader<S>, dispatch: Dispatcher<S>) => void | Promise<void> {
 
-// Type for update action, derived from the user-defined action 
-type UpdateActionWithParameter<T, S> = (param: T) => Promise<S>
-type UpdateAction<S> = () => Promise<S>
-
-// Type for all the update action, derived from the user-defined action 
-type UpdateActions<S, ACTIONS extends Actions<S, ACTIONS>> = {
-  [key in keyof ACTIONS]: FirstArgument<ACTIONS[key]> extends undefined ? UpdateAction<S> : UpdateActionWithParameter<FirstArgument<ACTIONS[key]>, S> // Magic, allow to have the right key and type
-}
-
-// Type definition of the context
-export type Context<S, ACTIONS extends Actions<S, ACTIONS>> = { state: S, actions: UpdateActions<S, ACTIONS> }
-
-// Type for the state of the context. The real context is different to allow to easily create mapped actions to update the state
-export type ContextState<S, ACTIONS extends Actions<S, ACTIONS>> = {
-  state : S,
-  actions: UpdateActions<S, ACTIONS>
+  return () => (setState: StateUpdater<S>, getState: StateReader<S>, dispatch: Dispatcher<S>) => action(setState, getState, dispatch)
 }
 
 /**
@@ -36,53 +31,49 @@ export type ContextState<S, ACTIONS extends Actions<S, ACTIONS>> = {
  * the state of the store along with update methods matching the provided actions.
  * 
  * @param initialState The initial state, used to initialize the store.
- * @param actions The actions to be used on the state. This actions can either be synchronous or asynchronous.
+ * @param initialization Method called after the context initialization.
  */
-export function createStore<STATE extends Object, ACTIONS extends Actions<STATE, ACTIONS>>(
-  initialState: STATE,
-  actions: ACTIONS,
-  initialization: (context: Context<STATE, ACTIONS>) => void = () => ({})
+export function createStore<S>(
+  initialState: S,
+  initialization: (state: S, dispatch: Dispatcher<S>) => void = () => ({})
 ) {
 
-  // The initial context
-  const initialContext = {
+  type State = { state: S, dispatch: Dispatcher<S> }
+
+  const initialContext: State = {
     state: initialState,
-    actions: Object.assign({}, ...Object.keys(actions).map(k => ({ [k]: () => ({})}))) // Placeholder, Actions will be modified to be able to update the state
+    dispatch : () => Promise.reject()
   }
 
   // Create the context
-  const context = React.createContext<Context<STATE, ACTIONS>>(initialContext)
+  const context = React.createContext<State>(initialContext)
 
   // Anonymous class of the component
-  const provider = class extends React.Component<{}, Context<STATE, ACTIONS>> {
-
+  const provider = class extends React.Component<{}, State> {
+    
     state = {
       state: initialState,
-      actions: Object.assign({}, ...Object.keys(actions).map((k) => {
-        return { [k]: this.doAction(actions[k]) }
-      }))
+      dispatch : (action: Action<S>) => this.doAction(action)
     }
 
-    doAction<T>(action: Action<T, STATE, ACTIONS>): (value: T) => Promise<STATE> {
-      return (value: T) => {
-        const ret =
-          action(
-            value,
-            (update: ((s: STATE) => Partial<STATE>) | Partial<STATE>) => (
-              this.setState(state => ({state: Object.assign({}, state.state, update instanceof Function ? update(state.state) : update) }))
-            ),
-            () => this.state
-          )
-        
-        if(ret instanceof Promise)
-          return ret.then(() => (() => this.state.state)())
-        else
-          return Promise.resolve(this.state.state)
-      }
+    doAction(action: Action<S>) {
+      const ret =
+        action(
+          update => (
+            this.setState(state => ({state: Object.assign({}, state.state, update instanceof Function ? update(state.state) : update) }))
+          ),
+          () => this.state.state,
+          this.doAction
+        )
+
+      if(ret instanceof Promise)
+        return ret.then(() => (() => this.state.state)())
+      else
+        return Promise.resolve(this.state.state)
     }
 
     componentDidMount() {
-      initialization(this.state)
+      initialization(this.state.state, this.state.dispatch)
     }
 
     render() {
@@ -95,14 +86,26 @@ export function createStore<STATE extends Object, ACTIONS extends Actions<STATE,
 
   }
 
-  const withStore = (method: ((ctx: Context<STATE, ACTIONS>) => JSX.Element)) => {
-    return (
-      <context.Consumer>
-        {method}
-      </context.Consumer>
-    )
+  // High order component to map some of te props to the context's store
+  const withStore = <PROPS extends object, MAPPED_PROPS extends object>(
+    Component: ComponentType<PROPS>,
+    connect: (state: Readonly<S>, dispatch: Dispatcher<S>) => MAPPED_PROPS
+  ): ComponentType<Difference<PROPS, MAPPED_PROPS>> => {
+
+    return class extends React.Component<Difference<PROPS, MAPPED_PROPS>, S> {
+      
+      render() {
+        return (
+          <context.Consumer>
+            {(ctx) => <Component { ...connect(ctx.state, ctx.dispatch)} {...this.props} />}
+          </context.Consumer>
+        )
+      }
+
+    } 
+
   }
- 
+
   return {
     Store: provider,
     withStore
