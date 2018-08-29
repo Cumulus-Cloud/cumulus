@@ -58,3 +58,4 @@ GET     /shared/download/:ref/:name      io.cumulus.controllers.SharingPublicCon
 GET     /favicon.ico                     io.cumulus.controllers.Assets.favicon
 GET     /assets/messages.js              io.cumulus.controllers.Assets.messages
 GET     /assets/*file                    io.cumulus.controllers.Assets.versioned(file: controllers.Assets.Asset)
+GET     /*path                           io.cumulus.controllers.HomeController.indexWithPath(path)

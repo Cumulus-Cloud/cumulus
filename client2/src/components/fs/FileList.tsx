@@ -4,6 +4,8 @@ import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import Typography from '@material-ui/core/Typography'
 import InfoIcon from '@material-ui/icons/Info'
+import WarningIcon from '@material-ui/icons/Warning'
+import Button from '@material-ui/core/Button'
 import CloudIcon from '@material-ui/icons/CloudUpload'
 import Slide from '@material-ui/core/Slide'
 import Fade from '@material-ui/core/Fade'
@@ -21,9 +23,9 @@ import BreadCrumb from 'components/fs/BreadCrumb'
 import { connect, withStore } from 'store/store'
 import { getDirectory, selectUploadFile } from 'store/actions'
 
-import Routes from 'services/routes'
-
 import { togglePopup } from 'utils/popup'
+
+import Routes from 'services/routes'
 
 
 const styles = (theme: Theme) => createStyles({
@@ -88,6 +90,15 @@ const styles = (theme: Theme) => createStyles({
     display: 'flex',
     flex: 1
   },
+  errorContent: {
+    flex: 1,
+    alignContent: 'center'
+  },
+  errorButton: {
+    display: 'flex',
+    margin: 'auto',
+    textDecoration: 'none'
+  },
   content: {
     display: 'flex',
     flex: 1
@@ -150,12 +161,12 @@ class FilesList extends React.Component<PropsWithStyle, State> {
   }
 
   private checkIfPathNeedsRefresh() {
-    const { loading, currentDirectory, initialPath } = this.props
+    const { loading, currentDirectory, initialPath, error } = this.props
 
     // Needs to update if not during a loading, and if the two path have changed (in that case the 'real' path wins)
     // This will likely occure during the first loading, or if the user use the browser history to navigate
     const needToUpdatePath =
-      !loading && (currentDirectory ? initialPath !== currentDirectory.path : true)
+      !error && !loading && (currentDirectory ? initialPath !== currentDirectory.path : true)
 
     if(needToUpdatePath)
       this.props.onLoadDirectory(initialPath)
@@ -191,16 +202,61 @@ class FilesList extends React.Component<PropsWithStyle, State> {
   }
 
   render() {
-    const { currentDirectory, currentDirectoryContent, loading, contentLoading, classes } = this.props
+    const { initialPath, currentDirectory, currentDirectoryContent, loading, contentLoading, classes, error } = this.props
     const { dropzoneActive } = this.state
+
+    const files = currentDirectoryContent ? currentDirectoryContent : []
+    const showLoading = loading || (contentLoading && files.length === 0)
+
+    const dropZone = dropzoneActive &&
+      <Fade in={true} >
+        <div className={classes.dropzone} >
+          <div className={classes.dropzoneInner} >
+            <CloudIcon className={classes.dropzoneIcon} />
+            <Typography variant="display1" className={classes.dropzoneText} >
+              Lâcher pour ajouter au dossier courant
+            </Typography>
+          </div>
+        </div>
+      </Fade>
+
+    const loader = showLoading &&
+      <div className={classes.content} >
+        <CircularProgress className={classes.loader} size={100} color="primary"/>
+      </div> 
 
     const breadCrumb = currentDirectory && currentDirectory.path !== '/' ? // Do not show for an empty path (root directory)
       <BreadCrumb path={currentDirectory.path} onPathSelected={(path) => this.onChangePath(path)} /> :
       <span/>
 
-    const content = currentDirectoryContent ? currentDirectoryContent : []
+    const displayedError = !showLoading && error &&
+      <Slide direction="up" in={true}>
+        <div className={classes.errorContent} >
+          <Typography variant="caption" className={classes.emptyDirectory}> 
+            <WarningIcon className={classes.emptyDirectoryIcon}/>
+            {`Une erreur est survenue au chargement de ${initialPath} : ${error.message}`}
+          </Typography>
+          {
+            error.key === 'api-error.not-found' && 
+            <Button variant="outlined" color="primary" className={classes.errorButton} onClick={() => this.onChangePath('/')} >Go back to the root directory</Button>
+          }
+        </div>
+      </Slide>
 
-    // TODO show errors
+    const content = !showLoading && !error &&
+      <Slide direction="up" in={true}>
+        <div className={classes.content} >
+          {
+            files.length == 0 ?
+            <Typography variant="caption" className={classes.emptyDirectory} >
+              <InfoIcon className={classes.emptyDirectoryIcon}/>
+              {'Ce dossier est vide'} 
+            </Typography> :
+            <FileListTable />
+          }
+        </div>
+      </Slide>
+
     return (
       <main className={classes.root} >
         <Dropzone
@@ -210,38 +266,12 @@ class FilesList extends React.Component<PropsWithStyle, State> {
           onDragEnter={() => this.onDragEnter()}
           onDragLeave={() => this.onDragLeave()}
         >
-        { dropzoneActive &&
-          <Fade in={true} >
-            <div className={classes.dropzone} >
-              <div className={classes.dropzoneInner} >
-                <CloudIcon className={classes.dropzoneIcon} />
-                <Typography variant="display1" className={classes.dropzoneText} >
-                  Lâcher pour ajouter au dossier courant
-                </Typography>
-              </div>
-            </div>
-          </Fade>
-        }
+          {dropZone}
           {breadCrumb}
           <div className={classes.contentWrapper} >
-            {
-              loading || (contentLoading && content.length === 0) ?
-              <div className={classes.content} >
-                <CircularProgress className={classes.loader} size={100} color="primary"/>
-              </div> :
-              <Slide direction="up" in={true}>
-                <div className={classes.content} >
-                  {
-                    content.length == 0 ?
-                    <Typography variant="caption" className={classes.emptyDirectory} >
-                      <InfoIcon className={classes.emptyDirectoryIcon}/>
-                      {'Ce dossier est vide'} 
-                    </Typography> :
-                    <FileListTable />
-                  }
-                </div>
-              </Slide>
-            }
+            {loader}
+            {displayedError}
+            {content}
           </div>
         </Dropzone>
       </main>

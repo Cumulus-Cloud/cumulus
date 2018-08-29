@@ -12,4 +12,7 @@ class HomeController(
   val index: Action[AnyContent] =
     assets.assets.versioned("index.html")
 
+  def indexWithPath(path: String): Action[AnyContent] =
+    assets.assets.versioned("index.html")
+
 }
