@@ -1,5 +1,5 @@
-import { ApiList } from './utils'
-import { Metadata, PDFDocumentMetadata } from './FsNode'
+import { ApiList } from 'models/utils'
+import { Metadata, PDFDocumentMetadata } from 'models/FsNode'
 
 export type FsNodeType = 'DIRECTORY' | 'FILE'
 

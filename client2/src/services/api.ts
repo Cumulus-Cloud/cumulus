@@ -1,11 +1,11 @@
 import axios from 'axios'
 
-import { ApiError } from './../models/ApiError'
-import { EnrichedFile } from './../models/EnrichedFile'
-import { Directory, File, FsNode, FsOperation, DirectoryWithContent } from './../models/FsNode'
-import { User } from '../models/User'
-import { AppSession } from '../models/AppSession'
-import { ApiList } from '../models/utils'
+import { ApiError } from 'models/ApiError'
+import { EnrichedFile } from 'models/EnrichedFile'
+import { Directory, File, FsNode, FsOperation, DirectoryWithContent } from 'models/FsNode'
+import { User } from 'models/User'
+import { AppSession } from 'models/AppSession'
+import { ApiList } from 'models/utils'
 
 const urlBase = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:9000'
 
@@ -183,10 +183,10 @@ const Api = {
 
       // TODO error handling
       function fileReader(file: EnrichedFile) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
           const reader = new FileReader();
           reader.onload = () => {
-            resolve(reader.result) // TODO fix
+            resolve(reader.result as any) // TODO fix
           }
     
           reader.readAsArrayBuffer(file.file)

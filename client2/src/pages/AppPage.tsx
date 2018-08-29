@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { Theme } from '@material-ui/core/styles/createMuiTheme'
+import Grow from '@material-ui/core/Grow'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import ListItem from '@material-ui/core/ListItem'
@@ -15,20 +16,23 @@ import TextField from '@material-ui/core/TextField'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
 import { Route, Redirect, Switch } from 'react-router-dom'
 
-import { togglePopup } from '../actions/popup/popupActions'
-import { withStore } from '../index'
-import CumulusAppBar from '../elements/CumulusAppBar'
-import { User } from '../models/User'
-import CumulusDrawer from '../elements/CumulusDrawer'
-import { Grow } from '@material-ui/core'
-import CreationPopup from '../elements/fs/creation/CreationPopup'
-import Routes from '../services/routes'
-import FileList from '../elements/fs/FileList'
-import UploadPopup from '../elements/fs/upload/UploadPopup'
-import UploadProgressPopup from '../elements/fs/upload/UploadProgressPopup'
-import Snackbars from '../elements/notification/Snackbars'
-import { FsNode } from '../models/FsNode'
-import DetailPopup from '../elements/fs/detail/DetailPopup'
+import CumulusAppBar from 'components/CumulusAppBar'
+import CumulusDrawer from 'components/CumulusDrawer'
+import CreationPopup from 'components/fs/creation/CreationPopup'
+import FileList from 'components/fs/FileList'
+import UploadPopup from 'components/fs/upload/UploadPopup'
+import UploadProgressPopup from 'components/fs/upload/UploadProgressPopup'
+import Snackbars from 'components/notification/Snackbars'
+import DetailPopup from 'components/fs/detail/DetailPopup'
+
+import { User } from 'models/User'
+import { FsNode } from 'models/FsNode'
+
+import { togglePopup } from 'utils/popup'
+
+import { withStore } from 'store/store'
+
+import Routes from 'services/routes'
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -276,28 +280,25 @@ class AppPage extends React.Component<PropsWithStyle, State> {
   }
 }
 
+
 const AppPageWithStyle = withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ({ breakpoint: 'xs' })(AppPage))
 
-const AppPageWithContext = () => (
-  withStore(ctx => {
-    const selectedContent = ctx.state.fs.selectedContent
-    const content = ctx.state.fs.content || []
-    const selection = selectedContent.type === 'ALL' ? content : (selectedContent.type === 'NONE' ? [] : content.filter((node) => selectedContent.selectedElements.indexOf(node.id) >= 0))
-   
-    const user = ctx.state.auth.user
+const AppPageWithContext = withStore(AppPageWithStyle, state => {
+  const selectedContent = state.fs.selectedContent
+  const content = state.fs.content || []
+  const selection = selectedContent.type === 'ALL' ? content : (selectedContent.type === 'NONE' ? [] : content.filter((node) => selectedContent.selectedElements.indexOf(node.id) >= 0))
   
-    if(!user) // Should not happend
-      throw new Error('App page accessed without authentication')
-    
-    return (
-      <AppPageWithStyle
-        selection={selection}
-        user={user}
-        showCreationPopup={() => togglePopup('DIRECTORY_CREATION', true)(ctx.state.router)}
-        showUploadPopup={() => togglePopup('FILE_UPLOAD', true)(ctx.state.router)}
-      />
-    )
-  })
-)
+  const user = state.auth.user
+
+  if(!user) // Should not happend
+    throw new Error('App page accessed without authentication')
+  
+  return {
+    selection: selection,
+    user: user,
+    showCreationPopup: () => togglePopup('DIRECTORY_CREATION', true)(state.router), // TODO typed actions
+    showUploadPopup: () => togglePopup('FILE_UPLOAD', true)(state.router)
+  }
+})
 
 export default AppPageWithContext

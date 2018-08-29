@@ -12,10 +12,9 @@ import { Route, Redirect, match, Switch } from 'react-router-dom'
 import { withRouter } from 'react-router-dom'
 import * as H from 'history'
 
-import withRoot from '../elements/utils/withRoot'
-import SignUpConfirmation from '../elements/login/SignUpConfirmation'
-import SignIn from '../elements/login/SignInForm'
-import SignUp from '../elements/login/SignUpForm';
+import SignUpConfirmation from 'components/login/SignUpConfirmation'
+import SignIn from 'components/login/SignInForm'
+import SignUp from 'components/login/SignUpForm'
 
 
 const styles = (theme: Theme) => createStyles({
