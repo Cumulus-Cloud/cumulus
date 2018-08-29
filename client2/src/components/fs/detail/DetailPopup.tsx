@@ -10,7 +10,6 @@ import DialogTitle from '@material-ui/core/DialogTitle'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
 import Typography from '@material-ui/core/Typography'
 import Chip from '@material-ui/core/Chip'
-import { WithWidthProps } from '@material-ui/core/withWidth'
 import { distanceInWords } from 'date-fns'
 
 import { connect, withStore } from 'store/store'
@@ -118,7 +117,7 @@ interface Props {
   error?: Error
 }
 
-type PropsWithStyle = Props & WithStyles<typeof styles> & Partial<WithWidthProps>
+type PropsWithStyle = Props & WithStyles<typeof styles>
 
 interface State {}
 

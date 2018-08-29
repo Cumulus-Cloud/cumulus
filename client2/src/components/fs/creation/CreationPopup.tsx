@@ -10,7 +10,6 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
-import { WithWidthProps } from '@material-ui/core/withWidth'
 
 import { connect, withStore } from 'store/store'
 import { createDirectory } from 'store/actions'
@@ -50,7 +49,7 @@ interface Props {
   error?: ApiError
 }
 
-type PropsWithStyle = Props & WithStyles<typeof styles> & Partial<WithWidthProps>
+type PropsWithStyle = Props & WithStyles<typeof styles>
 
 interface State {
   directoryName: string

@@ -9,7 +9,7 @@ import Typography from '@material-ui/core/Typography'
 import createStyles from '@material-ui/core/styles/createStyles'
 import CardHeader from '@material-ui/core/CardHeader'
 import IconButton from '@material-ui/core/IconButton'
-import FileDownloadButton from '@material-ui/icons/FileDownload'
+import FileDownloadButton from '@material-ui/icons/CloudDownload'
 import classnames = require('classnames')
 import List from '@material-ui/core/List'
 import Slide from '@material-ui/core/Slide'
