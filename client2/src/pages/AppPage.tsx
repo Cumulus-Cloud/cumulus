@@ -43,13 +43,6 @@ const styles = (theme: Theme) => createStyles({
     display: 'flex',
     minHeight: '100%'
   },
-  testRoot: {
-    width: '100%',
-    marginTop: theme.spacing.unit * 2,
-    maxWidth: 800,
-    marginRight: 'auto',
-    marginLeft: 'auto'
-  },
   heading: {
     paddingLeft: 15,
     paddingTop: 2,
@@ -94,7 +87,6 @@ const styles = (theme: Theme) => createStyles({
   emptyDirectoryIcon: {
     marginRight: theme.spacing.unit
   },
-  toolbar: theme.mixins.toolbar,
   margin: {
     margin: theme.spacing.unit,
     backgroundColor: theme.palette.primary.light,
@@ -247,13 +239,6 @@ class AppPage extends React.Component<PropsWithStyle, State> {
     return (
       <Grow in={true}>
         <div className={classes.root}>
-          <CumulusAppBar 
-            user={user}
-            showDrawer={() => this.toggleDrawer()}
-            showAccountPanel={() => { return }}
-            showAdminPanel={() => { return }}
-            logout={() => { return }}
-          />
           <CumulusDrawer
             onDrawerToggle={() => this.toggleDrawer()}
             showDynamicDrawer={this.state.drawer}

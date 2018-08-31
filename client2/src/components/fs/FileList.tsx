@@ -31,13 +31,15 @@ import Routes from 'services/routes'
 const styles = (theme: Theme) => createStyles({
   root: {
     flexGrow: 1,
-    backgroundColor: theme.palette.background.default,
-    padding: theme.spacing.unit * 3,
-    paddingLeft: theme.spacing.unit * 3,
+    backgroundColor: 'white', //theme.palette.background.default,
+    //padding: theme.spacing.unit * 3,
+    //paddingLeft: theme.spacing.unit * 3,
+    /*
     marginTop: 56,
     [theme.breakpoints.up('sm')]: {
       marginTop: 64,
     },
+    */
     minWidth: 0,
     display: 'flex'
   },
@@ -84,7 +86,9 @@ const styles = (theme: Theme) => createStyles({
   },
   contentWrapper: {
     width: '100%',
-    maxWidth: 800,
+    //maxWidth: 800,
+    paddingLeft: theme.spacing.unit * 3,
+    paddingRight: theme.spacing.unit * 3,
     marginRight: 'auto',
     marginLeft: 'auto',
     display: 'flex',

@@ -26,25 +26,29 @@ import { FsNodeSelection } from 'store/states/fsState'
 const styles = (theme: Theme) => createStyles({
   root: {
     boxShadow: 'none',
-    border: '1px solid rgba(0, 0, 0, 0.12)',
+    //border: '1px solid rgba(0, 0, 0, 0.12)',
     borderTop: 0,
     marginTop: 0,
-    transition: 'margin 250ms',
+    //transition: 'margin 250ms',
     display: 'flex',
     flexDirection: 'column',
     flex: 1
   },
   transition: {
+    /*
     marginTop: theme.spacing.unit * -3,
     marginBottom: theme.spacing.unit * -3,
     borderBottom: 0,
     transition: 'margin 250ms'
+    */
   },
   transitionWithBreadCrumb: {
+    /*
     marginTop: (theme.spacing.unit * -5) - 40, // Minus size of the breadcrum + extra margin
     marginBottom: theme.spacing.unit * -3,
     borderBottom: 0,
     transition: 'margin 250ms'
+    */
   },
   contentTableHead: {
     zIndex: 99,
@@ -52,8 +56,8 @@ const styles = (theme: Theme) => createStyles({
     backgroundColor: 'white',
     borderTop: '1px solid rgba(0, 0, 0, 0.12)',
     borderBottom: 0,
-    position: 'sticky',
-    top: '-16px'
+    //position: 'sticky',
+    //top: '-16px'
   },
   contentTableBody: {
     flex: 1
@@ -97,7 +101,8 @@ const styles = (theme: Theme) => createStyles({
   contentHeadRow: {
     display: 'flex',
     borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
-    height: '66px',
+    //height: '66px',
+    height: '45px',
     alignItems: 'center',
     paddingRight: '61px' // Let space for the menu icon
   },

@@ -6,10 +6,13 @@ import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer'
+import CloudIcon from '@material-ui/icons/CloudQueue'
+import { Typography } from '@material-ui/core';
 
 
 const styles = (theme: Theme) => createStyles({
   drawerPaper: {
+    backgroundColor: 'rgb(246, 251, 251)', // TODO via theme
     position: 'relative',
     width: 240,
   },
@@ -18,7 +21,18 @@ const styles = (theme: Theme) => createStyles({
       display: 'none'
     }
   },
-  toolbar: theme.mixins.toolbar
+  logoContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    color: theme.palette.primary.light,
+    padding: theme.spacing.unit * 2,
+    paddingLeft: theme.spacing.unit * 3,
+    height: '70px'
+  },
+  logo: {
+    fontSize: '4rem',
+    paddingRight: theme.spacing.unit * 2
+  }
 })
 
 interface Props {
@@ -46,7 +60,7 @@ class CumulusDrawer extends React.Component<PropsWithStyle, State> {
   }
 
   render() {
-    const { searchElements, actionElements, contextualActionElements, showDynamicDrawer } = this.props
+    const { classes, searchElements, actionElements, contextualActionElements, showDynamicDrawer } = this.props
 
     return (
       <div>
@@ -63,13 +77,14 @@ class CumulusDrawer extends React.Component<PropsWithStyle, State> {
         </SwipeableDrawer>
         <Drawer
           variant="permanent"
-          className={this.props.classes.drawerStatic}
+          className={classes.drawerStatic}
           classes={{
-            paper: this.props.classes.drawerPaper,
+            paper: classes.drawerPaper,
           }}
         >
-          <div className={this.props.classes.toolbar} />
-          <List>{searchElements}</List>
+          <Typography variant="headline" className={classes.logoContainer} >
+            <CloudIcon  className={classes.logo} /> <div>Cumulus</div>
+          </Typography>
           <Divider style={{height: 1}} />
           <List>{actionElements}</List>
           <Divider style={{height: 1}} />
@@ -79,6 +94,7 @@ class CumulusDrawer extends React.Component<PropsWithStyle, State> {
     )
   }
 
+  // <List>{searchElements}</List>
 }
 
 export default withStyles(styles) <PropsWithStyle> (CumulusDrawer)
