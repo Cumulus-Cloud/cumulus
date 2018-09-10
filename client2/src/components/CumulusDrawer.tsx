@@ -22,12 +22,15 @@ const styles = (theme: Theme) => createStyles({
     }
   },
   logoContainer: {
+    height: '70px'
+  },
+  logoText: {
     display: 'flex',
     alignItems: 'center',
     color: theme.palette.primary.light,
-    padding: theme.spacing.unit * 2,
+    paddingRight: theme.spacing.unit * 2,
     paddingLeft: theme.spacing.unit * 3,
-    height: '70px'
+    paddingTop: '2px'
   },
   logo: {
     fontSize: '4rem',
@@ -82,9 +85,11 @@ class CumulusDrawer extends React.Component<PropsWithStyle, State> {
             paper: classes.drawerPaper,
           }}
         >
-          <Typography variant="headline" className={classes.logoContainer} >
-            <CloudIcon  className={classes.logo} /> <div>Cumulus</div>
-          </Typography>
+          <div className={classes.logoContainer} >
+            <Typography variant="headline" className={classes.logoText} >
+              <CloudIcon  className={classes.logo} /> <div>Cumulus</div>
+            </Typography>
+          </div>
           <Divider style={{height: 1}} />
           <List>{actionElements}</List>
           <Divider style={{height: 1}} />

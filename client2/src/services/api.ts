@@ -7,7 +7,7 @@ import { User } from 'models/User'
 import { AppSession } from 'models/AppSession'
 import { ApiList } from 'models/utils'
 
-const urlBase = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:9000'
+const urlBase = ''
 
 export const ApiUtils = {
 

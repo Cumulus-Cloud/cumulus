@@ -26,20 +26,15 @@ import { getDirectory, selectUploadFile } from 'store/actions'
 import { togglePopup } from 'utils/popup'
 
 import Routes from 'services/routes'
+import TextField from '@material-ui/core/TextField'
+import InputAdornment from '@material-ui/core/InputAdornment'
+import SearchIcon from '@material-ui/icons/Search'
 
 
 const styles = (theme: Theme) => createStyles({
   root: {
     flexGrow: 1,
-    backgroundColor: 'white', //theme.palette.background.default,
-    //padding: theme.spacing.unit * 3,
-    //paddingLeft: theme.spacing.unit * 3,
-    /*
-    marginTop: 56,
-    [theme.breakpoints.up('sm')]: {
-      marginTop: 64,
-    },
-    */
+    backgroundColor: 'white',
     minWidth: 0,
     display: 'flex'
   },
@@ -84,9 +79,16 @@ const styles = (theme: Theme) => createStyles({
     marginTop: theme.spacing.unit * 2,
     marginBottom: theme.spacing.unit
   },
+  header: {
+    display: 'flex'
+  },
+  breadCrumb: {
+    flex: 1,
+    width: 100,
+    overflow: 'auto'
+  },
   contentWrapper: {
     width: '100%',
-    //maxWidth: 800,
     paddingLeft: theme.spacing.unit * 3,
     paddingRight: theme.spacing.unit * 3,
     marginRight: 'auto',
@@ -229,9 +231,9 @@ class FilesList extends React.Component<PropsWithStyle, State> {
         <CircularProgress className={classes.loader} size={100} color="primary"/>
       </div> 
 
-    const breadCrumb = currentDirectory && currentDirectory.path !== '/' ? // Do not show for an empty path (root directory)
-      <BreadCrumb path={currentDirectory.path} onPathSelected={(path) => this.onChangePath(path)} /> :
-      <span/>
+    const breadCrumb = currentDirectory ?
+      <BreadCrumb className={classes.breadCrumb} path={currentDirectory.path} onPathSelected={(path) => this.onChangePath(path)} /> :
+      <div style={{ flex: 1 }} />
 
     const displayedError = !showLoading && error &&
       <Slide direction="up" in={true}>
@@ -271,7 +273,20 @@ class FilesList extends React.Component<PropsWithStyle, State> {
           onDragLeave={() => this.onDragLeave()}
         >
           {dropZone}
+          <div className={classes.header} >
           {breadCrumb}
+            <TextField
+              placeholder="Search a file or a directory"
+              margin="normal"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </div>
           <div className={classes.contentWrapper} >
             {loader}
             {displayedError}
