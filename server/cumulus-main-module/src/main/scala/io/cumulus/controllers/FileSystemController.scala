@@ -37,7 +37,7 @@ class FileSystemController(
 ) extends AbstractController(cc) with UserAuthentication with ApiUtils with FileDownloaderUtils with BodyParserJson with BodyParserStream {
 
   /**
-    * List all the elements of the filesysteme.
+    * List all the elements of the filesystem.
     */
   def index: Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
@@ -48,8 +48,6 @@ class FileSystemController(
 
   /**
     * Creates a new directory.
-    *
-    * @param path The path of the new directory.
     */
   def create: Action[DirectoryCreationPayload] =
     AuthenticatedAction.async(parseJson[DirectoryCreationPayload]) { implicit request =>
@@ -129,6 +127,7 @@ class FileSystemController(
     *
     * @param path Root element for the search. Use '/' to search in the whole filesystem.
     * @param name Name to look for. Approximation are allowed.
+    * @param onlyDirectChildren If the search should include only the direct children of the parent directory.
     * @param nodeType The optional type of node to look for.
     * @param mimeType The optional mime type to look for.
     * @param limit The maximum number of elements to be returned. Used for pagination.
@@ -137,6 +136,7 @@ class FileSystemController(
   def search(
     path: Path,
     name: String,
+    recursiveSearch: Option[Boolean],
     nodeType: Option[FsNodeType],
     mimeType: Option[String],
     limit: Option[Int],
@@ -146,7 +146,7 @@ class FileSystemController(
       ApiResponse.paginated {
         val pagination = QueryPagination(limit, offset)
 
-        fsNodeService.searchNodes(path, name, nodeType, mimeType, pagination)
+        fsNodeService.searchNodes(path, name, recursiveSearch, nodeType, mimeType, pagination)
       }
     }
 

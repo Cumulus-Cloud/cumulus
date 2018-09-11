@@ -19,10 +19,11 @@ import Divider from '@material-ui/core/Divider'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 
 import { connect, withStore } from 'store/store'
-import { hideUploadProgress } from 'store/actions'
+import { hideUploadProgress } from 'store/actions/fileUpload'
 import { FileUploadingState, computeUploadingSpeed } from 'store/states/fileUploadState'
 
 import { humanSpeed } from 'utils/humandReadable'
+
 
 const styles = (theme: Theme) => createStyles({
   root: {

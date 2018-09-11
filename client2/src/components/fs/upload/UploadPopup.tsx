@@ -12,7 +12,7 @@ import Slide from '@material-ui/core/Slide'
 import uuid = require('uuid/v4')
 
 import { connect, withStore } from 'store/store'
-import { selectUploadFile, deleteUploadFile, updateUploadFile, uploadAllFiles } from 'store/actions'
+import { selectUploadFile, deleteUploadFile, updateUploadFile, uploadAllFiles } from 'store/actions/fileUpload'
 
 import { Directory } from 'models/FsNode'
 import { EnrichedFile } from 'models/EnrichedFile'

@@ -1,8 +1,9 @@
+import { Search } from './../store/states/fsState'
 import axios from 'axios'
 
 import { ApiError } from 'models/ApiError'
 import { EnrichedFile } from 'models/EnrichedFile'
-import { Directory, File, FsNode, FsOperation, DirectoryWithContent } from 'models/FsNode'
+import { Directory, File, FsNode, FsOperation, DirectoryWithContent, SearchResult } from 'models/FsNode'
 import { User } from 'models/User'
 import { AppSession } from 'models/AppSession'
 import { ApiList } from 'models/utils'
@@ -23,10 +24,7 @@ export const ApiUtils = {
     const queryString =
       Array.from(queryParams.entries())
       .map((value) => {
-        if(value[1] !== '')
-          return `${encodeURIComponent(value[0])}=${encodeURIComponent(value[1])}&` 
-        else
-          return ''
+          return `${encodeURIComponent(value[0])}=${encodeURIComponent(value[1])}&`
       })
       .join('')
 
@@ -172,6 +170,24 @@ const Api = {
       return ApiUtils.get<DirectoryWithContent>(
         `/fs/${id}/content`,
         ApiUtils.pagination(contentLimit || ApiUtils.maxResultDefault, contentOffset || 0)
+      )
+    },
+
+    // TODO test
+    search(path: string, search: Search, contentOffset?: number, contentLimit?: number): Promise<ApiError | SearchResult> {
+      const pagination = ApiUtils.pagination(contentLimit || ApiUtils.maxResultDefault, contentOffset || 0)
+      const searchParam = new Map([
+        [ 'path', path ],
+        [ 'name', search.query ],
+        [ 'recursiveSearch', search.recursiveSearch ? 'true' : 'false' ]
+      ])
+      const nodeType = search.nodeType === 'ALL' ? new Map() : new Map([[ 'nodeType', search.nodeType ]])
+
+      const params = new Map([...searchParam, ...nodeType, ...pagination])
+
+      return ApiUtils.get<SearchResult>(
+        `/fs/search`,
+        params
       )
     },
 

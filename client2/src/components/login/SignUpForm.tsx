@@ -14,9 +14,10 @@ import Visibility from '@material-ui/icons/Visibility'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import VisibilityOff from '@material-ui/icons/VisibilityOff'
 
+import { signUpUser } from 'store/actions/authentication'
 import { connect, withStore } from 'store/store'
+
 import { ApiError } from 'models/ApiError'
-import {signUpUser} from 'store/actions'
 
 
 const styles = (theme: Theme) => createStyles({

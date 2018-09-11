@@ -7,7 +7,8 @@ import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 
 import { withStore } from 'store/store'
-import { hideSnackbar } from 'store/actions'
+import { hideSnackbar } from 'store/actions/snackbar'
+
 
 const styles = (theme: Theme) => createStyles({
   root: {

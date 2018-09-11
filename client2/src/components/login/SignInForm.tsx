@@ -8,9 +8,10 @@ import TextField from '@material-ui/core/TextField'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import { Typography } from '@material-ui/core'
 
+import { ApiError } from 'models/ApiError'
+
 import { connect, withStore } from 'store/store'
-import { ApiError } from '../../models/ApiError'
-import { signInUser } from 'store/actions'
+import { signInUser } from 'store/actions/authentication'
 
 const styles = (theme: Theme) => createStyles({
   root: {

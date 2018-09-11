@@ -19,7 +19,7 @@ import Divider from '@material-ui/core/Divider'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Checkbox from '@material-ui/core/Checkbox'
 
-import { EnrichedFile } from '../../../models/EnrichedFile'
+import { EnrichedFile } from 'models/EnrichedFile'
 
 
 const styles = (_: Theme) => createStyles({

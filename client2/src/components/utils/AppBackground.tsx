@@ -3,6 +3,7 @@ import { Theme, createStyles, WithStyles, withStyles } from '@material-ui/core'
 
 import withRoot from 'components/utils/withRoot'
 
+
 const styles = (_: Theme) => createStyles({
   backgroundFilter: {
     zIndex: 0,

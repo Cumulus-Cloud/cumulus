@@ -16,6 +16,19 @@ interface SomeSelection {
 
 export type FsNodeSelection = AllSelection | NoneSelection | SomeSelection
 
+export interface Search {
+  query: string
+  nodeType: 'ALL' | 'DIRECTORY' | 'FILE'
+  recursiveSearch: boolean
+  // TODO type filtering
+}
+
+export const SearchDefault: Search = {
+  query: '',
+  nodeType: 'ALL',
+  recursiveSearch: false
+}
+
 export default interface FsState {
   /** If the store is loading the current directory itself. This means that no directory can be displayed. */
   loadingCurrent: boolean
@@ -29,6 +42,8 @@ export default interface FsState {
   contentSize?: number,
   /** List of selected elements */
   selectedContent: FsNodeSelection
+  /** Search for the current directory */
+  search?: Search
   /** Detailed node */
   detailed?: FsNode
   /** If an error occured. */

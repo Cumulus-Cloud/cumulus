@@ -18,7 +18,7 @@ import { List, ListRowProps, AutoSizer, InfiniteLoader } from 'react-virtualized
 import Routes from 'services/routes'
 import { togglePopup } from 'utils/popup'
 import { withStore, connect } from 'store/store'
-import { showNodeDetails, selectNode, selectAllNodes, deselectNode, deselectAllNodes, getDirectoryContent } from 'store/actions'
+import { showNodeDetails, selectNode, selectAllNodes, deselectNode, deselectAllNodes, getDirectoryContent } from 'store/actions/directory'
 import { Directory, FsNode } from 'models/FsNode'
 import { FsNodeSelection } from 'store/states/fsState'
 
@@ -26,38 +26,18 @@ import { FsNodeSelection } from 'store/states/fsState'
 const styles = (theme: Theme) => createStyles({
   root: {
     boxShadow: 'none',
-    //border: '1px solid rgba(0, 0, 0, 0.12)',
     borderTop: 0,
     marginTop: 0,
-    //transition: 'margin 250ms',
     display: 'flex',
     flexDirection: 'column',
     flex: 1
-  },
-  transition: {
-    /*
-    marginTop: theme.spacing.unit * -3,
-    marginBottom: theme.spacing.unit * -3,
-    borderBottom: 0,
-    transition: 'margin 250ms'
-    */
-  },
-  transitionWithBreadCrumb: {
-    /*
-    marginTop: (theme.spacing.unit * -5) - 40, // Minus size of the breadcrum + extra margin
-    marginBottom: theme.spacing.unit * -3,
-    borderBottom: 0,
-    transition: 'margin 250ms'
-    */
   },
   contentTableHead: {
     zIndex: 99,
     boxShadow: 'none',
     backgroundColor: 'white',
     borderTop: '1px solid rgba(0, 0, 0, 0.12)',
-    borderBottom: 0,
-    //position: 'sticky',
-    //top: '-16px'
+    borderBottom: 0
   },
   contentTableBody: {
     flex: 1
@@ -101,7 +81,6 @@ const styles = (theme: Theme) => createStyles({
   contentHeadRow: {
     display: 'flex',
     borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
-    //height: '66px',
     height: '45px',
     alignItems: 'center',
     paddingRight: '61px' // Let space for the menu icon
@@ -180,8 +159,6 @@ interface State {
   showCheckboxes: boolean,
   /** Select menu on a specified node. */
   selectedMenu?: { nodeId: string, anchor: HTMLElement }
-  /** State of the scroll of the table. */
-  scrollTop: number
 }
 
 /**
@@ -192,7 +169,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
   constructor(props: PropsWithStyle) {
     super(props)
 
-    this.state = { showCheckboxes: false, selectedMenu: undefined, scrollTop: 0 }
+    this.state = { showCheckboxes: false, selectedMenu: undefined }
   }
 
   private onShowNodeDetail(node: FsNode) {
@@ -305,11 +282,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
 
     const menu =
       <div>
-        <IconButton
-          aria-label="More"
-          aria-haspopup="true"
-          onClick={(e) => this.onToggleMenu(node, e)}
-        >
+        <IconButton onClick={(e) => this.onToggleMenu(node, e)} >
           <MoreVertIcon />
         </IconButton>
         <Menu
@@ -359,13 +332,10 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     const { current, content, contentSize, classes, selection } = this.props
     const { showCheckboxes } = this.state
 
-    const marginTop = this.state.scrollTop > 32
-    const isRoot = current ? current.path === '/' : true
-
     // TODO show errors ?
     if(current) {
       return (
-        <Paper className={classnames(classes.root, { [classes.transition]: marginTop && isRoot,  [classes.transitionWithBreadCrumb]: marginTop && !isRoot })} >
+        <Paper className={classes.root} >
           <div className={classes.contentTableHead}>
             <div className={classes.contentHeadRow} >
               { showCheckboxes ?
@@ -396,7 +366,6 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
                       style={{ outline: 'none' }}
                       height={height}
                       width={width}
-                      onScroll={(e: any) => this.setState({ scrollTop: e.scrollTop })}
                       rowCount={content.length + (contentSize === content.length ? 0 : 1)}
                       rowHeight={45}
                       rowRenderer={ (props: ListRowProps) =>

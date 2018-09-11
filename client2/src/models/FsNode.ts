@@ -1,3 +1,4 @@
+import { FsNode } from './FsNode'
 import { ApiList } from 'models/utils'
 import { Metadata, PDFDocumentMetadata } from 'models/FsNode'
 
@@ -113,3 +114,8 @@ export type FsOperation =
   FsOperationShareLink |
   FsOperationShareDelete | 
   FsOperationDelete
+
+  export type SearchResult = {
+    items: FsNode[],
+    offset: number
+  }

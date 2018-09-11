@@ -16,7 +16,6 @@ import TextField from '@material-ui/core/TextField'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
 import { Route, Redirect, Switch } from 'react-router-dom'
 
-import CumulusAppBar from 'components/CumulusAppBar'
 import CumulusDrawer from 'components/CumulusDrawer'
 import CreationPopup from 'components/fs/creation/CreationPopup'
 import FileList from 'components/fs/FileList'
@@ -146,7 +145,7 @@ class AppPage extends React.Component<PropsWithStyle, State> {
   }
 
   render() {
-    const { selection, user, classes } = this.props
+    const { selection, classes } = this.props
 
     const searchElements = (
       <div>

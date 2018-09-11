@@ -122,11 +122,12 @@ class FsNodeService(
   def searchNodes(
     parent: Path,
     name: String,
+    recursiveSearch: Option[Boolean],
     nodeType: Option[FsNodeType],
     mimeType: Option[String],
     pagination: QueryPagination
   )(implicit user: User): Future[Either[AppError, PaginatedList[FsNode]]] = {
-    val filter     = FsNodeFilter(name, parent, nodeType, mimeType, user)
+    val filter     = FsNodeFilter(name, parent, recursiveSearch, nodeType, mimeType, user)
     val ordering   = FsNodeOrdering.empty
 
     fsNodeStore

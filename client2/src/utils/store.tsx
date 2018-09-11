@@ -4,7 +4,7 @@ import { ComponentType } from 'react'
 import { Difference } from 'utils/types'
 
 // Helpers
-export type StateUpdater<S> = (update: ((s: S) => Partial<S>) | Partial<S>) => void
+export type StateUpdater<S> = (update: ((s: S) => Partial<S>) | Partial<S>) => Promise<S>
 export type StateReader<S> = () => Readonly<S>
 export type Dispatcher<S> = (action: Action<S>) => Promise<S>
 
@@ -53,9 +53,14 @@ export function createStore<S>(
     dispatch = (action: Action<S>) => {
       const ret =
         action(
-          update => (
-            this.setState(state => Object.assign({}, state, update instanceof Function ? update(state) : update))
-          ),
+          (update) => {
+            return new Promise<S>((resolve) => {
+              this.setState(
+                state => Object.assign({}, state, update instanceof Function ? update(state) : update),
+                () => resolve(this.state)
+              )
+            })
+          },
           () => this.state,
           this.dispatch
         )

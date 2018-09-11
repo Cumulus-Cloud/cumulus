@@ -7,7 +7,7 @@ import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer'
 import CloudIcon from '@material-ui/icons/CloudQueue'
-import { Typography } from '@material-ui/core';
+import { Typography } from '@material-ui/core'
 
 
 const styles = (theme: Theme) => createStyles({

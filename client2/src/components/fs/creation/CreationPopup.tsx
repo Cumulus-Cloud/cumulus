@@ -12,7 +12,7 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
 
 import { connect, withStore } from 'store/store'
-import { createDirectory } from 'store/actions'
+import { createDirectory } from 'store/actions/directoryCreation'
 import { togglePopup, isSelected } from 'utils/popup'
 import { ApiError } from 'models/ApiError'
 import { Directory } from 'models/FsNode'

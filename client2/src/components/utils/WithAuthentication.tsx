@@ -1,7 +1,8 @@
 import * as React from 'react'
 
 import { withStore } from 'store/store'
-import { testUserAuth } from 'store/actions'
+import { testUserAuth } from 'store/actions/authentication'
+
 
 interface Props {
   authenticated: JSX.Element
