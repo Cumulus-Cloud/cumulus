@@ -139,6 +139,8 @@ interface Props {
   onDeselectAllNodes: () => void
   /** When more content needs to be loaded. */
   onLoadMoreContent: (offset: number) => void
+  /** Callback for the parent component. */
+  onPathChanged: () => void
   /** If more content is loading. */
   loading: boolean
   /** If there is more content to load. */
@@ -177,6 +179,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
   }
 
   private onNavigateDirectory(directory: Directory) {
+    this.props.onPathChanged()
     this.props.onNavigateDirectory(directory)
   }
 

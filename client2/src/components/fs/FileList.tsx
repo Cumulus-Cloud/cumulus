@@ -241,10 +241,12 @@ class FilesList extends React.Component<PropsWithStyle, State> {
   onSearchElementTypeChange = debounce(300, false, (value: string) => {
     const search: Search = this.props.search || SearchDefault
     this.onSearchChange({ ...search, query: value })
-  })*/
+  })
+  */
 
   private onEndSearch() {
-    this.onSearchChange(undefined)
+    this.props.onChangeSearch(undefined)
+    this.setState({ search: undefined })
   }
 
   private onSearchBarFocus() {
@@ -329,9 +331,6 @@ class FilesList extends React.Component<PropsWithStyle, State> {
     const breadCrumb = currentDirectory ?
       <BreadCrumb className={classes.breadCrumb} path={currentDirectory.path} onPathSelected={(path) => this.onChangePath(path)} /> :
       <div style={{ flex: 1 }} />
-
-      console.log(search)
-      console.log(localSearch)
 
     const searchBar = currentDirectory &&
       <TextField
@@ -433,7 +432,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
               <InfoIcon className={classes.emptyDirectoryIcon}/>
               {'Ce dossier est vide'} 
             </Typography> :
-            <FileListTable />
+            <FileListTable onPathChanged={() => this.setState({ search: undefined })} />
           }
         </div>
       </Slide>
