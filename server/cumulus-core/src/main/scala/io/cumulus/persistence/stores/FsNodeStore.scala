@@ -92,11 +92,15 @@ class FsNodeStore(
   ): Query[CumulusDB, PaginatedList[FsNode]] = {
     // Match directory starting by the location, but only on the direct level
     val regex = if (path.isRoot) "^/[^/]+$" else s"^${path.toString}/[^/]+$$"
+    val paginationPlusOne = pagination.copy(limit = pagination.limit + 1)
 
     qb { implicit c =>
-      SQL"SELECT #$metadataField FROM #$table WHERE #$ownerField = ${user.id} AND #$pathField ~ $regex #${ordering.toORDER} #${pagination.toLIMIT}"
-        .as(rowParser.*)
-        .toPaginatedList(pagination.offset)
+
+      val result =
+        SQL"SELECT #$metadataField FROM #$table WHERE #$ownerField = ${user.id} AND #$pathField ~ $regex #${ordering.toORDER} #${paginationPlusOne.toLIMIT}"
+          .as(rowParser.*)
+
+      result.toPaginatedList(pagination.offset, result.length > pagination.limit)
     }
   }
 

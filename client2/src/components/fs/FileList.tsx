@@ -15,15 +15,12 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import Dropzone from 'react-dropzone'
 import FormGroup from '@material-ui/core/FormGroup'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
-import Checkbox from '@material-ui/core/Checkbox'
 import Switch from '@material-ui/core/Switch'
 import FormLabel from '@material-ui/core/FormLabel'
 import FormControl from '@material-ui/core/FormControl'
 import TextField from '@material-ui/core/TextField'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import Select from '@material-ui/core/Select'
-import Grow from '@material-ui/core/Grow'
-import Zoom from '@material-ui/core/Zoom'
 import SearchIcon from '@material-ui/icons/Search'
 import CloseIcon from '@material-ui/icons/Close'
 import Radio from '@material-ui/core/Radio'
@@ -123,6 +120,7 @@ const styles = (theme: Theme) => createStyles({
   },
   searchBar: {
     width: 250,
+    transitionDelay: '1s',
     transition: 'width 700ms ease-in-out'
   },
   searchZone: {
@@ -131,8 +129,7 @@ const styles = (theme: Theme) => createStyles({
   },
   searchZoneContent: {
     borderTop: '1px solid rgba(0, 0, 0, 0.12)',
-    paddingLeft: '15px',
-    //display: 'flex',
+    paddingLeft: '15px'
   },
   searchZoneTitle: {
     fontSize: '1em',
@@ -275,6 +272,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
   }
 
   private onChangePath(path: string) {
+    //this.props.onChangeSearch(undefined)
     this.props.onChangePath(path)
   }
   
@@ -331,6 +329,9 @@ class FilesList extends React.Component<PropsWithStyle, State> {
     const breadCrumb = currentDirectory ?
       <BreadCrumb className={classes.breadCrumb} path={currentDirectory.path} onPathSelected={(path) => this.onChangePath(path)} /> :
       <div style={{ flex: 1 }} />
+
+      console.log(search)
+      console.log(localSearch)
 
     const searchBar = currentDirectory &&
       <TextField

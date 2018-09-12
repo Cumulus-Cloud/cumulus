@@ -1,4 +1,3 @@
-
 import Api from 'services/api'
 
 import { ApiError } from 'models/ApiError'
@@ -16,6 +15,7 @@ export const getDirectory = createAction<string>((path, setState, _, dispatch) =
       loadingCurrent: true,
       loadingContent: false,
       selectedContent: { type: 'NONE' },
+      search: undefined,
       error: undefined
     }
   }))
@@ -66,8 +66,6 @@ export const getDirectoryContent = createPureAction((setState, getState) => {
   const offset = state.fs.content ? state.fs.content.length : 0
   const search = state.fs.search
 
-  console.log(search)
-
   // This should not happen, because the current directory should not be undefined if we are searching its content
   if(!current)
     return setState(state => ({
@@ -75,7 +73,7 @@ export const getDirectoryContent = createPureAction((setState, getState) => {
         ...state.fs,
         loadingContent: false
       }
-    })) 
+    })).then(() => {})
 
   if(search) {
     return Api.fs.search(current.path, search, offset).then((result: ApiError | SearchResult) => {
@@ -92,8 +90,8 @@ export const getDirectoryContent = createPureAction((setState, getState) => {
           fs: {
             ...state.fs,
             loadingContent: false,
-            content: state.fs.content ? state.fs.content.concat(result.items) : result.items,
-            contentSize: 999999, //result.totalContentLength, // TODO return lenght ?
+            content: (state.fs.content || []).concat(result.items),
+            contentSize: (state.fs.content || []).length + result.items.length + (result.hasMore ? 1 : 0),
             error: undefined
           }
         }))
@@ -115,7 +113,7 @@ export const getDirectoryContent = createPureAction((setState, getState) => {
           fs: {
             ...state.fs,
             loadingContent: false,
-            content: state.fs.content ? state.fs.content.concat(result.content.items) : result.content.items,
+            content: (state.fs.content || []).concat(result.content.items),
             contentSize: result.totalContentLength,
             error: undefined
           }

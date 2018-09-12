@@ -47,13 +47,17 @@ class SharingStore(
     */
   def findByUser(user: User, pagination: QueryPagination): Query[CumulusDB, PaginatedList[Sharing]] =
     qb { implicit c =>
+      val paginationPlusOne = pagination.copy(limit = pagination.limit + 1)
 
-      SQL"""
-          SELECT #$table.#$metadataField
-          FROM #$table
-          WHERE #$ownerField = ${user.id}
-          #${pagination.toLIMIT}
-        """.as(rowParser.*).toPaginatedList(pagination.offset)
+      val result =
+        SQL"""
+            SELECT #$table.#$metadataField
+            FROM #$table
+            WHERE #$ownerField = ${user.id}
+            #${paginationPlusOne.toLIMIT}
+          """.as(rowParser.*)
+
+      result.toPaginatedList(pagination.offset, result.length > pagination.limit)
     }
 
   /**
@@ -64,13 +68,17 @@ class SharingStore(
     */
   def findByNode(fsNode: FsNode, pagination: QueryPagination): Query[CumulusDB, PaginatedList[Sharing]] =
     qb { implicit c =>
+      val paginationPlusOne = pagination.copy(limit = pagination.limit + 1)
 
-      SQL"""
-          SELECT #$table.#$metadataField
-          FROM #$table
-          WHERE #$fsNodeField = ${fsNode.id}
-          #${pagination.toLIMIT}
-        """.as(rowParser.*).toPaginatedList(pagination.offset)
+      val result =
+        SQL"""
+            SELECT #$table.#$metadataField
+            FROM #$table
+            WHERE #$fsNodeField = ${fsNode.id}
+            #${paginationPlusOne.toLIMIT}
+          """.as(rowParser.*)
+
+      result.toPaginatedList(pagination.offset, result.length > pagination.limit)
     }
 
   /**

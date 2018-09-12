@@ -117,5 +117,6 @@ export type FsOperation =
 
   export type SearchResult = {
     items: FsNode[],
-    offset: number
+    offset: number,
+    hasMore: boolean
   }

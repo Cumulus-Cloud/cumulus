@@ -127,13 +127,13 @@ class FsNodeService(
     mimeType: Option[String],
     pagination: QueryPagination
   )(implicit user: User): Future[Either[AppError, PaginatedList[FsNode]]] = {
-    val filter     = FsNodeFilter(name, parent, recursiveSearch, nodeType, mimeType, user)
-    val ordering   = FsNodeOrdering.empty
+    val filter   = FsNodeFilter(name, parent, recursiveSearch, nodeType, mimeType, user)
+    val ordering = FsNodeOrdering.empty
 
     fsNodeStore
       .findAll(filter, ordering, pagination)
       .commit()
-      .map(nodes => Right(PaginatedList(nodes.filterNot(_.path.isRoot), pagination.offset.getOrElse(0)))) // Ignore the root folder
+      .map(Right(_))
   }
 
   /**

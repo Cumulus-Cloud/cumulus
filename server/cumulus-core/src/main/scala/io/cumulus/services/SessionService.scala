@@ -122,7 +122,7 @@ class SessionService(
 
     sessionStore
       .findAll(sessionFilter, SessionOrdering.of(OrderByLastActivityDesc), pagination)
-      .map(sessions => Right(PaginatedList(sessions, pagination.offset.getOrElse(0))))
+      .map(Right(_))
       .run()
 
   }
