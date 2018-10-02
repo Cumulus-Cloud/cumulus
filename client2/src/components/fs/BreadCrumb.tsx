@@ -1,4 +1,4 @@
-import * as React from 'react'
+import  React from 'react'
 
 import Button from '@material-ui/core/Button'
 import { Theme } from '@material-ui/core/styles/createMuiTheme'
@@ -217,7 +217,7 @@ class LowSizeBreadCrumb extends React.Component<InnerProps, { anchorEl: HTMLElem
 
 }
 
-const LowSizeBreadCrumbWithStyle = withStyles(styles) <InnerProps> (LowSizeBreadCrumb)
+const LowSizeBreadCrumbWithStyle = withStyles(styles)(LowSizeBreadCrumb)
 
 class FullSizeBreadCrumb extends React.Component<InnerProps & WithStyles<typeof styles>> {
 
@@ -249,6 +249,6 @@ class FullSizeBreadCrumb extends React.Component<InnerProps & WithStyles<typeof 
 
 }
 
-const FullSizeBreadCrumbWithStyle = withStyles(styles) <InnerProps> (FullSizeBreadCrumb)
+const FullSizeBreadCrumbWithStyle = withStyles(styles)(FullSizeBreadCrumb)
 
-export default withStyles(styles) <PropsWithStyle> (BreadCrumb)
+export default withStyles(styles)(BreadCrumb)

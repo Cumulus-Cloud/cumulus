@@ -1,4 +1,4 @@
-import * as React from 'react'
+import  React from 'react'
 import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
@@ -279,4 +279,4 @@ const mappedProps =
     }
   })
 
-export default withStore(withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ({ breakpoint: 'xs' })(DetailsPopup)), mappedProps)
+export default withStore(withMobileDialog<Props> ({ breakpoint: 'xs' })(withStyles(styles) (DetailsPopup)), mappedProps)

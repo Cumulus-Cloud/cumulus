@@ -3,6 +3,7 @@ import difference_in_milliseconds = require('date-fns/difference_in_milliseconds
 import { ApiError } from 'models/ApiError'
 import { EnrichedFile } from 'models/EnrichedFile'
 
+
 interface FileUploadingStateTimeProgess {
   date: Date
   progress: number
@@ -22,6 +23,13 @@ export default interface FileUploadState {
   uploading: FileUploadingState[],
   showUploadInProgress: boolean
 }
+
+export const initialState: () => FileUploadState =
+  () => ({
+    files: [],
+    uploading: [],
+    showUploadInProgress: false
+  })
 
 export function computeUploadingSpeed(uploadingState: FileUploadingState): number {
 

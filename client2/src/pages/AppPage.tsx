@@ -1,4 +1,4 @@
-import * as React from 'react'
+import  React from 'react'
 import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import Grow from '@material-ui/core/Grow'
 import createStyles from '@material-ui/core/styles/createStyles'
@@ -112,6 +112,7 @@ interface State {
   drawer: boolean
   anchorEl?: EventTarget
 }
+
 
 class AppPage extends React.Component<PropsWithStyle, State> {
 
@@ -236,7 +237,7 @@ class AppPage extends React.Component<PropsWithStyle, State> {
     )
 
     return (
-      <Grow in={true}>
+      <Grow in={true} timeout={700} >
         <div className={classes.root}>
           <CumulusDrawer
             onDrawerToggle={() => this.toggleDrawer()}
@@ -251,7 +252,7 @@ class AppPage extends React.Component<PropsWithStyle, State> {
             <Route render={() => <Redirect to={`${Routes.app.fs}/`} />} />
           </Switch>
 
-          <CreationPopup />
+          <CreationPopup/>
           <UploadPopup />
           <DetailPopup />
           <UploadProgressPopup />
@@ -265,7 +266,7 @@ class AppPage extends React.Component<PropsWithStyle, State> {
 }
 
 
-const AppPageWithStyle = withStyles(styles) <PropsWithStyle> (withMobileDialog<PropsWithStyle> ({ breakpoint: 'xs' })(AppPage))
+const AppPageWithStyle = withMobileDialog<Props> ({ breakpoint: 'xs' })(withStyles(styles) (AppPage))
 
 const AppPageWithContext = withStore(AppPageWithStyle, state => {
   const selectedContent = state.fs.selectedContent

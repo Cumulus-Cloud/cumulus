@@ -1,4 +1,4 @@
-import * as React from 'react'
+import  React from 'react'
 import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
@@ -101,7 +101,7 @@ class Snackbars extends React.Component<PropsWithStyle, State> {
 
 }
 
-const SnackbarWithStyle = withStyles(styles) <PropsWithStyle> (Snackbars)
+const SnackbarWithStyle = withStyles(styles)(Snackbars)
 
 export default withStore(SnackbarWithStyle, (state, dispatch) => ({
   onClose: (id: string) => dispatch(hideSnackbar(id)),

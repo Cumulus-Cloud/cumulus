@@ -1,4 +1,4 @@
-import * as React from 'react'
+import  React from 'react'
 import { Theme, createStyles, WithStyles, withStyles } from '@material-ui/core'
 
 import withRoot from 'components/utils/withRoot'
@@ -48,4 +48,4 @@ class Test extends React.Component<PropsWithStyle, State> {
 
 }
 
-export default withStyles(styles) <PropsWithStyle> (withRoot(Test))
+export default withStyles(styles)(withRoot(Test))

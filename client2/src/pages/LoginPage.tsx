@@ -1,4 +1,4 @@
-import * as React from 'react'
+import  React from 'react'
 import Button from '@material-ui/core/Button'
 import Grow from '@material-ui/core/Grow'
 import Paper from '@material-ui/core/Paper'
@@ -10,7 +10,7 @@ import Zoom from '@material-ui/core/Zoom'
 import CloudIcon from '@material-ui/icons/CloudQueue'
 import { Route, Redirect, match, Switch } from 'react-router-dom'
 import { withRouter } from 'react-router-dom'
-import * as H from 'history'
+import  H from 'history'
 
 import SignUpConfirmation from 'components/login/SignUpConfirmation'
 import SignIn from 'components/login/SignInForm'
@@ -117,4 +117,4 @@ class Login extends React.Component<PropsWithStyle, State> {
   }
 }
 
-export default withRouter(withStyles(styles) <PropsWithStyle> (Login))
+export default withRouter(withStyles(styles)(Login))

@@ -1,7 +1,4 @@
 
-# App entrypoint
-GET     /                                io.cumulus.controllers.HomeController.index
-
 # Administration endpoints
 GET     /api/admin/management/reload     io.cumulus.controllers.admin.ManagementController.reload
 GET     /api/admin/management/stop       io.cumulus.controllers.admin.ManagementController.stop
@@ -58,4 +55,8 @@ GET     /shared/download/:ref/:name      io.cumulus.controllers.SharingPublicCon
 GET     /favicon.ico                     io.cumulus.controllers.Assets.favicon
 GET     /assets/messages.js              io.cumulus.controllers.Assets.messages
 GET     /assets/*file                    io.cumulus.controllers.Assets.versioned(file: controllers.Assets.Asset)
-GET     /*path                           io.cumulus.controllers.HomeController.indexWithPath(path)
+
+# App entrypoints
+GET     /                                io.cumulus.controllers.HomeController.index
+GET     /app/fs*path                     io.cumulus.controllers.HomeController.indexWithPath(path)
+GET     /*path                           io.cumulus.controllers.HomeController.indexWithIgnoredPath(path)

@@ -1,5 +1,5 @@
-import * as React from 'react'
-import * as ReactDOM from 'react-dom'
+import  React from 'react'
+import  ReactDOM from 'react-dom'
 import { Router, Route, Switch, Redirect } from 'react-router-dom'
 import { CircularProgress } from '@material-ui/core'
 
@@ -24,7 +24,7 @@ ReactDOM.render(
         <WithAuthentication
           authenticated={
             <Switch>
-              <Route path="/app" render={() => <AppPage/>} />
+              <Route path="/app" render={() => <AppPage />} />
               <Route render={() => <Redirect to='/app'/>} />
             </Switch>  
           }

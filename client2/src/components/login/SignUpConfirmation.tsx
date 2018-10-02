@@ -1,4 +1,4 @@
-import * as React from 'react'
+import  React from 'react'
 import Grow from '@material-ui/core/Grow'
 import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
@@ -54,4 +54,4 @@ class SignInForm extends React.Component<PropsWithStyle, State> {
   }
 }
 
-export default withStyles(styles)<PropsWithStyle> (SignInForm)
+export default withStyles(styles)(SignInForm)

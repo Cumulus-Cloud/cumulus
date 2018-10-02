@@ -1,4 +1,4 @@
-import * as React from 'react'
+import  React from 'react'
 import Divider from '@material-ui/core/Divider'
 import Drawer from '@material-ui/core/Drawer'
 import List from '@material-ui/core/List'
@@ -121,4 +121,4 @@ class CumulusDrawer extends React.Component<PropsWithStyle, State> {
   
 }
 
-export default withStyles(styles) <PropsWithStyle> (CumulusDrawer)
+export default withStyles(styles)(CumulusDrawer)

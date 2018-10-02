@@ -34,7 +34,8 @@ module.exports = {
       'pages': path.resolve(__dirname, './src/pages'),
       'utils': path.resolve(__dirname, './src/utils'),
       'store': path.resolve(__dirname, './src/store'),
-      'services': path.resolve(__dirname, './src/services')
+      'services': path.resolve(__dirname, './src/services'),
+      'typings': path.resolve(__dirname, './src/typings')
     },
     // Add '.ts' and '.tsx' as resolvable extensions.
     extensions: ['.ts', '.tsx', '.js', '.json']

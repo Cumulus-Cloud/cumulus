@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
@@ -13,14 +13,20 @@ import MenuItem from '@material-ui/core/MenuItem'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import { Checkbox, CircularProgress } from '@material-ui/core'
 import classnames = require('classnames')
-import { List, ListRowProps, AutoSizer, InfiniteLoader } from 'react-virtualized'
+import { FixedSizeList as List, ListChildComponentProps } from 'react-window'
+
+
+import { Directory, FsNode } from 'models/FsNode'
+import { showNodeDetails, selectNode, selectAllNodes, deselectNode, deselectAllNodes, getDirectoryContent } from 'store/actions/directory'
+
+import { togglePopup } from 'utils/popup'
 
 import Routes from 'services/routes'
-import { togglePopup } from 'utils/popup'
+
 import { withStore, connect } from 'store/store'
-import { showNodeDetails, selectNode, selectAllNodes, deselectNode, deselectAllNodes, getDirectoryContent } from 'store/actions/directory'
-import { Directory, FsNode } from 'models/FsNode'
 import { FsNodeSelection } from 'store/states/fsState'
+
+import Resize from 'components/utils/Resize' 
 
 
 const styles = (theme: Theme) => createStyles({
@@ -40,7 +46,8 @@ const styles = (theme: Theme) => createStyles({
     borderBottom: 0
   },
   contentTableBody: {
-    flex: 1
+    flex: 1,
+    display: 'flex'
   },
   contentTypeIcon: {
     color: 'rgba(0, 0, 0, 0.54)',
@@ -174,53 +181,53 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     this.state = { showCheckboxes: false, selectedMenu: undefined }
   }
 
-  private onShowNodeDetail(node: FsNode) {
+  onShowNodeDetail(node: FsNode) {
     this.props.onShowNodeDetail(node)
   }
 
-  private onNavigateDirectory(directory: Directory) {
+  onNavigateDirectory(directory: Directory) {
     this.props.onPathChanged()
     this.props.onNavigateDirectory(directory)
   }
 
-  private isRowLoaded(index: number) {
+  isRowLoaded(index: number) {
     return !!this.props.content[index]
   }
 
-  private onLoadMoreContent() {
+  onLoadMoreContent() {
     if(!this.props.loading)
       this.props.onLoadMoreContent(this.props.content.length)
     return Promise.resolve()
   }
 
-  private onSelectNode(node: FsNode) {
+  onSelectNode(node: FsNode) {
     this.setState({ showCheckboxes: true })
     this.props.onSelectedNode(node)
   }
 
-  private onSelectAllNodes() {
+  onSelectAllNodes() {
     this.setState({ showCheckboxes: true })
     this.props.onSelectAllNodes()
   }
 
-  private onDeselectNode(node: FsNode) {
+  onDeselectNode(node: FsNode) {
     this.setState({ showCheckboxes: true })
     this.props.onDeselectNode(node)
   }
 
-  private onDeselectAllNodes() {
+  onDeselectAllNodes() {
     this.setState({ showCheckboxes: true })
     this.props.onDeselectAllNodes()
   }
 
-  private onClickNode(node: FsNode) {
+  onClickNode(node: FsNode) {
     if(node.nodeType === 'DIRECTORY')
       this.onNavigateDirectory(node)
     else
       this.onShowNodeDetail(node)
   }
 
-  private onToggleAllNodesSelection() {
+  onToggleAllNodesSelection() {
     const { selection } = this.props
     
     switch(selection.type) {
@@ -233,7 +240,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     }
   }
 
-  private onToggleMenu<T>(node: FsNode, event: React.SyntheticEvent<T>) {
+  onToggleMenu<T>(node: FsNode, event: React.SyntheticEvent<T>) {
     const { selectedMenu } = this.state
 
     event.stopPropagation()
@@ -243,14 +250,22 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     else
       this.setState({ selectedMenu: { nodeId: node.id, anchor: event.target as any } })
   }
+  renderRow = (props: ListChildComponentProps): React.ReactElement<{}> => {
+    const { content } = this.props
 
-  private renderLoadingMoreRow(props: ListRowProps): React.ReactElement<{}> {
+    if(props.index >= content.length)
+      return this.renderLoadingRow(props)
+    else
+      return this.renderElementRow(props as ListChildComponentProps & { isScrolling: boolean }) // Trust me
+
+  }
+
+  renderLoadingRow = ({ style }: ListChildComponentProps): React.ReactElement<{}> => {
     const { classes } = this.props
 
     return (
       <div
-        key={"load_more"}
-        style={props.style}
+        style={style}
         className={classes.loader}
       >
         <div className={classes.loaderSpinner} >
@@ -263,11 +278,12 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     )
   }
 
-  private renderRow(props: ListRowProps, node: FsNode): React.ReactElement<{}> {
-    const { classes, selection } = this.props
+  renderElementRow = ({ index, isScrolling, style }: ListChildComponentProps & { isScrolling: boolean }): React.ReactElement<{}> => {
+    const { classes, selection, content } = this.props
     const { showCheckboxes, selectedMenu } = this.state
 
     const now = new Date()
+    const node = content[index]
 
     const isSelected = selection.type === 'ALL' || (selection.type === 'SOME' && selection.selectedElements.indexOf(node.id) >= 0)
 
@@ -288,24 +304,26 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
         <IconButton onClick={(e) => this.onToggleMenu(node, e)} >
           <MoreVertIcon />
         </IconButton>
-        <Menu
-          id="simple-menu"
-          anchorEl={selectedMenu ? selectedMenu.anchor : undefined}
-          open={!!selectedMenu && (selectedMenu.nodeId === node.id)}
-          onClose={(e) => this.onToggleMenu(node, e)}
-        >
-          <MenuItem onClick={(e) => { this.onToggleMenu(node, e); this.onShowNodeDetail(node)}} >Détails</MenuItem>
-          <MenuItem>Télécharger</MenuItem>
-          <MenuItem>Supprimer</MenuItem>
-          <MenuItem>Partager</MenuItem>
-        </Menu>
+        {
+          !isScrolling &&
+          <Menu
+            id="simple-menu"
+            anchorEl={selectedMenu ? selectedMenu.anchor : undefined}
+            open={!!selectedMenu && (selectedMenu.nodeId === node.id)}
+            onClose={(e) => this.onToggleMenu(node, e)}
+          >
+            <MenuItem onClick={(e) => { this.onToggleMenu(node, e); this.onShowNodeDetail(node)}} >Détails</MenuItem>
+            <MenuItem>Télécharger</MenuItem>
+            <MenuItem>Supprimer</MenuItem>
+            <MenuItem>Partager</MenuItem>
+          </Menu>
+        }
       </div>
 
     return (
       <div
         className={classnames(classes.contentRow, { [classes.contentRowSelected]: isSelected })}
-        key={node.id}
-        style={props.style}
+        style={style}
         onClick={() => {
           if(!isSelected)
             this.onSelectNode(node)
@@ -334,7 +352,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
   render() {
     const { current, content, contentSize, classes, selection } = this.props
     const { showCheckboxes } = this.state
-
+     
     // TODO show errors ?
     if(current) {
       return (
@@ -352,42 +370,72 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
               <Typography variant="caption" className={classes.contentSize} >Taille</Typography>
             </div>
           </div>
-          <div className={classes.contentTableBody} >
+          <div className={classes.contentTableBody}>
+            <Resize style={{ flex: 1 }} >
+              { ({ height }) => 
+                <List
+                  height={height}
+                  width="inherit"
+                  useIsScrolling
+                  itemCount={content.length + (contentSize === content.length ? 0 : 1)}
+                  itemSize={45}
+                  itemKey={(index) => {
+                    const { content } = this.props
+                    return index >= content.length ? 'loading' : content[index].id
+                  }}
+                  onItemsRendered={({ visibleStopIndex }) => {
+                    const { contentSize, content } = this.props
+                    const loadedContentSize = content.length
 
-            <InfiniteLoader
-              isRowLoaded={(props) => this.isRowLoaded(props.index)}
-              loadMoreRows={() => this.onLoadMoreContent()}
-              rowCount={contentSize}
-            >
-            {({ onRowsRendered, registerChild }) => (
-              <AutoSizer>
-                {({ height, width }) => {
-                  return (
-                    <List 
-                      onRowsRendered={onRowsRendered}
-                      ref={registerChild}
-                      style={{ outline: 'none' }}
-                      height={height}
-                      width={width}
-                      rowCount={content.length + (contentSize === content.length ? 0 : 1)}
-                      rowHeight={45}
-                      rowRenderer={ (props: ListRowProps) =>
-                        props.index < content.length ?
-                          this.renderRow(props, content[props.index]) :
-                          this.renderLoadingMoreRow(props)
-                      }
-                    />
-                  )
-                }}
-              </AutoSizer>
-            )}
-            </InfiniteLoader>
+                    // Load when more than 75% is shown
+                    if((visibleStopIndex > loadedContentSize * 0.7) && loadedContentSize < contentSize ) {
+                      this.onLoadMoreContent()
+                    }
+                  }}
+                >
+                  {this.renderRow}
+                </List>
+              }
+            </Resize>    
           </div>
         </Paper>
       )
     } else
       return null
   }
+
+  /*
+
+    <InfiniteLoader
+      isRowLoaded={(props) => this.isRowLoaded(props.index)}
+      loadMoreRows={() => this.onLoadMoreContent()}
+      rowCount={contentSize}
+    >
+    {({ onRowsRendered, registerChild }) => (
+      <AutoSizer>
+        {({ height, width }) => {
+          return (
+            <List 
+              onRowsRendered={onRowsRendered}
+              ref={registerChild}
+              style={{ outline: 'none' }}
+              height={height}
+              width={width}
+              rowCount={content.length + (contentSize === content.length ? 0 : 1)}
+              rowHeight={45}
+              rowRenderer={ (props: ListRowProps) =>
+                props.index < content.length ?
+                  this.renderRow(props, content[props.index]) :
+                  this.renderLoadingMoreRow(props)
+              }
+            />
+          )
+        }}
+      </AutoSizer>
+    )}
+    </InfiniteLoader>
+
+  */
 
 }
 
@@ -423,4 +471,4 @@ const mappedProps =
     }
   }))
 
-export default withStore(withStyles(styles) <PropsWithStyle> (FilesListTable), mappedProps)
+export default withStore(withStyles(styles)(FilesListTable), mappedProps)

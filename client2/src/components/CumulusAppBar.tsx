@@ -1,4 +1,4 @@
-import * as React from 'react'
+import  React from 'react'
 import AppBar from '@material-ui/core/AppBar'
 import Divider from '@material-ui/core/Divider'
 import IconButton from '@material-ui/core/IconButton'
@@ -136,4 +136,4 @@ class CumulusAppBar extends React.Component<PropsWithStyle, State> {
 
 }
 
-export default withStyles(styles) <PropsWithStyle> (CumulusAppBar)
+export default withStyles(styles)(CumulusAppBar)

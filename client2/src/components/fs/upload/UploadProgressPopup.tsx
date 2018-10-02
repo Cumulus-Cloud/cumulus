@@ -1,4 +1,4 @@
-import * as React from 'react'
+import  React from 'react'
 import { withStyles, Theme, WithStyles } from '@material-ui/core/styles'
 import Card from '@material-ui/core/Card'
 import CloseIcon from '@material-ui/icons/Close'
@@ -221,4 +221,4 @@ const mappedProps =
     }
   }))
 
-export default withStore(withStyles(styles) <PropsWithStyle> (UploadProgressPopup), mappedProps)
+export default withStore(withStyles(styles)(UploadProgressPopup), mappedProps)

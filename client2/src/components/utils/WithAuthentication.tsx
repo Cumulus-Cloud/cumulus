@@ -1,4 +1,4 @@
-import * as React from 'react'
+import  React from 'react'
 
 import { withStore } from 'store/store'
 import { testUserAuth } from 'store/actions/authentication'
@@ -36,7 +36,7 @@ class WithAuthentication extends React.Component<Props & ContextProps, {}> {
 }
 
 export default withStore(WithAuthentication, (state, dispatch) => ({
-  onLoad: () => dispatch(testUserAuth()),
+  onLoad: () => { if(!state.auth.connected) dispatch(testUserAuth()) },
   connected: state.auth.connected,
   loading: state.auth.loading
 }))

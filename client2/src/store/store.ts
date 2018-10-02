@@ -2,15 +2,14 @@ import { createBrowserHistory, History } from 'history'
 
 import { createStore, Dispatcher } from 'utils/store'
 
-import AuthenticationState from 'store/states/authenticationState'
+import AuthenticationState, { initialState as initialAuthState } from 'store/states/authenticationState'
 import SignInState from 'store/states/signInState'
 import SignUpState from 'store/states/signUpState'
-import FsState from 'store/states/fsState'
+import FsState, { initialState as initialFsState } from 'store/states/fsState'
 import CreateDirectoryState from 'store/states/createDirectoryState'
-import FileUploadState from 'store/states/fileUploadState'
+import FileUploadState, { initialState as initialFileUploadState } from 'store/states/fileUploadState'
 import SnackbarState from 'store/states/snackbarState'
 
-// TODO split in multiple files
 export type State = {
   auth: AuthenticationState
   signIn: SignInState
@@ -22,31 +21,20 @@ export type State = {
   router: History
 }
 
-// TODO split in multiple files
+// TODO break into multiple files
 export const initialState: State = {
-  auth: {
-    loading: true, // Hack to avoid loading the sign in page
-    connected: false
-  },
+  auth: initialAuthState(),
   signIn: {
     loading: false
   },
   signUp: {
     loading: false
   },
-  fs: {
-    loadingCurrent: false,
-    loadingContent: false,
-    selectedContent: { type: 'NONE' }
-  },
+  fs: initialFsState(),
   createDirectory: {
     loading: false
   },
-  fileUpload: {
-    files: [],
-    uploading: [],
-    showUploadInProgress: false
-  },
+  fileUpload: initialFileUploadState(),
   snackbar: {
     messages: []
   },

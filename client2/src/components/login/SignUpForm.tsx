@@ -1,4 +1,4 @@
-import * as React from 'react'
+import  React from 'react'
 import Button from '@material-ui/core/Button'
 import Grow from '@material-ui/core/Grow'
 import IconButton from '@material-ui/core/IconButton'
@@ -186,4 +186,4 @@ const mappedProps =
     onSignUp: (login: string, email: string, password: string) => dispatch(signUpUser({ login, email, password }))
   }))
 
-export default withStore(withStyles(styles)<PropsWithStyle> (SignUpForm), mappedProps)
+export default withStore(withStyles(styles)(SignUpForm), mappedProps)

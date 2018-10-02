@@ -1,6 +1,7 @@
 import { ApiError } from 'models/ApiError'
 import { Directory, FsNode } from 'models/FsNode'
 
+
 interface AllSelection {
   type: 'ALL'
 }
@@ -49,3 +50,17 @@ export default interface FsState {
   /** If an error occured. */
   error?: ApiError
 }
+
+export const initialState: () => FsState = 
+  () => directoryWithContent ? {
+    current: directoryWithContent.directory,
+    content: directoryWithContent.content.items,
+    contentSize: directoryWithContent.totalContentLength,
+    loadingCurrent: false,
+    loadingContent: false,
+    selectedContent: { type: 'NONE' }
+  } : {
+    loadingCurrent: false,
+    loadingContent: false,
+    selectedContent: { type: 'NONE' }
+  }

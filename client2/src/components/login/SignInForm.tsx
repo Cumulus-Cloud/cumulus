@@ -1,4 +1,4 @@
-import * as React from 'react'
+import  React from 'react'
 import Button from '@material-ui/core/Button'
 import Grow from '@material-ui/core/Grow'
 import { Theme } from '@material-ui/core/styles/createMuiTheme'
@@ -144,4 +144,4 @@ const mappedProps =
     onSignIn: (login: string, password: string) => dispatch(signInUser({ login, password }))
   }))
 
-export default withStore(withStyles(styles)<PropsWithStyle> (SignInForm), mappedProps)
+export default withStore(withStyles(styles)(SignInForm), mappedProps)

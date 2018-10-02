@@ -1,4 +1,4 @@
-import * as React from 'react'
+import  React from 'react'
 import { debounce } from 'throttle-debounce'
 import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
@@ -244,16 +244,16 @@ class FilesList extends React.Component<PropsWithStyle, State> {
   })
   */
 
-  private onEndSearch() {
+  onEndSearch() {
     this.props.onChangeSearch(undefined)
     this.setState({ search: undefined })
   }
 
-  private onSearchBarFocus() {
+  onSearchBarFocus() {
     this.setState({ searchBarActive: true })
   }
 
-  private onSearchBarBlur() {
+  onSearchBarBlur() {
     this.setState({ searchBarActive: false })
   }
 
@@ -261,7 +261,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
     this.checkIfPathNeedsRefresh()
   }
 
-  private checkIfPathNeedsRefresh() {
+  checkIfPathNeedsRefresh() {
     const { loading, currentDirectory, initialPath, error } = this.props
 
     // Needs to update if not during a loading, and if the two path have changed (in that case the 'real' path wins)
@@ -273,12 +273,12 @@ class FilesList extends React.Component<PropsWithStyle, State> {
       this.props.onLoadDirectory(initialPath)
   }
 
-  private onChangePath(path: string) {
+  onChangePath(path: string) {
     //this.props.onChangeSearch(undefined)
     this.props.onChangePath(path)
   }
   
-  private droppedFiles(files: File[]) {
+  droppedFiles(files: File[]) {
     const { currentDirectory } = this.props 
     const enrichedFiles = files.map((file) => {
       return {
@@ -295,11 +295,11 @@ class FilesList extends React.Component<PropsWithStyle, State> {
     this.setState({ dropzoneActive: false })
   }
 
-  private onDragEnter() {
+  onDragEnter() {
     this.setState({ dropzoneActive: true })
   }
 
-  private onDragLeave() {
+  onDragLeave() {
     this.setState({ dropzoneActive: false })
   }
 
@@ -358,7 +358,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
       */
 
     const searchZone = search && (
-      <Slide direction="up" in>
+      <Slide direction="up" in >
         <div className={classes.searchZone} >
           <div className={classes.searchZoneContent} >
             <IconButton className={classes.searchZoneClose} onClick={() => this.onEndSearch()}>
@@ -371,7 +371,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
                 <RadioGroup
                   className={classes.searchZoneRadioButtonGroup} 
                   value={'ALL'}
-                  onChange={(v) => console.log(v.target.value)}
+                  onChange={(v) => console.log(v/*.target.value*/)}
                 >
                   <FormControlLabel className={classes.searchZoneRadioButton} value="ALL" control={<Radio />} label="Tous" />
                   <FormControlLabel className={classes.searchZoneRadioButton} value="DIRECTORY" control={<Radio />} label="Dossiers" />
@@ -424,7 +424,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
       </Slide>
 
     const content = !showLoading && !error &&
-      <Slide direction="up" in={true}>
+      <Slide direction="up" in={true} >
         <div className={classes.content} >
           {
             files.length == 0 ?
@@ -492,4 +492,4 @@ const mappedProps =
     }
   }))
 
-export default withStore(withStyles(styles) <PropsWithStyle> (FilesList), mappedProps)
+export default withStore(withStyles(styles)(FilesList), mappedProps)
