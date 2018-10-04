@@ -150,7 +150,6 @@ const styles = (theme: Theme) => createStyles({
   searchZoneClose: {
     float: 'right'
   },
-
   errorContent: {
     flex: 1,
     alignContent: 'center'
@@ -439,12 +438,28 @@ class FilesList extends React.Component<PropsWithStyle, State> {
 
     return (
       <main className={classes.root} >
+        <div className={classes.dropzoneWrapper} >
+          <div className={classes.header} >
+            {breadCrumb}
+            {searchBar}
+          </div>
+          {searchZone}
+          <div className={classes.contentWrapper} >
+            {loader}
+            {displayedError}
+            {content}
+          </div>
+        </div>
+      </main>
+    )
+
+    /*
         <Dropzone
           disableClick  
           className={classes.dropzoneWrapper}
-          onDrop={(files) => this.droppedFiles(files)}
-          onDragEnter={() => this.onDragEnter()}
-          onDragLeave={() => this.onDragLeave()}
+         // onDrop={(files) => this.droppedFiles(files)}
+         // onDragEnter={() => this.onDragEnter()}
+         // onDragLeave={() => this.onDragLeave()}
         >
           {dropZone}
           <div className={classes.header} >
@@ -458,8 +473,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
             {content}
           </div>
         </Dropzone>
-      </main>
-    )
+    */
 
   }
 

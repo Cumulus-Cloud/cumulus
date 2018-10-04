@@ -168,6 +168,16 @@ interface State {
   showCheckboxes: boolean,
   /** Select menu on a specified node. */
   selectedMenu?: { nodeId: string, anchor: HTMLElement }
+  /** Current drag & drop operation. */
+  dragInfo?: DragInfo
+}
+
+type DragInfo = {
+  x: number
+  y: number
+  offsetX: number
+  offsetY: number
+  fsNode: FsNode
 }
 
 /**
@@ -175,10 +185,44 @@ interface State {
  */
 class FilesListTable extends React.Component<PropsWithStyle, State> {
 
-  constructor(props: PropsWithStyle) {
-    super(props)
+  dragImg: HTMLImageElement = this.getEmptyImage()
+  state: State = { showCheckboxes: false, selectedMenu: undefined }
 
-    this.state = { showCheckboxes: false, selectedMenu: undefined }
+  getEmptyImage() {
+    const dragImg = new Image(0,0)
+    dragImg.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' // Empty image
+    return dragImg
+  }
+
+  componentDidMount() {
+    //document.addEventListener('mousemove', this.dragHandler)
+    //document.addEventListener('mouseup', this.dragHandler)
+    document.addEventListener('dragover', this.dragHandler)
+  }
+
+  componentWillUnmount() {
+    console.log('componentWillUnmount')
+    //document.removeEventListener('mousemove', this.dragHandler)
+    document.addEventListener('dragover', this.dragHandler)
+  }
+
+  last = new Date().getTime()
+
+  dragHandler = (e: DragEvent) => {
+    const { dragInfo } = this.state
+
+    const now = new Date().getTime() 
+
+    if(dragInfo && (now - this.last > 30)) {
+      this.last = now
+      this.setState({
+        dragInfo: {
+          ...dragInfo,
+          x: e.clientX,
+          y: e.clientY
+        }
+      })
+    }
   }
 
   onShowNodeDetail(node: FsNode) {
@@ -280,11 +324,12 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
 
   renderElementRow = ({ index, isScrolling, style }: ListChildComponentProps & { isScrolling: boolean }): React.ReactElement<{}> => {
     const { classes, selection, content } = this.props
-    const { showCheckboxes, selectedMenu } = this.state
+    const { showCheckboxes, selectedMenu, dragInfo } = this.state
 
     const now = new Date()
     const node = content[index]
 
+    const isDragged = !!dragInfo && dragInfo.fsNode.id === node.id
     const isSelected = selection.type === 'ALL' || (selection.type === 'SOME' && selection.selectedElements.indexOf(node.id) >= 0)
 
     const checkbox =
@@ -330,13 +375,48 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
           else
             this.onDeselectNode(node)
         }}
+
       >
         <div className={classes.contentCheck}>
           {checkbox}
         </div>
         <Typography variant="body1" className={classnames(classes.contentName, { [classes.contentSelected]: isSelected })}>
           <span className={classnames(classes.contentTypeIcon, { [classes.contentSelected]: isSelected })} >{icon}</span>
-          <span className={classes.contentNameValue} onClick={(e) => {this.onClickNode(node); e.stopPropagation()}}>{node.name}</span>
+          <span 
+          
+
+        // TESTS
+        draggable
+  
+        onDragStart={e => {
+          this.setState({
+            dragInfo: {
+              fsNode: node,
+              x: e.screenX,
+              y: e.screenY,
+              offsetX: 0, //e.nativeEvent.offsetX,
+              offsetY: 0 //e.nativeEvent.offsetY
+            }
+          })
+          e.dataTransfer.setDragImage(this.dragImg, 0, 0) // Hide the dragged element
+          e.stopPropagation()
+        }}
+
+        onDragOver={e => {
+          this.dragHandler(e.nativeEvent)
+          e.stopPropagation()
+          //if(dragInfo && !isDragged)
+            //console.log(node.path)
+        }}
+
+        onDragEnd={_ => {
+          this.setState({ dragInfo: undefined })
+          //console.log('onDragEnd')
+        }}
+
+        // TESTS
+          
+          className={classes.contentNameValue} onClick={(e) => {this.onClickNode(node); e.stopPropagation()}}>{node.name}</span>
         </Typography>
         <Typography variant="body1" className={classes.contentModification} >
           {distanceInWords(new Date(node.modification), now)}
@@ -352,53 +432,88 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
   render() {
     const { current, content, contentSize, classes, selection } = this.props
     const { showCheckboxes } = this.state
+
+    //console.log('rendering')
      
     // TODO show errors ?
     if(current) {
       return (
-        <Paper className={classes.root} >
-          <div className={classes.contentTableHead}>
-            <div className={classes.contentHeadRow} >
-              { showCheckboxes ?
-                <div className={classes.contentCheck}>
-                  <Checkbox checked={selection.type === 'ALL'} indeterminate={selection.type === 'SOME'} onClick={() => this.onToggleAllNodesSelection()} />
-                </div> :
-                <span/>
-              }
-              <Typography variant="caption" className={classes.contentName} >Nom</Typography>
-              <Typography variant="caption" className={classes.contentModification} >Modification</Typography>
-              <Typography variant="caption" className={classes.contentSize} >Taille</Typography>
+        <>
+          <Paper className={classes.root} >
+            <div className={classes.contentTableHead}>
+              <div className={classes.contentHeadRow} >
+                { showCheckboxes ?
+                  <div className={classes.contentCheck}>
+                    <Checkbox checked={selection.type === 'ALL'} indeterminate={selection.type === 'SOME'} onClick={() => this.onToggleAllNodesSelection()} />
+                  </div> :
+                  <span/>
+                }
+                <Typography variant="caption" className={classes.contentName} >Nom</Typography>
+                <Typography variant="caption" className={classes.contentModification} >Modification</Typography>
+                <Typography variant="caption" className={classes.contentSize} >Taille</Typography>
+              </div>
             </div>
-          </div>
-          <div className={classes.contentTableBody}>
-            <Resize style={{ flex: 1 }} >
-              { ({ height }) => 
-                <List
-                  height={height}
-                  width="inherit"
-                  useIsScrolling
-                  itemCount={content.length + (contentSize === content.length ? 0 : 1)}
-                  itemSize={45}
-                  itemKey={(index) => {
-                    const { content } = this.props
-                    return index >= content.length ? 'loading' : content[index].id
-                  }}
-                  onItemsRendered={({ visibleStopIndex }) => {
-                    const { contentSize, content } = this.props
-                    const loadedContentSize = content.length
+            <div className={classes.contentTableBody}>
+              <Resize style={{ flex: 1 }} >
+                { ({ height }) => 
+                  <List
+                    height={height}
+                    width="inherit"
+                    useIsScrolling
+                    itemCount={content.length + (contentSize === content.length ? 0 : 1)}
+                    itemSize={45}
+                    itemKey={(index) => {
+                      const { content } = this.props
+                      return index >= content.length ? 'loading' : content[index].id
+                    }}
+                    onItemsRendered={({ visibleStopIndex }) => {
+                      const { contentSize, content } = this.props
+                      const loadedContentSize = content.length
 
-                    // Load when more than 75% is shown
-                    if((visibleStopIndex > loadedContentSize * 0.7) && loadedContentSize < contentSize ) {
-                      this.onLoadMoreContent()
-                    }
-                  }}
-                >
-                  {this.renderRow}
-                </List>
-              }
-            </Resize>    
-          </div>
-        </Paper>
+                      // Load when more than 75% is shown
+                      if((visibleStopIndex > loadedContentSize * 0.7) && loadedContentSize < contentSize ) {
+                        this.onLoadMoreContent()
+                      }
+                    }}
+                  >
+                    {this.renderRow}
+                  </List>
+                }
+              </Resize>
+            </div>
+          </Paper>
+          {this.renderDraggedElement()}
+        </>
+      )
+    } else
+      return null
+  }
+
+  renderDraggedElement() {
+    const { dragInfo } = this.state
+
+    if(dragInfo) {
+      const { x, y, offsetX, offsetY, fsNode } = dragInfo
+
+      //console.log(dragInfo)
+      
+      return (
+        <div
+          style={{
+            height: 30,
+            width: 70,
+            backgroundColor: 'red',
+            position: 'fixed',
+            pointerEvents: 'none',
+            zIndex: 9999,
+            //transform: 'rotate(3deg)',
+            left: x, //- offsetX,
+            top: y //- offsetY
+          }}
+          key="dragged"
+        >
+          {fsNode.name}
+        </div>
       )
     } else
       return null
