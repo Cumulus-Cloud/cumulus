@@ -27,10 +27,8 @@ dist/
 /.settings
 /RUNNING_PID
 
-
 # Ignore the front's generated files
-cumulus-server-resources/src/main/resources/public/main.js
-cumulus-server-resources/src/main/resources/public/main.css
+cumulus-server-resources/src/main/resources/public/**/*.js
 cumulus-server-resources/src/main/resources/public/**/*.map
 
 # Ignore server runtime directories
