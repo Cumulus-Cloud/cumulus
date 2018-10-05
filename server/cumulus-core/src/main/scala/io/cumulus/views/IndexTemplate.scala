@@ -48,6 +48,9 @@ trait IndexTemplate extends View {
         id := "app",
         style := "min-height:100%;"
       ),
+      div(
+        id := "app-dragged"
+      ),
       script(
         raw(info.map { case (key, jsValue) => s"var $key = ${Json.asciiStringify(jsValue)};" }.mkString(""))
       ),
