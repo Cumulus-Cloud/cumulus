@@ -1,4 +1,5 @@
 import React from 'react'
+import ReactDOM from 'react-dom'
 import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
@@ -15,21 +16,20 @@ import { Checkbox, CircularProgress } from '@material-ui/core'
 import classnames = require('classnames')
 import { FixedSizeList as List, ListChildComponentProps } from 'react-window'
 
+import { withStore, connect } from 'store/store'
+import { FsNodeSelection } from 'store/states/fsState'
+
+import { WithDragAndDrop, withDragAndDrop, DraggingInfo } from 'components/utils/DragAndDrop'
+import Resize from 'components/utils/Resize'
 
 import { Directory, FsNode } from 'models/FsNode'
+
 import { showNodeDetails, selectNode, selectAllNodes, deselectNode, deselectAllNodes, getDirectoryContent } from 'store/actions/directory'
 
 import { togglePopup } from 'utils/popup'
 
 import Routes from 'services/routes'
 
-import { withStore, connect } from 'store/store'
-import { FsNodeSelection } from 'store/states/fsState'
-
-import Resize from 'components/utils/Resize'
-import ReactDOM from 'react-dom';
-
-const draggedElementRoot = document.getElementById('app-dragged')
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -165,143 +165,13 @@ interface Props {
   selection: FsNodeSelection
 }
 
-type PropsWithStyle = Props & WithStyles<typeof styles>
+type PropsWithStyle = Props & WithStyles<typeof styles> & WithDragAndDrop<FsNode>
 
 interface State {
   /** If the checkboxes should be displayed. By default the checkboxes are hiddens. */
   showCheckboxes: boolean,
   /** Select menu on a specified node. */
   selectedMenu?: { nodeId: string, anchor: HTMLElement }
-  /** Current drag & drop operation. */
-  dragInfo?: DragInfo
-}
-
-
-type DraggingInfo<T> = {
-  x: number
-  y: number
-  value: T
-}
-
-type DraggableProps<T> = {
-  onDrag: () => T
-  //onDrop?: () => void
-  children?: React.ReactNode
-}
-
-type DropZoneProps<T> = {
-  onDrop: (dropped: T) => void
-  onDragOver?: (dragged: T) => void
-  children?: React.ReactNode
-}
-
-type DragAndDropProps<T> = {
-  children: (Draggable: (props: DraggableProps<T>) => React.ReactNode, DropZone: (props: DropZoneProps<T>) => React.ReactNode, dragInfo?: DraggingInfo<T>) => React.ReactNode
-} 
-
-class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, { dragInfo?: DraggingInfo<T> }> {
-
-  componentDidMount() {
-    document.addEventListener('mousemove', this.dragHandler)
-    document.addEventListener('mouseup', () => this.dragEndHandler)
-  }
-
-  componentWillUnmount() {
-    document.removeEventListener('mousemove', this.dragHandler)
-    document.removeEventListener('mouseup', () => this.dragEndHandler)
-  }
-
-  dragEndHandler = (_: MouseEvent) => {
-    const { dragInfo } = this.state
-
-    if(dragInfo) 
-      this.setState({ dragInfo: undefined })
-  }
-
-  dragHandler = (e: MouseEvent) => {
-    const { dragInfo } = this.state
-
-    e.preventDefault()
-
-    if(dragInfo) {
-      this.setState({
-        dragInfo: {
-          ...dragInfo,
-          x: e.clientX,
-          y: e.clientY
-        }
-      })
-    }
-  }
-
-  draggable = (props: DraggableProps<T>) => (
-    <div
-      onMouseDown={e => {
-        this.setState({
-          dragInfo: {
-            value: props.onDrag(),
-            x: e.nativeEvent.clientX,
-            y: e.nativeEvent.clientY
-          }
-        })
-        e.stopPropagation()
-        e.preventDefault()
-      }}
-    >
-      {props.children}
-    </div>
-  )
-
-  dropZone = (props: DropZoneProps<T>) => (
-    <div
-      onMouseUp={e => {
-        const { dragInfo } = this.state
-
-        if(dragInfo) {
-          props.onDrop(dragInfo.value)
-          this.setState({ dragInfo: undefined })
-          e.stopPropagation()
-          e.preventDefault()
-        }
-      }}
-
-      onMouseOver={_ => {
-        const { dragInfo } = this.state
-        const { onDragOver } = props
-
-        if(dragInfo && onDragOver)
-          onDragOver(dragInfo.value)
-
-      }}
-    >
-      {props.children}
-    </div>
-  )
-
-  render() {
-    const { dragInfo } = this.state
-    const { children } = this.props
-
-    return (
-      <>
-      { children(this.draggable, this.dropZone, dragInfo) }
-      </>
-    )
-  }
-
-}
-
-
-
-
-
-
-
-
-type DragInfo = {
-  x: number
-  y: number
-  node: FsNode
 }
 
 /**
@@ -309,47 +179,7 @@ type DragInfo = {
  */
 class FilesListTable extends React.Component<PropsWithStyle, State> {
 
-  dragImg: HTMLImageElement = this.getEmptyImage()
   state: State = { showCheckboxes: false, selectedMenu: undefined }
-
-  getEmptyImage() {
-    const dragImg = new Image(0,0)
-    dragImg.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' // Empty image
-    return dragImg
-  }
-
-  componentDidMount() {
-    document.addEventListener('mousemove', this.dragHandler)
-    document.addEventListener('mouseup', () => this.dragEndHandler)
-  }
-
-  componentWillUnmount() {
-    document.removeEventListener('mousemove', this.dragHandler)
-    document.removeEventListener('mouseup', () => this.dragEndHandler)
-  }
-
-  dragEndHandler = (_: MouseEvent) => {
-    const { dragInfo } = this.state
-
-    if(dragInfo) 
-      this.setState({ dragInfo: undefined })
-  }
-
-  dragHandler = (e: MouseEvent) => {
-    const { dragInfo } = this.state
-
-    e.preventDefault()
-
-    if(dragInfo) {
-      this.setState({
-        dragInfo: {
-          ...dragInfo,
-          x: e.clientX,
-          y: e.clientY
-        }
-      })
-    }
-  }
 
   onShowNodeDetail(node: FsNode) {
     this.props.onShowNodeDetail(node)
@@ -420,6 +250,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     else
       this.setState({ selectedMenu: { nodeId: node.id, anchor: event.target as any } })
   }
+
   renderRow = (props: ListChildComponentProps): React.ReactElement<{}> => {
     const { content } = this.props
 
@@ -449,16 +280,14 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
   }
 
   renderElementRow = ({ index, isScrolling, style }: ListChildComponentProps & { isScrolling: boolean }): React.ReactElement<{}> => {
-    const { classes, selection, content } = this.props
-    const { showCheckboxes, selectedMenu, dragInfo } = this.state
+    const { classes, selection, content, dragInfo, Draggable, DropZone } = this.props
+    const { showCheckboxes, selectedMenu } = this.state
 
     const now = new Date()
     const node = content[index]
 
-    const isDragged = dragInfo && dragInfo.node.id === node.id
+    const isDragged = dragInfo && dragInfo.value.id === node.id
     const isSelected = selection.type === 'ALL' || (selection.type === 'SOME' && selection.selectedElements.indexOf(node.id) >= 0)
-
-    console.log(node.name, isDragged)
 
     const icon =
       node.nodeType === 'DIRECTORY' ?
@@ -468,24 +297,24 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     const checkbox =
       showCheckboxes ? (
         isSelected ?
-          <Checkbox key={node.id + '_checked'} className={classes.contentCheck} checked={true} defaultChecked={true} onClick={() => this.onDeselectNode(node) } /> :
-          <Checkbox key={node.id + '_not-checked'} className={classes.contentCheck} onClick={() => this.onSelectNode(node) } />
-      ) : <Checkbox key={node.id + '_not-checked'} style={{ display: 'none' }} />
+          <Checkbox key={ node.id + '_checked' } className={ classes.contentCheck} checked defaultChecked onClick={() => this.onDeselectNode(node) } /> :
+          <Checkbox key={ node.id + '_not-checked' } className={ classes.contentCheck } onClick={() => this.onSelectNode(node) } />
+      ) : <Checkbox key={ node.id + '_not-checked' } style={ { display: 'none' } } />
     
     const menu =
       <div>
-        <IconButton onClick={(e) => this.onToggleMenu(node, e)} >
+        <IconButton onClick={ (e) => this.onToggleMenu(node, e) } >
           <MoreVertIcon />
         </IconButton>
         {
           !isScrolling &&
           <Menu
             id="simple-menu"
-            anchorEl={selectedMenu ? selectedMenu.anchor : undefined}
-            open={!!selectedMenu && (selectedMenu.nodeId === node.id)}
-            onClose={(e) => this.onToggleMenu(node, e)}
+            anchorEl={ selectedMenu ? selectedMenu.anchor : undefined }
+            open={ !!selectedMenu && (selectedMenu.nodeId === node.id) }
+            onClose={ (e) => this.onToggleMenu(node, e) }
           >
-            <MenuItem onClick={(e) => { this.onToggleMenu(node, e); this.onShowNodeDetail(node)}} >Détails</MenuItem>
+            <MenuItem onClick={ (e) => { this.onToggleMenu(node, e); this.onShowNodeDetail(node)} } >Détails</MenuItem>
             <MenuItem>Télécharger</MenuItem>
             <MenuItem>Supprimer</MenuItem>
             <MenuItem>Partager</MenuItem>
@@ -494,61 +323,41 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
       </div>
 
     return (
-      <div
-        className={classnames(classes.contentRow, { [classes.contentRowSelected]: isSelected })}
-        style={style}
-        onClick={() => {
-          if(!isSelected)
-            this.onSelectNode(node)
-          else
-            this.onDeselectNode(node)
-        }}
-
-        //draggable
-  
-        onMouseDown={e => {
-          this.setState({
-            dragInfo: {
-              node: node,
-              x: e.nativeEvent.clientX,
-              y: e.nativeEvent.clientY
-            }
-          })
-          e.stopPropagation()
-          e.preventDefault()
-        }}
-        
-        onMouseUp={e => {
-          console.log("Dropped on ", node.path)
-          this.setState({ dragInfo: undefined })
-          e.stopPropagation()
-          e.preventDefault()
-        }}
-
-      >
-        <div className={classes.contentCheck}>
-          {checkbox}
-        </div>
-        <Typography variant="body1" className={classnames(classes.contentName, { [classes.contentSelected]: isSelected })}>
-          <span className={classnames(classes.contentTypeIcon, { [classes.contentSelected]: isSelected })} >{icon}</span>
-          <span className={classes.contentNameValue} onClick={(e) => {this.onClickNode(node); e.stopPropagation()}}>{node.name}</span>
-        </Typography>
-        <Typography variant="body1" className={classes.contentModification} >
-          {distanceInWords(new Date(node.modification), now)}
-        </Typography>
-        <Typography variant="body1" className={classes.contentSize} >
-          {node.nodeType === 'DIRECTORY' ? '-' : node.humanReadableSize}
-        </Typography>
-        {menu}
-      </div>
+      <Draggable onDrag={() => node} >
+        <DropZone onDrop={(dropped) => console.log('dropped ', dropped.path, ' on ', node.path)} >
+          <div
+            className={ classnames(classes.contentRow, { [classes.contentRowSelected]: isSelected }) }
+            style={ style }
+            onClick={() => {
+              if(!isSelected)
+                this.onSelectNode(node)
+              else
+                this.onDeselectNode(node)
+            }}
+          >
+            <div className={ classes.contentCheck }>
+              { checkbox }
+            </div>
+            <Typography variant="body1" className={ classnames(classes.contentName, { [classes.contentSelected]: isSelected }) }>
+              <span className={ classnames(classes.contentTypeIcon, { [classes.contentSelected]: isSelected }) } >{ icon }</span>
+              <span className={ classes.contentNameValue } onClick={(e) => { this.onClickNode(node); e.stopPropagation()} }>{node.name}</span>
+            </Typography>
+            <Typography variant="body1" className={ classes.contentModification } >
+              { distanceInWords(new Date(node.modification), now) }
+            </Typography>
+            <Typography variant="body1" className={ classes.contentSize } >
+              { node.nodeType === 'DIRECTORY' ? '-' : node.humanReadableSize }
+            </Typography>
+            {menu}
+          </div>
+        </DropZone>
+      </Draggable>
     )
   }
 
   render() {
     const { current, content, contentSize, classes, selection } = this.props
     const { showCheckboxes } = this.state
-
-    //console.log('rendering')
      
     // TODO show errors ?
     if(current) {
@@ -570,7 +379,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
             </div>
             <div className={classes.contentTableBody}>
               <Resize style={{ flex: 1 }} >
-                { ({ height }) => 
+                { ({ height }) =>
                   <List
                     height={height}
                     width="inherit"
@@ -591,85 +400,17 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
                       }
                     }}
                   >
-                    {this.renderRow}
+                    { this.renderRow }
                   </List>
                 }
               </Resize>
             </div>
           </Paper>
-          {this.renderDraggedElement()}
         </>
       )
     } else
       return null
   }
-
-  renderDraggedElement() {
-    const { dragInfo } = this.state
-
-    if(dragInfo && draggedElementRoot) {
-      const { x, y, node } = dragInfo
-
-      //console.log(dragInfo)
-      
-      return (
-        ReactDOM.createPortal(
-          <div
-            style={{
-              height: 30,
-              width: 70,
-              backgroundColor: 'red',
-              position: 'fixed',
-              pointerEvents: 'none',
-              zIndex: 9999,
-              transform: `translate(${x}px, ${y}px)`,
-              top: 0,
-              left: 0
-              //transform: 'rotate(3deg)'
-            }}
-            key="dragged"
-          >
-            {node.name}
-          </div>,
-          draggedElementRoot
-        )
-      )
-    } else
-      return null
-  }
-
-  /*
-
-    <InfiniteLoader
-      isRowLoaded={(props) => this.isRowLoaded(props.index)}
-      loadMoreRows={() => this.onLoadMoreContent()}
-      rowCount={contentSize}
-    >
-    {({ onRowsRendered, registerChild }) => (
-      <AutoSizer>
-        {({ height, width }) => {
-          return (
-            <List 
-              onRowsRendered={onRowsRendered}
-              ref={registerChild}
-              style={{ outline: 'none' }}
-              height={height}
-              width={width}
-              rowCount={content.length + (contentSize === content.length ? 0 : 1)}
-              rowHeight={45}
-              rowRenderer={ (props: ListRowProps) =>
-                props.index < content.length ?
-                  this.renderRow(props, content[props.index]) :
-                  this.renderLoadingMoreRow(props)
-              }
-            />
-          )
-        }}
-      </AutoSizer>
-    )}
-    </InfiniteLoader>
-
-  */
 
 }
 
@@ -705,4 +446,45 @@ const mappedProps =
     }
   }))
 
-export default withStore(withStyles(styles)(FilesListTable), mappedProps)
+
+// Root element for the dragging placeholder
+const draggedElementRoot = document.getElementById('app-dragged')
+
+// Dragging placeholder static component
+const renderDraggedElement =
+  (dragInfo: DraggingInfo<FsNode>): React.ReactNode => {
+    if(draggedElementRoot) {
+      const { x, y, value: node } = dragInfo
+      
+      return (
+        // Note: we need to a use a portal because material UI animations
+        // use the transform CSS properties and break the fixed position
+        ReactDOM.createPortal(
+          <div
+            style={{
+              height: 30,
+              width: 70,
+              backgroundColor: 'red',
+              position: 'fixed',
+              pointerEvents: 'none',
+              zIndex: 9999,
+              transform: `translate(${x}px, ${y}px)`,
+              top: 0,
+              left: 0
+            }}
+            key="dragged"
+          >
+            {node.name}
+          </div>,
+          draggedElementRoot 
+        )
+      )
+    } else
+      return null
+  }
+
+export default withDragAndDrop(
+  withStore(withStyles(styles)(FilesListTable), mappedProps),
+  renderDraggedElement
+)
+
