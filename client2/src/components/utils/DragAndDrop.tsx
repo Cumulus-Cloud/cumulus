@@ -31,6 +31,7 @@ type DragAndDropProps<T> = {
 }
 
 type State<T> = {
+  nextDrag?: () => T
   dragInfo?: DraggingInfo<T>
 }
 
@@ -44,27 +45,31 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
 
   componentDidMount() {
     document.addEventListener('mousemove', this.dragHandler)
-    document.addEventListener('mouseup', () => this.dragEndHandler)
+    document.addEventListener('mouseup', this.dragEndHandler)
+    document.addEventListener('contextmenu', this.dragEndHandler)
   }
 
   componentWillUnmount() {
     document.removeEventListener('mousemove', this.dragHandler)
-    document.removeEventListener('mouseup', () => this.dragEndHandler)
+    document.removeEventListener('mouseup', this.dragEndHandler)
+    document.removeEventListener('contextmenu', this.dragEndHandler)
+    document.body.style.cursor = null
   }
 
   dragEndHandler = (_: MouseEvent) => {
     const { dragInfo } = this.state
-
-    if(dragInfo) 
-      this.setState({ dragInfo: undefined })
+    
+    if(dragInfo) // Reset everything when the mouse is released
+      this.reset()
   }
 
   dragHandler = (e: MouseEvent) => {
-    const { dragInfo } = this.state
+    const { dragInfo, nextDrag } = this.state
 
     e.preventDefault()
 
     if(dragInfo) {
+      // Update the drag info with the new position
       this.setState({
         dragInfo: {
           ...dragInfo,
@@ -72,21 +77,38 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
           y: e.clientY
         }
       })
+    } else if (nextDrag) {
+      // Start the draggind mode by firing the saved drag event
+      // and setting our drag info
+      document.body.style.cursor = 'grab'
+
+      this.setState({
+        nextDrag: undefined,
+        dragInfo: {
+          value: nextDrag(),
+          x: e.clientX,
+          y: e.clientY
+        }
+      })
     }
+  }
+
+  reset() {
+    this.setState({ nextDrag: undefined, dragInfo: undefined })
+    document.body.style.cursor = null
   }
 
   draggable = (props: DraggableProps<T>) => (
     <div
       onMouseDown={e => {
-        this.setState({
-          dragInfo: {
-            value: props.onDrag(),
-            x: e.nativeEvent.clientX,
-            y: e.nativeEvent.clientY
-          }
-        })
         e.stopPropagation()
         e.preventDefault()
+
+        // We don't want to fire the drag event right now, and we at least wait
+        // for a next event to be fired
+        this.setState({
+          nextDrag: () => props.onDrag()
+        })
       }}
     >
       {props.children}
@@ -96,14 +118,15 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
   dropZone = (props: DropZoneProps<T>) => (
     <div
       onMouseUp={e => {
+        e.stopPropagation()
+        e.preventDefault()
+
         const { dragInfo } = this.state
 
-        if(dragInfo) {
+        if(dragInfo)
           props.onDrop(dragInfo.value)
-          this.setState({ dragInfo: undefined })
-          e.stopPropagation()
-          e.preventDefault()
-        }
+        
+        this.reset()
       }}
 
       onMouseOver={_ => {
@@ -112,7 +135,6 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
 
         if(dragInfo && onDragOver)
           onDragOver(dragInfo.value)
-
       }}
     >
       {props.children}

@@ -18,7 +18,7 @@ import { Route, Redirect, Switch } from 'react-router-dom'
 
 import CumulusDrawer from 'components/CumulusDrawer'
 import CreationPopup from 'components/fs/creation/CreationPopup'
-import FileList from 'components/fs/FileList'
+import FileList from 'components/fs/list/FileList'
 import UploadPopup from 'components/fs/upload/UploadPopup'
 import UploadProgressPopup from 'components/fs/upload/UploadProgressPopup'
 import Snackbars from 'components/notification/Snackbars'

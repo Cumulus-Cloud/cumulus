@@ -5,21 +5,23 @@ import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import Typography from '@material-ui/core/Typography'
 import Paper from '@material-ui/core/Paper'
-import DirectoryIcon from '@material-ui/icons/Folder'
-import FileIcon from '@material-ui/icons/InsertDriveFile'
 import { distanceInWords } from 'date-fns'
 import IconButton from '@material-ui/core/IconButton'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
-import { Checkbox, CircularProgress } from '@material-ui/core'
-import classnames = require('classnames')
+import Checkbox from '@material-ui/core/Checkbox'
+import CircularProgress from '@material-ui/core/CircularProgress'
+import Fade from '@material-ui/core/Fade'
+
+import classnames from 'classnames';
 import { FixedSizeList as List, ListChildComponentProps } from 'react-window'
 
 import { withStore, connect } from 'store/store'
 import { FsNodeSelection } from 'store/states/fsState'
 
 import { WithDragAndDrop, withDragAndDrop, DraggingInfo } from 'components/utils/DragAndDrop'
+import NodeIcon, { NodesIcon } from 'components/fs/list/NodeIcon'
 import Resize from 'components/utils/Resize'
 
 import { Directory, FsNode } from 'models/FsNode'
@@ -62,9 +64,6 @@ const styles = (theme: Theme) => createStyles({
     zIndex: 9 // Fix checkbox passing through header
   },
   contentName: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden', 
-    textOverflow: 'ellipsis',
     margin: 0,
     flex: 4,
     padding: theme.spacing.unit * 2,
@@ -165,7 +164,8 @@ interface Props {
   selection: FsNodeSelection
 }
 
-type PropsWithStyle = Props & WithStyles<typeof styles> & WithDragAndDrop<FsNode>
+
+type PropsWithStyle = Props & WithStyles<typeof styles> & WithDragAndDrop<FsNode[]>
 
 interface State {
   /** If the checkboxes should be displayed. By default the checkboxes are hiddens. */
@@ -279,20 +279,37 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     )
   }
 
+  selectedNodes() {
+    const { selection, content } = this.props
+
+    if(selection.type === 'ALL')
+      return content
+    else if(selection.type === 'SOME')
+      return content.filter((n) =>  selection.selectedElements.indexOf(n.id) >= 0)
+    else
+      return []
+  }
+
+  isNodeSelected(node: FsNode) {
+    const { selection } = this.props
+
+    if(selection.type === 'ALL')
+      return true
+    else if(selection.type === 'SOME')
+      return selection.selectedElements.indexOf(node.id) >= 0
+    else
+      return false
+  }
+
   renderElementRow = ({ index, isScrolling, style }: ListChildComponentProps & { isScrolling: boolean }): React.ReactElement<{}> => {
-    const { classes, selection, content, dragInfo, Draggable, DropZone } = this.props
+    const { classes, content, Draggable, DropZone } = this.props
     const { showCheckboxes, selectedMenu } = this.state
 
     const now = new Date()
     const node = content[index]
 
-    const isDragged = dragInfo && dragInfo.value.id === node.id
-    const isSelected = selection.type === 'ALL' || (selection.type === 'SOME' && selection.selectedElements.indexOf(node.id) >= 0)
-
-    const icon =
-      node.nodeType === 'DIRECTORY' ?
-        <DirectoryIcon /> :
-        <FileIcon />
+    //const isDragged = dragInfo && dragInfo.value.id === node.id
+    const isSelected = this.isNodeSelected(node)
 
     const checkbox =
       showCheckboxes ? (
@@ -323,8 +340,13 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
       </div>
 
     return (
-      <Draggable onDrag={() => node} >
-        <DropZone onDrop={(dropped) => console.log('dropped ', dropped.path, ' on ', node.path)} >
+      <Draggable
+        onDrag={() => { 
+          const selected = this.selectedNodes()
+          return isSelected && selected.length > 0 ? selected : [ node ]
+        }}
+      >
+        <DropZone onDrop={(dropped) => console.log('dropped ', dropped, ' on ', node.path)} >
           <div
             className={ classnames(classes.contentRow, { [classes.contentRowSelected]: isSelected }) }
             style={ style }
@@ -338,8 +360,8 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
             <div className={ classes.contentCheck }>
               { checkbox }
             </div>
-            <Typography variant="body1" className={ classnames(classes.contentName, { [classes.contentSelected]: isSelected }) }>
-              <span className={ classnames(classes.contentTypeIcon, { [classes.contentSelected]: isSelected }) } >{ icon }</span>
+            <Typography variant="body1" noWrap className={ classnames(classes.contentName, { [classes.contentSelected]: isSelected }) }>
+              <NodeIcon node={ node } selected={ isSelected } />
               <span className={ classes.contentNameValue } onClick={(e) => { this.onClickNode(node); e.stopPropagation()} }>{node.name}</span>
             </Typography>
             <Typography variant="body1" className={ classes.contentModification } >
@@ -372,7 +394,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
                   </div> :
                   <span/>
                 }
-                <Typography variant="caption" className={classes.contentName} >Nom</Typography>
+                <Typography variant="caption" noWrap className={classes.contentName} >Nom</Typography>
                 <Typography variant="caption" className={classes.contentModification} >Modification</Typography>
                 <Typography variant="caption" className={classes.contentSize} >Taille</Typography>
               </div>
@@ -386,6 +408,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
                     useIsScrolling
                     itemCount={content.length + (contentSize === content.length ? 0 : 1)}
                     itemSize={45}
+                    overscanCount={5}
                     itemKey={(index) => {
                       const { content } = this.props
                       return index >= content.length ? 'loading' : content[index].id
@@ -452,30 +475,51 @@ const draggedElementRoot = document.getElementById('app-dragged')
 
 // Dragging placeholder static component
 const renderDraggedElement =
-  (dragInfo: DraggingInfo<FsNode>): React.ReactNode => {
+  (dragInfo: DraggingInfo<FsNode[]>): React.ReactNode => {
     if(draggedElementRoot) {
-      const { x, y, value: node } = dragInfo
-      
+      const { x, y, value: nodes } = dragInfo
+
+      // TODO style from a style element
       return (
         // Note: we need to a use a portal because material UI animations
         // use the transform CSS properties and break the fixed position
         ReactDOM.createPortal(
-          <div
-            style={{
-              height: 30,
-              width: 70,
-              backgroundColor: 'red',
-              position: 'fixed',
-              pointerEvents: 'none',
-              zIndex: 9999,
-              transform: `translate(${x}px, ${y}px)`,
-              top: 0,
-              left: 0
-            }}
-            key="dragged"
-          >
-            {node.name}
-          </div>,
+          <Fade in timeout={800} unmountOnExit={false} >
+            <Paper
+              style={{
+                maxWidth: 225,
+                padding: 8,
+                paddingRight: 15,
+                position: 'fixed',
+                alignItems: 'center',
+                pointerEvents: 'none',
+                display: 'flex',
+                zIndex: 9999,
+                transform: `translate(${x}px, ${y}px)`,
+                top: 0,
+                left: 0
+              }}
+              key="dragged"
+            >
+              {
+                nodes.length === 1 ? (
+                  <>
+                    <NodeIcon node={ nodes[0] } />
+                    <Typography variant="body1" noWrap style={{ flex: 1 }} >
+                      { nodes[0].name }
+                    </Typography>
+                  </>
+                ): (
+                  <>
+                    <NodesIcon />
+                    <Typography variant="body1" noWrap style={{ flex: 1 }} >
+                      { `${nodes.length} éléments` }
+                    </Typography>
+                  </>
+                )
+              }
+            </Paper>
+          </Fade>,
           draggedElementRoot 
         )
       )

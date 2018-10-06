@@ -13,7 +13,7 @@ import ListItemText from '@material-ui/core/ListItemText'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import Tooltip from '@material-ui/core/Tooltip'
-import classnames = require('classnames')
+import classnames from 'classnames'
 
 
 const styles = (theme: Theme) => createStyles({
