@@ -55,7 +55,7 @@
     "@types/react-router": "4.0.26",
     "@types/react-router-redux": "5.0.15",
     "autoprefixer": "8.6.0",
-    "parcel-bundler": "1.8.1",
+    "parcel-bundler": "1.10.2",
     "parcel-plugin-typescript": "0.7.1",
     "postcss-modules": "1.1.0",
     "tslint": "5.10.0",
