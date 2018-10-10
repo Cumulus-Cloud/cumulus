@@ -4,7 +4,7 @@ import { ApiError } from 'models/ApiError'
 import { Directory } from 'models/FsNode'
 
 import { getDirectory } from 'store/actions/directory'
-import { showSnackebar } from 'store/actions/snackbar'
+import { showNotification } from 'store/actions/notifications'
 import { createAction } from 'store/actions'
 
 
@@ -32,7 +32,7 @@ export const createDirectory = createAction<string>((path, setState, getState, d
         setState({ createDirectory: { loading: false } })
 
         dispatch(getDirectory(currentPath))
-        dispatch(showSnackebar(`Dossier « ${name} » créé avec succès`))
+        dispatch(showNotification(`Dossier « ${name} » créé avec succès`))
 
         // TODO
         //togglePopup('DIRECTORY_CREATION', false)(state.router)

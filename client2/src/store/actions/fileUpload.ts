@@ -3,7 +3,7 @@ import Api from 'services/api'
 import { ApiError } from 'models/ApiError'
 import { EnrichedFile } from 'models/EnrichedFile'
 
-import { showSnackebar } from 'store/actions/snackbar'
+import { showNotification } from 'store/actions/notifications'
 import { createAction, createPureAction } from 'store/actions'
 
 import { FileUploadingState } from 'store/states/fileUploadState'
@@ -106,7 +106,7 @@ export const uploadAllFiles = createPureAction((setState, getState, dispatch) =>
 
               return { fileUpload: { ...state.fileUpload, uploading: updatedUploads } }
             })
-            dispatch(showSnackebar(`Erreur lors de la mise en ligne du fichier « ${file.filename} »`)) // Show a snakebar
+            dispatch(showNotification(`Erreur lors de la mise en ligne du fichier « ${file.filename} »`))
           } else {
             setState(state => {
               const updatedUploads =
@@ -120,7 +120,7 @@ export const uploadAllFiles = createPureAction((setState, getState, dispatch) =>
 
               return { fileUpload: { ...state.fileUpload, uploading: updatedUploads } }
             })
-            dispatch(showSnackebar(`Fichier « ${file.filename} » mis en ligne avec succès`)) // Show a snakebar
+            dispatch(showNotification(`Fichier « ${file.filename} » mis en ligne avec succès`))
           }
         })
     })

@@ -25,9 +25,8 @@ import SearchZone from 'components/fs/list/SearchZone'
 import { connect, withStore } from 'store/store'
 import { Search, SearchDefault } from 'store/states/fsState'
 import { getDirectory, search } from 'store/actions/directory'
+import { showPopup, hidePopup } from 'store/actions/popups'
 import { selectUploadFile } from 'store/actions/fileUpload'
-
-import { togglePopup } from 'utils/popup'
 
 import Routes from 'services/routes'
 
@@ -311,7 +310,7 @@ const mappedProps =
     error: fs.error,
     search: fs.search,
     onChangePath: (path: string) => {
-      router.push(`${Routes.app.fs}${path}${router.location.search}`)
+      router.push(`${Routes.app.fs}${path}${router.location.search}`) // TODO in an action
       dispatch(getDirectory(path))
     },
     onChangeSearch: (searchParams: Search | undefined) => {
@@ -319,11 +318,12 @@ const mappedProps =
       dispatch(search(searchParams))
     },
     onLoadDirectory: (path: string) => {
+      dispatch(hidePopup()) // Security, close popup when changing directory
       dispatch(getDirectory(path))
     },
     onFileUpload: (files: EnrichedFile[]) => {
       dispatch(selectUploadFile(files))
-      togglePopup('FILE_UPLOAD', true)(router)
+        .then(() => dispatch(showPopup('FILE_UPLOAD')))
     }
   }))
 

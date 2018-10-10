@@ -27,8 +27,7 @@ import Resize from 'components/utils/Resize'
 import { Directory, FsNode } from 'models/FsNode'
 
 import { showNodeDetails, selectNode, selectAllNodes, deselectNode, deselectAllNodes, getDirectoryContent } from 'store/actions/directory'
-
-import { togglePopup } from 'utils/popup'
+import { showPopup } from 'store/actions/popups'
 
 import Routes from 'services/routes'
 
@@ -446,11 +445,11 @@ const mappedProps =
     contentSize: fs.contentSize || 0,
     selection: fs.selectedContent,
     onShowNodeDetail: (node: FsNode) => {
-      dispatch(showNodeDetails(node.id)) // TODO pass in popup path...
-      togglePopup('NODE_DETAILS', true, node.name)(router)
+      dispatch(showNodeDetails(node.id))
+        .then(() => dispatch(showPopup('NODE_DETAIL')))
     },
     onNavigateDirectory: (directory: Directory) => {
-      router.push(`${Routes.app.fs}${directory.path}`)
+      router.push(`${Routes.app.fs}${directory.path}`) // TODO inside an action
     },
     onSelectedNode: (node: FsNode) => {
       dispatch(selectNode(node.id))

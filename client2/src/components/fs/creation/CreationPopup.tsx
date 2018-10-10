@@ -13,7 +13,9 @@ import withMobileDialog from '@material-ui/core/withMobileDialog'
 
 import { connect, withStore } from 'store/store'
 import { createDirectory } from 'store/actions/directoryCreation'
-import { togglePopup, isSelected } from 'utils/popup'
+import { hidePopup } from 'store/actions/popups'
+import { PopupType } from 'store/states/popupsState'
+
 import { ApiError } from 'models/ApiError'
 import { Directory } from 'models/FsNode'
 
@@ -38,6 +40,8 @@ const styles = (theme: Theme) => createStyles({
     marginLeft: -12,
   }
 })
+
+const popupType: PopupType = 'DIRECTORY_CREATION'
 
 interface Props {
   onClose: () => void
@@ -120,23 +124,21 @@ class CreationPopup extends React.Component<PropsWithStyle, State> {
 
 }
 
+
 const mappedProps =
   connect((state, dispatch) => {
-    const router = state.router
-    const selection = isSelected('DIRECTORY_CREATION')(router.location)
-    
     return {
-      open: selection.selected,
+      open: state.popups.open === popupType,
       current: state.fs.current,
       loading: state.createDirectory.loading,
       error: state.createDirectory.error,
       onClose: () => {
-        togglePopup('DIRECTORY_CREATION', false)(router)
+        dispatch(hidePopup())
       },
       onCreateDirectory: (path: string) => {
         dispatch(createDirectory(path)).then((state) => {
           if(!state.createDirectory.error)
-            togglePopup('DIRECTORY_CREATION', false)(router)
+            dispatch(hidePopup())
         })
       }
     }

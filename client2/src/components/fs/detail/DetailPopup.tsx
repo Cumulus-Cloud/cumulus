@@ -13,9 +13,12 @@ import Chip from '@material-ui/core/Chip'
 import { distanceInWords } from 'date-fns'
 
 import { connect, withStore } from 'store/store'
-import { togglePopup, isSelected } from 'utils/popup'
 import { ApiUtils } from 'services/api'
+import { hidePopup } from 'store/actions/popups'
+import { PopupType } from 'store/states/popupsState'
+
 import { FsNode } from 'models/FsNode'
+
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -105,6 +108,8 @@ const styles = (theme: Theme) => createStyles({
   }
 })
 
+const popupType: PopupType = 'NODE_DETAIL'
+
 interface Props {
   onClose: () => void
   onDownload: () => void
@@ -120,6 +125,7 @@ interface Props {
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
 interface State {}
+
 
 class DetailsPopup extends React.Component<PropsWithStyle, State> {
 
@@ -253,30 +259,22 @@ class DetailsPopup extends React.Component<PropsWithStyle, State> {
 
 
 const mappedProps =
-  connect((state) => {
-    const router = state.router
-    const selection = isSelected('NODE_DETAILS')(router.location)
-      
-    // TODO handle pagination (ask for specific file reload)
-    const node = state.fs.detailed || (state.fs.content || []).find((n) => n.name === selection.param)
-
-    return {
-      open: selection.selected,
-      loading: state.createDirectory.loading,
-      node: node,
-      onClose: () => {
-        togglePopup('NODE_DETAILS', false)(router)
-      },
-      onDownload: () => {
-        console.log('TODO onDownload')
-      },
-      onDelete: () => {
-        console.log('TODO onDelete')
-      },
-      onShare: () => {
-        console.log('TODO onDownload')
-      }
+  connect((state, dispatch) => ({
+    open: state.popups.open === popupType,
+    loading: state.createDirectory.loading,
+    node: state.fs.detailed,
+    onClose: () => {
+      dispatch(hidePopup())
+    },
+    onDownload: () => {
+      console.log('TODO onDownload')
+    },
+    onDelete: () => {
+      console.log('TODO onDelete')
+    },
+    onShare: () => {
+      console.log('TODO onDownload')
     }
-  })
+  }))
 
 export default withStore(withMobileDialog<Props> ({ breakpoint: 'xs' })(withStyles(styles) (DetailsPopup)), mappedProps)

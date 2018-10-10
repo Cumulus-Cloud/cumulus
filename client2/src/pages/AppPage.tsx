@@ -21,15 +21,14 @@ import CreationPopup from 'components/fs/creation/CreationPopup'
 import FileList from 'components/fs/list/FileList'
 import UploadPopup from 'components/fs/upload/UploadPopup'
 import UploadProgressPopup from 'components/fs/upload/UploadProgressPopup'
-import Snackbars from 'components/notification/Snackbars'
+import NotificationsContainer from 'components/notification/NotificationsContainer'
 import DetailPopup from 'components/fs/detail/DetailPopup'
 
 import { User } from 'models/User'
 import { FsNode } from 'models/FsNode'
 
-import { togglePopup } from 'utils/popup'
-
-import { withStore } from 'store/store'
+import { withStore, connect } from 'store/store'
+import { showPopup } from 'store/actions/popups'
 
 import Routes from 'services/routes'
 
@@ -178,8 +177,8 @@ class AppPage extends React.Component<PropsWithStyle, State> {
     const actionElements = (
       <div>
         <ListItem button onClick={() => {
-          this.forceDrawer(false) // TODO fix focus stolen
           this.showCreationPopup()
+          this.forceDrawer(false) // TODO fix focus stolen
         }} >
           <ListItemIcon>
             <CreateNewFolderIcon />
@@ -256,7 +255,8 @@ class AppPage extends React.Component<PropsWithStyle, State> {
           <UploadPopup />
           <DetailPopup />
           <UploadProgressPopup />
-          <Snackbars />
+
+          <NotificationsContainer />
 
         </div>
 
@@ -266,24 +266,24 @@ class AppPage extends React.Component<PropsWithStyle, State> {
 }
 
 
-const AppPageWithStyle = withMobileDialog<Props> ({ breakpoint: 'xs' })(withStyles(styles) (AppPage))
+const mappedProps =
+  connect((state, dispatch) => {
+    
+    const selectedContent = state.fs.selectedContent
+    const content = state.fs.content || []
+    const selection = selectedContent.type === 'ALL' ? content : (selectedContent.type === 'NONE' ? [] : content.filter((node) => selectedContent.selectedElements.indexOf(node.id) >= 0))
+    
+    const user = state.auth.user
 
-const AppPageWithContext = withStore(AppPageWithStyle, state => {
-  const selectedContent = state.fs.selectedContent
-  const content = state.fs.content || []
-  const selection = selectedContent.type === 'ALL' ? content : (selectedContent.type === 'NONE' ? [] : content.filter((node) => selectedContent.selectedElements.indexOf(node.id) >= 0))
-  
-  const user = state.auth.user
+    if(!user) // Should not happend
+      throw new Error('App page accessed without authentication')
+    
+    return {
+      selection: selection,
+      user: user,
+      showCreationPopup: () => dispatch(showPopup('DIRECTORY_CREATION')),
+      showUploadPopup: () => dispatch(showPopup('FILE_UPLOAD'))
+    }
+  })
 
-  if(!user) // Should not happend
-    throw new Error('App page accessed without authentication')
-  
-  return {
-    selection: selection,
-    user: user,
-    showCreationPopup: () => togglePopup('DIRECTORY_CREATION', true)(state.router), // TODO typed actions
-    showUploadPopup: () => togglePopup('FILE_UPLOAD', true)(state.router)
-  }
-})
-
-export default AppPageWithContext
+export default withStore(withMobileDialog<Props> ({ breakpoint: 'xs' })(withStyles(styles) (AppPage)), mappedProps)

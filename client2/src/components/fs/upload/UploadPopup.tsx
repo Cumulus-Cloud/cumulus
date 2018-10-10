@@ -13,13 +13,13 @@ import uuid = require('uuid/v4')
 
 import { connect, withStore } from 'store/store'
 import { selectUploadFile, deleteUploadFile, updateUploadFile, uploadAllFiles } from 'store/actions/fileUpload'
+import { hidePopup } from 'store/actions/popups'
+import { PopupType } from 'store/states/popupsState'
 
 import { Directory } from 'models/FsNode'
 import { EnrichedFile } from 'models/EnrichedFile'
 
 import UploadFile from 'components/fs/upload/UploadFile'
-
-import { togglePopup, isSelected } from 'utils/popup'
 
 
 const styles = (theme: Theme) => createStyles({
@@ -85,6 +85,8 @@ const styles = (theme: Theme) => createStyles({
   }
 })
 
+const popupType: PopupType = 'FILE_UPLOAD'
+
 interface Props {
   onClose: () => void
   onFilesSelected: (files: EnrichedFile[]) => void
@@ -114,7 +116,6 @@ class UploadPopup extends React.Component<PropsWithStyle, State> {
 
   onUploadFiles() {
     // TODO check the provided string for forbidden char
-    console.log('Starting the file upload')
     this.props.onUploadFiles()
   }
 
@@ -215,11 +216,8 @@ class UploadPopup extends React.Component<PropsWithStyle, State> {
 
 const mappedProps =
   connect((state, dispatch) => {
-    const router = state.router
-    const selection = isSelected('FILE_UPLOAD')(router.location)
-
     return {
-      open: selection.selected,
+      open: state.popups.open === popupType,
       current: state.fs.current,
       files: state.fileUpload.files,
       onFilesSelected: (files: EnrichedFile[]) => {
@@ -232,10 +230,10 @@ const mappedProps =
         dispatch(updateUploadFile(updatedFile))
       },
       onClose: () => {
-        togglePopup('FILE_UPLOAD', false)(router)
+        dispatch(hidePopup())
       },
       onUploadFiles: () => {
-        togglePopup('FILE_UPLOAD', false)(router)
+        dispatch(hidePopup())
         dispatch(uploadAllFiles())
       }
     }

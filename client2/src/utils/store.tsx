@@ -50,7 +50,7 @@ export function createStore<S>(
     
     state = initialState
 
-    dispatch = (action: Action<S>) => {
+    dispatch = (action: Action<S>): Promise<S> => {
       const ret =
         action(
           (update) => {

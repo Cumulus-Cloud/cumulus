@@ -7,7 +7,7 @@ import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 
 import { withStore } from 'store/store'
-import { hideSnackbar } from 'store/actions/snackbar'
+import { hideNotification } from 'store/actions/notifications'
 
 
 const styles = (theme: Theme) => createStyles({
@@ -23,10 +23,6 @@ const styles = (theme: Theme) => createStyles({
   snackbar: {
     position: 'relative',
     marginBottom: theme.spacing.unit * 2
-  },
-  close: {
-    width: theme.spacing.unit * 4,
-    height: theme.spacing.unit * 4,
   }
 })
 
@@ -79,10 +75,9 @@ class Snackbars extends React.Component<PropsWithStyle, State> {
           message={<span id="message-id">{message.message}</span>}
           action={[
             <IconButton
-              key={`close`}
+              key="close"
               aria-label="Close"
               color="inherit"
-              className={classes.close}
               onClick={() => this.onClose(message.id)}
             >
               <CloseIcon />
@@ -104,6 +99,6 @@ class Snackbars extends React.Component<PropsWithStyle, State> {
 const SnackbarWithStyle = withStyles(styles)(Snackbars)
 
 export default withStore(SnackbarWithStyle, (state, dispatch) => ({
-  onClose: (id: string) => dispatch(hideSnackbar(id)),
-  messages: state.snackbar.messages
+  onClose: (id: string) => dispatch(hideNotification(id)),
+  messages: state.notifications.messages
 }))

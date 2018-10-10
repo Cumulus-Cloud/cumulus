@@ -10,13 +10,13 @@ import createStyles from '@material-ui/core/styles/createStyles'
 import CardHeader from '@material-ui/core/CardHeader'
 import IconButton from '@material-ui/core/IconButton'
 import FileDownloadButton from '@material-ui/icons/CloudDownload'
-import classnames = require('classnames')
 import List from '@material-ui/core/List'
 import Slide from '@material-ui/core/Slide'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemText from '@material-ui/core/ListItemText'
 import Divider from '@material-ui/core/Divider'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+import classnames from 'classnames'
 
 import { connect, withStore } from 'store/store'
 import { hideUploadProgress } from 'store/actions/fileUpload'
@@ -103,7 +103,7 @@ const styles = (theme: Theme) => createStyles({
   }
 })
 
-interface Props {
+type Props = {
   onClose: () => void
   open: boolean
   files: FileUploadingState[]
@@ -111,7 +111,7 @@ interface Props {
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
-interface State {
+type State = {
   expanded: boolean
 }
 

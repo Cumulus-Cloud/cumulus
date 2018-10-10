@@ -8,7 +8,9 @@ import SignUpState from 'store/states/signUpState'
 import FsState, { initialState as initialFsState } from 'store/states/fsState'
 import CreateDirectoryState from 'store/states/createDirectoryState'
 import FileUploadState, { initialState as initialFileUploadState } from 'store/states/fileUploadState'
-import SnackbarState from 'store/states/snackbarState'
+import NotificationsState, { initialState as initialNotificationsState } from 'store/states/notificationsState'
+import PopupsState, { initialState as initialPopupsState } from 'store/states/popupsState'
+
 
 export type State = {
   auth: AuthenticationState
@@ -17,27 +19,20 @@ export type State = {
   fs: FsState
   createDirectory: CreateDirectoryState
   fileUpload: FileUploadState
-  snackbar: SnackbarState
+  notifications: NotificationsState
+  popups: PopupsState
   router: History
 }
 
-// TODO break into multiple files
 export const initialState: State = {
   auth: initialAuthState(),
-  signIn: {
-    loading: false
-  },
-  signUp: {
-    loading: false
-  },
+  signIn: { loading: false },
+  signUp: { loading: false },
   fs: initialFsState(),
-  createDirectory: {
-    loading: false
-  },
+  createDirectory: { loading: false },
   fileUpload: initialFileUploadState(),
-  snackbar: {
-    messages: []
-  },
+  notifications: initialNotificationsState(),
+  popups: initialPopupsState(),
   router: createBrowserHistory()
 }
 
