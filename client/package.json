@@ -49,7 +49,7 @@
     "@types/es6-shim": "0.31.37",
     "@types/react": "16.3.16",
     "@types/react-dnd": "2.0.36",
-    "@types/react-dnd-html5-backend": "2.1.9",
+    "@types/react-dnd-html5-backend": "3.0.2",
     "@types/react-dom": "16.0.6",
     "@types/react-redux": "6.0.0",
     "@types/react-router": "4.0.26",
