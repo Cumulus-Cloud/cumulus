@@ -9,7 +9,8 @@ import FsState, { initialState as initialFsState } from 'store/states/fsState'
 import CreateDirectoryState from 'store/states/createDirectoryState'
 import FileUploadState, { initialState as initialFileUploadState } from 'store/states/fileUploadState'
 import NotificationsState, { initialState as initialNotificationsState } from 'store/states/notificationsState'
-import PopupsState, { initialState as initialPopupsState } from 'store/states/popupsState'
+import PopupsState, { initialState as initialPopupsState, FsPopupType } from 'store/states/popupsState'
+import { FsNode } from 'models/FsNode';
 
 
 export type State = {
@@ -20,7 +21,7 @@ export type State = {
   createDirectory: CreateDirectoryState
   fileUpload: FileUploadState
   notifications: NotificationsState
-  popups: PopupsState
+  popups: PopupsState<FsPopupType, FsNode[]>
   router: History
 }
 
@@ -32,7 +33,7 @@ export const initialState: State = {
   createDirectory: { loading: false },
   fileUpload: initialFileUploadState(),
   notifications: initialNotificationsState(),
-  popups: initialPopupsState(),
+  popups: initialPopupsState([]),
   router: createBrowserHistory()
 }
 

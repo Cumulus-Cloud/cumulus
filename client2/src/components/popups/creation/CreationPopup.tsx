@@ -1,6 +1,4 @@
 import  React from 'react'
-import { Theme } from '@material-ui/core/styles/createMuiTheme'
-import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import Button from '@material-ui/core/Button'
 import TextField from '@material-ui/core/TextField'
@@ -14,34 +12,15 @@ import withMobileDialog from '@material-ui/core/withMobileDialog'
 import { connect, withStore } from 'store/store'
 import { createDirectory } from 'store/actions/directoryCreation'
 import { hidePopup } from 'store/actions/popups'
-import { PopupType } from 'store/states/popupsState'
+import { FsPopupType } from 'store/states/popupsState'
 
 import { ApiError } from 'models/ApiError'
 import { Directory } from 'models/FsNode'
 
+import styles from './styles'
 
-const styles = (theme: Theme) => createStyles({
-  root: {
-    minWidth: 450,
-    flexDirection: 'column',
-    [theme.breakpoints.down('xs')]: {
-      height: '100%',
-      display: 'flex'
-    }
-  },
-  content: {
-    flex: 1
-  },
-  buttonProgress: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginTop: -12,
-    marginLeft: -12,
-  }
-})
 
-const popupType: PopupType = 'DIRECTORY_CREATION'
+const popupType: FsPopupType = 'DIRECTORY_CREATION'
 
 interface Props {
   onClose: () => void
@@ -85,6 +64,8 @@ class CreationPopup extends React.Component<PropsWithStyle, State> {
   render() {
     const { classes, fullScreen, open, error, loading } = this.props
   
+    // TODO show error
+
     return (
       <Dialog
         fullScreen={fullScreen}

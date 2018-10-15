@@ -30,6 +30,24 @@ export const SearchDefault: Search = {
   recursiveSearch: false
 }
 
+export function selectedNodes(nodes: FsNode[], selection: FsNodeSelection) {
+  if(selection.type === 'ALL')
+    return nodes
+  else if(selection.type === 'SOME')
+    return nodes.filter((n) =>  selection.selectedElements.indexOf(n.id) >= 0)
+  else
+    return []
+}
+
+export function isNodeSelected(node: FsNode, selection: FsNodeSelection) {
+  if(selection.type === 'ALL')
+    return true
+  else if(selection.type === 'SOME')
+    return selection.selectedElements.indexOf(node.id) >= 0
+  else
+    return false
+}
+
 export default interface FsState {
   /** If the store is loading the current directory itself. This means that no directory can be displayed. */
   loadingCurrent: boolean
@@ -45,8 +63,6 @@ export default interface FsState {
   selectedContent: FsNodeSelection
   /** Search for the current directory */
   search?: Search
-  /** Detailed node */
-  detailed?: FsNode
   /** If an error occured. */
   error?: ApiError
 }

@@ -210,15 +210,6 @@ export const deselectAllNodes = createPureAction((setState) => {
   }))
 })
 
-export const showNodeDetails = createAction<string>((nodeId, setState) => {
-  setState(state => ({
-    fs: {
-      ...state.fs,
-      detailed: (state.fs.content || []).find((node) => node.id === nodeId)
-    }
-  }))
-})
-
 export const search = createAction<Search | undefined>((search, setState, _, dispatch) => {
   // Update the search state
   return setState(state => ({

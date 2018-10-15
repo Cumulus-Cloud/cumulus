@@ -1,18 +1,19 @@
-import { Search } from './../store/states/fsState'
 import axios from 'axios'
 
 import { ApiError } from 'models/ApiError'
 import { EnrichedFile } from 'models/EnrichedFile'
-import { Directory, File, FsNode, FsOperation, DirectoryWithContent, SearchResult } from 'models/FsNode'
+import { Directory, File, FsNode, DirectoryWithContent, SearchResult } from 'models/FsNode'
 import { User } from 'models/User'
 import { AppSession } from 'models/AppSession'
 import { ApiList } from 'models/utils'
 
-const urlBase = ''
+import Routes from 'services/routes'
+
+import { Search } from 'store/states/fsState'
+
+
 
 export const ApiUtils = {
-
-  urlBase: urlBase,
 
   maxResultDefault: 50,
 
@@ -23,10 +24,9 @@ export const ApiUtils = {
   serializeQueryParams(queryParams: Map<string, string>): string {
     const queryString =
       Array.from(queryParams.entries())
-      .map((value) => {
-          return `${encodeURIComponent(value[0])}=${encodeURIComponent(value[1])}&`
-      })
-      .join('')
+        .filter((value) => value[1] !== '')
+        .map((value) => `${encodeURIComponent(value[0])}=${encodeURIComponent(value[1])}&`)
+        .join('')
 
     return queryString === '' ? '' : `?${queryString.substring(0, queryString.length - 1)}`
   },
@@ -51,7 +51,7 @@ export const ApiUtils = {
     return axios
       .request({
         method: method,
-        url: `${urlBase}/api${path}${this.serializeQueryParams(queryParams)}`,
+        url: path + this.serializeQueryParams(queryParams),
         onUploadProgress: (progressEvent) => {
           const progress = (progressEvent.loaded * 100) / progressEvent.total
           onProgress(progress)
@@ -70,7 +70,7 @@ export const ApiUtils = {
     return axios
       .request({
         method: method,
-        url: `${urlBase}/api${path}${this.serializeQueryParams(queryParams)}`,
+        url: path + this.serializeQueryParams(queryParams),
         validateStatus: () => true
       })
       .then((response) => response.data)
@@ -86,44 +86,44 @@ const Api = {
 
   user: {
     me(): Promise<ApiError | User> {
-      return ApiUtils.get('/users/me')
+      return ApiUtils.get(Routes.api.users.me)
     },
 
     signIn(login: string, password: string): Promise<ApiError | { token: string, user: User }> {
-      return ApiUtils.post('/users/login', { login, password })
+      return ApiUtils.post(Routes.api.users.login, { login, password })
     },
   
     signUp(login: string, email: string, password: string): Promise<ApiError | User> {
-      return ApiUtils.post('/users/signup', { login, email, password })
+      return ApiUtils.post(Routes.api.users.signUp, { login, email, password })
     },
 
     signOut(): Promise<ApiError | void> {
-      return ApiUtils.post('/users/logout', {})
+      return ApiUtils.post(Routes.api.users.signOut, {})
     },
 
     setFirstPassword(password: string): Promise<ApiError | User> {
-      return ApiUtils.post('/users/firstPassword', { password })
+      return ApiUtils.post(Routes.api.users.setFirstPassword, { password })
     },
 
     changeLang(lang: string): Promise<ApiError | User> {
-      return ApiUtils.post('/users/lang', { lang })
+      return ApiUtils.post(Routes.api.users.changeLang, { lang })
     },
     
     changePassword(previousPassword: string, newPassword: string): Promise<ApiError | User> {
-      return ApiUtils.post('/users/password', { previousPassword, newPassword })
+      return ApiUtils.post(Routes.api.users.changePassword, { previousPassword, newPassword })
     },
 
     sessions: {
       all(offset: number): Promise<ApiError | ApiList<AppSession>> {
-        return ApiUtils.get('/users/sessions', ApiUtils.pagination(offset = offset))
+        return ApiUtils.get(Routes.api.users.sessions.all, ApiUtils.pagination(offset = offset))
       },
 
       get(ref: string): Promise<ApiError | AppSession> {
-        return ApiUtils.get(`/users/sessions/${ref}`) 
+        return ApiUtils.get(Routes.api.users.sessions.get(ref)) 
       },
 
       revoke(ref: string): Promise<ApiError | AppSession> {
-        return ApiUtils.post(`/users/sessions/${ref}/revoke`, {})
+        return ApiUtils.post(Routes.api.users.sessions.revoke(ref), {})
       }
     }
 
@@ -131,7 +131,7 @@ const Api = {
 
   fs: {
     get(path: string): Promise<ApiError | FsNode> {
-      return ApiUtils.get<FsNode>(`/fs`, new Map([[ 'path', path ]]))
+      return ApiUtils.get<FsNode>(Routes.api.fs.base, new Map([[ 'path', path ]]))
     },
 
     getDirectory(path: string): Promise<ApiError | Directory> {
@@ -168,7 +168,7 @@ const Api = {
 
     getContent(id: string, contentOffset?: number, contentLimit?: number): Promise<ApiError | DirectoryWithContent> {
       return ApiUtils.get<DirectoryWithContent>(
-        `/fs/${id}/content`,
+        Routes.api.fs.getContent(id),
         ApiUtils.pagination(contentLimit || ApiUtils.maxResultDefault, contentOffset || 0)
       )
     },
@@ -186,17 +186,16 @@ const Api = {
       const params = new Map([...searchParam, ...nodeType, ...pagination])
 
       return ApiUtils.get<SearchResult>(
-        `/fs/search`,
+        Routes.api.fs.search,
         params
       )
     },
 
     createDirectory(path: string): Promise<ApiError | Directory> {
-      return ApiUtils.put(`/fs`, { path: path })
+      return ApiUtils.put(Routes.api.fs.create, { path: path })
     },
 
     uploadFile(parentId: string, file: EnrichedFile, onProgress: (percentage: number) => void): Promise<ApiError | any> {
-
       // TODO error handling
       function fileReader(file: EnrichedFile) {
         return new Promise((resolve) => {
@@ -210,9 +209,8 @@ const Api = {
       }
 
       return fileReader(file).then((result) => {
-        // TODO add compression and cipher
         return ApiUtils.post(
-          `/fs/${parentId}/upload`,
+          Routes.api.fs.upload(parentId),
           result,
           new Map([
             [ 'filename', file.filename ],
@@ -224,12 +222,12 @@ const Api = {
       })
     },
 
-    updateFile(path: string, operation: FsOperation): Promise<ApiError | FsNode> {
-      return ApiUtils.post(`/fs${path}`, operation)
-    },
+   // updateFile(path: string, operation: FsOperation): Promise<ApiError | FsNode> {
+   //   return ApiUtils.post(`/fs${path}`, operation)
+   // },
 
-    deleteFile(path: string): Promise<ApiError | void> {
-      return ApiUtils.delete(`/fs${path}`)
+    deleteFile(id: string): Promise<ApiError | void> {
+      return ApiUtils.delete(Routes.api.fs.delete(id))
     }
 
   }

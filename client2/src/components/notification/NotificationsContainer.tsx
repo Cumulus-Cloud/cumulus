@@ -34,7 +34,7 @@ interface Props {
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
 interface State {
-  closed: string[] // List of closed 
+  closed: string[] // List of closed notifications
 }
 
 

@@ -1,8 +1,6 @@
 import  React from 'react'
 
 import Button from '@material-ui/core/Button'
-import { Theme } from '@material-ui/core/styles/createMuiTheme'
-import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import HomeIcon from '@material-ui/icons/Home'
 import RightIcon from '@material-ui/icons/KeyboardArrowRight'
@@ -15,41 +13,8 @@ import MenuItem from '@material-ui/core/MenuItem'
 import Tooltip from '@material-ui/core/Tooltip'
 import classnames from 'classnames'
 
+import styles from './styles'
 
-const styles = (theme: Theme) => createStyles({
-  root: {
-    paddingLeft: theme.spacing.unit * 3,
-    paddingRight: theme.spacing.unit * 3,
-    height: '70px',
-    display: 'flex',
-    alignItems: 'center'
-  },
-  element: {
-    display: 'flex',
-    alignItems: 'center'
-  },
-  homeButton: {
-    marginLeft:  theme.spacing.unit * -2,
-    minWidth: 0,
-    height: '36px',
-    paddingTop: '5px'
-  },
-  button: {
-    textTransform: 'none',
-    fontWeight: 'normal'
-  },
-  icon: {
-    color: 'rgba(0, 0, 0, 0.54)'
-  },
-  shortName: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis'
-  },
-  tooltip: {
-    maxWidth: 'none'
-  }
-})
 
 interface Props {
   path: string

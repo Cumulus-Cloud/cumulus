@@ -7,22 +7,21 @@ import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
 import CloudUpload from '@material-ui/icons/CloudUpload'
-import SearchIcon from '@material-ui/icons/Search'
 import CompareArrowsIcon from '@material-ui/icons/CompareArrows'
 import DeleteIcon from '@material-ui/icons/Delete'
 import ShareIcon from '@material-ui/icons/Share'
 import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder'
-import TextField from '@material-ui/core/TextField'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
 import { Route, Redirect, Switch } from 'react-router-dom'
 
 import CumulusDrawer from 'components/CumulusDrawer'
-import CreationPopup from 'components/fs/creation/CreationPopup'
+import CreationPopup from 'components/popups/creation/CreationPopup'
+import DeletionPopup from 'components/popups/deletion/DeletionPopup'
+import DetailPopup from 'components/popups/detail/DetailPopup'
+import UploadPopup from 'components/popups/upload/UploadPopup'
+import UploadProgressPopup from 'components/popups/upload/UploadProgressPopup'
 import FileList from 'components/fs/list/FileList'
-import UploadPopup from 'components/fs/upload/UploadPopup'
-import UploadProgressPopup from 'components/fs/upload/UploadProgressPopup'
 import NotificationsContainer from 'components/notification/NotificationsContainer'
-import DetailPopup from 'components/fs/detail/DetailPopup'
 
 import { User } from 'models/User'
 import { FsNode } from 'models/FsNode'
@@ -31,6 +30,7 @@ import { withStore, connect } from 'store/store'
 import { showPopup } from 'store/actions/popups'
 
 import Routes from 'services/routes'
+import { selectedNodes } from 'store/states/fsState';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -100,6 +100,7 @@ const styles = (theme: Theme) => createStyles({
 interface Props {
   showCreationPopup: () => void
   showUploadPopup: () => void
+  showDeletionPopup: () => void
   selection: FsNode[]
   user: User
 }
@@ -128,6 +129,10 @@ class AppPage extends React.Component<PropsWithStyle, State> {
     this.props.showUploadPopup()
   }
 
+  showDeletionPopup() {
+    this.props.showDeletionPopup()
+  }
+
   toggleDrawer() {
     this.setState({...this.state, drawer: !this.state.drawer })
   }
@@ -146,33 +151,6 @@ class AppPage extends React.Component<PropsWithStyle, State> {
 
   render() {
     const { selection, classes } = this.props
-
-    const searchElements = (
-      <div>
-        <ListItem button style={{ height: 50 }}>
-          <ListItemIcon>
-            <SearchIcon />
-          </ListItemIcon>
-          <ListItem>
-            <TextField
-              id="search"
-              type="search"
-              margin="none"
-              placeholder="Search..."
-              style={{
-                marginBottom: 0,
-                marginLeft: -9,
-                width: 136
-              }}
-    
-              InputProps={{
-                disableUnderline: true
-              }}
-            />
-          </ListItem>
-        </ListItem>
-      </div>
-    )
 
     const actionElements = (
       <div>
@@ -220,7 +198,10 @@ class AppPage extends React.Component<PropsWithStyle, State> {
           </ListItemIcon>
           <ListItemText primary="Déplacer la sélection" />
         </ListItem>
-        <ListItem button disabled={selection.length <= 0}>
+        <ListItem button disabled={selection.length <= 0} onClick={() => {
+          this.forceDrawer(false) // TODO fix focus stolen
+          this.showDeletionPopup()
+        }} >
           <ListItemIcon>
             <DeleteIcon />
           </ListItemIcon>
@@ -241,7 +222,6 @@ class AppPage extends React.Component<PropsWithStyle, State> {
           <CumulusDrawer
             onDrawerToggle={() => this.toggleDrawer()}
             showDynamicDrawer={this.state.drawer}
-            searchElements={searchElements}
             actionElements={actionElements}
             contextualActionElements={contextualActionElements}
           />
@@ -254,6 +234,7 @@ class AppPage extends React.Component<PropsWithStyle, State> {
           <CreationPopup/>
           <UploadPopup />
           <DetailPopup />
+          <DeletionPopup />
           <UploadProgressPopup />
 
           <NotificationsContainer />
@@ -268,11 +249,9 @@ class AppPage extends React.Component<PropsWithStyle, State> {
 
 const mappedProps =
   connect((state, dispatch) => {
-    
     const selectedContent = state.fs.selectedContent
     const content = state.fs.content || []
-    const selection = selectedContent.type === 'ALL' ? content : (selectedContent.type === 'NONE' ? [] : content.filter((node) => selectedContent.selectedElements.indexOf(node.id) >= 0))
-    
+    const selection = selectedNodes(content, selectedContent)    
     const user = state.auth.user
 
     if(!user) // Should not happend
@@ -281,8 +260,9 @@ const mappedProps =
     return {
       selection: selection,
       user: user,
-      showCreationPopup: () => dispatch(showPopup('DIRECTORY_CREATION')),
-      showUploadPopup: () => dispatch(showPopup('FILE_UPLOAD'))
+      showCreationPopup: () => dispatch(showPopup({ type: 'DIRECTORY_CREATION' })),
+      showUploadPopup: () => dispatch(showPopup({ type: 'FILE_UPLOAD' })),
+      showDeletionPopup: () => dispatch(showPopup({ type: 'NODE_DELETION', nodes: selection }))
     }
   })
 

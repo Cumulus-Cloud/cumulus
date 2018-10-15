@@ -18,7 +18,7 @@ import classnames from 'classnames';
 import { FixedSizeList as List, ListChildComponentProps } from 'react-window'
 
 import { withStore, connect } from 'store/store'
-import { FsNodeSelection } from 'store/states/fsState'
+import { FsNodeSelection, selectedNodes, isNodeSelected } from 'store/states/fsState'
 
 import { WithDragAndDrop, withDragAndDrop, DraggingInfo } from 'components/utils/DragAndDrop'
 import NodeIcon, { NodesIcon } from 'components/fs/list/NodeIcon'
@@ -26,7 +26,7 @@ import Resize from 'components/utils/Resize'
 
 import { Directory, FsNode } from 'models/FsNode'
 
-import { showNodeDetails, selectNode, selectAllNodes, deselectNode, deselectAllNodes, getDirectoryContent } from 'store/actions/directory'
+import { selectNode, selectAllNodes, deselectNode, deselectAllNodes, getDirectoryContent } from 'store/actions/directory'
 import { showPopup } from 'store/actions/popups'
 
 import Routes from 'services/routes'
@@ -136,6 +136,8 @@ const styles = (theme: Theme) => createStyles({
 interface Props {
   /** When details for a node are requested. */
   onShowNodeDetail: (node: FsNode) => void
+  /** When a node is deleted. */
+  onDeleteNode: (node: FsNode) => void
   /** When a directory is selected, to change the viewer current directory. */
   onNavigateDirectory: (directory: Directory) => void
   /** When a node is selected. */
@@ -182,6 +184,10 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
 
   onShowNodeDetail(node: FsNode) {
     this.props.onShowNodeDetail(node)
+  }
+
+  onDeleteNode(node: FsNode) {
+    this.props.onDeleteNode(node)
   }
 
   onNavigateDirectory(directory: Directory) {
@@ -281,23 +287,13 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
   selectedNodes() {
     const { selection, content } = this.props
 
-    if(selection.type === 'ALL')
-      return content
-    else if(selection.type === 'SOME')
-      return content.filter((n) =>  selection.selectedElements.indexOf(n.id) >= 0)
-    else
-      return []
+    return selectedNodes(content, selection)
   }
 
   isNodeSelected(node: FsNode) {
     const { selection } = this.props
 
-    if(selection.type === 'ALL')
-      return true
-    else if(selection.type === 'SOME')
-      return selection.selectedElements.indexOf(node.id) >= 0
-    else
-      return false
+    return isNodeSelected(node, selection)
   }
 
   renderElementRow = ({ index, isScrolling, style }: ListChildComponentProps & { isScrolling: boolean }): React.ReactElement<{}> => {
@@ -332,7 +328,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
           >
             <MenuItem onClick={ (e) => { this.onToggleMenu(node, e); this.onShowNodeDetail(node)} } >Détails</MenuItem>
             <MenuItem>Télécharger</MenuItem>
-            <MenuItem>Supprimer</MenuItem>
+            <MenuItem onClick={ (e) => { this.onToggleMenu(node, e); this.onDeleteNode(node) }} >Supprimer</MenuItem>
             <MenuItem>Partager</MenuItem>
           </Menu>
         }
@@ -445,8 +441,10 @@ const mappedProps =
     contentSize: fs.contentSize || 0,
     selection: fs.selectedContent,
     onShowNodeDetail: (node: FsNode) => {
-      dispatch(showNodeDetails(node.id))
-        .then(() => dispatch(showPopup('NODE_DETAIL')))
+      dispatch(showPopup({ type: 'NODE_DETAIL', nodes: [ node ] }))
+    },
+    onDeleteNode: (node: FsNode) => {
+      dispatch(showPopup({ type: 'NODE_DELETION', nodes: [ node ] }))
     },
     onNavigateDirectory: (directory: Directory) => {
       router.push(`${Routes.app.fs}${directory.path}`) // TODO inside an action

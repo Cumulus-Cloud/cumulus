@@ -14,12 +14,12 @@ import uuid = require('uuid/v4')
 import { connect, withStore } from 'store/store'
 import { selectUploadFile, deleteUploadFile, updateUploadFile, uploadAllFiles } from 'store/actions/fileUpload'
 import { hidePopup } from 'store/actions/popups'
-import { PopupType } from 'store/states/popupsState'
+import { FsPopupType } from 'store/states/popupsState'
 
 import { Directory } from 'models/FsNode'
 import { EnrichedFile } from 'models/EnrichedFile'
 
-import UploadFile from 'components/fs/upload/UploadFile'
+import UploadFile from './UploadFile'
 
 
 const styles = (theme: Theme) => createStyles({
@@ -85,7 +85,7 @@ const styles = (theme: Theme) => createStyles({
   }
 })
 
-const popupType: PopupType = 'FILE_UPLOAD'
+const popupType: FsPopupType = 'FILE_UPLOAD'
 
 interface Props {
   onClose: () => void

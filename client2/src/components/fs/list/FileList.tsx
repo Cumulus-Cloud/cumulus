@@ -17,8 +17,8 @@ import { EnrichedFile } from 'models/EnrichedFile'
 
 import FileDropzone from 'components/utils/FileDropzone'
 import FileListTable from 'components/fs/list/FileListTable'
-import BreadCrumb from 'components/fs/list/BreadCrumb'
-import DropzonePlaceholder from 'components/fs/list/Dropzone'
+import BreadCrumb from 'components/fs/breadCrumb/BreadCrumb'
+import DropzonePlaceholder from 'components/fs/dropzone/Dropzone'
 import SearchBar from 'components/fs/list/SearchBar'
 import SearchZone from 'components/fs/list/SearchZone'
 
@@ -322,8 +322,8 @@ const mappedProps =
       dispatch(getDirectory(path))
     },
     onFileUpload: (files: EnrichedFile[]) => {
-      dispatch(selectUploadFile(files))
-        .then(() => dispatch(showPopup('FILE_UPLOAD')))
+      dispatch(selectUploadFile(files)) // TODO maybe change
+        .then(() => dispatch(showPopup({ type: 'FILE_UPLOAD' })))
     }
   }))
 

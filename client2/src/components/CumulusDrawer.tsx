@@ -53,7 +53,6 @@ const styles = (theme: Theme) => createStyles({
 interface Props {
   onDrawerToggle: () => void
   showDynamicDrawer: boolean
-  searchElements: JSX.Element
   actionElements: JSX.Element
   contextualActionElements: JSX.Element
 }
@@ -120,5 +119,7 @@ class CumulusDrawer extends React.Component<PropsWithStyle, State> {
   }
   
 }
+
+
 
 export default withStyles(styles)(CumulusDrawer)
