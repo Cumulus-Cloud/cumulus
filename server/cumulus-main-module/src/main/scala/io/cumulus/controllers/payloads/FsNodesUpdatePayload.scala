@@ -7,7 +7,7 @@ import play.api.libs.json.{Json, Reads}
 
 
 sealed trait FsNodesUpdatePayload {
-  val node: Seq[UUID]
+  val nodes: Seq[UUID]
 }
 
 object FsNodesUpdatePayload {
@@ -19,7 +19,7 @@ object FsNodesUpdatePayload {
 
 
 case class FsNodesDisplacementPayload(
-  node: Seq[UUID],
+  nodes: Seq[UUID],
   destination: Path
 ) extends FsNodesUpdatePayload
 
@@ -32,7 +32,7 @@ object FsNodesDisplacementPayload {
 
 
 case class FsNodesDeletionPayload(
-  node: Seq[UUID],
+  nodes: Seq[UUID],
   deleteContent: Boolean
 ) extends FsNodesUpdatePayload
 

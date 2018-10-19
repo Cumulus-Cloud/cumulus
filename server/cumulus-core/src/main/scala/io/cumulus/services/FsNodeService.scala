@@ -248,7 +248,7 @@ class FsNodeService(
 
       // Then move all the nodes
       movedNodes <- QueryE.seq(nodes.map { node =>
-        moveNodeInternal(node.id, to + node.name).query
+        moveNodeInternal(node.id, to ++ node.name).query
       })
 
     } yield movedNodes

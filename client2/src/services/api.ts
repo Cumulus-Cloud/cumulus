@@ -222,12 +222,26 @@ const Api = {
       })
     },
 
-   // updateFile(path: string, operation: FsOperation): Promise<ApiError | FsNode> {
-   //   return ApiUtils.post(`/fs${path}`, operation)
-   // },
+    moveNodes(ids: string[], destination: string): Promise<ApiError | ApiList<FsNode>> {
+      return ApiUtils.post(
+        Routes.api.fs.base,
+        {
+          nodes: ids,
+          destination,
+          _type: 'io.cumulus.controllers.payloads.FsNodesDisplacementPayload'
+        }
+      )
+    },
 
-    deleteFile(id: string): Promise<ApiError | void> {
-      return ApiUtils.delete(Routes.api.fs.delete(id))
+    deleteNodes(ids: string[], deleteContent: boolean): Promise<ApiError | void> {
+      return ApiUtils.post(
+        Routes.api.fs.base,
+        {
+          nodes: ids,
+          deleteContent,
+          _type: 'io.cumulus.controllers.payloads.FsNodesDeletionPayload'
+        }
+      )
     }
 
   }

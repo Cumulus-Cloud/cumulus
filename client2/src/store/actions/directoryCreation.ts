@@ -10,7 +10,7 @@ import { createAction } from 'store/actions'
 
 export const createDirectory = createAction<string>((path, setState, getState, dispatch) => {
   setState({
-    createDirectory: {
+    directoryCreation: {
       loading: true
     }
   })
@@ -19,7 +19,7 @@ export const createDirectory = createAction<string>((path, setState, getState, d
     .then((result: ApiError | Directory) => {
       if ('errors' in result) {
         setState({
-          createDirectory: {
+          directoryCreation: {
             loading: false,
             error: result
           }
@@ -29,13 +29,10 @@ export const createDirectory = createAction<string>((path, setState, getState, d
         const currentPath = state.fs.current ? state.fs.current.path : '/'
         const name = result.name
 
-        setState({ createDirectory: { loading: false } })
+        setState({ directoryCreation: { loading: false } })
 
         dispatch(getDirectory(currentPath))
         dispatch(showNotification(`Dossier « ${name} » créé avec succès`))
-
-        // TODO
-        //togglePopup('DIRECTORY_CREATION', false)(state.router)
       }
     })
 })

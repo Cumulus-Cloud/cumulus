@@ -30,6 +30,7 @@ import { selectNode, selectAllNodes, deselectNode, deselectAllNodes, getDirector
 import { showPopup } from 'store/actions/popups'
 
 import Routes from 'services/routes'
+import { moveNodes } from 'store/actions/nodeDisplacement';
 
 
 const styles = (theme: Theme) => createStyles({
@@ -148,6 +149,8 @@ interface Props {
   onDeselectNode: (node: FsNode) => void
   /** When all node are deselected. */
   onDeselectAllNodes: () => void
+  /** On moved nodes */
+  onMoveNodes: (nodes: FsNode[], destination: string) => void,
   /** When more content needs to be loaded. */
   onLoadMoreContent: (offset: number) => void
   /** Callback for the parent component. */
@@ -256,6 +259,11 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
       this.setState({ selectedMenu: { nodeId: node.id, anchor: event.target as any } })
   }
 
+  onMoveNodes(nodes: FsNode[], destination: FsNode) {
+    if(destination.nodeType === 'DIRECTORY')
+      this.props.onMoveNodes(nodes, destination.path)
+  }
+
   renderRow = (props: ListChildComponentProps): React.ReactElement<{}> => {
     const { content } = this.props
 
@@ -295,6 +303,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
 
     return isNodeSelected(node, selection)
   }
+  
 
   renderElementRow = ({ index, isScrolling, style }: ListChildComponentProps & { isScrolling: boolean }): React.ReactElement<{}> => {
     const { classes, content, Draggable, DropZone } = this.props
@@ -341,7 +350,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
           return isSelected && selected.length > 0 ? selected : [ node ]
         }}
       >
-        <DropZone onDrop={(dropped) => console.log('dropped ', dropped, ' on ', node.path)} >
+        <DropZone onDrop={(dropped) => this.onMoveNodes(dropped, node)} >
           <div
             className={ classnames(classes.contentRow, { [classes.contentRowSelected]: isSelected }) }
             style={ style }
@@ -460,6 +469,9 @@ const mappedProps =
     },
     onDeselectAllNodes: () => {
       dispatch(deselectAllNodes())
+    },
+    onMoveNodes: (nodes: FsNode[], destination: string) => {
+      dispatch(moveNodes({ ids: nodes.map(node => node.id), destination }))
     },
     onLoadMoreContent: () => {
       dispatch(getDirectoryContent())

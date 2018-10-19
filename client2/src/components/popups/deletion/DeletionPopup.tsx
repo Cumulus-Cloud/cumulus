@@ -120,8 +120,8 @@ const mappedProps =
     return {
       open: state.popups.open === popupType,
       nodes: nodes,
-      loading: state.createDirectory.loading, // TODO
-      error: state.createDirectory.error,     // TODO
+      loading: state.directoryCreation.loading, // TODO
+      error: state.directoryCreation.error,     // TODO
       onClose: () => {
         dispatch(hidePopup())
       },

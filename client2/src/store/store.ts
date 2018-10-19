@@ -6,7 +6,8 @@ import AuthenticationState, { initialState as initialAuthState } from 'store/sta
 import SignInState from 'store/states/signInState'
 import SignUpState from 'store/states/signUpState'
 import FsState, { initialState as initialFsState } from 'store/states/fsState'
-import CreateDirectoryState from 'store/states/createDirectoryState'
+import DirectoryCreationState from './states/directoryCreationState'
+import NodeDisplacementState from './states/nodeDisplacementState'
 import FileUploadState, { initialState as initialFileUploadState } from 'store/states/fileUploadState'
 import NotificationsState, { initialState as initialNotificationsState } from 'store/states/notificationsState'
 import PopupsState, { initialState as initialPopupsState, FsPopupType } from 'store/states/popupsState'
@@ -18,7 +19,8 @@ export type State = {
   signIn: SignInState
   signUp: SignUpState
   fs: FsState
-  createDirectory: CreateDirectoryState
+  directoryCreation: DirectoryCreationState
+  nodeDisplacement: NodeDisplacementState
   fileUpload: FileUploadState
   notifications: NotificationsState
   popups: PopupsState<FsPopupType, FsNode[]>
@@ -30,7 +32,8 @@ export const initialState: State = {
   signIn: { loading: false },
   signUp: { loading: false },
   fs: initialFsState(),
-  createDirectory: { loading: false },
+  directoryCreation: { loading: false },
+  nodeDisplacement: { loading: false },
   fileUpload: initialFileUploadState(),
   notifications: initialNotificationsState(),
   popups: initialPopupsState([]),

@@ -109,14 +109,14 @@ const mappedProps =
     return {
       open: state.popups.open === popupType,
       current: state.fs.current,
-      loading: state.createDirectory.loading,
-      error: state.createDirectory.error,
+      loading: state.directoryCreation.loading,
+      error: state.directoryCreation.error,
       onClose: () => {
         dispatch(hidePopup())
       },
       onCreateDirectory: (path: string) => {
         dispatch(createDirectory(path)).then((state) => {
-          if(!state.createDirectory.error)
+          if(!state.directoryCreation.error)
             dispatch(hidePopup())
         })
       }
