@@ -156,7 +156,7 @@ class StorageService(
     * @param id The file's unique ID.
     */
   def deleteNode(id: UUID)(implicit session: UserSession): Future[Either[AppError, Unit]] = {
-    fsNodeService.deleteNode(id)(session.user).map(_.map {
+    fsNodeService.deleteNode(id, deleteContent = false)(session.user).map(_.map {
       case file: File =>
         // Create a task to delete the file and its thumbnail
         file.thumbnailStorageReference.foreach(taskExecutor ! StorageReferenceDeletionTask.create(_))

@@ -6,7 +6,7 @@ import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import cats.data.EitherT
 import cats.implicits._
-import io.cumulus.controllers.payloads.{DirectoryCreationPayload, FsNodeUpdatePayload}
+import io.cumulus.controllers.payloads._
 import io.cumulus.controllers.utils.{FileDownloaderUtils, UserAuthentication}
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.ApiUtils
@@ -67,7 +67,21 @@ class FileSystemController(
   def getByPath(path: Path): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
       ApiResponse {
-        fsNodeService.findNode(path) // TODO fix
+        fsNodeService.findNode(path)
+      }
+    }
+
+  def update: Action[FsNodesUpdatePayload] =
+    AuthenticatedAction.async(parseJson[FsNodesUpdatePayload]) { implicit request =>
+      ApiResponse {
+        val payload = request.body
+
+        payload match {
+          case FsNodesDisplacementPayload(nodes, destination) =>
+            fsNodeService.moveNodes(nodes, destination)
+          case FsNodesDeletionPayload(nodes, deleteContent) =>
+            fsNodeService.deleteNodes(nodes, deleteContent)
+        }
       }
     }
 
@@ -245,11 +259,11 @@ class FileSystemController(
 
 
   /**
-    * Updates a node.
+    * Moves a node.
     *
-    * @param id The file to update.
+    * @param id The ID of the node to be moved.
     */
-  def update(id: UUID): Action[FsNodeUpdatePayload] =
+  def move(id: UUID): Action[FsNodeUpdatePayload] =
     AuthenticatedAction.async(parseJson[FsNodeUpdatePayload]) { implicit request =>
       ApiResponse {
         val payload = request.body

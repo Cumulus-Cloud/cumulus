@@ -29,13 +29,14 @@ GET     /api/fs/index                    io.cumulus.controllers.FileSystemContro
 GET     /api/fs/search                   io.cumulus.controllers.FileSystemController.search(path: io.cumulus.models.Path, name: String, recursiveSearch: Option[Boolean], nodeType: Option[io.cumulus.models.fs.FsNodeType], `type`: Option[String], limit: Option[Int], offset: Option[Int])
 PUT     /api/fs                          io.cumulus.controllers.FileSystemController.create
 GET     /api/fs                          io.cumulus.controllers.FileSystemController.getByPath(path: io.cumulus.models.Path)
+POST    /api/fs                          io.cumulus.controllers.FileSystemController.update
 GET     /api/fs/:nodeId                  io.cumulus.controllers.FileSystemController.get(nodeId: java.util.UUID)
 GET     /api/fs/:nodeId/content          io.cumulus.controllers.FileSystemController.getContent(nodeId: java.util.UUID, limit: Option[Int], offset: Option[Int], order: Option[io.cumulus.persistence.stores.orderings.FsNodeOrdering])
 GET     /api/fs/:nodeId/sharings         io.cumulus.controllers.FileSystemController.getSharings(nodeId: java.util.UUID, limit: Option[Int], offset: Option[Int])
 POST    /api/fs/:nodeId/upload           io.cumulus.controllers.FileSystemController.upload(nodeId: java.util.UUID, filename: String, cipher: Option[String], compression: Option[String])
 GET     /api/fs/:nodeId/download         io.cumulus.controllers.FileSystemController.download(nodeId: java.util.UUID, forceDownload: Option[Boolean])
 GET     /api/fs/:nodeId/thumbnail        io.cumulus.controllers.FileSystemController.downloadThumbnail(nodeId: java.util.UUID, forceDownload: Option[Boolean])
-POST    /api/fs/:nodeId                  io.cumulus.controllers.FileSystemController.update(nodeId: java.util.UUID)
+POST    /api/fs/:nodeId                  io.cumulus.controllers.FileSystemController.move(nodeId: java.util.UUID)
 DELETE  /api/fs/:nodeId                  io.cumulus.controllers.FileSystemController.delete(nodeId: java.util.UUID)
 
 # API - Sharing manager (authenticated side)

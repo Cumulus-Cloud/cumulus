@@ -232,12 +232,39 @@ class FsNodeService(
   }.commit()
 
   /**
+    * Moves nodes to the provided path. The destination should already be a directory.
+    * @param ids The unique IDs of the nodes to move.
+    * @param to The new path of the node.
+    * @param user The user performing the operation.
+    */
+  def moveNodes(ids: Seq[UUID], to: Path)(implicit user: User): Future[Either[AppError, Seq[FsNode]]] = {
+
+    for {
+      // Test that the destination folder exists
+      _ <- getNode(to)
+
+      // We need to get the moved node to compute the new paths
+      nodes <- QueryE.seq(ids.map(id => QueryE.getOrNotFound(fsNodeStore.findAndLock(id)).query))
+
+      // Then move all the nodes
+      movedNodes <- QueryE.seq(nodes.map { node =>
+        moveNodeInternal(node.id, to + node.name).query
+      })
+
+    } yield movedNodes
+
+  }.commit()
+
+  /**
     * Moves a node to the provided path. The destination should not already exists and a directory parent.
     * @param id The unique ID of the node to move.
     * @param to The new path of the node.
     * @param user The user performing the operation.
     */
-  def moveNode(id: UUID, to: Path)(implicit user: User): Future[Either[AppError, FsNode]] = {
+  def moveNode(id: UUID, to: Path)(implicit user: User): Future[Either[AppError, FsNode]] =
+    moveNodeInternal(id, to).commit()
+
+  private def moveNodeInternal(id: UUID, to: Path)(implicit user: User): QueryE[CumulusDB, FsNode] = {
 
     for {
       // Search the node & its parent by path and owner
@@ -274,6 +301,42 @@ class FsNodeService(
       _ <- QueryE.lift(fsNodeStore.moveFsNode(node, to, user)) // Will also move any contained sub-folder
     } yield node.moved(to)
 
+  }
+
+  /**
+    * Deletes nodes in the file system. The deleted node should not be a directory with children, and should not be
+    * shared or have any children shared. The content will not be deleted.
+    *
+    * @param ids The unique IDs of the nodes to be deleted.
+    * @param deleteContent If the contained nodes should also be deleted. If set to false, will fail if any node has
+    *                        any children.
+    * @param user The user performing the operation.
+    */
+  def deleteNodes(ids: Seq[UUID], deleteContent: Boolean)(implicit user: User): Future[Either[AppError, Seq[FsNode]]] = {
+
+    if (deleteContent)
+      QueryE.seq(ids.map(deleteNodeWithContent(_).query))
+    else
+      QueryE.seq(ids.map(deleteNodeWithoutContent(_).query))
+
+  }.commit()
+
+  /**
+    * Deletes a node in the file system. The deleted node should not be a directory with children, and should not be
+    * shared or have any children shared. The content will not be deleted.
+    *
+    * @param id The unique ID of the node to be deleted.
+    * @param deleteContent If the contained nodes should also be deleted. If set to false, will fail if the node has
+    *                        any children.
+    * @param user The user performing the operation.
+    */
+  def deleteNode(id: UUID, deleteContent: Boolean)(implicit user: User): Future[Either[AppError, FsNode]] = {
+
+    if (deleteContent)
+      deleteNodeWithContent(id)
+    else
+      deleteNodeWithoutContent(id)
+
   }.commit()
 
   /**
@@ -283,7 +346,7 @@ class FsNodeService(
     * @param id The unique ID of the node.
     * @param user The user performing the operation.
     */
-  def deleteNode(id: UUID)(implicit user: User): Future[Either[AppError, FsNode]] = {
+  private def deleteNodeWithoutContent(id: UUID)(implicit user: User): QueryE[CumulusDB, FsNode] = {
 
     for {
       // Search the node by path and owner
@@ -305,9 +368,8 @@ class FsNodeService(
           Right(())
       })
 
-      // Find the sharings of the node in question & delete them all
-      sharings <- QueryE.lift(sharingStore.findAndLockByNode(node))
-      _        <- QueryE.seq(sharings.map(sharing => sharingStore.delete(sharing.id).map(Right(_))))
+      // Delete the sharings of the node in question
+      _ <- QueryE.lift(sharingStore.deleteByNode(node, user))
 
       // Delete the element
       _ <- QueryE.lift(fsNodeStore.delete(node.id))
@@ -318,7 +380,35 @@ class FsNodeService(
 
     } yield node
 
-  }.commit()
+  }
+
+  private def deleteNodeWithContent(id: UUID)(implicit user: User): QueryE[CumulusDB, FsNode] = {
+
+    for {
+      // Search the node by path and owner
+      node <- getNodeWithLock(id)
+
+      // Test if the deleted node is not the fs root
+      _ <- QueryE.pure {
+        if(node.path.isRoot)
+          Left(AppError.validation("validation.fs-node.root-delete"))
+        else
+          Right(())
+      }
+
+      // Delete all the sharings of the node and of any of its children
+      _ <- QueryE.lift(sharingStore.deleteByParentNode(node, user))
+
+      // Delete the elements
+      _ <- QueryE.lift(fsNodeStore.deleteWithContent(node, user))
+
+      // Update the last modified of the parent
+      nodeParent <- getParentWithLock(node.path)
+      _          <- QueryE.lift(fsNodeStore.update(nodeParent.modified(LocalDateTime.now)))
+
+    } yield node
+
+  }
 
   /**
     * Creates a node into the filesystem. The path of the node should be unique and its parent should exists.

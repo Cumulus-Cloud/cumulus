@@ -30,6 +30,11 @@ trait CumulusStaticTemplate extends CumulusTemplate {
         verticalAlign.baseline
       )
 
+      "form" - (
+        margin(0 px),
+        padding(0 px)
+      )
+
       "#app" - (
         display.flex,
         flexDirection.row

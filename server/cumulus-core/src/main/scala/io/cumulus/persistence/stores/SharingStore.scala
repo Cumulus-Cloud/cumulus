@@ -12,6 +12,7 @@ import io.cumulus.core.utils.PaginatedList._
 import io.cumulus.models.fs.FsNode
 import io.cumulus.models.sharing.Sharing
 import io.cumulus.models.user.User
+import io.cumulus.persistence.stores.FsNodeStore.pathField
 import io.cumulus.persistence.stores.SharingStore._
 
 /**
@@ -63,10 +64,10 @@ class SharingStore(
   /**
     * Find the sharings for a provided node.
     *
-    * @param fsNode The shared node.
+    * @param node The shared node.
     * @param pagination The pagination to use.
     */
-  def findByNode(fsNode: FsNode, pagination: QueryPagination): Query[CumulusDB, PaginatedList[Sharing]] =
+  def findByNode(node: FsNode, pagination: QueryPagination): Query[CumulusDB, PaginatedList[Sharing]] =
     qb { implicit c =>
       val paginationPlusOne = pagination.copy(limit = pagination.limit + 1)
 
@@ -74,7 +75,7 @@ class SharingStore(
         SQL"""
             SELECT #$table.#$metadataField
             FROM #$table
-            WHERE #$fsNodeField = ${fsNode.id}
+            WHERE #$fsNodeField = ${node.id}
             #${paginationPlusOne.toLIMIT}
           """.as(rowParser.*)
 
@@ -82,19 +83,37 @@ class SharingStore(
     }
 
   /**
-    * Find and lock the sharings for a provided node.
+    * Delete the sharings for a provided node.
     *
-    * @param fsNode The shared node.
+    * @param node The shared node.
     */
-  def findAndLockByNode(fsNode: FsNode): Query[CumulusDB, List[Sharing]] =
+  def deleteByNode(node: FsNode, user: User): Query[CumulusDB, Int] =
     qb { implicit c =>
 
       SQL"""
-          SELECT #$table.#$metadataField
-          FROM #$table
-          WHERE #$fsNodeField = ${fsNode.id}
-          FOR UPDATE
-        """.as(rowParser.*)
+          DELETE FROM  #$table
+          WHERE #$fsNodeField = ${node.id} AND #$ownerField = ${user.id}
+        """.executeUpdate()
+    }
+
+  /**
+    * Delete the sharings for a provided node.
+    *
+    * @param node The parent shared node.
+    */
+  def deleteByParentNode(node: FsNode, user: User): Query[CumulusDB, Int] =
+    qb { implicit c =>
+      val searchRegex = s"^${node.path.toString}(/.*|$$)"
+
+      SQL"""
+        DELETE FROM #$table
+        INNER JOIN #${FsNodeStore.table}
+        ON (
+          #$fsNodeField = #${FsNodeStore.table}.#${FsNodeStore.pkField} AND
+          #$ownerField = #${FsNodeStore.table}.#${FsNodeStore.ownerField}
+        )
+        WHERE #${FsNodeStore.table}.#${FsNodeStore.pathField} ~ $searchRegex AND #$ownerField = ${user.id}
+      """.executeUpdate()
     }
 
   val rowParser: RowParser[Sharing] = {

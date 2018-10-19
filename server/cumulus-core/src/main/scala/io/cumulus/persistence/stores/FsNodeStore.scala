@@ -121,12 +121,25 @@ class FsNodeStore(
         .as(SqlParser.scalar[Long].single)
     }
   }
+  /**
+    * Delete a node and its content.
+    * @param node The node to be deleted (with its content).
+    * @param user The owner of the node.
+    */
+  def deleteWithContent(node: FsNode, user: User): Query[CumulusDB, Int] = {
+    val searchRegex = s"^${node.path.toString}(/.*|$$)"
+
+    qb { implicit c =>
+      SQL"DELETE FROM #$table WHERE #$ownerField = ${user.id} AND #$pathField ~ $searchRegex"
+        .executeUpdate()
+    }
+  }
 
   /**
     * Move any node to a specified location.
     * @param node The node to move.
     * @param to The destination.
-    * @param user The owner of the element.
+    * @param user The owner of the node.
     */
   def moveFsNode(node: FsNode, to: Path, user: User): Query[CumulusDB, Int] = {
     val searchRegex = s"^${node.path.toString}(/.*|$$)"
