@@ -8,18 +8,12 @@ const styles = (theme: Theme) => createStyles({
     flexDirection: 'column',
     [theme.breakpoints.down('xs')]: {
       height: '100%',
-      display: 'flex'
+      display: 'flex',
+      minWidth: 'inherit'
     }
   },
   content: {
     flex: 1
-  },
-  buttonProgress: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginTop: -12,
-    marginLeft: -12,
   }
 })
 

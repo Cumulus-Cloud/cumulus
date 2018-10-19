@@ -6,13 +6,13 @@ import Dialog from '@material-ui/core/Dialog'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
-import CircularProgress from '@material-ui/core/CircularProgress'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
 
 import { connect, withStore } from 'store/store'
 import { createDirectory } from 'store/actions/directoryCreation'
 import { hidePopup } from 'store/actions/popups'
 import { FsPopupType } from 'store/states/popupsState'
+import ButtonLoader from 'components/utils/ButtonLoader'
 
 import { ApiError } from 'models/ApiError'
 import { Directory } from 'models/FsNode'
@@ -68,15 +68,15 @@ class CreationPopup extends React.Component<PropsWithStyle, State> {
 
     return (
       <Dialog
-        fullScreen={fullScreen}
-        open={open}
-        onClose={() => this.onClose()}
+        fullScreen={ fullScreen }
+        open={ open }
+        onClose={ () => this.onClose() }
       >
-        <form onSubmit={(e) => this.onCreateDirectory(e)} className={classes.root} >
+        <form onSubmit={ (e) => this.onCreateDirectory(e) } className={ classes.root } >
           <DialogTitle id="responsive-dialog-title">
             Créer un nouveau dossier
           </DialogTitle>
-          <DialogContent className={classes.content} >
+          <DialogContent className={ classes.content } >
             <TextField
               autoFocus
               margin="dense"
@@ -85,18 +85,17 @@ class CreationPopup extends React.Component<PropsWithStyle, State> {
               type="text"
               disabled={loading}
               fullWidth
-              onChange={(e) => this.onDirectoryNameChange(e.target.value)}
-              error={!!error}
+              onChange={ (e) => this.onDirectoryNameChange(e.target.value) }
+              error={ !!error }
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => this.onClose()} disabled={loading}>
+            <Button onClick={ () => this.onClose() } disabled={ loading } >
               Annuler
             </Button>
-            <Button disabled={loading} color="primary" type="submit" >
+            <ButtonLoader loading={ loading } color="primary" type="submit" >
               Créer le dossier
-              {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
-            </Button>
+            </ButtonLoader>
           </DialogActions>
         </form>
       </Dialog>
@@ -104,7 +103,6 @@ class CreationPopup extends React.Component<PropsWithStyle, State> {
   }
 
 }
-
 
 const mappedProps =
   connect((state, dispatch) => {

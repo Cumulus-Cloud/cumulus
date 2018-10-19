@@ -5,7 +5,6 @@ import Dialog from '@material-ui/core/Dialog'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
-import CircularProgress from '@material-ui/core/CircularProgress'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
 import Typography from '@material-ui/core/Typography'
 
@@ -17,6 +16,7 @@ import { ApiError } from 'models/ApiError'
 import { FsNode } from 'models/FsNode'
 
 import styles from './styles'
+import ButtonLoader from 'components/utils/ButtonLoader';
 
 
 const popupType: FsPopupType = 'NODE_DELETION'
@@ -102,10 +102,9 @@ class DeletionPopup extends React.Component<PropsWithStyle, State> {
             <Button onClick={() => this.onClose()} disabled={loading}>
               Annuler
             </Button>
-            <Button disabled={loading} color="primary" type="submit" >
+            <ButtonLoader loading={ loading } color="primary" type="submit" >
               Supprimer
-              {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
-            </Button>
+            </ButtonLoader>
           </DialogActions>
         </form>
       </Dialog>

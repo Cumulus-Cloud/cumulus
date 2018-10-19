@@ -65,7 +65,11 @@ const styles = (theme: Theme) => createStyles({
     marginRight: 'auto',
     marginLeft: 'auto',
     display: 'flex',
-    flex: 1
+    flex: 1,
+    [theme.breakpoints.down('xs')]: {
+      paddingLeft: 0,
+      paddingRight: 0,
+    }
   },
   searchBar: {
     // TODO

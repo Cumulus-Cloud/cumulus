@@ -28,7 +28,8 @@ const styles = (theme: Theme) => createStyles({
     flexDirection: 'column',
     [theme.breakpoints.down('xs')]: {
       height: '100%',
-      display: 'flex'
+      display: 'flex',
+      minWidth: 'inherit'
     }
   },
   content: {
