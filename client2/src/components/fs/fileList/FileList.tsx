@@ -1,7 +1,5 @@
-import  React from 'react'
+import React from 'react'
 import { debounce } from 'throttle-debounce'
-import { Theme } from '@material-ui/core/styles/createMuiTheme'
-import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import Typography from '@material-ui/core/Typography'
 import InfoIcon from '@material-ui/icons/Info'
@@ -9,6 +7,7 @@ import WarningIcon from '@material-ui/icons/Warning'
 import Button from '@material-ui/core/Button'
 import Slide from '@material-ui/core/Slide'
 import CircularProgress from '@material-ui/core/CircularProgress'
+import { withDragAndDrop, WithDragAndDrop, dragAndDropProps } from 'components/utils/DragAndDrop'
 import uuid = require('uuid/v4')
 
 import { Directory, FsNode } from 'models/FsNode'
@@ -16,11 +15,12 @@ import { ApiError } from 'models/ApiError'
 import { EnrichedFile } from 'models/EnrichedFile'
 
 import FileDropzone from 'components/utils/FileDropzone'
-import FileListTable from 'components/fs/list/FileListTable'
+import FileListTable from 'components/fs/fileListTable/FileListTable'
 import BreadCrumb from 'components/fs/breadCrumb/BreadCrumb'
 import DropzonePlaceholder from 'components/fs/dropzone/Dropzone'
-import SearchBar from 'components/fs/list/SearchBar'
-import SearchZone from 'components/fs/list/SearchZone'
+import SearchBar from 'components/fs/SearchBar'
+import SearchZone from 'components/fs/SearchZone'
+import DraggedElement from 'components/fs/fileList/DraggedElement'
 
 import { connect, withStore } from 'store/store'
 import { Search, SearchDefault } from 'store/states/fsState'
@@ -30,80 +30,7 @@ import { selectUploadFile } from 'store/actions/fileUpload'
 
 import Routes from 'services/routes'
 
-
-const styles = (theme: Theme) => createStyles({
-  root: {
-    flexGrow: 1,
-    backgroundColor: 'white',
-    minWidth: 0,
-    display: 'flex'
-  },
-  dropzoneWrapper: {
-    position: 'relative',
-    display: 'flex', 
-    flex: 1,
-    flexDirection: 'column'
-  },
-  loaderContent: {
-    margin: 'auto',
-    display: 'block',
-    marginTop: theme.spacing.unit * 2,
-    marginBottom: theme.spacing.unit
-  },
-  header: {
-    display: 'flex'
-  },
-  breadCrumb: {
-    flex: 1,
-    width: 100,
-    overflow: 'auto'
-  },
-  contentWrapper: {
-    width: '100%',
-    paddingLeft: theme.spacing.unit * 3,
-    paddingRight: theme.spacing.unit * 3,
-    marginRight: 'auto',
-    marginLeft: 'auto',
-    display: 'flex',
-    flex: 1,
-    [theme.breakpoints.down('xs')]: {
-      paddingLeft: 0,
-      paddingRight: 0,
-    }
-  },
-  searchBar: {
-    // TODO
-    marginRight: 24
-  },
-  errorContent: {
-    flex: 1,
-    alignContent: 'center'
-  },
-  errorButton: {
-    display: 'flex',
-    margin: 'auto',
-    textDecoration: 'none'
-  },
-  content: {
-    display: 'flex',
-    flex: 1
-  },
-  loader: {
-    margin: 'auto',
-    display: 'block',
-    marginTop: theme.spacing.unit * 5
-  },
-  emptyDirectory: {
-    display: 'flex',
-    flex: 1,
-    height: '50px',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  emptyDirectoryIcon: {
-    marginRight: theme.spacing.unit
-  }
-})
+import styles from './styles'
 
 
 interface Props {
@@ -131,7 +58,7 @@ interface Props {
   search?: Search
 }
 
-type PropsWithStyle = Props & WithStyles<typeof styles>
+type PropsWithStyle = Props & WithStyles<typeof styles> & WithDragAndDrop<FsNode[]>
 
 interface State {
   /** If the user is hovering the dropzone */
@@ -162,18 +89,10 @@ class FilesList extends React.Component<PropsWithStyle, State> {
     this.onSearchChange({ ...search, query: value })
   }
 
-  /*
-  onSearchElementTypeChange = debounce(300, false, (value: string) => {
-    const search: Search = this.props.search || SearchDefault
-    this.onSearchChange({ ...search, query: value })
-  })
-  */
-
   onEndSearch() {
     this.props.onChangeSearch(undefined)
     this.setState({ search: undefined })
   }
-
 
   componentDidUpdate() {
     this.checkIfPathNeedsRefresh()
@@ -262,7 +181,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
                 {'Ce dossier est vide'} 
               </Typography>
             ) : (
-              <FileListTable onPathChanged={() => this.setState({ search: undefined })} />
+              <FileListTable onPathChanged={() => this.setState({ search: undefined })} { ...dragAndDropProps(this.props) } />
             )
           }
         </div>
@@ -283,7 +202,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
               currentDirectory ?
               (
                 <>
-                  <BreadCrumb className={ classes.breadCrumb } path={ currentDirectory.path } onPathSelected={ (path) => this.onChangePath(path) } /> 
+                  <BreadCrumb className={ classes.breadCrumb } {...dragAndDropProps(this.props)} /> 
                   <SearchBar search={ localSearch } onSearchQueryChange={ (query) => this.onSearchQueryChange(query) } />
                 </>
               ) : (
@@ -331,4 +250,9 @@ const mappedProps =
     }
   }))
 
-export default withStore(withStyles(styles)(FilesList), mappedProps)
+
+
+export default withDragAndDrop(
+  withStore(withStyles(styles)(FilesList), mappedProps),
+  DraggedElement
+)

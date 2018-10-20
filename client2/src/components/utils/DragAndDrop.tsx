@@ -16,8 +16,8 @@ type DraggableProps<T> = {
 }
 
 type DropZoneProps<T> = {
-  onDrop: (dropped: T) => void
-  onDragOver?: (dragged: T) => void
+  onDrop: (dropped: T, e:  React.MouseEvent<HTMLElement>) => void
+  onDragOver?: (dragged: T, e:  React.MouseEvent<HTMLElement>) => void
   children?: React.ReactNode
 }
 
@@ -124,17 +124,17 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
         const { dragInfo } = this.state
 
         if(dragInfo)
-          props.onDrop(dragInfo.value)
+          props.onDrop(dragInfo.value, e)
         
         this.reset()
       }}
 
-      onMouseOver={_ => {
+      onMouseOver={e => {
         const { dragInfo } = this.state
         const { onDragOver } = props
 
         if(dragInfo && onDragOver)
-          onDragOver(dragInfo.value)
+          onDragOver(dragInfo.value, e)
       }}
     >
       {props.children}
@@ -165,6 +165,11 @@ export type WithDragAndDrop<T> = {
   DropZone: React.SFC<DropZoneProps<T>>,
   /** If a dragging is in progress, the dragging information. */
   dragInfo?: DraggingInfo<T>
+}
+
+export function dragAndDropProps<T, P extends WithDragAndDrop<T>>(props: P): WithDragAndDrop<T> {
+  const { Draggable, DropZone, dragInfo } = props
+  return { Draggable, DropZone, dragInfo }
 }
 
 /**

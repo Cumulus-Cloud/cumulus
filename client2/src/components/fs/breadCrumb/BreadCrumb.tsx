@@ -13,16 +13,25 @@ import MenuItem from '@material-ui/core/MenuItem'
 import Tooltip from '@material-ui/core/Tooltip'
 import classnames from 'classnames'
 
+import { WithDragAndDrop, dragAndDropProps } from 'components/utils/DragAndDrop'
+
+import { FsNode } from 'models/FsNode'
+
 import styles from './styles'
+import { connect, withStore } from 'store/store';
+import { getDirectory } from 'store/actions/directory';
+import Routes from 'services/routes';
+import { moveNodes } from 'store/actions/nodeDisplacement';
 
 
 interface Props {
   path: string
   className: string
-  onPathSelected: (path: string) => void
+  onChangePath: (path: string) => void
+  onMoveNodes: (nodes: FsNode[], destination: string) => void
 }
 
-type PropsWithStyle = Props & WithStyles<typeof styles>
+type PropsWithStyle = Props & WithStyles<typeof styles> & WithDragAndDrop<FsNode[]>
 
 interface State {
   useLarge: boolean
@@ -71,12 +80,8 @@ class BreadCrumb extends React.Component<PropsWithStyle, State> {
     }
   }
 
-  onPathSelected(path: string) {
-    this.props.onPathSelected(path)
-  }
-
   render() {
-    const { path, className } = this.props
+    const { path, className, onChangePath, onMoveNodes } = this.props
     const { useLarge } = this.state
 
     const elements =
@@ -91,18 +96,26 @@ class BreadCrumb extends React.Component<PropsWithStyle, State> {
       }, [] as { name: string, path: string }[])
 
     return (
-      useLarge ?
-      <div className={className} ref={(el) => {this.ref = el}}><FullSizeBreadCrumbWithStyle path={paths} onPathSelected={(path) => this.onPathSelected(path)} /></div> :
-      <div className={className}><LowSizeBreadCrumbWithStyle path={paths} onPathSelected={(path) => this.onPathSelected(path)} /></div>
+      useLarge ? (
+        <div className={className} ref={(el) => {this.ref = el}}>
+          <FullSizeBreadCrumbWithStyle path={paths} onChangePath={onChangePath} onMoveNodes={onMoveNodes} {...dragAndDropProps(this.props)} />
+        </div>
+      ) : (
+        <div className={className}>
+          <LowSizeBreadCrumbWithStyle path={paths} onChangePath={onChangePath} onMoveNodes={onMoveNodes} {...dragAndDropProps(this.props)} />
+        </div>
+      )
     )
   }
 
 }
 
+
 type InnerProps = {
   path: { name: string, path: string }[]
-  onPathSelected: (path: string) => void
-} & WithStyles<typeof styles>
+  onChangePath: (path: string) => void
+  onMoveNodes: (nodes: FsNode[], destination: string) => void
+} & WithStyles<typeof styles> & WithDragAndDrop<FsNode[]>
 
 class LowSizeBreadCrumb extends React.Component<InnerProps, { anchorEl: HTMLElement | null }> {
 
@@ -114,8 +127,13 @@ class LowSizeBreadCrumb extends React.Component<InnerProps, { anchorEl: HTMLElem
     }
   }
 
-  onPathSelected(path: string) {
-    this.props.onPathSelected(path)
+  onChangePath(path: string) {
+    this.props.onChangePath(path)
+    this.onCloseMenu()
+  }
+
+  onMoveNodes(nodes: FsNode[], destination: string)  {
+    this.props.onMoveNodes(nodes, destination)
     this.onCloseMenu()
   }
 
@@ -128,7 +146,7 @@ class LowSizeBreadCrumb extends React.Component<InnerProps, { anchorEl: HTMLElem
   }
 
   render() {
-    const { path, classes, onPathSelected } = this.props
+    const { path, classes, onChangePath, DropZone } = this.props
     const anchorEl = this.state.anchorEl
 
     const lastPath = path[path.length - 1] || ''
@@ -136,12 +154,14 @@ class LowSizeBreadCrumb extends React.Component<InnerProps, { anchorEl: HTMLElem
     
     return (
       <div className={classes.root}>
-        <Button className={classnames(classes.homeButton, classes.button)} onClick={(e) => this.onOpenMenu(e)} >
-          <DropDownIcon className={classes.icon} />
-        </Button>
+        <DropZone onDrop={() => {}} onDragOver={(_, e) => this.onOpenMenu(e)} >
+          <Button className={classnames(classes.homeButton, classes.button)} onClick={(e) => this.onOpenMenu(e)} >
+            <DropDownIcon className={classes.icon} />
+          </Button>
+        </DropZone>
         <RightIcon className={classes.icon} />
         <Tooltip title={lastPath.name || ''} classes={{ tooltip: classes.tooltip }} enterDelay={500} >
-          <Button className={classes.button} onClick={() => onPathSelected(lastPath.path)} >
+          <Button className={classes.button} onClick={() => onChangePath(lastPath.path)} >
             <span className={classes.shortName}>{lastPath.name}</span>
           </Button>
         </Tooltip>
@@ -151,28 +171,32 @@ class LowSizeBreadCrumb extends React.Component<InnerProps, { anchorEl: HTMLElem
           open={!!anchorEl}
           onClose={() => { this.onCloseMenu() }}
         >
-          <MenuItem key="/" onClick={() => this.onPathSelected('/')}>
-            <ListItemIcon>
-              <HomeIcon />
-            </ListItemIcon>
-            <ListItemText>
-              {'Dossier racine'}
-            </ListItemText>
-          </MenuItem>
+          <DropZone key="/" onDrop={(nodes) => this.onMoveNodes(nodes, '/')} >
+            <MenuItem onClick={() => this.onChangePath('/')}>
+              <ListItemIcon>
+                <HomeIcon />
+              </ListItemIcon>
+              <ListItemText>
+                {'Dossier racine'}
+              </ListItemText>
+            </MenuItem>
+          </DropZone>
           {
             pathWithoutLast.map((directory) => (
-              <MenuItem key={directory.path + '/' + directory.name} onClick={() => this.onPathSelected(directory.path)}>
-                <ListItemIcon>
-                  <DirectoryIcon />
-                </ListItemIcon>
-                <ListItemText>
-                  <Tooltip title={directory.name} classes={{ tooltip: classes.tooltip }} enterDelay={500} >
-                    <div className={classes.shortName} >
-                      {directory.name}
-                    </div>
-                  </Tooltip>
-                </ListItemText>
-              </MenuItem>
+              <DropZone key={directory.path + '/' + directory.name} onDrop={(nodes) => this.onMoveNodes(nodes, directory.path)} >
+                <MenuItem onClick={() => this.onChangePath(directory.path)}>
+                  <ListItemIcon>
+                    <DirectoryIcon />
+                  </ListItemIcon>
+                  <ListItemText>
+                    <Tooltip title={directory.name} classes={{ tooltip: classes.tooltip }} enterDelay={500} >
+                      <div className={classes.shortName} >
+                        {directory.name}
+                      </div>
+                    </Tooltip>
+                  </ListItemText>
+                </MenuItem>
+              </DropZone>
             ))
           }
         </Menu>
@@ -184,27 +208,36 @@ class LowSizeBreadCrumb extends React.Component<InnerProps, { anchorEl: HTMLElem
 
 const LowSizeBreadCrumbWithStyle = withStyles(styles)(LowSizeBreadCrumb)
 
-class FullSizeBreadCrumb extends React.Component<InnerProps & WithStyles<typeof styles>> {
 
-  onPathSelected(path: string) {
-    this.props.onPathSelected(path)
+class FullSizeBreadCrumb extends React.Component<InnerProps> {
+
+  onChangePath(path: string) {
+    this.props.onChangePath(path)
+  }
+
+  onMoveNodes(nodes: FsNode[], destination: string)  {
+    this.props.onMoveNodes(nodes, destination)
   }
 
   render() {
-    const { path, classes } = this.props
+    const { path, classes, DropZone } = this.props
 
     return (
       <div className={classes.root}>
-        <Button className={classnames(classes.homeButton, classes.button)} onClick={() => this.onPathSelected('/')} >
-          <HomeIcon className={classes.icon} />
-        </Button>
+        <DropZone onDrop={(nodes) => this.onMoveNodes(nodes, '/')} >
+          <Button className={classnames(classes.homeButton, classes.button)} onClick={() => this.onChangePath('/')} >
+            <HomeIcon className={classes.icon} />
+          </Button>
+        </DropZone>
         {
           path.map((directory) => (
             <div className={classes.element} key={directory.path} >
               <RightIcon className={classes.icon} />
-              <Button className={classes.button} onClick={() => this.onPathSelected(directory.path)} >
-                {directory.name}
-              </Button>
+              <DropZone onDrop={(nodes) => this.onMoveNodes(nodes, directory.path)} >
+                <Button className={classes.button} onClick={() => this.onChangePath(directory.path)} >
+                  {directory.name}
+                </Button>
+              </DropZone>
             </div>
           ))
         }
@@ -216,4 +249,17 @@ class FullSizeBreadCrumb extends React.Component<InnerProps & WithStyles<typeof 
 
 const FullSizeBreadCrumbWithStyle = withStyles(styles)(FullSizeBreadCrumb)
 
-export default withStyles(styles)(BreadCrumb)
+
+const mappedProps =
+  connect(({ fs, router }, dispatch) => ({
+    path: (fs.current && fs.current.path) || '/',
+    onChangePath: (path: string) => {
+      router.push(`${Routes.app.fs}${path}${router.location.search}`) // TODO in an action
+      dispatch(getDirectory(path))
+    },
+    onMoveNodes: (nodes: FsNode[], destination: string) => {
+      dispatch(moveNodes({ ids: nodes.map(node => node.id), destination }))
+    }
+  }))
+
+export default withStore(withStyles(styles)(BreadCrumb), mappedProps)

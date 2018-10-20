@@ -11,6 +11,7 @@ import LoginPage from 'pages/LoginPage'
 
 import { initialState, Store } from 'store/store'
 
+
 const loader = (
   <div style={{ display: 'flex', alignItems: 'center' }}>
     <CircularProgress size={100} style={{ color: 'white' }}/>

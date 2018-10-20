@@ -20,7 +20,7 @@ import DeletionPopup from 'components/popups/deletion/DeletionPopup'
 import DetailPopup from 'components/popups/detail/DetailPopup'
 import UploadPopup from 'components/popups/upload/UploadPopup'
 import UploadProgressPopup from 'components/popups/upload/UploadProgressPopup'
-import FileList from 'components/fs/list/FileList'
+import FileList from 'components/fs/fileList/FileList'
 import NotificationsContainer from 'components/notification/NotificationsContainer'
 
 import { User } from 'models/User'
@@ -28,9 +28,10 @@ import { FsNode } from 'models/FsNode'
 
 import { withStore, connect } from 'store/store'
 import { showPopup } from 'store/actions/popups'
+import { selectedNodes } from 'store/states/fsState'
 
 import Routes from 'services/routes'
-import { selectedNodes } from 'store/states/fsState';
+
 
 const styles = (theme: Theme) => createStyles({
   root: {
