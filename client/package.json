@@ -43,7 +43,7 @@
     "rxjs": "6.2.0",
     "ts-debounce": "0.3.2",
     "typesafe-actions": "2.0.4",
-    "validation.ts": "0.0.17"
+    "validation.ts": "0.0.24"
   },
   "devDependencies": {
     "@types/es6-shim": "0.31.37",
