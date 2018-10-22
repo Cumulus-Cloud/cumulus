@@ -40,7 +40,7 @@
     "redux-observable": "1.0.0-alpha.3",
     "redux-persist": "5.9.1",
     "reset-css": "3.0.0",
-    "rxjs": "6.2.0",
+    "rxjs": "6.3.3",
     "ts-debounce": "0.3.2",
     "typesafe-actions": "2.0.4",
     "validation.ts": "0.0.17"
