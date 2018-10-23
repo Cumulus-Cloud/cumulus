@@ -61,7 +61,6 @@ class DetailsPopup extends React.Component<PropsWithStyle, State> {
   onShare() {
     this.props.onShare()
   }
-  
 
   render() {
     const { classes, fullScreen, node, open } = this.props
@@ -132,9 +131,8 @@ class DetailsPopup extends React.Component<PropsWithStyle, State> {
           fullScreen={ fullScreen }
           open={ open }
           onClose={ () => this.onClose() }
-          aria-labelledby="responsive-dialog-title"
         >
-          <DialogTitle id="responsive-dialog-title">
+          <DialogTitle>
             { `Détails de ${node.name}` }
           </DialogTitle>
           <DialogContent>
@@ -156,10 +154,10 @@ class DetailsPopup extends React.Component<PropsWithStyle, State> {
             </div>
           </DialogContent>
           <DialogActions>
-            <Button size="small">Delete</Button>
-            <Button size="small">Move</Button>
-            <Button size="small" color="primary">Share</Button>
-            <Button size="small" color="primary" onClick={ () => this.onDownload() } >Download</Button>
+            <Button>Delete</Button>
+            <Button>Move</Button>
+            <Button color="primary">Share</Button>
+            <Button color="primary" onClick={ () => this.onDownload() } >Download</Button>
           </DialogActions>
         </Dialog>
       )

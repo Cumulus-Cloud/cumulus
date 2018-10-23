@@ -368,7 +368,7 @@ const mappedProps =
       dispatch(deselectAllNodes())
     },
     onMoveNodes: (nodes: FsNode[], destination: string) => {
-      dispatch(moveNodes({ ids: nodes.map(node => node.id), destination }))
+      dispatch(moveNodes({ nodes, destination }))
     },
     onLoadMoreContent: () => {
       dispatch(getDirectoryContent())

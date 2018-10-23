@@ -41,8 +41,8 @@ const styles = (_: Theme) => createStyles({
     height: 15
   },
   fileDeleteIcon: {
-    marginRight: 32,
-    paddingRight: '0 !important' // Block default padding
+    marginRight:  '32px !important',
+    paddingRight: '12px !important' // Block default padding
   },
   fileButton: {
     width: '90%',

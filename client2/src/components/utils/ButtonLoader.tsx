@@ -21,10 +21,10 @@ type Props = ButtonProps & { loading?: boolean }
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
 function ButtonLoader(props: PropsWithStyle) {
-  const { loading, classes, children, ...buttonProps } = props
+  const { loading, disabled, classes, children, ...buttonProps } = props
 
   return (
-    <Button disabled={loading} {...buttonProps} >
+    <Button disabled={ disabled !== undefined ? disabled : loading } {...buttonProps} >
       { children }
       { loading && <CircularProgress size={24} className={classes.buttonProgress} /> }
     </Button>

@@ -1,12 +1,6 @@
 import  React from 'react'
-import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
-import Button from '@material-ui/core/Button'
-import Dialog from '@material-ui/core/Dialog'
-import DialogActions from '@material-ui/core/DialogActions'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogTitle from '@material-ui/core/DialogTitle'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
-import Typography from '@material-ui/core/Typography'
+import { Checkbox, DialogContentText, FormControlLabel } from '@material-ui/core'
 
 import { connect, withStore } from 'store/store'
 import { hidePopup } from 'store/actions/popups'
@@ -15,15 +9,17 @@ import { FsPopupType } from 'store/states/popupsState'
 import { ApiError } from 'models/ApiError'
 import { FsNode } from 'models/FsNode'
 
-import styles from './styles'
-import ButtonLoader from 'components/utils/ButtonLoader';
+import NoWrap from 'components/utils/NoWrap'
+import Popup from 'components/utils/Popup'
+
+import { deleteNodes } from 'store/actions/nodeDeletion'
 
 
 const popupType: FsPopupType = 'NODE_DELETION'
 
 interface Props {
   onClose: () => void
-  onDelete: () => void
+  onDelete: (deleteContent: boolean) => void
   open: boolean
   fullScreen?: boolean
   loading: boolean
@@ -31,29 +27,28 @@ interface Props {
   error?: ApiError
 }
 
-type PropsWithStyle = Props & WithStyles<typeof styles>
+interface State {
+  deleteContent: boolean
+}
 
-interface State {}
 
+class DeletionPopup extends React.Component<Props, State> {
 
-class DeletionPopup extends React.Component<PropsWithStyle, State> {
-
-  constructor(props: PropsWithStyle) {
+  constructor(props: Props) {
     super(props)
-    this.state = {}
+    this.state = { deleteContent: false }
   }
 
   onClose() {
     this.props.onClose()
   }
 
-  onCreateDirectory(e: React.FormEvent) {
-    e.preventDefault()
-    this.props.onDelete()
+  onDeleteNode() {
+    this.props.onDelete(this.state.deleteContent)
   }
 
-  onDirectoryNameChange(directoryName: string) {
-    this.setState({ directoryName })
+  onToggleDeleteContent(deleteContent: boolean) {
+    this.setState({ deleteContent })
   }
 
   getMessage() {
@@ -65,9 +60,9 @@ class DeletionPopup extends React.Component<PropsWithStyle, State> {
     // TODO i18n
     if (nodes.length == 1) {
       if (hasFile)
-        return `Êtes-vous certain de vouloir supprimer le fichier ${nodes[0].name} ?`
+        return <>Êtes-vous certain de vouloir supprimer le fichier <NoWrap> { `« ${nodes[0].name} »` } </NoWrap> ?</>
       else
-        return `Êtes-vous certain de vouloir supprimer le dossier ${nodes[0].name} ?`
+        return <>Êtes-vous certain de vouloir supprimer le dossier <NoWrap> { `« ${nodes[0].name} »` } </NoWrap> ?</>
     } else {
       if (hasFile && !hasDirectory)
         return `Êtes-vous certain de vouloir supprimer ces ${nodes.length} fichiers ?`
@@ -79,35 +74,33 @@ class DeletionPopup extends React.Component<PropsWithStyle, State> {
   }
 
   render() {
-    const { classes, fullScreen, open, loading } = this.props
+    const { open, loading, nodes, error } = this.props
+    const { deleteContent } = this.state
   
-    // TODO show error
+    const hasDirectory = !!nodes.find(node => node.nodeType === 'DIRECTORY')
 
     return (
-      <Dialog
-        fullScreen={fullScreen}
-        open={open}
-        onClose={() => this.onClose()}
+      <Popup
+        title="Confirmation de suppression"
+        action="Supprimer"
+        cancel="Annuler"
+        error={ error }
+        loading={ loading }
+        open={ open }
+        onClose={ () => this.onClose() }
+        onValidate={ () => this.onDeleteNode() }
       >
-        <form onSubmit={(e) => this.onCreateDirectory(e)} className={classes.root} >
-          <DialogTitle id="responsive-dialog-title">
-            Créer un nouveau dossier
-          </DialogTitle>
-          <DialogContent className={classes.content} >
-            <Typography variant="body1">
-              { this.getMessage() }
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => this.onClose()} disabled={loading}>
-              Annuler
-            </Button>
-            <ButtonLoader loading={ loading } color="primary" type="submit" >
-              Supprimer
-            </ButtonLoader>
-          </DialogActions>
-        </form>
-      </Dialog>
+        <DialogContentText>
+          { this.getMessage() }
+        </DialogContentText>
+        { hasDirectory &&
+          <FormControlLabel
+            disabled={ loading }
+            control={<Checkbox checked={ deleteContent } color="primary" onChange={ (value) => this.onToggleDeleteContent(value.target.checked) } />}
+            label={<DialogContentText>Également supprimé le contenu des dossiers ?</DialogContentText>}
+          />
+        }
+      </Popup>
     )
   }
 
@@ -120,19 +113,18 @@ const mappedProps =
     return {
       open: state.popups.open === popupType,
       nodes: nodes,
-      loading: state.directoryCreation.loading, // TODO
-      error: state.directoryCreation.error,     // TODO
+      loading: state.nodeDeletion.loading,
+      error: state.nodeDeletion.error,
       onClose: () => {
         dispatch(hidePopup())
       },
-      onDelete: () => {
-        // TODO
-        //dispatch(createDirectory(path)).then((state) => {
-        //  if(!state.createDirectory.error)
-        //    dispatch(hidePopup())
-        //})
+      onDelete: (deleteContent: boolean) => {
+        dispatch(deleteNodes({ nodes, deleteContent })).then((state) => {
+          if(!state.nodeDeletion.error)
+            dispatch(hidePopup())
+        })
       }
     }
   })
 
-export default withStore(withMobileDialog<Props> ({ breakpoint: 'xs' })(withStyles(styles) (DeletionPopup)), mappedProps)
+export default withStore(withMobileDialog<Props> ({ breakpoint: 'xs' })(DeletionPopup), mappedProps)

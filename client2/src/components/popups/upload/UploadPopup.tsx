@@ -3,10 +3,6 @@ import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import Button from '@material-ui/core/Button'
-import Dialog from '@material-ui/core/Dialog'
-import DialogActions from '@material-ui/core/DialogActions'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogTitle from '@material-ui/core/DialogTitle'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
 import Slide from '@material-ui/core/Slide'
 import uuid = require('uuid/v4')
@@ -19,6 +15,8 @@ import { FsPopupType } from 'store/states/popupsState'
 import { Directory } from 'models/FsNode'
 import { EnrichedFile } from 'models/EnrichedFile'
 
+import Popup from 'components/utils/Popup'
+
 import UploadFile from './UploadFile'
 
 
@@ -27,7 +25,7 @@ const styles = (theme: Theme) => createStyles({
     minWidth: 450,
     flexDirection: 'column',
     [theme.breakpoints.down('xs')]: {
-      height: '100%',
+      height: 'none',
       display: 'flex',
       minWidth: 'inherit'
     }
@@ -70,21 +68,12 @@ const styles = (theme: Theme) => createStyles({
   fileButton: {
     width: '90%',
     margin: 'auto',
-
+    marginTop: '25px',
     display: 'block',
     textAlign: 'center'
-  },
-  button: {
-    margin: theme.spacing.unit
-  },
-  buttonProgress: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginTop: -12,
-    marginLeft: -12,
   }
 })
+
 
 const popupType: FsPopupType = 'FILE_UPLOAD'
 
@@ -150,7 +139,7 @@ class UploadPopup extends React.Component<PropsWithStyle, State> {
   }
 
   render() {
-    const { classes, files, fullScreen, open } = this.props
+    const { classes, files, open } = this.props
 
     const fileList = files.map((file, i) => {
       return (
@@ -162,53 +151,44 @@ class UploadPopup extends React.Component<PropsWithStyle, State> {
         />
       )
     })
-  
+
     return (
-      <Dialog
-        fullScreen={fullScreen}
-        open={open}
-        onClose={() => this.onClose()}
-        aria-labelledby="responsive-dialog-title"
+      <Popup
+        title="Mettre en ligne de nouveaux fichiers"
+        action={files.length > 0 ? "Envoyer les fichiers selectionnés" : "Envoyer le fichier selectionné"}
+        cancel="Annuler"
+        loading={ false }
+        disabled={ files.length === 0 }
+        open={ open }
+        onClose={ () => this.onClose() }
+        onValidate={ () => this.onUploadFiles() }
       >
-        <div  className={classes.root} >
-          <DialogTitle id="responsive-dialog-title">
-            Mettre en ligne un nouveau fichier
-          </DialogTitle>
-          <DialogContent className={classes.content} >
-            {
-              files.length === 0 ?
-              <span/> :
-              <Slide direction="up" in={true}>
-                <div className={classes.root}>
-                  {fileList}
-                </div>
-              </Slide>
-            }
-          </DialogContent>
-          <DialogContent className={classes.inputContainer} >
-            <input
-              className={classes.input}
-              id="raised-button-file"
-              multiple
-              type="file"
-              onChange={(e) => this.onFileSelected(e.target.files) }
-            />
-            <label htmlFor="raised-button-file">
-              <Button variant="outlined" color="primary" component="span" className={classes.fileButton}>
-                Selectionner des fichiers
-              </Button>
-            </label>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => this.onClose()}>
-              Annuler
-            </Button>
-            <Button onClick={() => this.onUploadFiles()} disabled={files.length === 0} color="primary" autoFocus>
-              {files.length > 0 ? "Envoyer les fichiers selectionnés" : "Envoyer le fichier selectionné"}
-            </Button>
-          </DialogActions>
+        <div className={classes.content} >
+          {
+            files.length === 0 ?
+            <span/> :
+            <Slide direction="up" in={true}>
+              <div className={classes.root}>
+                {fileList}
+              </div>
+            </Slide>
+          }
         </div>
-      </Dialog>
+        <div className={classes.inputContainer} >
+          <input
+            className={classes.input}
+            id="raised-button-file"
+            multiple
+            type="file"
+            onChange={(e) => this.onFileSelected(e.target.files) }
+          />
+          <label htmlFor="raised-button-file">
+            <Button variant="outlined" color="primary" component="span" className={classes.fileButton}>
+              Selectionner des fichiers
+            </Button>
+          </label>
+        </div>
+      </Popup>
     )
   }
 

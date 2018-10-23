@@ -107,12 +107,11 @@ class SharingStore(
 
       SQL"""
         DELETE FROM #$table
-        INNER JOIN #${FsNodeStore.table}
-        ON (
-          #$fsNodeField = #${FsNodeStore.table}.#${FsNodeStore.pkField} AND
-          #$ownerField = #${FsNodeStore.table}.#${FsNodeStore.ownerField}
+        WHERE #$pkField IN (
+          SELECT #${FsNodeStore.table}.#${FsNodeStore.pkField}
+          FROM #${FsNodeStore.table}
+          WHERE #${FsNodeStore.table}.#${FsNodeStore.pathField} ~ $searchRegex AND #$ownerField = ${user.id}
         )
-        WHERE #${FsNodeStore.table}.#${FsNodeStore.pathField} ~ $searchRegex AND #$ownerField = ${user.id}
       """.executeUpdate()
     }
 

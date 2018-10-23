@@ -3,39 +3,11 @@ import createStyles from '@material-ui/core/styles/createStyles'
 
 
 const styles = (theme: Theme) => createStyles({
-  root: {
-    maxWidth: 700
-  },
-  buttonProgress: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginTop: -12,
-    marginLeft: -12,
-  },
   details: {
     display: 'flex',
     [theme.breakpoints.down('xs')]: {
       flexDirection: 'column'
     }
-  },
-  heading: {
-    paddingLeft: 15,
-    paddingTop: 2,
-    fontSize: theme.typography.pxToRem(15),
-    fontWeight: theme.typography.fontWeightRegular
-  },
-  headingSelected: {
-    paddingLeft: 15,
-    paddingTop: 2,
-    fontSize: theme.typography.pxToRem(15),
-    fontWeight: theme.typography.fontWeightRegular
-  },
-  button: {
-    width: 50,
-    height: 45,
-    marginTop: 20,
-    display: 'block'
   },
   column: {
     flexGrow: 1,
@@ -72,17 +44,6 @@ const styles = (theme: Theme) => createStyles({
   },
   info: {
     display: 'inline'
-  },
-  helper: {
-    borderLeft: `2px solid ${theme.palette.divider}`,
-    padding: `${theme.spacing.unit}px ${theme.spacing.unit * 2}px`,
-  },
-  link: {
-    color: theme.palette.primary.main,
-    textDecoration: 'none',
-    '&:hover': {
-      textDecoration: 'underline',
-    }
   },
   chip: {
     marginRight: 5,

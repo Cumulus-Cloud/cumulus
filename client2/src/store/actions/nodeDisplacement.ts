@@ -9,18 +9,18 @@ import { showNotification } from 'store/actions/notifications'
 import { createAction } from 'store/actions'
 
 
-export const moveNodes = createAction<{ ids: string[], destination: string }>(({ ids, destination }, setState, getState, dispatch) => {
+export const moveNodes = createAction<{ nodes: FsNode[], destination: string }>(({ nodes, destination }, setState, getState, dispatch) => {
   setState({
     nodeDisplacement: {
       loading: true
     }
   })
 
-  return Api.fs.moveNodes(ids, destination)
+  return Api.fs.moveNodes(nodes.map(node => node.id), destination)
     .then((result: ApiError | ApiList<FsNode>) => {
       if ('errors' in result) {
         setState({
-          directoryCreation: {
+          nodeDisplacement: {
             loading: false,
             error: result
           }
@@ -28,8 +28,6 @@ export const moveNodes = createAction<{ ids: string[], destination: string }>(({
       } else {
         const state = getState()
         const currentPath = state.fs.current ? state.fs.current.path : '/'
-
-        console.log(result)
 
         const hasFile = !!result.items.find(node => node.nodeType === 'FILE')
         const hasDirectory = !!result.items.find(node => node.nodeType === 'DIRECTORY')

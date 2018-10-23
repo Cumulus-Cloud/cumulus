@@ -233,7 +233,7 @@ const Api = {
       )
     },
 
-    deleteNodes(ids: string[], deleteContent: boolean): Promise<ApiError | void> {
+    deleteNodes(ids: string[], deleteContent: boolean): Promise<ApiError | ApiList<FsNode>> {
       return ApiUtils.post(
         Routes.api.fs.base,
         {
