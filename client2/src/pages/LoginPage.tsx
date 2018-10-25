@@ -99,7 +99,7 @@ class Login extends React.Component<PropsWithStyle, State> {
                   <CloudIcon/>
                 </Button>
               </Zoom>
-              <Typography variant="headline" component="h3" className={classes.logoText}>
+              <Typography variant="h5" component="h3" className={classes.logoText}>
                 Cumulus
               </Typography>
             </div>

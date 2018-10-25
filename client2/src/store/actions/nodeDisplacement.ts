@@ -2,7 +2,7 @@ import { ApiList } from 'models/utils'
 import Api from 'services/api'
 
 import { ApiError } from 'models/ApiError'
-import { FsNode } from 'models/FsNode'
+import { FsNode, isFile, isDirectory } from 'models/FsNode'
 
 import { getDirectory } from 'store/actions/directory'
 import { showNotification } from 'store/actions/notifications'
@@ -29,8 +29,8 @@ export const moveNodes = createAction<{ nodes: FsNode[], destination: string }>(
         const state = getState()
         const currentPath = state.fs.current ? state.fs.current.path : '/'
 
-        const hasFile = !!result.items.find(node => node.nodeType === 'FILE')
-        const hasDirectory = !!result.items.find(node => node.nodeType === 'DIRECTORY')
+        const hasFile = !!result.items.find(node => isFile(node))
+        const hasDirectory = !!result.items.find(node => isDirectory(node))
 
         // Show custom message
         if (result.size == 1) {

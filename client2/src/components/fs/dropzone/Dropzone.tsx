@@ -17,7 +17,7 @@ function DropzonePlaceholder(props: Props) {
       <div className={ classes.root } >
         <div className={ classes.inner } >
           <CloudIcon className={ classes.icon } />
-          <Typography variant="display1" className={ classes.text } >
+          <Typography variant="h4" className={ classes.text } >
             Lâcher pour ajouter au dossier courant
           </Typography>
         </div>

@@ -3,6 +3,9 @@ import createStyles from '@material-ui/core/styles/createStyles'
 
 
 const styles = (theme: Theme) => createStyles({
+  root: {
+    maxWidth: 'inherit'
+  },
   details: {
     display: 'flex',
     [theme.breakpoints.down('xs')]: {

@@ -68,7 +68,7 @@ class SignUpForm extends React.Component<PropsWithStyle, State> {
 
   constructor(props: PropsWithStyle) {
     super(props)
-    this.state = { 
+    this.state = {
       login: '',
       email: '',
       password: '',
@@ -105,12 +105,12 @@ class SignUpForm extends React.Component<PropsWithStyle, State> {
   render() {
 
     const { classes, error, loading } = this.props
-    
+
     return (
       <Grow in={true}>
         <form onSubmit={(e) => this.onSignUp(e)} >
           <div className={classes.root}>
-            <Typography variant="display1" align="center" >
+            <Typography variant="h4" align="center" >
               Inscription
             </Typography>
             <Tooltip id="tooltip-icon" title="Nom unique du compte" placement="bottom" enterDelay={500} >

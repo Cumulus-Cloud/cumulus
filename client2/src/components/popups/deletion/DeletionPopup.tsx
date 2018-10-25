@@ -7,7 +7,7 @@ import { hidePopup } from 'store/actions/popups'
 import { FsPopupType } from 'store/states/popupsState'
 
 import { ApiError } from 'models/ApiError'
-import { FsNode } from 'models/FsNode'
+import { FsNode, isFile, isDirectory } from 'models/FsNode'
 
 import NoWrap from 'components/utils/NoWrap'
 import Popup from 'components/utils/Popup'
@@ -54,8 +54,8 @@ class DeletionPopup extends React.Component<Props, State> {
   getMessage() {
     const { nodes } = this.props
 
-    const hasFile = !!nodes.find(node => node.nodeType === 'FILE')
-    const hasDirectory = !!nodes.find(node => node.nodeType === 'DIRECTORY')
+    const hasFile = !!nodes.find(node => isFile(node))
+    const hasDirectory = !!nodes.find(node => isDirectory(node))
 
     // TODO i18n
     if (nodes.length == 1) {
@@ -76,8 +76,8 @@ class DeletionPopup extends React.Component<Props, State> {
   render() {
     const { open, loading, nodes, error } = this.props
     const { deleteContent } = this.state
-  
-    const hasDirectory = !!nodes.find(node => node.nodeType === 'DIRECTORY')
+
+    const hasDirectory = !!nodes.find(node => isDirectory(node))
 
     return (
       <Popup
@@ -109,7 +109,7 @@ class DeletionPopup extends React.Component<Props, State> {
 const mappedProps =
   connect((state, dispatch) => {
     const nodes = state.popups.target
-    
+
     return {
       open: state.popups.open === popupType,
       nodes: nodes,

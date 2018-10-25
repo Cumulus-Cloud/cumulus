@@ -5,6 +5,9 @@ import  React from 'react'
 
 // A theme with custom primary and secondary color.
 const theme = createMuiTheme({
+  typography: {
+    useNextVariants: true,
+  },
   palette: {
     //type: 'dark',
     primary: {

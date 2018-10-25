@@ -2,7 +2,7 @@ import axios from 'axios'
 
 import { ApiError } from 'models/ApiError'
 import { EnrichedFile } from 'models/EnrichedFile'
-import { Directory, File, FsNode, DirectoryWithContent, SearchResult } from 'models/FsNode'
+import { Directory, File, FsNode, DirectoryWithContent, SearchResult, isDirectory, isFile } from 'models/FsNode'
 import { User } from 'models/User'
 import { AppSession } from 'models/AppSession'
 import { ApiList } from 'models/utils'
@@ -92,7 +92,7 @@ const Api = {
     signIn(login: string, password: string): Promise<ApiError | { token: string, user: User }> {
       return ApiUtils.post(Routes.api.users.login, { login, password })
     },
-  
+
     signUp(login: string, email: string, password: string): Promise<ApiError | User> {
       return ApiUtils.post(Routes.api.users.signUp, { login, email, password })
     },
@@ -108,7 +108,7 @@ const Api = {
     changeLang(lang: string): Promise<ApiError | User> {
       return ApiUtils.post(Routes.api.users.changeLang, { lang })
     },
-    
+
     changePassword(previousPassword: string, newPassword: string): Promise<ApiError | User> {
       return ApiUtils.post(Routes.api.users.changePassword, { previousPassword, newPassword })
     },
@@ -119,7 +119,7 @@ const Api = {
       },
 
       get(ref: string): Promise<ApiError | AppSession> {
-        return ApiUtils.get(Routes.api.users.sessions.get(ref)) 
+        return ApiUtils.get(Routes.api.users.sessions.get(ref))
       },
 
       revoke(ref: string): Promise<ApiError | AppSession> {
@@ -138,7 +138,7 @@ const Api = {
       return this.get(path).then((result) => {
         if('errors' in result)
           return result
-        if(result.nodeType == 'DIRECTORY')
+        if(isDirectory(result))
           return result
         else
           return {
@@ -154,7 +154,7 @@ const Api = {
       return this.get(path).then((result) => {
         if('errors' in result)
           return result
-        if(result.nodeType == 'FILE')
+        if(isFile(result))
           return result
         else
           return {
@@ -203,7 +203,7 @@ const Api = {
           reader.onload = () => {
             resolve(reader.result as any) // TODO fix
           }
-    
+
           reader.readAsArrayBuffer(file.file)
         })
       }

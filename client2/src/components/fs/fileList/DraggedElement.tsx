@@ -58,7 +58,7 @@ function DraggedElement(dragInfo: DraggingInfo<FsNode[]>): React.ReactNode {
             }
           </Paper>
         </Fade>,
-        draggedElementRoot 
+        draggedElementRoot
       )
     )
   } else

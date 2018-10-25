@@ -7,7 +7,7 @@ import MultiplesIcon from '@material-ui/icons/FilterNone'
 import FileIcon from '@material-ui/icons/InsertDriveFile'
 import classnames from 'classnames'
 
-import { FsNode } from 'models/FsNode'
+import { FsNode, isDirectory } from 'models/FsNode'
 
 
 const styles = (theme: Theme) => createStyles({
@@ -33,7 +33,7 @@ function NodeIcon(props: Props) {
   return (
     <span className={ classnames(classes.root, { [classes.selected]: selected }) } >
     {
-      node.nodeType === 'DIRECTORY' ?
+      isDirectory(node) ?
       <DirectoryIcon /> :
       <FileIcon />
     }

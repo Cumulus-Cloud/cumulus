@@ -108,11 +108,11 @@ export interface FsOperationDelete {
   operationType: 'DELETE'
 }
 
-export type FsOperation = 
+export type FsOperation =
   FsOperationCreate |
   FsOperationMove |
   FsOperationShareLink |
-  FsOperationShareDelete | 
+  FsOperationShareDelete |
   FsOperationDelete
 
   export type SearchResult = {
@@ -120,3 +120,12 @@ export type FsOperation =
     offset: number,
     hasMore: boolean
   }
+
+
+export function isFile(node: FsNode): node is File {
+  return node.nodeType === 'FILE'
+}
+
+export function isDirectory(node: FsNode): node is Directory {
+  return node.nodeType === 'DIRECTORY'
+}

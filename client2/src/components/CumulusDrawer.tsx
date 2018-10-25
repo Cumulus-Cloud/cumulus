@@ -85,7 +85,7 @@ class CumulusDrawer extends React.Component<PropsWithStyle, State> {
           onOpen={() => this.toggleDrawer()}
         >
           <div className={classes.logoContainer} >
-            <Typography variant="headline" className={classes.logoText} >
+            <Typography variant="h5" className={classes.logoText} >
               <CloudIcon  className={classes.logo} /> <div>Cumulus</div>
             </Typography>
           </div>
@@ -105,7 +105,7 @@ class CumulusDrawer extends React.Component<PropsWithStyle, State> {
           classes={{ paper: classes.drawerPaper }}
         >
           <div className={classes.logoContainer} >
-            <Typography variant="headline" className={classes.logoText} >
+            <Typography variant="h5" className={classes.logoText} >
               <CloudIcon  className={classes.logo} /> <div>Cumulus</div>
             </Typography>
           </div>
@@ -117,7 +117,7 @@ class CumulusDrawer extends React.Component<PropsWithStyle, State> {
       </div>
     )
   }
-  
+
 }
 
 

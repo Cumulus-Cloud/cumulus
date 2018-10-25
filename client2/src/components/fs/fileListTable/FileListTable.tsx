@@ -20,7 +20,7 @@ import { WithDragAndDrop } from 'components/utils/DragAndDrop'
 import NodeIcon from 'components/fs/NodeIcon'
 import Resize from 'components/utils/Resize'
 
-import { Directory, FsNode } from 'models/FsNode'
+import { Directory, FsNode, isDirectory } from 'models/FsNode'
 
 import { selectNode, selectAllNodes, deselectNode, deselectAllNodes, getDirectoryContent } from 'store/actions/directory'
 import { showPopup } from 'store/actions/popups'
@@ -126,7 +126,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
   }
 
   onClickNode(node: FsNode) {
-    if(node.nodeType === 'DIRECTORY')
+    if(isDirectory(node))
       this.onNavigateDirectory(node)
     else
       this.onShowNodeDetail(node)
@@ -134,7 +134,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
 
   onToggleAllNodesSelection() {
     const { selection } = this.props
-    
+
     switch(selection.type) {
       case 'ALL':
         return this.onDeselectAllNodes()
@@ -157,7 +157,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
   }
 
   onMoveNodes(nodes: FsNode[], destination: FsNode) {
-    if(destination.nodeType === 'DIRECTORY')
+    if(isDirectory(destination))
       this.props.onMoveNodes(nodes, destination.path)
   }
 
@@ -183,7 +183,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
           <CircularProgress size={20} color="primary"/>
         </div>
         <Typography variant="caption" className={classes.loaderText} >
-          {'Chargement de plus de contenu..'} 
+          {'Chargement de plus de contenu..'}
         </Typography>
       </div>
     )
@@ -200,7 +200,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
 
     return isNodeSelected(node, selection)
   }
-  
+
 
   renderElementRow = ({ index, isScrolling, style }: ListChildComponentProps & { isScrolling: boolean }): React.ReactElement<{}> => {
     const { classes, content, Draggable, DropZone } = this.props
@@ -218,7 +218,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
           <Checkbox key={ node.id + '_checked' } className={ classes.contentCheck} checked defaultChecked onClick={() => this.onDeselectNode(node) } /> :
           <Checkbox key={ node.id + '_not-checked' } className={ classes.contentCheck } onClick={() => this.onSelectNode(node) } />
       ) : <Checkbox key={ node.id + '_not-checked' } style={ { display: 'none' } } />
-    
+
     const menu =
       <div>
         <IconButton onClick={ (e) => this.onToggleMenu(node, e) } >
@@ -242,7 +242,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
 
     return (
       <Draggable
-        onDrag={() => { 
+        onDrag={() => {
           const selected = this.selectedNodes()
           return isSelected && selected.length > 0 ? selected : [ node ]
         }}
@@ -269,7 +269,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
               { distanceInWords(new Date(node.modification), now) }
             </Typography>
             <Typography variant="body1" className={ classes.contentSize } >
-              { node.nodeType === 'DIRECTORY' ? '-' : node.humanReadableSize }
+              { isDirectory(node) ? '-' : node.humanReadableSize }
             </Typography>
             {menu}
           </div>
@@ -281,7 +281,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
   render() {
     const { current, content, contentSize, classes, selection } = this.props
     const { showCheckboxes } = this.state
-     
+
     // TODO show errors ?
     if(current) {
       return (
