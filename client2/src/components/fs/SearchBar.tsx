@@ -10,10 +10,6 @@ import classnames from 'classnames'
 
 
 const styles = (_: Theme) => createStyles({
-  searchBarActive: {
-    width: 400,
-    transition: 'width 700ms ease-in-out'
-  },
   searchBar: {
     width: 250,
     transitionDelay: '1s',
@@ -25,26 +21,33 @@ const styles = (_: Theme) => createStyles({
 type Props = {
   search?: Search
   onSearchQueryChange: (query: string) => void
+  onSearchBarFocus?: () => void
+  onSearchBarBlur?: () => void
   className?: string
 } & WithStyles<typeof styles>
 
-type State = {
-  searchBarActive: boolean
-}
+type State = {}
 
 class SearchBar extends React.Component<Props, State> {
 
-  state: State = { searchBarActive: false }
+  state: State = {}
+
+  onSearchBarFocus() {
+    this.props.onSearchBarFocus && this.props.onSearchBarFocus()
+  }
+
+  onSearchBarBlur() {
+    this.props.onSearchBarBlur && this.props.onSearchBarBlur()
+  }
 
   render() {
     const { search, classes, onSearchQueryChange, className } = this.props
-    const { searchBarActive } = this.state
 
     return (
       <TextField
-        placeholder="Search a file or a directory"
+        placeholder="Rechercher un élément.."
         margin="normal"
-        className={ classnames( search || searchBarActive ? classes.searchBarActive : classes.searchBar, className ) }
+        className={ classnames(classes.searchBar, className) }
         onFocus={ () => this.onSearchBarFocus() }
         onBlur={ () => this.onSearchBarBlur() }
         onChange={ (e) => onSearchQueryChange(e.target.value) }
@@ -58,14 +61,6 @@ class SearchBar extends React.Component<Props, State> {
         }}
       />
     )
-  }
-
-  onSearchBarFocus() {
-    this.setState({ searchBarActive: true })
-  }
-
-  onSearchBarBlur() {
-    this.setState({ searchBarActive: false })
   }
 
 }

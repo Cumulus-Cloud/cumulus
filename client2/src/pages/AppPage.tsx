@@ -23,7 +23,6 @@ import UploadProgressPopup from 'components/popups/upload/UploadProgressPopup'
 import FileList from 'components/fs/fileList/FileList'
 import NotificationsContainer from 'components/notification/NotificationsContainer'
 
-import { User } from 'models/User'
 import { FsNode } from 'models/FsNode'
 
 import { withStore, connect } from 'store/store'
@@ -98,12 +97,12 @@ const styles = (theme: Theme) => createStyles({
   }
 })
 
+
 interface Props {
   showCreationPopup: () => void
   showUploadPopup: () => void
   showDeletionPopup: () => void
   selection: FsNode[]
-  user: User
 }
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
@@ -111,7 +110,6 @@ type PropsWithStyle = Props & WithStyles<typeof styles>
 interface State {
   popupOpened: boolean
   drawer: boolean
-  anchorEl?: EventTarget
 }
 
 
@@ -135,19 +133,11 @@ class AppPage extends React.Component<PropsWithStyle, State> {
   }
 
   toggleDrawer() {
-    this.setState({...this.state, drawer: !this.state.drawer })
+    this.setState({ drawer: !this.state.drawer })
   }
 
   forceDrawer(state: boolean) {
-    this.setState({...this.state, drawer: state })
-  }
-
-  openMenu(e: EventTarget) {
-    this.setState({...this.state, anchorEl: e })
-  }
-
-  closeMenu() {
-    this.setState({...this.state, anchorEl: undefined })
+    this.setState({ drawer: state })
   }
 
   render() {
@@ -252,12 +242,8 @@ const mappedProps =
   connect((state, dispatch) => {
     const selectedContent = state.fs.selectedContent
     const content = state.fs.content || []
-    const selection = selectedNodes(content, selectedContent)    
-    const user = state.auth.user
+    const selection = selectedNodes(content, selectedContent)
 
-    if(!user) // Should not happend
-      throw new Error('App page accessed without authentication')
-    
     return {
       selection: selection,
       user: user,

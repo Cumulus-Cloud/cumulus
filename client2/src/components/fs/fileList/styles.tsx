@@ -11,7 +11,7 @@ const styles = (theme: Theme) => createStyles({
   },
   dropzoneWrapper: {
     position: 'relative',
-    display: 'flex', 
+    display: 'flex',
     flex: 1,
     flexDirection: 'column'
   },
@@ -69,10 +69,15 @@ const styles = (theme: Theme) => createStyles({
     flex: 1,
     height: '50px',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    color: theme.palette.grey[600]
   },
   emptyDirectoryIcon: {
     marginRight: theme.spacing.unit
+  },
+  avatar: {
+    margin: 10,
+    cursor: 'pointer'
   }
 })
 
