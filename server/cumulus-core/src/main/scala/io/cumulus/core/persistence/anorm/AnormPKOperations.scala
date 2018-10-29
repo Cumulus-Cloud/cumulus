@@ -4,6 +4,8 @@ import anorm._
 import io.cumulus.core.Logging
 import io.cumulus.core.persistence.Database
 import io.cumulus.core.persistence.query.{Query, QueryFilter, QueryOrdering, QueryPagination}
+import io.cumulus.core.utils.PaginatedList
+import io.cumulus.core.utils.PaginatedList._
 
 /**
  * Abstract class that provides operations based on the private key of the table
@@ -50,11 +52,16 @@ abstract class AnormPKOperations[T, DB <: Database, PK](
         .as(rowParser.*)
     }
 
-  def findAll[Filter <: QueryFilter, Order <: QueryOrdering](filter: Filter, ordering: Order, pagination: QueryPagination): Query[DB, List[T]] =
+  def findAll[Filter <: QueryFilter, Order <: QueryOrdering](filter: Filter, ordering: Order, pagination: QueryPagination): Query[DB, PaginatedList[T]] =
     qb { implicit c =>
-      SQL(s"SELECT * FROM $table ${filter.toWHERE} ${ordering.toORDER} ${pagination.toLIMIT}")
-        .on(filter.namedParameters: _*)
-        .as(rowParser.*)
+      val paginationPlusOne = pagination.copy(limit = pagination.limit + 1)
+
+      val result =
+        SQL(s"SELECT * FROM $table ${filter.toWHERE} ${ordering.toORDER} ${paginationPlusOne.toLIMIT}")
+          .on(filter.namedParameters: _*)
+          .as(rowParser.*)
+
+      result.toPaginatedList(pagination.offset, result.length > pagination.limit)
     }
 
   def exists(pk: PK): Query[DB, Boolean] =

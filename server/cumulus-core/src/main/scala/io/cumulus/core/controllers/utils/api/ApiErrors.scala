@@ -38,4 +38,5 @@ object ApiErrors {
 
   def internalServerError(implicit messages: Messages) =
     ApiError(InternalServerError, key = s"$keyRoot.internal-server-error")
+
 }

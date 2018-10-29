@@ -11,7 +11,7 @@ case class PasswordUpdatePayload(
 
 object PasswordUpdatePayload {
 
-  implicit val reads: Reads[PasswordUpdatePayload] =
+  implicit val reader: Reads[PasswordUpdatePayload] =
     (
       (__ \ "previousPassword").read[String](minLength[String](4) keepAnd maxLength[String](64)) and
       (__ \ "newPassword").read[String](minLength[String](4) keepAnd maxLength[String](64))

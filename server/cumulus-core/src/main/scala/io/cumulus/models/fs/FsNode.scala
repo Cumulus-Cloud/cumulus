@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 import io.cumulus.core.json.JsonFormat
+import io.cumulus.core.utils.PaginatedList
 import io.cumulus.models.Path
 import io.cumulus.models.user.User
 import io.cumulus.persistence.storage.StorageReference
@@ -58,14 +59,14 @@ object FsNode {
       fileWriter.writes(file)
   }
 
-  implicit val reads: Reads[FsNode]    = reads(File.reads, Directory.reads)
-  implicit val writes: OWrites[FsNode] = writes(File.writes, Directory.writes)
-  implicit val format: OFormat[FsNode] = OFormat(reads, writes)
+  implicit val reader: Reads[FsNode]    = reads(File.reader, Directory.reader)
+  implicit val writer: OWrites[FsNode] = writes(File.writer, Directory.writer)
+  implicit val format: OFormat[FsNode] = OFormat(reader, writer)
 
-  // We want different non-implicit writers en readers for the database
-  val internalReads: Reads[FsNode]    = reads(File.internalReads, Directory.internalReads)
-  val internalWrites: OWrites[FsNode] = writes(File.internalWrites, Directory.internalWrites)
-  val internalFormat: OFormat[FsNode] = OFormat(internalReads, internalWrites)
+  // We want different non-implicit writers and readers for the database
+  val internalReader: Reads[FsNode]    = reads(File.internalReader, Directory.internalReader)
+  val internalWriter: OWrites[FsNode] = writes(File.internalWriter, Directory.internalWriter)
+  val internalFormat: OFormat[FsNode] = OFormat(internalReader, internalWriter)
 
 }
 
@@ -77,8 +78,7 @@ case class Directory(
   modification: LocalDateTime,
   hidden: Boolean,
   owner: UUID,
-  permissions: Seq[Permission],
-  content: Seq[FsNode] // TODO pagination here
+  permissions: Seq[Permission]
 ) extends FsNode {
 
   def modified(now: LocalDateTime): Directory =
@@ -91,7 +91,7 @@ case class Directory(
 
 object Directory {
 
-  /** Default newly created directory */
+  /** Default newly created directory. */
   def create(
     creator: User,
     path: Path
@@ -106,14 +106,13 @@ object Directory {
       now,
       false,
       creator.id,
-      Seq.empty,
       Seq.empty
     )
   }
 
-  implicit lazy val reads: Reads[Directory] = Json.reads[Directory]
+  implicit lazy val reader: Reads[Directory] = Json.reads[Directory]
 
-  implicit lazy val writes: OWrites[Directory] = (
+  implicit lazy val writer: OWrites[Directory] = (
     (JsPath \ "id").write[UUID] and
     (JsPath \ "path").write[Path] and
     (JsPath \ "name").write[String] and
@@ -121,10 +120,7 @@ object Directory {
     (JsPath \ "creation").write[LocalDateTime] and
     (JsPath \ "modification").write[LocalDateTime] and
     (JsPath \ "hidden").write[Boolean] and
-    (JsPath \ "owner").write[UUID] and
-    (JsPath \ "content").lazyWrite[Seq[FsNode]] { content =>
-      Writes.traversableWrites[FsNode](FsNode.format).writes(content)
-    }
+    (JsPath \ "owner").write[UUID]
   ){ directory =>
     (
       directory.id,
@@ -134,18 +130,17 @@ object Directory {
       directory.creation,
       directory.modification,
       directory.hidden,
-      directory.owner,
-      directory.content
+      directory.owner
     )
   }
 
   implicit lazy val format: OFormat[Directory] =
-    OFormat(reads, writes)
+    OFormat(reader, writer)
 
   // We want different non-implicit writers and readers for the database
-  lazy val internalReads: Reads[Directory]    = reads
-  lazy val internalWrites: OWrites[Directory] = Json.writes[Directory]
-  lazy val internalFormat: OFormat[Directory] = OFormat(internalReads, internalWrites)
+  lazy val internalReader: Reads[Directory]    = reader
+  lazy val internalWriter: OWrites[Directory] = Json.writes[Directory]
+  lazy val internalFormat: OFormat[Directory] = OFormat(internalReader, internalWriter)
 
 }
 
@@ -203,9 +198,9 @@ object File {
     )
   }
 
-  implicit lazy val reads: Reads[File] = Json.reads[File]
+  implicit lazy val reader: Reads[File] = Json.reads[File]
 
-  implicit lazy val writes: OWrites[File] = (
+  implicit lazy val writer: OWrites[File] = (
     (JsPath \ "id").write[UUID] and
     (JsPath \ "path").write[Path] and
     (JsPath \ "name").write[String] and
@@ -244,11 +239,34 @@ object File {
   }
 
   implicit lazy val format: OFormat[File] =
-    OFormat(reads, writes)
+    OFormat(reader, writer)
 
   // We want different non-implicit writers and readers for the database
-  lazy val internalReads: Reads[File]    = reads
-  lazy val internalWrites: OWrites[File] = Json.writes[File]
-  lazy val internalFormat: OFormat[File] = OFormat(internalReads, internalWrites)
+  lazy val internalReader: Reads[File]    = reader
+  lazy val internalWriter: OWrites[File] = Json.writes[File]
+  lazy val internalFormat: OFormat[File] = OFormat(internalReader, internalWriter)
+
+}
+
+
+case class DirectoryWithContent(
+  directory: Directory,
+  content: PaginatedList[FsNode],
+  totalContentLength: Long
+)
+
+object DirectoryWithContent {
+
+  implicit lazy val writer: OWrites[DirectoryWithContent] = (
+    (JsPath \ "directory").write[Directory](Directory.format) and
+    (JsPath \ "content").write[PaginatedList[FsNode]](PaginatedList.writer[FsNode](FsNode.writer)) and
+    (JsPath \ "totalContentLength").write[Long]
+  ){ directoryContent =>
+    (
+      directoryContent.directory,
+      directoryContent.content,
+      directoryContent.totalContentLength
+    )
+  }
 
 }

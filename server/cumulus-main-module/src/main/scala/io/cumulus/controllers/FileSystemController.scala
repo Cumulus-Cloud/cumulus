@@ -1,11 +1,13 @@
 package io.cumulus.controllers
 
+import java.util.UUID
+
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import cats.data.EitherT
 import cats.implicits._
-import io.cumulus.controllers.payloads.fs._
-import io.cumulus.controllers.utils.{UserAuthentication, FileDownloaderUtils}
+import io.cumulus.controllers.payloads._
+import io.cumulus.controllers.utils.{FileDownloaderUtils, UserAuthentication}
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.bodyParser.{BodyParserJson, BodyParserStream}
@@ -13,10 +15,9 @@ import io.cumulus.core.persistence.query.QueryPagination
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.Path
 import io.cumulus.models.fs.{Directory, FsNodeType}
-import io.cumulus.models.sharing.Sharing
+import io.cumulus.persistence.stores.orderings.FsNodeOrdering
 import io.cumulus.services.{FsNodeService, SessionService, SharingService, StorageService}
 import io.cumulus.stages._
-import play.api.libs.json.{JsString, Json}
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -36,7 +37,7 @@ class FileSystemController(
 ) extends AbstractController(cc) with UserAuthentication with ApiUtils with FileDownloaderUtils with BodyParserJson with BodyParserStream {
 
   /**
-    * List all the elements of the filesysteme.
+    * List all the elements of the filesystem.
     */
   def index: Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
@@ -46,34 +47,110 @@ class FileSystemController(
     }
 
   /**
+    * Creates a new directory.
+    */
+  def create: Action[DirectoryCreationPayload] =
+    AuthenticatedAction.async(parseJson[DirectoryCreationPayload]) { implicit request =>
+      ApiResponse {
+        val payload = request.body
+        val directory = Directory.create(request.authenticatedSession.user, payload.path)
+
+        fsNodeService.createDirectory(directory)
+      }
+    }
+
+  /**
     * Gets a filesystem element by its path.
     *
     * @param path The path of the element.
-    * @param contentLimit The maximum number of children elements (for a directory) to return. Used for pagination.
-    * @param contentOffset The offset of children elements (for a directory) to return. Used for pagination.
     */
-  def get(path: Path, contentLimit: Option[Int], contentOffset: Option[Int]): Action[AnyContent] =
+  def getByPath(path: Path): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
       ApiResponse {
-        val pagination = QueryPagination(contentLimit, contentOffset)
-
-        fsNodeService.findNode(path, pagination)
+        fsNodeService.findNode(path)
       }
     }
+
+  def update: Action[FsNodesUpdatePayload] =
+    AuthenticatedAction.async(parseJson[FsNodesUpdatePayload]) { implicit request =>
+      ApiResponse {
+        val payload = request.body
+
+        payload match {
+          case FsNodesDisplacementPayload(nodes, destination) =>
+            fsNodeService.moveNodes(nodes, destination)
+          case FsNodesDeletionPayload(nodes, deleteContent) =>
+            fsNodeService.deleteNodes(nodes, deleteContent)
+        }
+      }
+    }
+
+  /**
+    * Gets a filesystem element by its unique ID.
+    *
+    * @param id The ID of the element.
+    */
+  def get(id: UUID): Action[AnyContent] =
+    AuthenticatedAction.async { implicit request =>
+      ApiResponse {
+        fsNodeService.findNode(id) // TODO fix
+      }
+    }
+
+  /**
+    * Gets the content of a directory by its unique ID.
+    *
+    * @param id The ID of the directory.
+    * @param limit The maximum number of children elements to return. Used for pagination.
+    * @param offset The offset of children elements to return. Used for pagination.
+    */
+  def getContent(
+    id: UUID,
+    limit: Option[Int],
+    offset: Option[Int],
+    order: Option[FsNodeOrdering]
+  ): Action[AnyContent] =
+    AuthenticatedAction.async { implicit request =>
+      ApiResponse {
+        val pagination = QueryPagination(limit, offset)
+
+        fsNodeService.findContent(id, pagination, order.getOrElse(FsNodeOrdering.default))
+      }
+    }
+
+  /**
+    * Gets the sharings of a node by its unique ID.
+    *
+    * @param id The ID of the node.
+    * @param limit The maximum number of children elements to return. Used for pagination.
+    * @param offset The offset of children elements to return. Used for pagination.
+    */
+  def getSharings(id: UUID, limit: Option[Int], offset: Option[Int]): Action[AnyContent] =
+    AuthenticatedAction.async { implicit request =>
+      ApiResponse.paginated {
+        // TODO add ordering
+        val pagination = QueryPagination(limit, offset)
+
+        sharingService.listSharings(id, pagination)
+      }
+    }
+
 
   /**
     * Searches through the filesystem.
     *
     * @param path Root element for the search. Use '/' to search in the whole filesystem.
     * @param name Name to look for. Approximation are allowed.
+    * @param onlyDirectChildren If the search should include only the direct children of the parent directory.
     * @param nodeType The optional type of node to look for.
     * @param mimeType The optional mime type to look for.
-    * @param limit The maximum number of children elements (for a directory) to return. Used for pagination.
-    * @param offset The offset of children elements (for a directory) to return. Used for pagination.
+    * @param limit The maximum number of elements to be returned. Used for pagination.
+    * @param offset The offset of elements to be returned. Used for pagination.
     */
   def search(
     path: Path,
     name: String,
+    recursiveSearch: Option[Boolean],
     nodeType: Option[FsNodeType],
     mimeType: Option[String],
     limit: Option[Int],
@@ -83,22 +160,48 @@ class FileSystemController(
       ApiResponse.paginated {
         val pagination = QueryPagination(limit, offset)
 
-        fsNodeService.searchNodes(path, name, nodeType, mimeType, pagination)
+        fsNodeService.searchNodes(path, name, recursiveSearch, nodeType, mimeType, pagination)
       }
     }
 
   /**
-    * Downloads a file by its path.
+    * Uploads a new file.
     *
-    * @param path The path of the file to download.
+    * @param id The ID of the parent directory.
+    * @param filename The name of the file.
+    * @param cipherName The cipher to use.
+    * @param compressionName The compression to use.
+    */
+  def upload(
+    id: UUID,
+    filename: String,
+    cipherName: Option[String],
+    compressionName: Option[String]
+  ): Action[Source[ByteString, _]] =
+    AuthenticatedAction.async(streamBody) { implicit request =>
+      ApiResponse {
+        storageService.uploadFile(
+          id,
+          filename,
+          cipherName,
+          compressionName,
+          request.body
+        ) // TODO fix
+      }
+    }
+
+  /**
+    * Downloads a file by its unique ID.
+    *
+    * @param id The ID of the file to download.
     * @param forceDownload True to force the download, otherwise content will be opened directly in the browser.
     */
-  def download(path: Path, forceDownload: Option[Boolean]): Action[AnyContent] =
+  def download(id: UUID, forceDownload: Option[Boolean]): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
       ApiResponse.result {
         for {
           // Get the file
-          file       <- EitherT(fsNodeService.findFile(path))
+          file       <- EitherT(fsNodeService.findFile(id)) // TODO fix
 
           // Get the file's content
           maybeRange <- EitherT.fromEither[Future](headerRange(request, file))
@@ -120,18 +223,18 @@ class FileSystemController(
   /**
     * Downloads a file's thumbnail.
     *
-    * @param path The path of the file.
+    * @param id The ID of the file.
     * @param forceDownload True to force the download, otherwise content will be opened directly in the browser.
     */
-  def downloadThumbnail(path: Path, forceDownload: Option[Boolean]): Action[AnyContent] =
+  def downloadThumbnail(id: UUID, forceDownload: Option[Boolean]): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
       ApiResponse.result {
         for {
           // Get the file
-          file    <- EitherT(fsNodeService.findFile(path))
+          file    <- EitherT(fsNodeService.findFile(id))
 
           // Get the file thumbnail's content
-          content <- EitherT(storageService.downloadThumbnail(path))
+          content <- EitherT(storageService.downloadThumbnail(id))
 
           // Create the response
           result  <- EitherT.pure[Future, AppError]{
@@ -154,75 +257,29 @@ class FileSystemController(
       }
     }
 
+
   /**
-    * Uploads a new file.
+    * Moves a node.
     *
-    * @param path The path of the new file.
-    * @param cipherName The cipher to use.
-    * @param compressionName The compression to use.
+    * @param id The ID of the node to be moved.
     */
-  def upload(path: Path, cipherName: Option[String], compressionName: Option[String]): Action[Source[ByteString, _]] =
-    AuthenticatedAction.async(streamBody) { implicit request =>
+  def move(id: UUID): Action[FsNodeUpdatePayload] =
+    AuthenticatedAction.async(parseJson[FsNodeUpdatePayload]) { implicit request =>
       ApiResponse {
-        storageService.uploadFile(path, cipherName, compressionName, request.body)
+        val payload = request.body
+
+        fsNodeService.moveNode(id, payload.path)
       }
     }
 
   /**
-    * Creates a new directory.
-    *
-    * @param path The path of the new directory.
+    * Delete a file by its unique ID.
+    * @param id The ID of the file to delete.
     */
-  def create(path: Path): Action[AnyContent] =
+  def delete(id: UUID): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
       ApiResponse {
-        val directory = Directory.create(request.authenticatedSession.user, path)
-
-        fsNodeService.createDirectory(directory)
-      }
-    }
-
-  /**
-    * Updates a file.
-    *
-    * @param path The file to update.
-    */
-  def update(path: Path): Action[FsOperation] =
-    AuthenticatedAction.async(parseJson[FsOperation]) { implicit request =>
-      request.body match {
-        case FsOperationCreate(_) =>
-          val directory = Directory.create(request.authenticatedSession.user, path)
-          ApiResponse(fsNodeService.createDirectory(directory))
-        case FsOperationMove(to) =>
-          ApiResponse(fsNodeService.moveNode(path, to))
-        case FsOperationShareLink(_, duration, _) =>
-          ApiResponse {
-            sharingService.shareNode(path, duration).map {
-              case Right((sharing, secretCode)) =>
-                Right(Json.toJsObject(sharing)(Sharing.apiWrite)
-                  + ("key" -> Json.toJson(secretCode))
-                  + ("download" -> JsString(routes.SharingPublicController.downloadRoot(sharing.reference, path.name, secretCode, None).url))
-                  + ("path" -> JsString(routes.SharingPublicController.get("/", sharing.reference, secretCode).url))
-                )
-              case Left(e) =>
-                Left(e)
-            }
-          }
-        case FsOperationShareDelete(reference) =>
-          ApiResponse(sharingService.deleteSharing(reference))
-        case FsOperationDelete(_) =>
-          ApiResponse(storageService.deleteNode(path))
-      }
-    }
-
-  /**
-    * Delete a file by its path.
-    * @param path The path of the file to delete.
-    */
-  def delete(path: Path): Action[AnyContent] =
-    AuthenticatedAction.async { implicit request =>
-      ApiResponse {
-        storageService.deleteNode(path)
+        storageService.deleteNode(id)
       }
     }
 

@@ -33,14 +33,17 @@ trait ApiUtils extends Logging with I18nSupport {
 
   protected def toResult[R](result: Either[AppError, R])(implicit request: Request[_], writes: Writes[R]): Result =
     result match {
-      case Right(()) => Results.NoContent
+      case Right(()) =>
+        Results.NoContent
+
       case Right(values) =>
         Json.toJson(values) match {
           case JsArray(writtenValues) => ApiList(writtenValues).toResult
           case other                  => Results.Ok(other)
         }
 
-      case Left(error: AppError) => toApiError(error)
+      case Left(error: AppError) =>
+        toApiError(error)
     }
 
   /**

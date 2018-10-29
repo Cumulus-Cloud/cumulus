@@ -94,14 +94,12 @@ lazy val cumulusMainModule =
       sourceDirectories in (Compile, TwirlKeys.compileTemplates) := (unmanagedSourceDirectories in Compile).value,
       TwirlKeys.templateImports := Seq(),
 
-      // Allow to use `Path` and `FsNodeType` in route
-      routesAddImport += "io.cumulus.models.Path",
-      routesAddImport += "io.cumulus.models.fs.FsNodeType",
+      // Routes compilation
       routesFile := "routes",
       routesGeneratorClass := InjectedRoutesGenerator,
-
       sourceGenerators in Compile += compileRoutes.map(_.toSeq),
 
+      // Dependencies
       libraryDependencies ++= Seq(
         // Persistence
         jdbc,

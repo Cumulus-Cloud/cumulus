@@ -4,7 +4,6 @@ import io.cumulus.core.Settings
 import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.{QueryBuilder, QueryE, QueryPagination}
 import io.cumulus.core.utils.PaginatedList
-import io.cumulus.core.utils.PaginatedList._
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.user.{User, UserRole, UserSecurity, UserUpdate}
 import io.cumulus.persistence.stores.UserStore.{emailField, loginField}
@@ -81,7 +80,7 @@ class UserAdminService(
       // List all the users
       users <- QueryE.lift(userStore.findAll(filter, UserOrdering.of(OrderByCreationAsc), pagination))
 
-    } yield users.toPaginatedList(pagination.offset)
+    } yield users
 
   }.run()
 

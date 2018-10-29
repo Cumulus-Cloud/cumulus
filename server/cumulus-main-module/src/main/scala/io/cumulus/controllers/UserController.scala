@@ -175,7 +175,7 @@ class UserController (
     */
   def listSessions(limit: Option[Int], offset: Option[Int]): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
-      ApiResponse {
+      ApiResponse.paginated {
         // TODO allow filter to only active session, with a custom duration
         val pagination = QueryPagination(limit, offset)
 

@@ -35,7 +35,6 @@ import play.api.mvc.EssentialFilter
 import router.Routes
 
 import scala.concurrent.ExecutionContextExecutor
-import scala.language.postfixOps
 
 /**
   * Create the components of the Cumulus web application.

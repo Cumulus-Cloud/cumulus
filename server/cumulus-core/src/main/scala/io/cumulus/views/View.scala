@@ -16,7 +16,7 @@ trait View {
 object View {
 
   implicit def writeableTag(implicit codec: Codec): Writeable[View] = {
-    Writeable(tag => codec.encode("<!DOCTYPE html>\n" + tag.content.render))
+    Writeable(tag => codec.encode(tag.content.render))
   }
 
   implicit def contentTypeOfTag(implicit codec: Codec): ContentTypeOf[View] = {

@@ -1,53 +1,52 @@
-import { object, string, number, optional, array, union, isoDate, boolean, recursion, literal, dictionary } from "validation.ts"
+import { FsNode } from './FsNode'
+import { ApiList } from 'models/utils'
+import { Metadata, PDFDocumentMetadata } from 'models/FsNode'
 
-export const NodeTypeValidator = union("DIRECTORY", "FILE")
-export type NodeType = typeof NodeTypeValidator.T
+export type FsNodeType = 'DIRECTORY' | 'FILE'
 
-export const CompressionValidator = union("GZIP", "DEFLATE")
-export type Compression = typeof CompressionValidator.T
+export type CompressionType = 'GZIP' | 'DEFLATE'
 
-export const CipherValidator = literal("AES")
-export type Cipher = typeof CipherValidator.T
+export type CipherType = 'AES'
 
-export const MetadataTypeValidator = union("DefaultMetadata", "ImageMetadata", "PDFDocumentMetadata")
-export type MetadataType = typeof MetadataTypeValidator.T
+export type MetadataType = 'DefaultMetadata' | 'ImageMetadata' | 'PDFDocumentMetadata'
 
-export const ImageMetadataValidator = object({
-  metadataType: MetadataTypeValidator,
-  maker: optional(string),
-  model: optional(string),
-  datetime: optional(string),
-  height: optional(number),
-  width: optional(number),
-  tags: array(string),
-  values: dictionary(string, string),
-})
-export type ImageMetadata = typeof ImageMetadataValidator.T
 
-export const DefaultMetadataValidator = object({
-  tags: array(string),
-  values: dictionary(string, string),
-  metadataType: MetadataTypeValidator,
-})
-export type DefaultMetadata = typeof DefaultMetadataValidator.T
+export interface DefaultMetadata {
+  tags: string[]
+  values: Map<string, string>
+  metadataType: 'DefaultMetadata'
+}
 
-export const PDFDocumentMetadataValidator = object({
-  pageCount: optional(number),
-  title: optional(string),
-  author: optional(string),
-  creator: optional(string),
-  producer: optional(string),
-  creationDate: optional(string),
-  modificationDate: optional(string),
-  tags: array(string),
-  values: dictionary(string, string),
-  metadataType: MetadataTypeValidator,
-})
-export type PDFDocumentMetadata = typeof PDFDocumentMetadataValidator.T
+export interface ImageMetadata {
+  maker?: string
+  model?: string
+  datetime?: string
+  height?: number
+  width?: number
+  tags: string[]
+  values: Map<string, string>
+  metadataType: 'ImageMetadata'
+}
 
-export const FsFileValidator = object({
+export interface PDFDocumentMetadata {
+  pageCount?: number
+  title?: string
+  author?: string
+  creator?: string
+  producer?: string
+  creationDate?: string
+  modificationDate?: string
+  tags: string[]
+  values: Map<string, string>
+  metadataType: 'PDFDocumentMetadata'
+}
+
+export type Metadata = DefaultMetadata | ImageMetadata | PDFDocumentMetadata
+
+
+export interface File {
   id: string,
-  nodeType: literal("FILE"),
+  nodeType: 'FILE',
   path: string,
   name: string,
   creation: string,
@@ -58,76 +57,75 @@ export const FsFileValidator = object({
   humanReadableSize: string,
   hash: string,
   mimeType: string,
-  cipher: optional(CipherValidator),
-  compression: optional(CompressionValidator),
+  cipher?: CipherType,
+  compression?: CompressionType,
   hasThumbnail: boolean,
-  metadata: union(DefaultMetadataValidator, ImageMetadataValidator, PDFDocumentMetadataValidator)
-})
-export type FsFile = typeof FsFileValidator.T
+  metadata: Metadata
+}
 
-export interface FsDirectory {
+export interface Directory {
   id: string
-  nodeType: "DIRECTORY"
+  nodeType: 'DIRECTORY'
   path: string
   name: string
   creation: string
   modification: string
   hidden: boolean
   owner: string
-  content: FsNode[]
 }
 
-export const FsDirectoryValidator = recursion<FsFile | FsDirectory>(self => object({
-  id: string,
-  path: string,
-  name: string,
-  nodeType: NodeTypeValidator,
-  creation: isoDate,
-  modification: isoDate,
-  hidden: boolean,
-  owner: string,
-  content: optional(array(self)),
-}))
+export type FsNode =  File | Directory
 
-export const FsNodeValidator = union(FsDirectoryValidator, FsFileValidator)
-
-export type FsNode = typeof FsNodeValidator.T
-
-export function isFile(fsNode: FsNode): fsNode is FsFile {
-  return fsNode.nodeType === "FILE"
+export interface DirectoryWithContent {
+  directory: Directory,
+  content: ApiList<FsNode>,
+  totalContentLength: number
 }
 
-export function isDirectory(fsNode: FsNode): fsNode is FsDirectory {
-  return (fsNode as FsDirectory).nodeType === "DIRECTORY"
+export interface FsOperationCreate {
+  operationType: 'CREATE'
 }
 
-export function isImageMetadata(metadata: PDFDocumentMetadata | ImageMetadata | DefaultMetadata): metadata is ImageMetadata {
-  return metadata.metadataType === "ImageMetadata"
+export interface FsOperationMove {
+  to: string,
+  operationType: 'MOVE'
 }
 
-export function isPDFDocumentMetadata(metadata: PDFDocumentMetadata | ImageMetadata | DefaultMetadata): metadata is PDFDocumentMetadata {
-  return metadata.metadataType === "PDFDocumentMetadata"
+export interface FsOperationShareLink {
+  passwordProtection?: string
+  duration?: number
+  needAuthentication?: boolean
+  operationType: 'SHARE_LINK'
 }
 
-export function isDefaultMetadata(metadata: PDFDocumentMetadata | ImageMetadata | DefaultMetadata): metadata is DefaultMetadata {
-  return metadata.metadataType === "DefaultMetadata"
+export interface FsOperationShareDelete {
+  reference: string
+  operationType: 'SHARE_DELETE'
 }
 
-export function getExtention(name: string): string {
-  return name.split(".").pop() || ""
+export interface FsOperationDelete {
+  reference: string
+  operationType: 'DELETE'
 }
 
-export const videosPreviewAvailable = [
-  ".mp4",
-  ".mkv"
-]
-export const imagesPreviewAvailable = [
-  ".jpg",
-  ".png",
-  ".jpeg",
-  ".gif",
-  ".bmp"
-]
-export function isPreviewAvailable(fsFile: FsFile): boolean {
-  return videosPreviewAvailable.concat(imagesPreviewAvailable).filter(a => fsFile.name.toLowerCase().endsWith(a)).length > 0
+export type FsOperation =
+  FsOperationCreate |
+  FsOperationMove |
+  FsOperationShareLink |
+  FsOperationShareDelete |
+  FsOperationDelete
+
+  export type SearchResult = {
+    items: FsNode[],
+    offset: number,
+    hasMore: boolean
+  }
+
+
+export function isFile(node: FsNode): node is File {
+  return node.nodeType === 'FILE'
+}
+
+export function isDirectory(node: FsNode): node is Directory {
+  return node.nodeType === 'DIRECTORY'
 }

@@ -63,7 +63,8 @@ trait Authentication[TOKEN, SESSION] extends BaseController with I18nSupport wit
   case class AuthenticatedRequest[A](authenticatedSession: SESSION, request: Request[A]) extends WrappedRequest[A](request)
 
   // Type shortcuts
-  type ErrorHandler                = Request[_] => Future[Result]
+  type ErrorHandler                = Request[_] => Result
+  type ErrorHandlerAsync           = Request[_] => Future[Result]
   type AuthenticatedAction[A]      = AuthenticatedRequest[A] => Result
   type AuthenticatedAsyncAction[A] = AuthenticatedRequest[A] => Future[Result]
 
@@ -88,7 +89,7 @@ trait Authentication[TOKEN, SESSION] extends BaseController with I18nSupport wit
     /**
       * Default error handler returning a `ApiErrors.unauthorized("api-error.forbidden").toResult`.
       */
-    def defaultErrorHandler: ErrorHandler = { implicit request: Request[_] =>
+    def defaultErrorHandler: ErrorHandlerAsync = { implicit request: Request[_] =>
       Future.successful(ApiErrors.unauthorized("api-error.forbidden").toResult)
     }
 
@@ -109,8 +110,13 @@ trait Authentication[TOKEN, SESSION] extends BaseController with I18nSupport wit
 
     def withErrorHandler[A](parser: BodyParser[A])(
       block: AuthenticatedAction[A]
-    )(errorHandler: ErrorHandler, discardToken: Boolean = false): Action[A] =
+    )(errorHandler: ErrorHandlerAsync, discardToken: Boolean = false): Action[A] =
       asyncWithErrorHandler(parser)(block andThen Future.successful)(errorHandler, discardToken)
+
+    def withErrorHandler(
+      block: AuthenticatedAction[AnyContent]
+    )(errorHandler: ErrorHandler): Action[AnyContent] =
+      asyncWithErrorHandler(block andThen Future.successful)(errorHandler andThen Future.successful)
 
     def async(
       block: AuthenticatedAsyncAction[AnyContent]
@@ -124,7 +130,7 @@ trait Authentication[TOKEN, SESSION] extends BaseController with I18nSupport wit
 
     def asyncWithErrorHandler(
       block: AuthenticatedAsyncAction[AnyContent]
-    )(errorHandler: ErrorHandler): Action[AnyContent] =
+    )(errorHandler: ErrorHandlerAsync): Action[AnyContent] =
       asyncWithErrorHandler(parse.default)(block)(errorHandler)
 
     def async[A](
@@ -134,7 +140,7 @@ trait Authentication[TOKEN, SESSION] extends BaseController with I18nSupport wit
 
     def asyncWithErrorHandler[A](bodyParser: BodyParser[A])(
       block: AuthenticatedAsyncAction[A]
-    )(errorHandler: ErrorHandler, discardToken: Boolean = false): Action[A] =
+    )(errorHandler: ErrorHandlerAsync, discardToken: Boolean = false): Action[A] =
       action[A](bodyParser)(errorHandler, discardToken = discardToken).async(block)
 
     /**
@@ -143,7 +149,7 @@ trait Authentication[TOKEN, SESSION] extends BaseController with I18nSupport wit
     def action[B](
       bodyParser: BodyParser[B]
     )(
-      errorHandler: ErrorHandler = defaultErrorHandler,
+      errorHandler: ErrorHandlerAsync = defaultErrorHandler,
       refreshToken: Boolean = true,
       discardToken: Boolean = false
     ): ActionBuilder[AuthenticatedRequest, B] =

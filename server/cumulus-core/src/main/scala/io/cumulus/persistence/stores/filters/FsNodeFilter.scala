@@ -13,6 +13,7 @@ import io.cumulus.persistence.stores.FsNodeStore._
   *
   * @param likeName The name to look for.
   * @param parent The parent of the node.
+  * @param recursiveSearch Limit the search to only direct children of the parent element
   * @param nodeType The type of node (optional).
   * @param mimeType The mime type of the node (optional, only for files).
   * @param owner The owner of the node.
@@ -20,6 +21,7 @@ import io.cumulus.persistence.stores.FsNodeStore._
 case class FsNodeFilter(
   likeName: String,
   parent: Path,
+  recursiveSearch: Option[Boolean],
   nodeType: Option[FsNodeType],
   mimeType: Option[String],
   owner: User
@@ -45,7 +47,12 @@ case class FsNodeFilter(
   )
 
   private lazy val parentToFilter: Option[ParameterizedSqlFilter] = Some {
-    val regex = s"^${parent.toString}"
+    val regex =
+      if(recursiveSearch.getOrElse(false))
+        s"^${parent.toString}"
+      else
+        if (parent.isRoot) "^/[^/]+$" else s"^${parent.toString}/[^/]+$$"
+
     ParameterizedSqlFilter(s"$pathField ~ {_path}", "_path", regex)
   }
 

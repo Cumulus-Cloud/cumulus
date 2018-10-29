@@ -1,31 +1,26 @@
 {
   "compilerOptions": {
+    "baseUrl": "./src",
+    "target": "es6",
+    "module": "commonjs",
+    "strict": true,
     "jsx": "react",
-    "target": "es5",
-    "noUnusedLocals": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
     "sourceMap": true,
-    "skipLibCheck": true,
-    "skipDefaultLibCheck": true,
-    "baseUrl": ".",
-    "paths": {
-      "*": [
-        "src/*"
-      ]
-    },
+    "types" : [],
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
     "strictNullChecks": true,
-    "strictPropertyInitialization": true
+    "strictPropertyInitialization": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
   },
   "include": [
-    "./src/**/*"
-  ],
-  "lib": [
-    "es5",
-    "es6",
-    "es2015.promise",
-    "es2017",
-    "dom"
+      "src/**/*"
   ]
 }

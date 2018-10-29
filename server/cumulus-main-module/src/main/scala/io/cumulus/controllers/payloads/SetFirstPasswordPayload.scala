@@ -13,7 +13,7 @@ case class SetFirstPasswordPayload(
 
 object SetFirstPasswordPayload {
 
-  implicit val reads: Reads[SetFirstPasswordPayload] =
+  implicit val reader: Reads[SetFirstPasswordPayload] =
     (
       (__ \ "login").read[String] and
       (__ \ "password").read[String](minLength[String](4) keepAnd maxLength[String](64)) and

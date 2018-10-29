@@ -12,9 +12,11 @@ import io.cumulus.core.utils.Range
   * @param range The range to use. Only bytes inside of this range will be returned.
   */
 class ByteRange(range: Range) extends GraphStage[FlowShape[ByteString, ByteString]] {
-  val in = Inlet[ByteString]("ByteRange.in")
-  val out = Outlet[ByteString]("ByteRange.out")
-  override val shape = FlowShape.of(in, out)
+
+  val in: Inlet[ByteString]   = Inlet[ByteString]("ByteRange.in")
+  val out: Outlet[ByteString] = Outlet[ByteString]("ByteRange.out")
+
+  override val shape: FlowShape[ByteString, ByteString] = FlowShape.of(in, out)
 
   override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = new GraphStageLogic(shape) {
     private var read: Long = 0

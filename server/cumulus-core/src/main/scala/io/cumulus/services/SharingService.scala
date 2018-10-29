@@ -51,19 +51,19 @@ class SharingService(
   /**
     * Shares a node.
     *
-    * @param path The path of the node to be shared.
+    * @param id The unique ID of the node to be shared.
     * @param expiration Optional date of expiration of the sharing.
     * @param session The session of the user performing the operation.
     */
   def shareNode(
-    path: Path,
+    id: UUID,
     expiration: Option[Int] = None
-  )(implicit session: UserSession): Future[Either[AppError, (Sharing, String)]] = {
+  )(implicit session: UserSession): Future[Either[AppError, (FsNode, Sharing, String)]] = {
     val user = session.user
 
     for {
       // Get the node to share
-      node <- QueryE.getOrNotFound(fsNodeStore.findAndLockByPathAndUser(path, user))
+      node <- QueryE.getOrNotFound(fsNodeStore.findAndLockByIdAndUser(id, user))
 
       // Generate a secret code. This secret key won't be kept on the server
       secretCode = Crypto.randomBytes(16)
@@ -94,7 +94,7 @@ class SharingService(
       // Save the sharing
       _ <- QueryE.lift(sharingStore.create(sharing))
 
-    } yield (sharing, Base16.encode(secretCode))
+    } yield (node, sharing, Base16.encode(secretCode))
 
   }.commit()
 
@@ -106,24 +106,23 @@ class SharingService(
     */
   def listAllSharings(
     pagination: QueryPagination
-  )(implicit user: User): Future[Either[AppError, PaginatedList[SharingInfo]]] = {
-    QueryE.lift(sharingStore.findInfoByUser(user, pagination)).run()
-  }
+  )(implicit user: User): Future[Either[AppError, PaginatedList[Sharing]]] =
+    QueryE.lift(sharingStore.findByUser(user, pagination)).run()
 
   /**
     * Lists all the sharings of the node.
     *
-    * @param path The path of the node.
+    * @param id The unique ID of the node.
     * @param user The user performing the operation.
     */
   def listSharings(
-    path: Path,
+    id: UUID,
     pagination: QueryPagination
   )(implicit user: User): Future[Either[AppError, PaginatedList[Sharing]]] = {
 
     for {
       // Find the node
-      node <- QueryE.getOrNotFound(fsNodeStore.findByPathAndUser(path, user))
+      node <- QueryE.getOrNotFound(fsNodeStore.findByIdAndUser(id, user))
 
       // Find all the sharing of this node
       sharings <- QueryE.lift(sharingStore.findByNode(node, pagination))
@@ -140,13 +139,13 @@ class SharingService(
     */
   def findSharing(
     reference: String
-  )(implicit user: User): Future[Either[AppError, SharingInfo]] = {
+  )(implicit user: User): Future[Either[AppError, Sharing]] = {
 
     for {
       // Get the sharing
-      sharingInfo <- QueryE.getOrNotFound(sharingStore.findInfoByReference(reference))
-      _           <- QueryE.pure(checkUserCredentials(sharingInfo.sharing, user))
-    } yield sharingInfo
+      sharing <- QueryE.getOrNotFound(sharingStore.findByReference(reference))
+      _           <- QueryE.pure(checkUserCredentials(sharing, user))
+    } yield sharing
 
   }.commit()
 

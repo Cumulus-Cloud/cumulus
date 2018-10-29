@@ -1,5 +1,7 @@
 package io.cumulus.services
 
+import java.util.UUID
+
 import akka.actor.ActorRef
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
@@ -10,9 +12,8 @@ import io.cumulus.core.stream.storage.{StorageReferenceReader, StorageReferenceW
 import io.cumulus.core.utils.Range
 import io.cumulus.core.validation.AppError
 import io.cumulus.core.{Logging, Settings}
-import io.cumulus.models.Path
 import io.cumulus.models.fs.{DefaultMetadata, File}
-import io.cumulus.services.tasks.{StorageReferenceDeletionTask, MetadataExtractionTask, ThumbnailCreationTask}
+import io.cumulus.services.tasks.{MetadataExtractionTask, StorageReferenceDeletionTask, ThumbnailCreationTask}
 import io.cumulus.models.user.User
 import io.cumulus.models.user.session.{Session, UserSession}
 import io.cumulus.persistence.storage.{StorageEngines, StorageObject, StorageReference}
@@ -43,14 +44,16 @@ class StorageService(
     * This method will also try to extract metadata from the file (if available) and to generate a thumbnail (if
     * available).
     *
-    * @param path The path of the file to upload to.
+    * @param id The unique ID of the parent directory.
+    * @param filename The name of thew new file.
     * @param cipherName The name of the cipher to use on the file.
     * @param compressionName The name of the compression to use on the file.
     * @param content The stream of the content of the file.
     * @param session The user performing the operation.
     */
   def uploadFile(
-    path: Path,
+    id: UUID,
+    filename: String,
     cipherName: Option[String],
     compressionName: Option[String],
     content: Source[ByteString, _]
@@ -64,8 +67,8 @@ class StorageService(
       compression <- EitherT.fromEither[Future](compressions.get(compressionName))
 
       // Check that no other file already exists at the same path
-      _ <- EitherT(fsNodeService.checkForNewNode(path))
-    } yield cipher -> compression
+      path <- EitherT(fsNodeService.checkForNewNode(id, filename))
+    } yield (path, cipher, compression)
 
 
     preUpload
@@ -74,7 +77,7 @@ class StorageService(
         // will think that a network error has occurred
         content.runWith(Sink.ignore).map(_ => error)
       }
-      .flatMap { case (cipher, compression) =>
+      .flatMap { case (path, cipher, compression) =>
         for {
           // Define the file writer from this information
           fileWriter <- EitherT.fromEither[Future] {
@@ -89,13 +92,12 @@ class StorageService(
           // Store the file's content
           uploadedFile <- EitherT.liftF(content.runWith(fileWriter))
 
-          // Extract metadata & generate a thumbnail (if possible)
-          _ = println(taskExecutor)
-          _ = taskExecutor ! MetadataExtractionTask.create(uploadedFile)
-          _ = taskExecutor ! ThumbnailCreationTask.create(uploadedFile)
-
           // Create an entry in the database for the file
           file <- EitherT(fsNodeService.createFile(uploadedFile))
+
+          // Extract metadata & generate a thumbnail (if possible)
+          _ = taskExecutor ! MetadataExtractionTask.create(uploadedFile)
+          _ = taskExecutor ! ThumbnailCreationTask.create(uploadedFile)
 
         } yield file
       }
@@ -103,16 +105,19 @@ class StorageService(
   }.value
 
   /**
-    * Finds a file's content by its path and owner. Will fail if the element does not exist or is not a file.
-    * @param path The path of the file to read.
+    * Downloads a file's content by its unique ID and owner. Will fail if the element does not exist or is not a file.
+    *
+    * @param id The ID of the file to read.
     * @param session The session performing the operation.
     */
-  def downloadFile(path: Path, maybeRange: Option[Range])(implicit session: Session): Future[Either[AppError, Source[ByteString, _]]] = {
-    fsNodeService.findFile(path)(session.user).map(_.flatMap(file => downloadFile(file, maybeRange)))
+  def downloadFile(id: UUID, maybeRange: Option[Range])(implicit session: Session): Future[Either[AppError, Source[ByteString, _]]] = {
+    fsNodeService.findFile(id)(session.user)
+      .map(_.flatMap(file => downloadFile(file, maybeRange)))
   }
 
   /**
     * Finds a file's content by its reference. Will fail if the element does not exist or is not a file.
+    *
     * @param file The file to read.
     * @param session The session performing the operation.
     */
@@ -128,15 +133,16 @@ class StorageService(
   }
 
   /**
-    * Finds a file content by its path and owner. Will fail if the element does not exist or is not a file.
-    * @param path The path of the file.
+    * Finds a file content by its unique ID and owner. Will fail if the element does not exist or is not a file.
+    *
+    * @param id The ID of the file.
     * @param session The session performing the operation.
     */
-  def downloadThumbnail(path: Path)(implicit session: Session): Future[Either[AppError, Source[ByteString, _]]] = {
+  def downloadThumbnail(id: UUID)(implicit session: Session): Future[Either[AppError, Source[ByteString, _]]] = {
     implicit val user: User = session.user
 
     for {
-      file    <- EitherT(fsNodeService.findFile(path))
+      file    <- EitherT(fsNodeService.findFile(id))
       content <- EitherT.fromEither[Future](StorageReferenceReader.thumbnailReader(file))
     } yield content
 
@@ -147,10 +153,10 @@ class StorageService(
     * file, the file's content will also be deleted.
     *
     * @see [[io.cumulus.services.FsNodeService#deleteNode FsNodeService.deleteNode]]
-    * @param path The file's path.
+    * @param id The file's unique ID.
     */
-  def deleteNode(path: Path)(implicit session: UserSession): Future[Either[AppError, Unit]] = {
-    fsNodeService.deleteNode(path)(session.user).map(_.map {
+  def deleteNode(id: UUID)(implicit session: UserSession): Future[Either[AppError, Unit]] = {
+    fsNodeService.deleteNode(id, deleteContent = false)(session.user).map(_.map {
       case file: File =>
         // Create a task to delete the file and its thumbnail
         file.thumbnailStorageReference.foreach(taskExecutor ! StorageReferenceDeletionTask.create(_))

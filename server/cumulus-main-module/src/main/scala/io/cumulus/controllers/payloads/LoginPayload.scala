@@ -9,7 +9,7 @@ case class LoginPayload(
 
 object LoginPayload {
 
-  implicit val reads: Reads[LoginPayload] =
+  implicit val reader: Reads[LoginPayload] =
     Json.reads[LoginPayload]
 
 }

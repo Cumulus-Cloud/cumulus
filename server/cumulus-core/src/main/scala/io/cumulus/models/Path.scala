@@ -1,10 +1,9 @@
 package io.cumulus.models
 
 import scala.language.implicitConversions
-
 import org.apache.commons.io.FilenameUtils
 import play.api.libs.json._
-import play.api.mvc.PathBindable
+import play.api.mvc.{PathBindable, QueryStringBindable}
 
 /**
   * A path, either for a directory or for a for a file.
@@ -143,10 +142,28 @@ object Path {
       override def writes(o: Path): JsValue             = JsString(o)
     }
 
-  implicit def pathBinder(implicit stringBinder: PathBindable[String]) =
+  implicit def pathBinder(implicit stringBinder: PathBindable[String]): PathBindable[Path] =
     new PathBindable[Path] {
-      def bind(key: String, value: String) = stringBinder.bind(key, value).map(Path.sanitize)
-      def unbind(key: String, value: Path) = value.toString
+
+      def bind(key: String, value: String): Either[String, Path] =
+        stringBinder.bind(key, value).map(Path.sanitize)
+
+      def unbind(key: String, value: Path): String =
+        value.toString
+
+    }
+
+  implicit def queryStringBindable(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[Path] =
+    new QueryStringBindable[Path] {
+
+      def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, Path]] =
+        params
+          .get(key).flatMap(_.headOption.map(Path.convertStringToPath))
+          .map(Right.apply)
+
+      def unbind(key: String, ordering: Path): String =
+        stringBinder.unbind(key, ordering.toString)
+
     }
 
 }
