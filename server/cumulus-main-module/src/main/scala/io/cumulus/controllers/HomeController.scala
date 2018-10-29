@@ -50,7 +50,7 @@ class HomeController(
         IndexPage(Some(user), maybeDirectory.toOption)
       }
       .recover {
-        case NonFatal(e) =>
+        case NonFatal(_) =>
           IndexPage(Some(user), None)
       }
       .map(Ok(_))

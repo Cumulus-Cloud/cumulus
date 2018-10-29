@@ -12,7 +12,6 @@ import io.cumulus.core.utils.PaginatedList._
 import io.cumulus.models.fs.FsNode
 import io.cumulus.models.sharing.Sharing
 import io.cumulus.models.user.User
-import io.cumulus.persistence.stores.FsNodeStore.pathField
 import io.cumulus.persistence.stores.SharingStore._
 
 /**

@@ -31,6 +31,24 @@ lazy val commonSettings = Seq(
   organization := "io.cumulus",
   scalaVersion := "2.12.5",
 
+  // Wart warnings
+  wartremoverWarnings ++= Seq(
+    Wart.Null,
+    Wart.ArrayEquals,
+    Wart.AsInstanceOf,
+    Wart.EitherProjectionPartial,
+    Wart.ExplicitImplicitTypes,
+    Wart.IsInstanceOf,
+    Wart.OptionPartial,
+    Wart.Recursion,
+    Wart.Return,
+    Wart.StringPlusAny,
+    Wart.TraversableOps,
+    Wart.TryPartial,
+    Wart.While,
+    Wart.Var
+  ),
+
   // Do not show eviction warnings, because we can't really do anything
   // to suppress them...
   evictionWarningOptions in update := EvictionWarningOptions.default
@@ -98,7 +116,10 @@ lazy val cumulusMainModule =
       routesFile := "routes",
       routesGeneratorClass := InjectedRoutesGenerator,
       sourceGenerators in Compile += compileRoutes.map(_.toSeq),
-
+      
+      // Ignore warnings from the generated files from the route
+      wartremoverExcluded ++= compileRoutes.in(Compile).map(_.toSeq).value,
+      
       // Dependencies
       libraryDependencies ++= Seq(
         // Persistence

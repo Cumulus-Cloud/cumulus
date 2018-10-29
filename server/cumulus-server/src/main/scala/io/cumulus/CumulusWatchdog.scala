@@ -12,6 +12,7 @@ import play.core.server.{Server, ServerComponents}
   */
 object CumulusWatchdog extends ServerWatchdog with Logging {
 
+  @SuppressWarnings(Array("org.wartremover.warts.Var"))
   private var server: Option[Server] = None
 
   private def createServer: ServerComponents = {

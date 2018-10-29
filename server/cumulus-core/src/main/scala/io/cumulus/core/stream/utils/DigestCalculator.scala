@@ -16,8 +16,8 @@ import io.cumulus.core.utils.Base64
   */
 class DigestCalculator(algorithm: String) extends GraphStage[FlowShape[ByteString, String]] {
 
-  val in: Inlet[ByteString] = Inlet[ByteString]("DigestCalculator.in")
-  val out: Outlet[String]   = Outlet[String]("DigestCalculator.out")
+  private val in: Inlet[ByteString] = Inlet[ByteString]("DigestCalculator.in")
+  private val out: Outlet[String]   = Outlet[String]("DigestCalculator.out")
 
   override val shape: FlowShape[ByteString, String] = FlowShape.of(in, out)
 
