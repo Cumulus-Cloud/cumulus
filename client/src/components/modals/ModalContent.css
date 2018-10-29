@@ -1,7 +1,0 @@
-.modalContent {
-  background-color: var(--secondaryBg);
-  padding: 15px 30px;
-  min-height: 400px;
-  max-height: 400px;
-  overflow: auto;
-}

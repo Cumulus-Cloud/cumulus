@@ -1,13 +1,13 @@
-import { object, string, array, union } from "validation.ts"
 
-export const role = union("admin", "user")
-export type Role = typeof role.T
+export type Role = 'admin' | 'user'
 
-export const UserValidator = object({
-  id: string,
-  login: string,
-  creation: string,
-  roles: array(role)
-})
+export interface User {
+  id: string
+  login: string
+  creation: string
+  roles: Role[]
+}
 
-export type User = typeof UserValidator.T
+export function isAdmin(user: User): boolean {
+  return user.roles.indexOf('admin') >= 0
+}
