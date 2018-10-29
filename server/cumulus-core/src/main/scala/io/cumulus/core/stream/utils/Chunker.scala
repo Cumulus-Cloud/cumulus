@@ -17,12 +17,14 @@ import akka.util.ByteString
   */
 class Chunker(chunkSize: Int) extends GraphStage[FlowShape[ByteString, ByteString]] {
 
-  val in: Inlet[ByteString]   = Inlet[ByteString]("Chunker.in")
-  val out: Outlet[ByteString] = Outlet[ByteString]("Chunker.out")
+  private val in: Inlet[ByteString]   = Inlet[ByteString]("Chunker.in")
+  private val out: Outlet[ByteString] = Outlet[ByteString]("Chunker.out")
 
   override val shape: FlowShape[ByteString, ByteString] = FlowShape.of(in, out)
 
   override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = new GraphStageLogic(shape) {
+
+    @SuppressWarnings(Array("org.wartremover.warts.Var"))
     private var buffer = ByteString.empty
 
     setHandler(out, new OutHandler {

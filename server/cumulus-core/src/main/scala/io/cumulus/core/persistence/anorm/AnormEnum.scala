@@ -7,11 +7,10 @@ import enumeratum.{Enum, EnumEntry}
 
 trait AnormEnum[A <: EnumEntry] { self: Enum[A] =>
 
-  implicit val toStatement = new ToStatement[A] {
-    def set(s: PreparedStatement, index: Int, value: A): Unit =
-      s.setObject(index, value.entryName, java.sql.Types.VARCHAR)
-  }
+  implicit val toStatement: ToStatement[A] = (s: PreparedStatement, index: Int, value: A) =>
+    s.setObject(index, value.entryName, java.sql.Types.VARCHAR)
 
+  @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
   implicit val enumColumn: Column[A] = Column.nonNull[A] { (value, meta) =>
     value match {
       case name: String =>
