@@ -5,8 +5,9 @@ import java.util.UUID
 
 import akka.util.ByteString
 import io.cumulus.core.Logging
-import io.cumulus.core.persistence.CumulusDB
-import io.cumulus.core.persistence.query.{QueryBuilder, QueryE, QueryPagination}
+import io.cumulus.core.persistence.query.{QueryE, QueryPagination, QueryRunner}
+import io.cumulus.core.persistence.query.QueryRunner._
+import io.cumulus.core.persistence.query.QueryE._
 import io.cumulus.core.utils.{Base16, Crypto, PaginatedList}
 import io.cumulus.core.validation.AppError
 import io.cumulus.models._
@@ -19,13 +20,14 @@ import io.cumulus.persistence.stores.{FsNodeStore, SharingStore, UserStore}
 
 import scala.concurrent.Future
 
+
 class SharingService(
   userStore: UserStore,
   fsNodeStore: FsNodeStore,
   sharingStore: SharingStore
 )(
   implicit
-  qb: QueryBuilder[CumulusDB]
+  queryRunner: QueryRunner[Future]
 ) extends Logging {
 
   /** Generate a sharing for a given file; both for the file itself and for its thumbnail. */
@@ -264,7 +266,7 @@ class SharingService(
     reference: String,
     path: Path,
     secretCode: String
-  ): QueryE[CumulusDB, (Sharing, User, FsNode)] = {
+  ): QueryE[(Sharing, User, FsNode)] = {
 
     for {
       // Find the sharing used

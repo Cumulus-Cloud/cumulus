@@ -1,38 +1,17 @@
 package io.cumulus.core.persistence.query
 
 import java.sql.Connection
-import scala.concurrent.{ExecutionContext, Future}
 
 import io.cumulus.core.Logging
-import io.cumulus.core.persistence.Database
+import io.cumulus.core.persistence.CumulusDB
 
-/**
-  * An SQL query monad.
-  * 1) Encapsulates and composes query statements to be sent to the database.
-  * 2) Enforces the use of a dedicated ExecutionContext.
-  */
-case class Query[DB <: Database, +A](db: DB, ec: ExecutionContext)(private val atomic: Connection => A)
-  extends Logging {
+import scala.concurrent.{ExecutionContext, Future}
 
-  def map[B](f: A => B): Query[DB, B] =
-    Query(db, ec)(f compose atomic)
+class FutureQueryRunner(db: CumulusDB, ec: ExecutionContext) extends QueryRunner[Future] with Logging {
 
-  def flatMap[B](f: A => Query[DB, B]): Query[DB, B] =
-    Query(db, ec)(connection => f(atomic(connection)).atomic(connection))
-
-  def zip[B](query: Query[DB, B]): Query[DB, (A, B)] =
-    flatMap { a =>
-      query.map { b =>
-        (a, b)
-      }
-    }
-
-  /**
-    * For queries which doesn't need to be atomic.
-    */
-  def run(logException: Boolean = true): Future[A] = {
+  def run[A](query: Query[A], logException: Boolean): Future[A] = {
     val result = Future {
-      db.getDB.withConnection(atomic)
+      db.getDB.withConnection(query.atomic)
     }(ec)
 
     result.foreach {
@@ -45,13 +24,9 @@ case class Query[DB <: Database, +A](db: DB, ec: ExecutionContext)(private val a
     result
   }
 
-  /**
-    * This is a transaction.
-    * Use it instead of run if you have dependant update queries.
-    */
-  def commit(logException: Boolean = true): Future[A] = {
+  def commit[A](query: Query[A], logException: Boolean): Future[A] = {
     val result = Future {
-      db.getDB.withTransaction(atomic)
+      db.getDB.withTransaction(query.atomic)
     }(ec)
 
     result.foreach {
@@ -66,17 +41,61 @@ case class Query[DB <: Database, +A](db: DB, ec: ExecutionContext)(private val a
 
 }
 
+trait QueryRunner[F[_]] {
+
+  def run[A](query: Query[A], logException: Boolean = true): F[A]
+
+  def commit[A](query: Query[A], logException: Boolean = true): F[A]
+
+}
+
+object QueryRunner {
+
+  case class RunnableQuery[F[_], A](query: Query[A], queryRunner: QueryRunner[F]) {
+
+    def run(logException: Boolean = true): F[A] =
+      queryRunner.run(query)
+
+    def commit(logException: Boolean = true): F[A] =
+      queryRunner.commit(query)
+
+  }
+
+  implicit def toRunnableQuery[F[_], A](query: Query[A])(implicit queryRunner: QueryRunner[F]): RunnableQuery[F, A] = {
+    RunnableQuery(query, queryRunner)
+  }
+
+  implicit def toRunnableQueryWithConversion[F[_], QueryType, A](query: QueryType)(implicit converter: QueryType =>  Query[A], queryRunner: QueryRunner[F]): RunnableQuery[F, A] = {
+    RunnableQuery(converter(query), queryRunner)
+  }
+
+}
+
+/**
+  * An SQL query monad.
+  * 1) Encapsulates and composes query statements to be sent to the database.
+  * 2) Enforces the use of a dedicated ExecutionContext.
+  */ // TODO
+case class Query[+A](atomic: Connection => A) {
+
+  def map[B](f: A => B): Query[B] =
+    Query(f compose atomic)
+
+  def flatMap[B](f: A => Query[B]): Query[B] =
+    Query(connection => f(atomic(connection)).atomic(connection))
+
+  def zip[B](query: Query[B]): Query[(A, B)] =
+    flatMap { a =>
+      query.map { b =>
+        (a, b)
+      }
+    }
+
+}
+
 object Query {
 
-  def sequence[DB <: Database, A](
-    queries: Seq[Query[DB, A]]
-  )(implicit qb: QueryBuilder[DB]): Query[DB, Seq[A]] = {
-    queries.foldLeft(qb.pure(Seq.empty[A]))(
-      (queries, query) =>
-        queries.flatMap { seq =>
-          query.map(a => seq :+ a)
-        }
-    )
-  }
+  def pure[A](a: A): Query[A] =
+    Query(_ => a)
 
 }

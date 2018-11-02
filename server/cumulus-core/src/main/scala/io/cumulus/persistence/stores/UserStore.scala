@@ -3,18 +3,14 @@ package io.cumulus.persistence.stores
 import java.util.UUID
 
 import anorm._
-import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.anorm.AnormSupport._
 import io.cumulus.core.persistence.anorm.{AnormPKOperations, AnormRepository, AnormSupport}
-import io.cumulus.core.persistence.query.QueryBuilder
 import io.cumulus.models.user.User
 
 /**
   * User store, used to manage users in the database.
   */
-class UserStore(
-  implicit val qb: QueryBuilder[CumulusDB]
-) extends AnormPKOperations[User, CumulusDB, UUID] with AnormRepository[User, CumulusDB] {
+class UserStore extends AnormPKOperations[User, UUID] with AnormRepository[User] {
 
   val table: String   = UserStore.table
   val pkField: String = UserStore.pkField
