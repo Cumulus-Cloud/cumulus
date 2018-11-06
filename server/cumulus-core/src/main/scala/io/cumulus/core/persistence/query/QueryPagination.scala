@@ -2,6 +2,12 @@ package io.cumulus.core.persistence.query
 
 import io.cumulus.core.Settings
 
+/**
+  * Pagination for an SQL query.
+  *
+  * @param limit The element limit.
+  * @param offset The element offset, defaulted to 0.
+  */
 case class QueryPagination(limit: Int, offset: Option[Int] = None) {
 
   def toLIMIT: String = {

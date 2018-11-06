@@ -1,7 +1,6 @@
 package io.cumulus.services
 
 import io.cumulus.core.Settings
-import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.query.{QueryE, QueryRunner}
 import io.cumulus.core.persistence.query.QueryRunner._
 import io.cumulus.core.persistence.query.QueryE._
