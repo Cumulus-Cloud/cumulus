@@ -5,6 +5,9 @@ import scala.collection.immutable
 import enumeratum.{Enum, EnumEntry}
 import io.cumulus.core.persistence.query.QueryOrderingDirection.ASC
 
+/**
+  * Allow to order a database query.
+  */
 trait QueryOrdering {
 
   def toORDER: String = {

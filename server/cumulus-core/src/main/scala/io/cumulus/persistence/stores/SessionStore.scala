@@ -3,18 +3,14 @@ package io.cumulus.persistence.stores
 import java.util.UUID
 
 import anorm._
-import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.anorm.AnormSupport._
 import io.cumulus.core.persistence.anorm.{AnormPKOperations, AnormRepository, AnormSupport}
-import io.cumulus.core.persistence.query.QueryBuilder
 import io.cumulus.models.user.session.SessionInformation
 
 /**
   * Session store, used to store users' sessions in the database.
   */
-class SessionStore(
-  implicit val qb: QueryBuilder[CumulusDB]
-) extends AnormPKOperations[SessionInformation, CumulusDB, UUID] with AnormRepository[SessionInformation, CumulusDB] {
+class SessionStore extends AnormPKOperations[SessionInformation, UUID] with AnormRepository[SessionInformation] {
 
   val table: String   = SessionStore.table
   val pkField: String = SessionStore.pkField

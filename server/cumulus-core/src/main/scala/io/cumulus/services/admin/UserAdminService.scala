@@ -1,8 +1,9 @@
 package io.cumulus.services.admin
 
 import io.cumulus.core.Settings
-import io.cumulus.core.persistence.CumulusDB
-import io.cumulus.core.persistence.query.{QueryBuilder, QueryE, QueryPagination}
+import io.cumulus.core.persistence.query.{QueryE, QueryPagination, QueryRunner}
+import io.cumulus.core.persistence.query.QueryE._
+import io.cumulus.core.persistence.query.QueryRunner._
 import io.cumulus.core.utils.PaginatedList
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.user.{User, UserRole, UserSecurity, UserUpdate}
@@ -26,7 +27,7 @@ class UserAdminService(
 )(
   implicit
   val settings: Settings,
-  val qb: QueryBuilder[CumulusDB]
+  queryRunner: QueryRunner[Future]
 ) extends UserServiceCommon {
 
   /**

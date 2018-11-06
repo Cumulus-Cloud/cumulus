@@ -1,8 +1,9 @@
 package io.cumulus.services
 
 import io.cumulus.core.Settings
-import io.cumulus.core.persistence.CumulusDB
-import io.cumulus.core.persistence.query.{QueryBuilder, QueryE}
+import io.cumulus.core.persistence.query.{QueryE, QueryRunner}
+import io.cumulus.core.persistence.query.QueryRunner._
+import io.cumulus.core.persistence.query.QueryE._
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.user.session.UserSession
 import io.cumulus.models.user.{User, UserSecurity}
@@ -26,7 +27,7 @@ class UserService(
 )(
   implicit
   val settings: Settings,
-  val qb: QueryBuilder[CumulusDB]
+  queryRunner: QueryRunner[Future]
 ) extends UserServiceCommon {
 
   /**

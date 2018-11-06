@@ -3,8 +3,7 @@ package io.cumulus.services
 import java.util.UUID
 
 import io.cumulus.core.{Logging, Settings}
-import io.cumulus.core.persistence.CumulusDB
-import io.cumulus.core.persistence.query.{QueryBuilder, QueryE}
+import io.cumulus.core.persistence.query.QueryE
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.fs.Directory
 import io.cumulus.models.user.User
@@ -23,7 +22,6 @@ trait UserServiceCommon extends Logging {
   protected def mailService: MailService
 
   protected implicit def settings: Settings
-  protected implicit def qb: QueryBuilder[CumulusDB]
 
 
   /**
@@ -35,7 +33,7 @@ trait UserServiceCommon extends Logging {
     user: User
   )(implicit
     messages: Messages
-  ): QueryE[CumulusDB, User] = {
+  ): QueryE[User] = {
 
     for {
       // Check for duplicated UUID. Should not really happen...
@@ -77,7 +75,7 @@ trait UserServiceCommon extends Logging {
   /**
     * Find an user by its ID.
     */
-  def findUserInternal(id: String): QueryE[CumulusDB, User] = {
+  def findUserInternal(id: String): QueryE[User] = {
 
     for {
       // Validate the provided UUID
@@ -100,7 +98,7 @@ trait UserServiceCommon extends Logging {
   protected def changeUserLogin(
     user: User,
     login: String
-  ): QueryE[CumulusDB, User] = {
+  ): QueryE[User] = {
     val updatedUser = user.copy(login = login)
 
     if(user != updatedUser)
@@ -117,7 +115,7 @@ trait UserServiceCommon extends Logging {
     user: User,
     email: String,
     emailValidated: Boolean
-  )(implicit messages: Messages): QueryE[CumulusDB, User] = {
+  )(implicit messages: Messages): QueryE[User] = {
     val updatedUser = user.copy(email = email, security = user.security.copy(emailValidated = emailValidated))
 
     if(user != updatedUser) {
@@ -150,7 +148,7 @@ trait UserServiceCommon extends Logging {
   protected def changeUserActivation(
     user: User,
     activation: Boolean
-  ): QueryE[CumulusDB, User] = {
+  ): QueryE[User] = {
     val updatedUser = user.copy(security = if(activation) user.security.activate else user.security.deactivate)
 
     if(user != updatedUser)

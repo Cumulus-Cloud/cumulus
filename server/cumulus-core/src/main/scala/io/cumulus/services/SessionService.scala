@@ -3,8 +3,9 @@ package io.cumulus.services
 import java.time.Duration
 import java.util.UUID
 
-import io.cumulus.core.persistence.CumulusDB
-import io.cumulus.core.persistence.query.{QueryBuilder, QueryE, QueryPagination}
+import io.cumulus.core.persistence.query.{QueryE, QueryPagination, QueryRunner}
+import io.cumulus.core.persistence.query.QueryE._
+import io.cumulus.core.persistence.query.QueryRunner._
 import io.cumulus.core.utils.PaginatedList
 import io.cumulus.core.validation.AppError
 import io.cumulus.core.{Logging, Settings}
@@ -25,8 +26,8 @@ class SessionService(
   userStore: UserStore
 )(
   implicit
-  settings: Settings,
-  qb: QueryBuilder[CumulusDB]
+  queryRunner: QueryRunner[Future],
+  settings: Settings
 ) extends Logging {
 
   /**
@@ -37,7 +38,7 @@ class SessionService(
     */
   def createSession(from: String, user: User): Future[Either[AppError, SessionInformation]] = {
     val newSession = SessionInformation.create(from, Duration.ofHours(settings.management.sessionDuration))(user)
-    sessionStore.create(newSession).map(_ => Right(newSession)).run()
+    QueryE.lift(sessionStore.create(newSession).map(_ => newSession)).run()
   }
 
   /**
@@ -48,7 +49,7 @@ class SessionService(
     */
   def createInfiniteSession(from: String, user: User): Future[Either[AppError, SessionInformation]] = {
     val newSession = SessionInformation.createInfinite(from)(user)
-    sessionStore.create(newSession).map(_ => Right(newSession)).run()
+    QueryE.lift(sessionStore.create(newSession).map(_ => newSession)).run()
   }
 
   /**
@@ -119,12 +120,7 @@ class SessionService(
     pagination: QueryPagination
   )(implicit user: User): Future[Either[AppError, PaginatedList[SessionInformation]]] = {
     val sessionFilter = SessionFilter(owner = user, revoked = None)
-
-    sessionStore
-      .findAll(sessionFilter, SessionOrdering.of(OrderByLastActivityDesc), pagination)
-      .map(Right(_))
-      .run()
-
+    QueryE.lift(sessionStore.findAll(sessionFilter, SessionOrdering.of(OrderByLastActivityDesc), pagination)).run()
   }
 
 }

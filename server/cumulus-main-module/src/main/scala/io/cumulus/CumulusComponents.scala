@@ -15,7 +15,7 @@ import io.cumulus.controllers.utils.LoggingFilter
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.HttpErrorHandler
 import io.cumulus.core.persistence.CumulusDB
-import io.cumulus.core.persistence.query.QueryBuilder
+import io.cumulus.core.persistence.query.{FutureQueryRunner, QueryRunner}
 import io.cumulus.core.utils.ServerWatchdog
 import io.cumulus.persistence.storage.StorageEngines
 import io.cumulus.persistence.storage.engines.LocalStorage
@@ -34,7 +34,7 @@ import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
 import router.Routes
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 /**
   * Create the components of the Cumulus web application.
@@ -104,7 +104,7 @@ class CumulusComponents(
 
   // Database & QueryMonad to access DB
   implicit lazy val database: Database = dbApi.database("default")
-  implicit lazy val welcomeQB: QueryBuilder[CumulusDB] = QueryBuilder(CumulusDB(database), databaseEc)
+  implicit lazy val queryRunner: QueryRunner[Future] = new FutureQueryRunner(CumulusDB(database), databaseEc)
 
   // Execution contexts
   implicit lazy val defaultEc: ExecutionContextExecutor = actorSystem.dispatcher

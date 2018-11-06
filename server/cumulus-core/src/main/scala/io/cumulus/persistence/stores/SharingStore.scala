@@ -3,10 +3,9 @@ package io.cumulus.persistence.stores
 import java.util.UUID
 
 import anorm._
-import io.cumulus.core.persistence.CumulusDB
 import io.cumulus.core.persistence.anorm.AnormSupport._
 import io.cumulus.core.persistence.anorm.{AnormPKOperations, AnormRepository, AnormSupport}
-import io.cumulus.core.persistence.query.{Query, QueryBuilder, QueryPagination}
+import io.cumulus.core.persistence.query.{Query, QueryPagination}
 import io.cumulus.core.utils.PaginatedList
 import io.cumulus.core.utils.PaginatedList._
 import io.cumulus.models.fs.FsNode
@@ -17,9 +16,7 @@ import io.cumulus.persistence.stores.SharingStore._
 /**
   * Sharing store, used to manage sharings in the database.
   */
-class SharingStore(
-  implicit val qb: QueryBuilder[CumulusDB]
-) extends AnormPKOperations[Sharing, CumulusDB, UUID] with AnormRepository[Sharing, CumulusDB] {
+class SharingStore extends AnormPKOperations[Sharing, UUID] with AnormRepository[Sharing] {
 
   val table: String   = SharingStore.table
   val pkField: String = SharingStore.pkField
@@ -29,8 +26,8 @@ class SharingStore(
     *
     * @param reference The unique reference to search.
     */
-  def findByReference(reference: String): Query[CumulusDB, Option[Sharing]] =
-    qb { implicit c =>
+  def findByReference(reference: String): Query[Option[Sharing]] =
+    Query { implicit c =>
 
       SQL"""
           SELECT #$table.#$metadataField
@@ -45,8 +42,8 @@ class SharingStore(
     * @param user The user.
     * @param pagination The pagination to use.
     */
-  def findByUser(user: User, pagination: QueryPagination): Query[CumulusDB, PaginatedList[Sharing]] =
-    qb { implicit c =>
+  def findByUser(user: User, pagination: QueryPagination): Query[PaginatedList[Sharing]] =
+    Query { implicit c =>
       val paginationPlusOne = pagination.copy(limit = pagination.limit + 1)
 
       val result =
@@ -66,8 +63,8 @@ class SharingStore(
     * @param node The shared node.
     * @param pagination The pagination to use.
     */
-  def findByNode(node: FsNode, pagination: QueryPagination): Query[CumulusDB, PaginatedList[Sharing]] =
-    qb { implicit c =>
+  def findByNode(node: FsNode, pagination: QueryPagination): Query[PaginatedList[Sharing]] =
+    Query { implicit c =>
       val paginationPlusOne = pagination.copy(limit = pagination.limit + 1)
 
       val result =
@@ -86,8 +83,8 @@ class SharingStore(
     *
     * @param node The shared node.
     */
-  def deleteByNode(node: FsNode, user: User): Query[CumulusDB, Int] =
-    qb { implicit c =>
+  def deleteByNode(node: FsNode, user: User): Query[Int] =
+    Query { implicit c =>
 
       SQL"""
           DELETE FROM  #$table
@@ -100,8 +97,8 @@ class SharingStore(
     *
     * @param node The parent shared node.
     */
-  def deleteByParentNode(node: FsNode, user: User): Query[CumulusDB, Int] =
-    qb { implicit c =>
+  def deleteByParentNode(node: FsNode, user: User): Query[Int] =
+    Query { implicit c =>
       val searchRegex = s"^${node.path.toString}(/.*|$$)"
 
       SQL"""

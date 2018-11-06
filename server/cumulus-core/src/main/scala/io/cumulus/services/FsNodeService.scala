@@ -4,8 +4,9 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 import io.cumulus.core.Logging
-import io.cumulus.core.persistence.CumulusDB
-import io.cumulus.core.persistence.query.{QueryBuilder, QueryE, QueryPagination}
+import io.cumulus.core.persistence.query.{QueryE, QueryPagination, QueryRunner}
+import io.cumulus.core.persistence.query.QueryRunner._
+import io.cumulus.core.persistence.query.QueryE._
 import io.cumulus.core.utils.PaginatedList
 import io.cumulus.core.validation.AppError
 import io.cumulus.models._
@@ -17,15 +18,15 @@ import io.cumulus.persistence.stores.orderings.FsNodeOrdering
 import io.cumulus.persistence.stores.{FsNodeStore, SharingStore}
 import play.api.libs.json.__
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
+
 
 class FsNodeService(
   fsNodeStore: FsNodeStore,
   sharingStore: SharingStore
 )(
   implicit
-  ec: ExecutionContext,
-  qb: QueryBuilder[CumulusDB]
+  queryRunner: QueryRunner[Future]
 ) extends Logging {
 
   /**
@@ -33,8 +34,8 @@ class FsNodeService(
     *
     * @param user The user performing the operation.
     */
-  def getIndex(implicit user: User): Future[Right[Nothing, List[FsNodeIndex]]] = {
-    fsNodeStore.findIndexByUser(user).map(Right(_)).run()
+  def getIndex(implicit user: User): Future[Either[AppError, List[FsNodeIndex]]] = {
+    QueryE.lift(fsNodeStore.findIndexByUser(user)).run()
   }
 
   /**
@@ -130,10 +131,7 @@ class FsNodeService(
     val filter   = FsNodeFilter(name, parent, recursiveSearch, nodeType, mimeType, user)
     val ordering = FsNodeOrdering.empty
 
-    fsNodeStore
-      .findAll(filter, ordering, pagination)
-      .commit()
-      .map(Right(_))
+    QueryE.lift(fsNodeStore.findAll(filter, ordering, pagination)).commit()
   }
 
   /**
@@ -175,7 +173,7 @@ class FsNodeService(
     * @param user The user performing the operation.
     */
   def createDirectory(directory: Directory)(implicit user: User): Future[Either[AppError, Directory]] =
-    createNode(directory).map(_.map(_ => directory))
+    createNode(directory)
 
   /**
     * Creates a file (only its metadata - for now) into the user file-system. The path of the file should be unique
@@ -184,7 +182,7 @@ class FsNodeService(
     * @param user The user performing the operation.
     */
   def createFile(file: File)(implicit user: User): Future[Either[AppError, File]] =
-    createNode(file).map(_.map(_ => file))
+    createNode(file)
 
   /**
     * Set the thumbnail of a file.
@@ -264,7 +262,7 @@ class FsNodeService(
   def moveNode(id: UUID, to: Path)(implicit user: User): Future[Either[AppError, FsNode]] =
     moveNodeInternal(id, to).commit()
 
-  private def moveNodeInternal(id: UUID, to: Path)(implicit user: User): QueryE[CumulusDB, FsNode] = {
+  private def moveNodeInternal(id: UUID, to: Path)(implicit user: User): QueryE[FsNode] = {
 
     for {
       // Search the node & its parent by path and owner
@@ -346,7 +344,7 @@ class FsNodeService(
     * @param id The unique ID of the node.
     * @param user The user performing the operation.
     */
-  private def deleteNodeWithoutContent(id: UUID)(implicit user: User): QueryE[CumulusDB, FsNode] = {
+  private def deleteNodeWithoutContent(id: UUID)(implicit user: User): QueryE[FsNode] = {
 
     for {
       // Search the node by path and owner
@@ -382,7 +380,7 @@ class FsNodeService(
 
   }
 
-  private def deleteNodeWithContent(id: UUID)(implicit user: User): QueryE[CumulusDB, FsNode] = {
+  private def deleteNodeWithContent(id: UUID)(implicit user: User): QueryE[FsNode] = {
 
     for {
       // Search the node by path and owner
@@ -415,7 +413,7 @@ class FsNodeService(
     * @param node The node to create.
     * @param user The user performing the operation.
     */
-  private def createNode(node: FsNode)(implicit user: User): Future[Either[AppError, FsNode]] = {
+  private def createNode[N <: FsNode](node: N)(implicit user: User): Future[Either[AppError, N]] = {
 
     for {
       // Check is the user is the owner
@@ -505,7 +503,7 @@ class FsNodeService(
     }
 
   /** Gets the parent directory of the element and lock it for the transaction. */
-  private def getParentWithLock(path: Path)(implicit user: User): QueryE[CumulusDB, Directory] = {
+  private def getParentWithLock(path: Path)(implicit user: User): QueryE[Directory] = {
     QueryE {
       fsNodeStore.findAndLockByPathAndUser(path.parent, user).map {
         case Some(directory: Directory) =>
