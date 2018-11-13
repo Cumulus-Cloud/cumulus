@@ -13,6 +13,10 @@ const Routes = {
     search_matcher: '/app/search:path(.+)'
   },
   api: {
+    management: {
+      reload: '/api/admin/management/reload',
+      stop: '/api/admin/management/stop',
+    },
     users: {
       base:             '/api/users',
       me:               '/api/users/me',

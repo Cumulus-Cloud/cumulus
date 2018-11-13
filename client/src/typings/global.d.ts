@@ -10,8 +10,15 @@ declare global {
     isLiveReload: boolean
   }
 
+  type Trace = {
+    object: string
+    func: string
+    line: number
+  }
+
   // Injected by the backend's templating
-  const user: User | undefined
-  const directoryWithContent: DirectoryWithContent | undefined
+  const user: User | null
+  const directoryWithContent: DirectoryWithContent | null
+  const error: { stack: Trace[] } | null
 
 }

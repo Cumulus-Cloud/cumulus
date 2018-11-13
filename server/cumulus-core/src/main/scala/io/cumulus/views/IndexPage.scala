@@ -16,7 +16,8 @@ case class IndexPage(
   override protected def info: Map[String, JsValue] = {
     Map(
       "user" -> maybeUser.map(user => Json.toJson(user)).getOrElse(JsNull),
-      "directoryWithContent" -> maybeDirectory.map(dir => Json.toJson(dir)).getOrElse(JsNull)
+      "directoryWithContent" -> maybeDirectory.map(dir => Json.toJson(dir)).getOrElse(JsNull),
+      "error" -> JsNull
     )
   }
 

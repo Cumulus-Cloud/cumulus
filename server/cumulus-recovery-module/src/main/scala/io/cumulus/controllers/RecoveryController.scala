@@ -7,7 +7,7 @@ import akka.actor.Scheduler
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
 import io.cumulus.core.utils.ServerWatchdog
-import io.cumulus.views.CumulusRecoveryPage
+import io.cumulus.views.RecoveryPage
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}
 
@@ -25,7 +25,7 @@ class RecoveryController(
 ) extends AbstractController(cc) with ApiUtils with BodyParserJson {
 
   def index = Action { implicit request =>
-    Ok(CumulusRecoveryPage(error))
+    Ok(RecoveryPage(error))
   }
 
   /**
