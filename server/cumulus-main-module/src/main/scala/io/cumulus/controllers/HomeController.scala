@@ -1,5 +1,6 @@
 package io.cumulus.controllers
 
+import com.github.ghik.silencer.silent
 import io.cumulus.controllers.utils.UserAuthentication
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.ApiUtils
@@ -60,7 +61,7 @@ class HomeController(
   }
 
   def indexWithIgnoredPath(path: String): Action[AnyContent] = AuthenticatedAction.withErrorHandler { implicit request =>
-
+    path: @silent
     val user = request.authenticatedSession.user
 
     Ok(IndexPage(Some(user), None))

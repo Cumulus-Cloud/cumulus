@@ -3,6 +3,8 @@ package io.cumulus.views
 import play.api.i18n.Messages
 import play.api.libs.json.{JsArray, JsNull, JsValue, Json}
 
+import scala.annotation.tailrec
+
 case class RecoveryPage(
   error: Throwable
 )(implicit
@@ -10,8 +12,19 @@ case class RecoveryPage(
 ) extends IndexTemplate {
 
 
-  private def getAllErrorCauses(error: Throwable): Seq[Throwable] =
-    Seq(error) ++ Option(error.getCause).map(getAllErrorCauses).getOrElse(Seq.empty)
+  private def getAllErrorCauses(error: Throwable): Seq[Throwable] = {
+    @tailrec
+    def accumulator(acc: Seq[Throwable], next: Option[Throwable]): Seq[Throwable] =
+      next match {
+        case None =>
+          acc
+        case Some(t) =>
+          accumulator(acc :+ t, Option(t.getCause))
+      }
+
+    accumulator(Seq.empty, Some(error))
+  }
+
 
   override protected def info: Map[String, JsValue] = {
     Map(
