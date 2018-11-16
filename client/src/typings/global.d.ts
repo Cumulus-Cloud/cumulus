@@ -16,9 +16,15 @@ declare global {
     line: number
   }
 
+  type ServerError = {
+    type: string,
+    message: string,
+    stack: Trace[]
+  }
+
   // Injected by the backend's templating
   const user: User | null
   const directoryWithContent: DirectoryWithContent | null
-  const error: { stack: Trace[] } | null
+  const error: { causes: ServerError[] } | null
 
 }

@@ -3,15 +3,18 @@ import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import Grow from '@material-ui/core/Grow'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
+import Table from '@material-ui/core/Table'
+import TableBody from '@material-ui/core/TableBody'
+import TableCell from '@material-ui/core/TableCell'
+import TableRow from '@material-ui/core/TableRow'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
 import RefreshIcon from '@material-ui/icons/Refresh'
 import CancelIcon from '@material-ui/icons/Cancel'
 import EditIcon from '@material-ui/icons/Edit'
-import ArrowIcon from '@material-ui/icons/KeyboardArrowRight'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
-import { Typography, List } from '@material-ui/core'
+import { Typography } from '@material-ui/core'
 
 import CumulusDrawer from 'components/CumulusDrawer'
 import NotificationsContainer from 'components/notification/NotificationsContainer'
@@ -49,18 +52,12 @@ const styles = (theme: Theme) => createStyles({
     flexGrow: 1,
     backgroundColor: 'white',
     minWidth: 0,
-    display: 'flex',
     flexDirection: 'column',
     padding: '40px',
     overflow: 'auto'
   },
-  stack: {
-    marginLeft: '100px',
-    marginRight: '100px'
-  },
-  stackElement: {
-    paddingBottom: '2px',
-    paddingTop: '2px'
+  errorTitle: {
+    marginTop: theme.spacing.unit * 3
   }
 })
 
@@ -98,7 +95,8 @@ class FailurePage extends React.Component<PropsWithStyle, State> {
 
   render() {
     const { classes } = this.props
-    const stack = error ? error.stack : []
+    console.log(error)
+    const serverErrors = error ? error.causes : []
 
     const actionElements = (
       <div>
@@ -117,7 +115,7 @@ class FailurePage extends React.Component<PropsWithStyle, State> {
             .catch(() => {
               this.showNotification('Cumulus server reloading failed')
             })
-          this.forceDrawer(false) // TODO fix focus stolen
+          this.forceDrawer(false)
         }} >
           <ListItemIcon>
             <RefreshIcon />
@@ -125,7 +123,7 @@ class FailurePage extends React.Component<PropsWithStyle, State> {
           <ListItemText primary="Recharger le serveur" />
         </ListItem>
         <ListItem button onClick={() => {
-          Api.management.reload()
+          Api.management.stop()
             .then((result) => {
               if ('errors' in result)
                 this.showNotification(`Cumulus server stop failed: ${result.message}`)
@@ -139,7 +137,7 @@ class FailurePage extends React.Component<PropsWithStyle, State> {
             .catch(() => {
               this.showNotification('Cumulus server stop failed')
             })
-          this.forceDrawer(false) // TODO fix focus stolen
+          this.forceDrawer(false)
         }} >
           <ListItemIcon>
             <CancelIcon />
@@ -148,7 +146,7 @@ class FailurePage extends React.Component<PropsWithStyle, State> {
         </ListItem>
         <ListItem button onClick={() => {
           this.showNotification('Not implemented yet')
-          this.forceDrawer(false) // TODO fix focus stolen
+          this.forceDrawer(false)
         }} >
           <ListItemIcon>
             <EditIcon />
@@ -167,7 +165,6 @@ class FailurePage extends React.Component<PropsWithStyle, State> {
             actionElements={ actionElements }
             contextualActionElements={ <span/> }
           />
-
           <main className={ classes.main }>
             <div className={ classes.content }>
               <Typography variant="h2" gutterBottom >
@@ -178,28 +175,24 @@ class FailurePage extends React.Component<PropsWithStyle, State> {
               </Typography>
               <br/>
               <Typography variant="body1" gutterBottom>
-                Errors usually come from configuration error such as an unreachable database.
+                Errors usually come from configuration error such as an unreachable database. Use the returned error message below to see what when wrong.
+                In futures versions, Cumulus will try to guess what went wrong.
               </Typography>
-              <br/>
-              <Typography variant="body1" gutterBottom>
-                Use the stack trace below to see what when wrong. In futures versions, Cumulus will try to guess what went wrong.
+              <Typography variant="h4" className={ classes.errorTitle } gutterBottom>
+                Error description:
               </Typography>
-              <List dense className={ classes.stack }>
+              <Table>
+                <TableBody>
                 {
-                  stack.map((call, i) => {
-                    return (
-                      <ListItem button key={i} className={ classes.stackElement } >
-                        <ListItemIcon>
-                          <ArrowIcon />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={`${call.object}.${call.func}(${call.line})`}
-                        />
-                      </ListItem>
-                    )
-                  })
+                  serverErrors.map((serverError, i) => (
+                    <TableRow key={i} >
+                      <TableCell>{ i === 0 ? serverError.message : `Caused by: ${serverError.message}` }</TableCell>
+                    </TableRow>
+                  ))
                 }
-              </List>
+
+                </TableBody>
+              </Table>
             </div>
           </main>
 
