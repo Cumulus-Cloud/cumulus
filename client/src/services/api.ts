@@ -84,6 +84,15 @@ export const ApiUtils = {
 
 const Api = {
 
+  management: {
+    reload(): Promise<ApiError | {}> {
+      return ApiUtils.get(Routes.api.management.reload)
+    },
+    stop(): Promise<ApiError | {}> {
+      return ApiUtils.get(Routes.api.management.stop)
+    }
+  },
+
   user: {
     me(): Promise<ApiError | User> {
       return ApiUtils.get(Routes.api.users.me)
