@@ -69,9 +69,9 @@ function SearchZone(props: SearchZoneProps) {
             <CloseIcon/>
           </IconButton>
           <FormGroup row  >
-            <FormControl className={ classes.element } component="fieldset">
-              <FormLabel component="legend">Afficher</FormLabel>
-              
+            <FormControl className={ classes.element }>
+              <FormLabel>Afficher</FormLabel>
+
               <RadioGroup
                 className={ classes.radioButtonGroup }
                 value={'ALL'}
@@ -83,8 +83,8 @@ function SearchZone(props: SearchZoneProps) {
               </RadioGroup>
             </FormControl>
 
-            <FormControl className={ classes.element } component="fieldset">
-              <FormLabel component="legend">Recherche récursive</FormLabel>
+            <FormControl className={ classes.element }>
+              <FormLabel>Recherche récursive</FormLabel>
               <FormControlLabel
                 control={
                   <Switch
@@ -95,8 +95,8 @@ function SearchZone(props: SearchZoneProps) {
               />
             </FormControl>
 
-            <FormControl className={ classes.element } component="fieldset">
-              <FormLabel component="legend">Limiter aux types de fichiers</FormLabel>
+            <FormControl className={ classes.element } >
+              <FormLabel>Limiter aux types de fichiers</FormLabel>
                 <Select
                   value="age-simple"
                   inputProps={{
