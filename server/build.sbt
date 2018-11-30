@@ -29,7 +29,7 @@ lazy val commonSettings = Seq(
   // Application common info
   version := "0.1-SNAPSHOT",
   organization := "io.cumulus",
-  scalaVersion := "2.12.5",
+  scalaVersion := "2.12.7",
 
   // Wart warnings
   wartremoverWarnings ++= Seq(
