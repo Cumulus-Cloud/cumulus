@@ -19,15 +19,15 @@ class UserStore extends AnormPKOperations[User, UUID] with AnormRepository[User]
     implicit val userColumn: Column[User] =
       AnormSupport.column[User](User.internalFormat)
 
-    SqlParser.get[User]("metadata")
+    SqlParser.get[User](UserStore.metadataField)
   }
 
   def getParams(user: User): Seq[NamedParameter] = {
     Seq(
-      'id       -> user.id,
-      'email    -> user.email,
-      'login    -> user.login,
-      'metadata -> User.internalFormat.writes(user)
+      UserStore.pkField       -> user.id,
+      UserStore.emailField    -> user.email,
+      UserStore.loginField    -> user.login,
+      UserStore.metadataField -> User.internalFormat.writes(user)
     )
   }
 

@@ -1,6 +1,6 @@
 package io.cumulus.controllers.payloads
 
-import io.cumulus.models.Path
+import io.cumulus.models.fs.Path
 import play.api.libs.json.{Json, Reads}
 
 case class FsNodeUpdatePayload(

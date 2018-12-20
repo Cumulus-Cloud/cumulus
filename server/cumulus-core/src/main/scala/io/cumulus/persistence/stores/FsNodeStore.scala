@@ -8,11 +8,11 @@ import io.cumulus.core.persistence.anorm.{AnormPKOperations, AnormRepository, An
 import io.cumulus.core.persistence.query._
 import io.cumulus.core.utils.PaginatedList
 import io.cumulus.core.utils.PaginatedList._
-import io.cumulus.models.Path
-import io.cumulus.models.fs.{FsNode, FsNodeIndex, FsNodeType}
+import io.cumulus.models.fs.{FsNode, FsNodeIndex, FsNodeType, Path}
 import io.cumulus.models.user.User
 import io.cumulus.persistence.stores.FsNodeStore._
 import io.cumulus.persistence.stores.orderings.FsNodeOrdering
+
 
 /**
   * Filesystem node store, used to manage fs node in the database.
@@ -175,15 +175,15 @@ class FsNodeStore extends AnormPKOperations[FsNode, UUID] with AnormRepository[F
 
   def getParams(node: FsNode): Seq[NamedParameter] =
     Seq(
-      'id           -> node.id,
-      'path         -> node.path.toString,
-      'name         -> node.path.name,
-      'node_type    -> node.nodeType,
-      'creation     -> node.creation,
-      'modification -> node.modification,
-      'hidden       -> node.hidden,
-      'user_id      -> node.owner,
-      'metadata     -> FsNode.internalFormat.writes(node)
+      FsNodeStore.pkField           -> node.id,
+      FsNodeStore.pathField         -> node.path.toString,
+      FsNodeStore.nameField         -> node.path.name,
+      FsNodeStore.nodeTypeField     -> node.nodeType,
+      FsNodeStore.creationField     -> node.creation,
+      FsNodeStore.modificationField -> node.modification,
+      FsNodeStore.hiddenField       -> node.hidden,
+      FsNodeStore.ownerField        -> node.owner,
+      FsNodeStore.metadataField     -> FsNode.internalFormat.writes(node)
     )
 
 }
@@ -192,11 +192,14 @@ object FsNodeStore {
 
   val table: String = "fs_node"
 
-  val pkField: String = "id"
-  val ownerField: String = "user_id"
-  val pathField: String = "path"
-  val nameField: String = "name"
-  val nodeTypeField: String = "node_type"
-  val metadataField: String = "metadata"
+  val pkField: String           = "id"
+  val pathField: String         = "path"
+  val nameField: String         = "name"
+  val nodeTypeField: String     = "node_type"
+  val creationField: String     = "creation"
+  val modificationField: String = "modification"
+  val hiddenField: String       = "hidden"
+  val ownerField: String        = "user_id"
+  val metadataField: String     = "metadata"
 
 }
