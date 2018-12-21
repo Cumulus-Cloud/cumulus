@@ -1,5 +1,4 @@
 import  React from 'react'
-import Button from '@material-ui/core/Button'
 import Grow from '@material-ui/core/Grow'
 import Paper from '@material-ui/core/Paper'
 import { Theme } from '@material-ui/core/styles/createMuiTheme'
@@ -15,6 +14,7 @@ import  H from 'history'
 import SignUpConfirmation from 'components/login/SignUpConfirmation'
 import SignIn from 'components/login/SignInForm'
 import SignUp from 'components/login/SignUpForm'
+import { Fab } from '@material-ui/core'
 
 
 const styles = (theme: Theme) => createStyles({
@@ -95,9 +95,9 @@ class Login extends React.Component<PropsWithStyle, State> {
           <Paper className={classes.loginPanel} elevation={5}>
             <div className={classes.loginTitle}>
               <Zoom in={true} style={{ transitionDelay: 600 } as any} >
-                <Button variant="fab" className={classes.logo} >
+                <Fab className={classes.logo} >
                   <CloudIcon/>
-                </Button>
+                </Fab>
               </Zoom>
               <Typography variant="h5" component="h3" className={classes.logoText}>
                 Cumulus

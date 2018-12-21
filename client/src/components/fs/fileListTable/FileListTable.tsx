@@ -215,7 +215,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     const checkbox =
       showCheckboxes ? (
         isSelected ?
-          <Checkbox key={ node.id + '_checked' } className={ classes.contentCheck} checked defaultChecked onClick={() => this.onDeselectNode(node) } /> :
+          <Checkbox key={ node.id + '_checked' } className={ classes.contentCheck} checked onClick={() => this.onDeselectNode(node) } /> :
           <Checkbox key={ node.id + '_not-checked' } className={ classes.contentCheck } onClick={() => this.onSelectNode(node) } />
       ) : <Checkbox key={ node.id + '_not-checked' } style={ { display: 'none' } } />
 
