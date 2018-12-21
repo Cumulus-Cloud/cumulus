@@ -13,19 +13,30 @@ import play.api.mvc.QueryStringBindable
 import scala.collection.immutable
 
 
+sealed abstract class EventFamily extends EnumEntry
+
+object EventFamily extends Enum[EventFamily] with PlayJsonEnum[EventFamily] with AnormEnum[EventFamily] {
+
+  case object USER_EVENT extends EventFamily
+  case object FS_EVENT extends EventFamily
+
+  override val values: immutable.IndexedSeq[EventFamily] = findValues
+
+}
+
 /**
   * Type of all the available events.
   */
-sealed abstract class EventType extends EnumEntry
+sealed abstract class EventType(val family: EventFamily) extends EnumEntry
 
 object EventType extends Enum[EventType] with PlayJsonEnum[EventType] with AnormEnum[EventType] {
 
-  case object USER_LOGIN extends EventType
-  case object USER_LOGOUT extends EventType
-  case object NODE_CREATE extends EventType
-  case object NODE_MOVE extends EventType
-  case object NODE_DELETE extends EventType
-  case object NODE_SHARE extends EventType
+  case object USER_LOGIN extends EventType(EventFamily.USER_EVENT)
+  case object USER_LOGOUT extends EventType(EventFamily.USER_EVENT)
+  case object NODE_CREATE extends EventType(EventFamily.FS_EVENT)
+  case object NODE_MOVE extends EventType(EventFamily.FS_EVENT)
+  case object NODE_DELETE extends EventType(EventFamily.FS_EVENT)
+  case object NODE_SHARE extends EventType(EventFamily.FS_EVENT)
 
   override val values: immutable.IndexedSeq[EventType] = findValues
 
@@ -44,7 +55,6 @@ object EventType extends Enum[EventType] with PlayJsonEnum[EventType] with Anorm
 
 }
 
-
 sealed trait Event {
 
   def id: UUID
@@ -53,7 +63,7 @@ sealed trait Event {
   def eventType: EventType
 
   /** Date of the event **/
-  def date: LocalDateTime
+  def creation: LocalDateTime
 
   /** UUID of the owner **/
   def owner: UUID
@@ -63,7 +73,7 @@ sealed trait Event {
 object Event {
 
   implicit val format: OFormat[Event] = new OFormat[Event] {
-    override def reads(json: JsValue): JsResult[Event] = {
+    def reads(json: JsValue): JsResult[Event] = json match {
       case jsObject: JsObject =>
         (jsObject \ "eventType").asOpt[EventType] match {
           case Some(EventType.USER_LOGIN) =>
@@ -85,7 +95,7 @@ object Event {
         JsError("validation.parsing.cannot-parse")
     }
 
-    override def writes(o: Event): JsObject = {
+    def writes(o: Event): JsObject = o match {
       case event: LoginEvent =>
         LoginEvent.format.writes(event)
       case event: LogoutEvent =>
@@ -106,13 +116,14 @@ object Event {
 /**
   * Event generated when a user successfully log in.
   *
-  * @param date Date of the operation.
+  * @param creation Date of the operation.
   * @param from IP used during the log in operation.
   * @param owner User performing the operation.
   */
 case class LoginEvent(
   id: UUID,
-  date: LocalDateTime,
+  creation: LocalDateTime,
+  infinite: Boolean,
   from: String,
   owner: UUID
 ) extends Event {
@@ -126,10 +137,11 @@ object LoginEvent {
   implicit lazy val format: OFormat[LoginEvent] =
     Json.format[LoginEvent]
 
-  def create(from: String, user: User): LoginEvent =
+  def create(from: String, infinite: Boolean, user: User): LoginEvent =
     LoginEvent(
       UUID.randomUUID(),
       LocalDateTime.now(),
+      infinite,
       from,
       user.id
     )
@@ -139,13 +151,13 @@ object LoginEvent {
 /**
   * Event generated when a user log out (terminate a valid session).
   *
-  * @param date Date of the operation.
+  * @param creation Date of the operation.
   * @param from IP used during the log out operation.
   * @param owner User performing the operation.
   */
 case class LogoutEvent(
   id: UUID,
-  date: LocalDateTime,
+  creation: LocalDateTime,
   from: String,
   owner: UUID
 ) extends Event {
@@ -172,7 +184,7 @@ object LogoutEvent {
 /**
   * Event generated when a node is created.
   *
-  * @param date Date of the operation.
+  * @param creation Date of the operation.
   * @param to Path of the new node.
   * @param owner User performing the operation.
   * @param node ID of the node created by the operation.
@@ -180,7 +192,7 @@ object LogoutEvent {
   */
 case class NodeCreationEvent(
   id: UUID,
-  date: LocalDateTime,
+  creation: LocalDateTime,
   to: Path,
   owner: UUID,
   node: UUID,
@@ -211,7 +223,7 @@ object NodeCreationEvent {
 /**
   * Event generated when a node is moved (renaming are also considered as move operations).
   *
-  * @param date Date of the operation.
+  * @param creation Date of the operation.
   * @param from Previous path of the node.
   * @param to New path of the node.
   * @param owner User performing the operation.
@@ -220,7 +232,7 @@ object NodeCreationEvent {
   */
 case class NodeMoveEvent(
   id: UUID,
-  date: LocalDateTime,
+  creation: LocalDateTime,
   from: Path,
   to: Path,
   owner: UUID,
@@ -253,7 +265,7 @@ object NodeMoveEvent {
 /**
   * Event generated when a node is deleted.
   *
-  * @param date Date of the operation.
+  * @param creation Date of the operation.
   * @param from Path of the node deleted.
   * @param owner User performing the operation.
   * @param node ID of the node concerned by the operation.
@@ -261,11 +273,12 @@ object NodeMoveEvent {
   */
 case class NodeDeletionEvent(
   id: UUID,
-  date: LocalDateTime,
+  creation: LocalDateTime,
   from: Path,
   owner: UUID,
   node: UUID,
-  nodeType: FsNodeType
+  nodeType: FsNodeType,
+withContent: Boolean
 ) extends Event {
 
   val eventType: EventType = EventType.NODE_DELETE
@@ -277,21 +290,22 @@ object NodeDeletionEvent {
   implicit lazy val format: OFormat[NodeDeletionEvent] =
     Json.format[NodeDeletionEvent]
 
-  def create(node: FsNode): NodeDeletionEvent =
+  def create(node: FsNode, withContent: Boolean): NodeDeletionEvent =
     NodeDeletionEvent(
       UUID.randomUUID(),
       LocalDateTime.now(),
       node.path,
       node.owner,
       node.id,
-      node.nodeType
+      node.nodeType,
+      withContent
     )
 }
 
 /**
   * Event generated when a node is shared.
   *
-  * @param date Date of the operation.
+  * @param creation Date of the operation.
   * @param from Path of the shared node.
   * @param owner User performing the operation.
   * @param node ID of the node concerned by the operation.
@@ -299,7 +313,7 @@ object NodeDeletionEvent {
   */
 case class NodeSharingEvent(
   id: UUID,
-  date: LocalDateTime,
+  creation: LocalDateTime,
   from: Path,
   owner: UUID,
   node: UUID,

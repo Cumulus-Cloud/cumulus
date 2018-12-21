@@ -27,6 +27,7 @@ class EventStore extends AnormPKOperations[Event, UUID] with AnormRepository[Eve
     Seq(
       EventStore.pkField        -> event.id,
       EventStore.ownerField     -> event.owner,
+      EventStore.creationField  -> event.creation,
       EventStore.eventTypeField -> event.eventType,
       EventStore.metadataField  -> Event.format.writes(event)
     )
@@ -40,6 +41,7 @@ object EventStore {
 
   val pkField: String        = "id"
   val ownerField: String     = "user_id"
+  val creationField: String  = "creation"
   val eventTypeField: String = "event_type"
   val metadataField: String  = "metadata"
 

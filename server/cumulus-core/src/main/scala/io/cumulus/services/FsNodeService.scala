@@ -9,13 +9,13 @@ import io.cumulus.core.persistence.query.QueryRunner._
 import io.cumulus.core.persistence.query.QueryE._
 import io.cumulus.core.utils.PaginatedList
 import io.cumulus.core.validation.AppError
-import io.cumulus.models._
+import io.cumulus.models.event.{NodeCreationEvent, NodeDeletionEvent, NodeMoveEvent}
 import io.cumulus.models.fs._
 import io.cumulus.models.user.User
 import io.cumulus.persistence.storage.StorageReference
 import io.cumulus.persistence.stores.filters.FsNodeFilter
 import io.cumulus.persistence.stores.orderings.FsNodeOrdering
-import io.cumulus.persistence.stores.{FsNodeStore, SharingStore}
+import io.cumulus.persistence.stores.{EventStore, FsNodeStore, SharingStore}
 import play.api.libs.json.__
 
 import scala.concurrent.Future
@@ -23,7 +23,8 @@ import scala.concurrent.Future
 
 class FsNodeService(
   fsNodeStore: FsNodeStore,
-  sharingStore: SharingStore
+  sharingStore: SharingStore,
+  eventStore: EventStore
 )(
   implicit
   queryRunner: QueryRunner[Future]
@@ -209,7 +210,10 @@ class FsNodeService(
   }.commit()
 
   /**
-    * TODO
+    * Set the metadata of a file.
+    * @param file The updated file.
+    * @param fileMetadata The extracted metadata of the file.
+    * @param user The user performing the request.
     */
   def setMetadata(
     file: File,
@@ -297,7 +301,13 @@ class FsNodeService(
       _ <- QueryE.lift(fsNodeStore.update(nodeParent.modified(now)))
       _ <- QueryE.lift(fsNodeStore.update(node.modified(now)))
       _ <- QueryE.lift(fsNodeStore.moveFsNode(node, to, user)) // Will also move any contained sub-folder
-    } yield node.moved(to)
+
+      movedNode = node.moved(to)
+
+      // Generate an event
+      _ <- QueryE.lift(eventStore.create(NodeMoveEvent.create(from = node.path, movedNode)))
+
+    } yield movedNode
 
   }
 
@@ -376,6 +386,9 @@ class FsNodeService(
       nodeParent <- getParentWithLock(node.path)
       _          <- QueryE.lift(fsNodeStore.update(nodeParent.modified(LocalDateTime.now)))
 
+      // Generate an event
+      _ <- QueryE.lift(eventStore.create(NodeDeletionEvent.create(node, withContent = false)))
+
     } yield node
 
   }
@@ -403,6 +416,9 @@ class FsNodeService(
       // Update the last modified of the parent
       nodeParent <- getParentWithLock(node.path)
       _          <- QueryE.lift(fsNodeStore.update(nodeParent.modified(LocalDateTime.now)))
+
+      // Generate an event
+      _ <- QueryE.lift(eventStore.create(NodeDeletionEvent.create(node, withContent = true)))
 
     } yield node
 
@@ -433,6 +449,9 @@ class FsNodeService(
       // Update the last modified of the parent & create the directory
       _ <- QueryE.lift(fsNodeStore.update(nodeParent.modified(node.creation)))
       _ <- QueryE.lift(fsNodeStore.create(node))
+
+      // Generate an event
+      _ <- QueryE.lift(eventStore.create(NodeCreationEvent.create(node)))
 
     } yield node
 

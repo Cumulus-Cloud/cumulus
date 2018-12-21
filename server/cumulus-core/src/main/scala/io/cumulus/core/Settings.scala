@@ -31,6 +31,7 @@ class Settings(
   }
 
   object api {
+    val paginationMaximumSize: Int = conf.get[Int]("cumulus.api.paginationMaximumSize")
     val paginationDefaultSize: Int = conf.get[Int]("cumulus.api.paginationDefaultSize")
   }
 

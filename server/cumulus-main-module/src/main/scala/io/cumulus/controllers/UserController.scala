@@ -13,7 +13,7 @@ import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
 import io.cumulus.core.persistence.query.QueryPagination
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.user.session.UserSession
-import io.cumulus.services.{SessionService, UserService}
+import io.cumulus.services.{EventService, SessionService, UserService}
 import io.cumulus.views.CumulusEmailValidationPage
 import play.api.libs.json.Json
 import play.api.mvc._
@@ -23,6 +23,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class UserController (
   cc: ControllerComponents,
   userService: UserService,
+  eventService: EventService,
   val sessionService: SessionService
 )(implicit
   val ec: ExecutionContext,
@@ -139,7 +140,6 @@ class UserController (
       }
     }
 
-
   /**
     * Changes the user's password.
     */
@@ -184,6 +184,22 @@ class UserController (
     }
 
   /**
+    * List the events for the current user.
+    * @param limit
+    * @param offset
+    * @return
+    */
+  def listEvents(limit: Option[Int], offset: Option[Int]): Action[AnyContent] =
+    AuthenticatedAction.async { implicit request =>
+      ApiResponse.paginated {
+        // TODO allow filter type of event
+        val pagination = QueryPagination(limit, offset)
+
+        eventService.listEvents(pagination)
+      }
+    }
+
+  /**
     * Shows the specified sessions.
     */
   def getSession(sessionId: UUID): Action[AnyContent] =
@@ -204,7 +220,7 @@ class UserController (
         if(request.authenticatedSession.information.id == sessionId)
           Future.successful(Left(AppError.validation("validation.user.session-cant-revoke-self")))
         else
-          sessionService.revokeSession(sessionId)
+          sessionService.revokeSession(sessionId, request.remoteAddress)
       }
     }
 
@@ -214,7 +230,7 @@ class UserController (
   def logout: Action[AnyContent] =
     AuthenticatedAction.asyncWithoutSession { implicit request =>
       sessionService
-        .revokeSession(request.authenticatedSession.information.id)
+        .revokeSession(request.authenticatedSession.information.id, request.remoteAddress)
         .map { _ =>
           Redirect(routes.HomeController.index())
         }
