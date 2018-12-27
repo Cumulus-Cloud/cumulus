@@ -45,6 +45,15 @@
 
   CREATE UNIQUE INDEX sharing_reference_unique ON sharing (reference);
 
+  -- Events
+  CREATE TABLE cumulus_event (
+    id         UUID          PRIMARY KEY,
+    user_id    UUID          REFERENCES cumulus_user(id), -- Owner
+    creation   TIMESTAMP NOT NULL,
+    event_type VARCHAR(64)   NOT NULL,
+    metadata   JSONB         NOT NULL                     -- Contains metadata about the events
+  );
+
   CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
 
 # --- !Downs
@@ -58,5 +67,6 @@
   DROP TABLE IF EXISTS fs_node;
   DROP TABLE IF EXISTS cumulus_session;
   DROP TABLE IF EXISTS cumulus_user;
+  DROP TABLE IF EXISTS cumulus_event;
 
   DROP EXTENSION IF EXISTS fuzzystrmatch;

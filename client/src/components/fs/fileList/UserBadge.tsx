@@ -45,9 +45,9 @@ class UserBadge extends React.Component<PropsWithStyle, State> {
           open={Boolean(anchorEl)}
           onClose={() => this.closeMenu()}
         >
-          <MenuItem onClick={() => this.closeMenu()}>Profile</MenuItem>
-          <MenuItem onClick={() => this.closeMenu()}>My account</MenuItem>
-          <MenuItem onClick={() => this.closeMenu()}>Logout</MenuItem>
+          <MenuItem onClick={() => this.closeMenu()}>Mon profile</MenuItem>
+          <MenuItem onClick={() => this.closeMenu()}>Mes dernières actions</MenuItem>
+          <MenuItem onClick={() => this.closeMenu()}>Se déconnecter</MenuItem>
         </Menu>
       </>
     )

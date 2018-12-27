@@ -95,7 +95,7 @@ object Event {
         JsError("validation.parsing.cannot-parse")
     }
 
-    def writes(o: Event): JsObject = o match {
+    def writes(o: Event): JsObject = (o match {
       case event: LoginEvent =>
         LoginEvent.format.writes(event)
       case event: LogoutEvent =>
@@ -108,7 +108,7 @@ object Event {
         NodeDeletionEvent.format.writes(event)
       case event: NodeSharingEvent =>
         NodeSharingEvent.format.writes(event)
-    }
+    }) ++ Json.obj("eventType" -> o.eventType)
   }
 
 }
@@ -134,7 +134,7 @@ case class LoginEvent(
 
 object LoginEvent {
 
-  implicit lazy val format: OFormat[LoginEvent] =
+  private[models] val format: OFormat[LoginEvent] =
     Json.format[LoginEvent]
 
   def create(from: String, infinite: Boolean, user: User): LoginEvent =
@@ -168,7 +168,7 @@ case class LogoutEvent(
 
 object LogoutEvent {
 
-  implicit lazy val format: OFormat[LogoutEvent] =
+  private[models] val format: OFormat[LogoutEvent] =
     Json.format[LogoutEvent]
 
   def create(from: String, user: User): LogoutEvent =
@@ -205,7 +205,7 @@ case class NodeCreationEvent(
 
 object NodeCreationEvent {
 
-  implicit lazy val format: OFormat[NodeCreationEvent] =
+  private[models] val format: OFormat[NodeCreationEvent] =
     Json.format[NodeCreationEvent]
 
   def create(node: FsNode): NodeCreationEvent =
@@ -246,7 +246,7 @@ case class NodeMoveEvent(
 
 object NodeMoveEvent {
 
-  implicit lazy val format: OFormat[NodeMoveEvent] =
+  private[models] val format: OFormat[NodeMoveEvent] =
     Json.format[NodeMoveEvent]
 
   def create(from: Path, node: FsNode): NodeMoveEvent =
@@ -287,7 +287,7 @@ withContent: Boolean
 
 object NodeDeletionEvent {
 
-  implicit lazy val format: OFormat[NodeDeletionEvent] =
+  private[models] val format: OFormat[NodeDeletionEvent] =
     Json.format[NodeDeletionEvent]
 
   def create(node: FsNode, withContent: Boolean): NodeDeletionEvent =
@@ -336,7 +336,7 @@ case class NodeSharingEvent(
 
 object NodeSharingEvent {
 
-  implicit lazy val format: OFormat[NodeSharingEvent] =
+  private[models] lazy val format: OFormat[NodeSharingEvent] =
     Json.format[NodeSharingEvent]
 
 }
