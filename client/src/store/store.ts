@@ -6,6 +6,7 @@ import AuthenticationState, { initialState as initialAuthState } from 'store/sta
 import SignInState from 'store/states/signInState'
 import SignUpState from 'store/states/signUpState'
 import FsState, { initialState as initialFsState } from 'store/states/fsState'
+import EventState from 'store/states/eventState'
 import DirectoryCreationState from 'store/states/directoryCreationState'
 import NodeDisplacementState from 'store/states/nodeDisplacementState'
 import NodeDeletionState from 'store/states/nodeDeletionState'
@@ -20,6 +21,7 @@ export type State = {
   signIn: SignInState
   signUp: SignUpState
   fs: FsState
+  events: EventState
   directoryCreation: DirectoryCreationState
   nodeDisplacement: NodeDisplacementState
   nodeDeletion: NodeDeletionState
@@ -34,6 +36,7 @@ export const initialState: State = {
   signIn: { loading: false },
   signUp: { loading: false },
   fs: initialFsState(),
+  events: { loading: false, hasMore: true },
   directoryCreation: { loading: false },
   nodeDisplacement: { loading: false },
   nodeDeletion: { loading: false },

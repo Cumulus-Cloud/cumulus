@@ -60,7 +60,7 @@ abstract class AnormPKOperations[T, PK](
           .on(filter.namedParameters: _*)
           .as(rowParser.*)
 
-      result.toPaginatedList(pagination.offset, result.length > pagination.limit)
+      result.take(pagination.limit).toPaginatedList(pagination.offset, result.length > pagination.limit)
     }
 
   def exists(pk: PK): Query[Boolean] =

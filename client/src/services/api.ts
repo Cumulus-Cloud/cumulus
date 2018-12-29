@@ -4,6 +4,7 @@ import { ApiError } from 'models/ApiError'
 import { EnrichedFile } from 'models/EnrichedFile'
 import { Directory, File, FsNode, DirectoryWithContent, SearchResult, isDirectory, isFile } from 'models/FsNode'
 import { User } from 'models/User'
+import { Event } from 'models/Event'
 import { AppSession } from 'models/AppSession'
 import { ApiList } from 'models/utils'
 
@@ -17,7 +18,8 @@ export const ApiUtils = {
 
   maxResultDefault: 50,
 
-  pagination(limit: number = 50, offset: number = 0): Map<string, string> {
+  pagination(offset: number = 0, limit: number = 50): Map<string, string> {
+    console.log(limit)
     return new Map([['offset', `${offset}`], ['limit', `${limit}`]])
   },
 
@@ -122,6 +124,12 @@ const Api = {
       return ApiUtils.post(Routes.api.users.changePassword, { previousPassword, newPassword })
     },
 
+    events: {
+      all(offset: number): Promise<ApiError | ApiList<Event>> {
+        return ApiUtils.get(Routes.api.users.events, ApiUtils.pagination(offset = offset))
+      }
+    },
+
     sessions: {
       all(offset: number): Promise<ApiError | ApiList<AppSession>> {
         return ApiUtils.get(Routes.api.users.sessions.all, ApiUtils.pagination(offset = offset))
@@ -178,13 +186,13 @@ const Api = {
     getContent(id: string, contentOffset?: number, contentLimit?: number): Promise<ApiError | DirectoryWithContent> {
       return ApiUtils.get<DirectoryWithContent>(
         Routes.api.fs.getContent(id),
-        ApiUtils.pagination(contentLimit || ApiUtils.maxResultDefault, contentOffset || 0)
+        ApiUtils.pagination(contentOffset || 0, contentLimit || ApiUtils.maxResultDefault)
       )
     },
 
     // TODO test
     search(path: string, search: Search, contentOffset?: number, contentLimit?: number): Promise<ApiError | SearchResult> {
-      const pagination = ApiUtils.pagination(contentLimit || ApiUtils.maxResultDefault, contentOffset || 0)
+      const pagination = ApiUtils.pagination(contentOffset || 0, contentLimit || ApiUtils.maxResultDefault)
       const searchParam = new Map([
         [ 'path', path ],
         [ 'name', search.query ],

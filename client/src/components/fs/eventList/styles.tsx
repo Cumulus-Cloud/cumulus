@@ -3,33 +3,79 @@ import createStyles from '@material-ui/core/styles/createStyles'
 
 
 const styles = (theme: Theme) => createStyles({
+  root: {
+    flexGrow: 1,
+    backgroundColor: 'white',
+    minWidth: 0,
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  header: {
+    display: 'flex'
+  },
+  contentWrapper: {
+    width: '100%',
+    paddingLeft: theme.spacing.unit * 3,
+    paddingRight: theme.spacing.unit * 3,
+    marginRight: 'auto',
+    marginLeft: 'auto',
+    display: 'flex',
+    flex: 1,
+    [theme.breakpoints.down('xs')]: {
+      paddingLeft: 0,
+      paddingRight: 0,
+    }
+  },
+  errorContent: {
+    flex: 1,
+    alignContent: 'center'
+  },
+  content: {
+    display: 'flex',
+    flex: 1
+  },
+  loader: {
+    margin: 'auto',
+    display: 'block',
+    marginTop: theme.spacing.unit * 5
+  },
+  // TODO rename
+  emptyDirectory: {
+    display: 'flex',
+    flex: 1,
+    height: '50px',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: theme.palette.grey[600]
+  },
+  // TODO rename
+  emptyDirectoryIcon: {
+    marginRight: theme.spacing.unit
+  },
+
   contentTypeIcon: {
     color: 'rgba(0, 0, 0, 0.54)',
     marginRight: theme.spacing.unit * 2,
     marginLeft: theme.spacing.unit
   },
-  contentCheck: {
-    marginRight: '-6px',
-    zIndex: 9 // Fix checkbox passing through header
-  },
-  contentName: {
+  contentDescription: {
     margin: 0,
     flex: 4,
     padding: theme.spacing.unit * 2,
     display: 'flex',
     alignItems: 'center'
   },
-  contentNameValue: {
+  contentDescriptionValue: {
     whiteSpace: 'nowrap',
     overflow: 'hidden', 
     textOverflow: 'ellipsis',
     cursor: 'pointer'
   },
-  contentModification: {
+  contentCreation: {
     flex: 2,
     padding: theme.spacing.unit * 2
   },
-  contentSize: {
+  contentType: {
     flex: 1,
     padding: theme.spacing.unit * 2
   },
@@ -45,23 +91,6 @@ const styles = (theme: Theme) => createStyles({
     ['&:hover'] : {
       backgroundColor: 'rgba(0, 0, 0, 0.04)'
     }
-  },
-  contentRowSelected: {
-    backgroundColor: 'rgba(41, 167, 160, 0.08)',
-    color: theme.palette.primary.light,
-    ['&:hover'] : {
-      backgroundColor: 'rgba(41, 167, 160, 0.18)'
-    }
-  },
-  rowLoadMore: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 0
-  },
-  loader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
   },
   loaderSpinner: {
     display: 'block',

@@ -9,7 +9,7 @@ import io.cumulus.models.event.Event
 import io.cumulus.models.user.User
 import io.cumulus.persistence.stores.EventStore
 import io.cumulus.persistence.stores.filters.EventFilter
-import io.cumulus.persistence.stores.orderings.EventOrdering
+import io.cumulus.persistence.stores.orderings.{EventOrdering, EventOrderingType}
 
 import scala.concurrent.Future
 
@@ -22,7 +22,7 @@ class EventService(
 
   def listEvents(pagination: QueryPagination)(implicit user: User): Future[Either[AppError, PaginatedList[Event]]] = {
     val filter   = EventFilter(user, Seq.empty)
-    val ordering = EventOrdering.empty
+    val ordering = EventOrdering.of(EventOrderingType.OrderByCreationDesc)
 
     QueryE.lift(eventStore.findAll(filter, ordering, pagination)).run()
   }

@@ -97,7 +97,7 @@ class FsNodeStore extends AnormPKOperations[FsNode, UUID] with AnormRepository[F
         SQL"SELECT #$metadataField FROM #$table WHERE #$ownerField = ${user.id} AND #$pathField ~ $regex #${ordering.toORDER} #${paginationPlusOne.toLIMIT}"
           .as(rowParser.*)
 
-      result.toPaginatedList(pagination.offset, result.length > pagination.limit)
+      result.take(pagination.limit).toPaginatedList(pagination.offset, result.length > pagination.limit)
     }
   }
 

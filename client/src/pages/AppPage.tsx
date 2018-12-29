@@ -20,8 +20,9 @@ import DeletionPopup from 'components/popups/deletion/DeletionPopup'
 import DetailPopup from 'components/popups/detail/DetailPopup'
 import UploadPopup from 'components/popups/upload/UploadPopup'
 import UploadProgressPopup from 'components/popups/upload/UploadProgressPopup'
-import FileList from 'components/fs/fileList/FileList'
 import NotificationsContainer from 'components/notification/NotificationsContainer'
+import FileList from 'components/fs/fileList/FileList'
+import EventList from 'components/fs/eventList/EventList'
 
 import { FsNode } from 'models/FsNode'
 
@@ -219,6 +220,7 @@ class AppPage extends React.Component<PropsWithStyle, State> {
 
           <Switch>
             <Route path={Routes.app.fs_matcher} component={FileList}/>
+            <Route path={Routes.app.events_matcher} component={EventList}/>
             <Route render={() => <Redirect to={`${Routes.app.fs}/`} />} />
           </Switch>
 

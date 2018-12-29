@@ -1,7 +1,6 @@
 import React from 'react'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import Typography from '@material-ui/core/Typography'
-import Paper from '@material-ui/core/Paper'
 import { distanceInWords } from 'date-fns'
 import IconButton from '@material-ui/core/IconButton'
 import Menu from '@material-ui/core/Menu'
@@ -9,16 +8,14 @@ import MenuItem from '@material-ui/core/MenuItem'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import Checkbox from '@material-ui/core/Checkbox'
 import CircularProgress from '@material-ui/core/CircularProgress'
-
-import classnames from 'classnames';
-import { FixedSizeList as List, ListChildComponentProps } from 'react-window'
+import classnames from 'classnames'
 
 import { withStore, connect } from 'store/store'
 import { FsNodeSelection, selectedNodes, isNodeSelected } from 'store/states/fsState'
 
 import { WithDragAndDrop } from 'components/utils/DragAndDrop'
 import NodeIcon from 'components/fs/NodeIcon'
-import Resize from 'components/utils/Resize'
+import Table from 'components/utils/Table/InfiniteScrollTable'
 
 import { Directory, FsNode, isDirectory } from 'models/FsNode'
 
@@ -29,7 +26,6 @@ import Routes from 'services/routes'
 import { moveNodes } from 'store/actions/nodeDisplacement'
 
 import styles from './styles'
-
 
 interface Props {
   /** When details for a node are requested. */
@@ -54,7 +50,6 @@ interface Props {
   onPathChanged: () => void
   /** If more content is loading. */
   loading: boolean
-  /** If there is more content to load. */
   /** Current node */
   current?: Directory
   /** Content of the loaded current directory. */
@@ -145,6 +140,18 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     }
   }
 
+  selectedNodes() {
+    const { selection, content } = this.props
+
+    return selectedNodes(content, selection)
+  }
+
+  isNodeSelected(node: FsNode) {
+    const { selection } = this.props
+
+    return isNodeSelected(node, selection)
+  }
+
   onToggleMenu<T>(node: FsNode, event: React.SyntheticEvent<T>) {
     const { selectedMenu } = this.state
 
@@ -161,17 +168,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
       this.props.onMoveNodes(nodes, destination.path)
   }
 
-  renderRow = (props: ListChildComponentProps): React.ReactElement<{}> => {
-    const { content } = this.props
-
-    if(props.index >= content.length)
-      return this.renderLoadingRow(props)
-    else
-      return this.renderElementRow(props as ListChildComponentProps & { isScrolling: boolean }) // Trust me
-
-  }
-
-  renderLoadingRow = ({ style }: ListChildComponentProps): React.ReactElement<{}> => {
+  renderLoadingRow = (style: React.CSSProperties): React.ReactElement<{}> => {
     const { classes } = this.props
 
     return (
@@ -189,25 +186,11 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     )
   }
 
-  selectedNodes() {
-    const { selection, content } = this.props
-
-    return selectedNodes(content, selection)
-  }
-
-  isNodeSelected(node: FsNode) {
-    const { selection } = this.props
-
-    return isNodeSelected(node, selection)
-  }
-
-
-  renderElementRow = ({ index, isScrolling, style }: ListChildComponentProps & { isScrolling: boolean }): React.ReactElement<{}> => {
-    const { classes, content, Draggable, DropZone } = this.props
+  renderElementRow = (node: FsNode, style: React.CSSProperties, isScrolling: boolean): JSX.Element => {
+    const { classes, Draggable, DropZone } = this.props
     const { showCheckboxes, selectedMenu } = this.state
 
     const now = new Date()
-    const node = content[index]
 
     //const isDragged = dragInfo && dragInfo.value.id === node.id
     const isSelected = this.isNodeSelected(node)
@@ -279,58 +262,36 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
   }
 
   render() {
-    const { current, content, contentSize, classes, selection } = this.props
+    const { current, content, contentSize, classes, selection, loading } = this.props
     const { showCheckboxes } = this.state
 
-    // TODO show errors ?
+    const header = (
+      <>
+        { showCheckboxes ?
+          <div className={classes.contentCheck}>
+            <Checkbox checked={selection.type === 'ALL'} indeterminate={selection.type === 'SOME'} onClick={() => this.onToggleAllNodesSelection()} />
+          </div> :
+          <span/>
+        }
+        <Typography variant="caption" noWrap className={classes.contentName} >Nom</Typography>
+        <Typography variant="caption" className={classes.contentModification} >Modification</Typography>
+        <Typography variant="caption" className={classes.contentSize} >Taille</Typography>
+      </>
+    )
+
     if(current) {
       return (
-        <>
-          <Paper className={classes.root} >
-            <div className={classes.contentTableHead}>
-              <div className={classes.contentHeadRow} >
-                { showCheckboxes ?
-                  <div className={classes.contentCheck}>
-                    <Checkbox checked={selection.type === 'ALL'} indeterminate={selection.type === 'SOME'} onClick={() => this.onToggleAllNodesSelection()} />
-                  </div> :
-                  <span/>
-                }
-                <Typography variant="caption" noWrap className={classes.contentName} >Nom</Typography>
-                <Typography variant="caption" className={classes.contentModification} >Modification</Typography>
-                <Typography variant="caption" className={classes.contentSize} >Taille</Typography>
-              </div>
-            </div>
-            <div className={classes.contentTableBody}>
-              <Resize style={{ flex: 1 }} >
-                { ({ height }) =>
-                  <List
-                    height={height}
-                    width="inherit"
-                    useIsScrolling
-                    itemCount={content.length + (contentSize === content.length ? 0 : 1)}
-                    itemSize={45}
-                    overscanCount={5}
-                    itemKey={(index) => {
-                      const { content } = this.props
-                      return index >= content.length ? 'loading' : content[index].id
-                    }}
-                    onItemsRendered={({ visibleStopIndex }) => {
-                      const { contentSize, content } = this.props
-                      const loadedContentSize = content.length
-
-                      // Load when more than 75% is shown
-                      if((visibleStopIndex > loadedContentSize * 0.7) && loadedContentSize < contentSize ) {
-                        this.onLoadMoreContent()
-                      }
-                    }}
-                  >
-                    { this.renderRow }
-                  </List>
-                }
-              </Resize>
-            </div>
-          </Paper>
-        </>
+        <Table<FsNode>
+          elements={ content }
+          elementsSize={ contentSize }
+          rowHeight={ 45 }
+          header={ header }
+          renderRow={ this.renderElementRow }
+          renderLoadingRow={ this.renderLoadingRow }
+          elementKey={ (node) => node.id }
+          onLoadMoreElements={ (offset) => this.props.onLoadMoreContent(offset) }
+          loading={ loading }
+        />
       )
     } else
       return null

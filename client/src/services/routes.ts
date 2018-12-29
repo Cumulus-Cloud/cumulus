@@ -7,10 +7,10 @@ const Routes = {
     emailConfirmation:  '/auth/email-confirmation'
   },
   app: {
-    fs:             '/app/fs',
-    fs_matcher:     '/app/fs:path(.+)',
-    search:         '/app/search',
-    search_matcher: '/app/search:path(.+)'
+    fs:              '/app/fs',
+    fs_matcher:      '/app/fs:path(.+)',
+    events:         '/app/events',
+    events_matcher: '/app/events(.+)'
   },
   api: {
     management: {
@@ -26,6 +26,7 @@ const Routes = {
       setFirstPassword: '/api/users/firstPassword',
       changeLang:       '/api/users/lang',
       changePassword:   '/api/users/password',
+      events:           '/api/users/events',
       sessions: {
         all:                     '/api/users/sessions',
         get:    (ref: string) => `/api/users/sessions/${ref}`,
