@@ -1,6 +1,7 @@
 import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 
+// TODO common content with header and list
 
 const styles = (theme: Theme) => createStyles({
   root: {

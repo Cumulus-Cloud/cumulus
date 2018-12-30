@@ -22,7 +22,13 @@ const styles = (theme: Theme) => createStyles({
     marginBottom: theme.spacing.unit
   },
   header: {
-    display: 'flex'
+    display: 'flex',
+    paddingLeft: theme.spacing.unit * 3,
+    paddingRight: theme.spacing.unit * 3,
+    [theme.breakpoints.down('xs')]: {
+      paddingLeft: 0,
+      paddingRight: 0,
+    }
   },
   breadCrumb: {
     flex: 1,
