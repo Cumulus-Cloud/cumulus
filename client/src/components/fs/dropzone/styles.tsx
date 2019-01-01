@@ -2,16 +2,15 @@ import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 
 
-const styles = (_: Theme) => createStyles({
+const styles = (theme: Theme) => createStyles({
   root: {
     position: 'fixed',
     top: 0,
     right: 0,
     bottom: 0,
     left: 0,
-    background: 'rgba(0,0,0,0.6)',
+    background: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
-    color: '#fff',
     zIndex: 9999,
     display: 'flex'
   },
@@ -23,14 +22,16 @@ const styles = (_: Theme) => createStyles({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    opacity: 0.6
   },
   icon: {
     width: 200,
-    height: 200
+    height: 200,
+    fill: theme.palette.primary.main
   },
   text: {
-    color: 'white'
+    color: theme.palette.text.primary
   }
 })
 

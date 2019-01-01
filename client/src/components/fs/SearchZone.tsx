@@ -3,7 +3,6 @@ import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import IconButton from '@material-ui/core/IconButton'
-import Slide from '@material-ui/core/Slide'
 import FormGroup from '@material-ui/core/FormGroup'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Switch from '@material-ui/core/Switch'
@@ -17,10 +16,8 @@ import RadioGroup from '@material-ui/core/RadioGroup'
 import { Search } from 'store/states/fsState'
 
 
-const styles = (theme: Theme) => createStyles({
+const styles = (_: Theme) => createStyles({
   root: {
-    paddingLeft: theme.spacing.unit * 3,
-    paddingRight: theme.spacing.unit * 3,
     flexGrow: 0
   },
   element: {
@@ -28,8 +25,7 @@ const styles = (theme: Theme) => createStyles({
     marginRight: 0
   },
   content: {
-    borderTop: '1px solid rgba(0, 0, 0, 0.12)',
-    paddingLeft: '15px'
+    borderTop: '1px solid rgba(0, 0, 0, 0.12)'
   },
   title: {
     fontSize: '1em',
@@ -62,54 +58,52 @@ function SearchZone(props: SearchZoneProps) {
   const { classes, onEndSearch } = props
 
   return (
-    <Slide direction="up" in >
-      <div className={ classes.root } >
-        <div className={ classes.content } >
-          <IconButton className={ classes.close } onClick={ () => onEndSearch() }>
-            <CloseIcon/>
-          </IconButton>
-          <FormGroup row  >
-            <FormControl className={ classes.element }>
-              <FormLabel>Afficher</FormLabel>
+    <div className={ classes.root } >
+      <div className={ classes.content } >
+        <IconButton className={ classes.close } onClick={ () => onEndSearch() }>
+          <CloseIcon/>
+        </IconButton>
+        <FormGroup row  >
+          <FormControl className={ classes.element }>
+            <FormLabel>Afficher</FormLabel>
 
-              <RadioGroup
-                className={ classes.radioButtonGroup }
-                value={'ALL'}
-                onChange={(v) => console.log(v/*.target.value*/)}
-              >
-                <FormControlLabel className={ classes.radioButton } value="ALL" control={ <Radio /> } label="Tous" />
-                <FormControlLabel className={ classes.radioButton } value="DIRECTORY" control={ <Radio /> } label="Dossiers" />
-                <FormControlLabel className={ classes.radioButton } value="FILE" control={ <Radio /> } label="Fichiers" />
-              </RadioGroup>
-            </FormControl>
+            <RadioGroup
+              className={ classes.radioButtonGroup }
+              value={'ALL'}
+              onChange={(v) => console.log(v/*.target.value*/)}
+            >
+              <FormControlLabel className={ classes.radioButton } value="ALL" control={ <Radio /> } label="Tous" />
+              <FormControlLabel className={ classes.radioButton } value="DIRECTORY" control={ <Radio /> } label="Dossiers" />
+              <FormControlLabel className={ classes.radioButton } value="FILE" control={ <Radio /> } label="Fichiers" />
+            </RadioGroup>
+          </FormControl>
 
-            <FormControl className={ classes.element }>
-              <FormLabel>Recherche récursive</FormLabel>
-              <FormControlLabel
-                control={
-                  <Switch
-                    value="checkedA"
-                  />
-                }
-                label="Inclure les dossiers fils"
-              />
-            </FormControl>
-
-            <FormControl className={ classes.element } >
-              <FormLabel>Limiter aux types de fichiers</FormLabel>
-                <Select
-                  value="age-simple"
-                  inputProps={{
-                    name: 'age',
-                    id: 'age-simple',
-                  }}
+          <FormControl className={ classes.element }>
+            <FormLabel>Recherche récursive</FormLabel>
+            <FormControlLabel
+              control={
+                <Switch
+                  value="checkedA"
                 />
-            </FormControl>
+              }
+              label="Inclure les dossiers fils"
+            />
+          </FormControl>
 
-          </FormGroup>
-        </div>
+          <FormControl className={ classes.element } >
+            <FormLabel>Limiter aux types de fichiers</FormLabel>
+              <Select
+                value="age-simple"
+                inputProps={{
+                  name: 'age',
+                  id: 'age-simple',
+                }}
+              />
+          </FormControl>
+
+        </FormGroup>
       </div>
-    </Slide>
+    </div>
   )
 }
 

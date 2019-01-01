@@ -3,7 +3,6 @@ import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import Typography from '@material-ui/core/Typography'
 import InfoIcon from '@material-ui/icons/Info'
 import WarningIcon from '@material-ui/icons/Warning'
-import Slide from '@material-ui/core/Slide'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import { distanceInWords } from 'date-fns'
 
@@ -18,6 +17,7 @@ import { connect, withStore } from 'store/store'
 import { getEvents } from 'store/actions/event'
 
 import styles from './styles'
+import CumulusContent, { CumulusContentError } from 'components/CumulusContent';
 
 const EventTitle: Record<EventType, string> = {
   'NODE_CREATE': 'Création',
@@ -152,27 +152,15 @@ class EventList extends React.Component<PropsWithStyle, {}> {
     const events = content ? content : []
     const showLoading = loading && events.length === 0
 
-    const loader = (
-      showLoading && (
-        <div className={ classes.content } >
-          <CircularProgress className={ classes.loader } size={ 100 } color="primary"/>
-        </div>
-      )
-    )
-
-    // TODO adapt error logo ?
     const errorContent = (
       !showLoading && error &&
-      <Slide direction="up" in >
-        <div className={ classes.errorContent } >
-          <Typography variant="caption" className={ classes.emptyDirectory }>
-            <WarningIcon className={ classes.emptyDirectoryIcon }/>
-            { `Une erreur est survenue au chargement des évènements : ${error.message}` }
-          </Typography>
-        </div>
-      </Slide>
+      <CumulusContentError
+        icon={ <WarningIcon /> }
+        text={ `Une erreur est survenue au chargement des évènements : ${error.message}` }
+      />
     )
-    const header = (
+
+    const tableHeader = (
       <>
         <Typography variant="caption" noWrap className={classes.contentType} >Type</Typography>
         <Typography variant="caption" noWrap className={classes.contentDescription} >Description</Typography>
@@ -182,44 +170,44 @@ class EventList extends React.Component<PropsWithStyle, {}> {
 
     const table = (
       !showLoading && !error &&
-      <Slide direction="up" in >
-        <div className={ classes.content } >
-          {
-            events.length == 0 ? (
-              <Typography variant="caption" className={classes.emptyDirectory} >
-                <InfoIcon className={classes.emptyDirectoryIcon}/>
-                { 'Aucune action n\'a été effectuée' }
-              </Typography>
-            ) : (
-              <Table<Event>
-                elements={ events }
-                elementsSize={ events.length + (hasMore ? 1 : 0) }
-                rowHeight={ 45 }
-                header={ header }
-                renderRow={ this.renderElementRow }
-                renderLoadingRow={ this.renderLoadingRow }
-                elementKey={ (node) => node.id }
-                onLoadMoreElements={ (offset) => this.props.onLoadMoreContent(offset) }
-                loading={ loading }
-              />
-            )
-          }
-        </div>
-      </Slide>
+      <>
+        {
+          events.length == 0 ? (
+            <CumulusContentError
+              icon={ <InfoIcon /> }
+              text={ 'Aucune action n\'a été effectuée' }
+            />
+          ) : (
+            <Table<Event>
+              elements={ events }
+              elementsSize={ events.length + (hasMore ? 1 : 0) }
+              rowHeight={ 45 }
+              header={ tableHeader }
+              renderRow={ this.renderElementRow }
+              renderLoadingRow={ this.renderLoadingRow }
+              elementKey={ (node) => node.id }
+              onLoadMoreElements={ (offset) => this.props.onLoadMoreContent(offset) }
+              loading={ loading }
+            />
+          )
+        }
+      </>
+    )
+
+    const header = (
+      <>
+        <div>TODO go back to files</div>
+        <UserBadge user={ user } />
+      </>
     )
 
     return (
-      <main className={ classes.root }>
-        <div className={ classes.header } >
-          <>
-            <div>TODO go back to files</div>
-            <UserBadge user={ user } />
-          </>
-        </div>
-        <div className={ classes.contentWrapper } >
-          { loader || errorContent || table }
-        </div>
-      </main>
+      <CumulusContent
+        header={ header }
+        error={ errorContent }
+        content={ table }
+        loading={ showLoading }
+      />
     )
 
   }
