@@ -11,7 +11,7 @@ DELETE  /api/admin/users/:ref            io.cumulus.controllers.admin.UserAdminC
 
 # User management routes
 POST    /api/users/login                 io.cumulus.controllers.UserController.login
-POST    /api/users/logout                io.cumulus.controllers.UserController.logout
+GET     /api/users/logout                io.cumulus.controllers.UserController.logout
 POST    /api/users/signup                io.cumulus.controllers.UserController.signUp
 GET     /api/users/me                    io.cumulus.controllers.UserController.me
 POST    /api/users/lang                  io.cumulus.controllers.UserController.changeLang

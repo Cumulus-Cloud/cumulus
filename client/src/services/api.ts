@@ -107,10 +107,6 @@ const Api = {
       return ApiUtils.post(Routes.api.users.signUp, { login, email, password })
     },
 
-    signOut(): Promise<ApiError | void> {
-      return ApiUtils.post(Routes.api.users.signOut, {})
-    },
-
     setFirstPassword(password: string): Promise<ApiError | User> {
       return ApiUtils.post(Routes.api.users.setFirstPassword, { password })
     },

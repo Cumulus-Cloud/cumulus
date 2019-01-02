@@ -4,6 +4,7 @@ import Typography from '@material-ui/core/Typography'
 import InfoIcon from '@material-ui/icons/Info'
 import WarningIcon from '@material-ui/icons/Warning'
 import CircularProgress from '@material-ui/core/CircularProgress'
+import ArrowBack from '@material-ui/icons/ArrowBack'
 import { distanceInWords } from 'date-fns'
 
 import UserBadge from 'components/fs/fileList/UserBadge'
@@ -18,6 +19,7 @@ import { connect, withStore } from 'store/store'
 import { getEvents } from 'store/actions/event'
 
 import styles from './styles'
+import Button from '@material-ui/core/Button'
 
 const EventTitle: Record<EventType, string> = {
   'NODE_CREATE': 'Création',
@@ -71,6 +73,8 @@ interface Props {
   error?: ApiError
 
   onLoadMoreContent: (offset: number) => void
+
+  onGoBack: () => void
 }
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
@@ -80,6 +84,10 @@ class EventList extends React.Component<PropsWithStyle, {}> {
   constructor(props: PropsWithStyle) {
     super(props)
     props.onLoadMoreContent(0)
+  }
+
+  goBack = () => {
+    this.props.onGoBack()
   }
 
   renderLoadingRow = (style: React.CSSProperties): React.ReactElement<{}> => {
@@ -196,7 +204,12 @@ class EventList extends React.Component<PropsWithStyle, {}> {
 
     const header = (
       <>
-        <div>TODO go back to files</div>
+        <div className={ classes.header }>
+          <Button className={ classes.button } onClick={() => this.goBack()} >
+            <ArrowBack className={ classes.icon } />
+            <span>Revenir aux fichiers</span>
+          </Button>
+        </div>
         <UserBadge user={ user } />
       </>
     )
@@ -215,7 +228,7 @@ class EventList extends React.Component<PropsWithStyle, {}> {
 }
 
 const mappedProps =
-  connect(({ events, auth }, dispatch) => {
+  connect(({ events, auth, router }, dispatch) => {
     const { user } = auth
 
     if(!user) // Should not happen
@@ -229,6 +242,9 @@ const mappedProps =
       error: events.error,
       onLoadMoreContent: () => {
         dispatch(getEvents())
+      },
+      onGoBack: () => {
+        router.goBack()
       }
     }
   })

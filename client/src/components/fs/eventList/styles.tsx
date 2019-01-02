@@ -3,6 +3,19 @@ import createStyles from '@material-ui/core/styles/createStyles'
 
 
 const styles = (theme: Theme) => createStyles({
+  button: {
+    textTransform: 'none',
+    fontWeight: 'normal'
+  },
+  icon: {
+    color: 'rgba(0, 0, 0, 0.54)'
+  },
+  header: {
+    flex: 1,
+    overflow: 'auto',
+    display: 'flex',
+    alignItems: 'center'
+  },
   contentDescription: {
     margin: 0,
     flex: 4,
@@ -12,7 +25,7 @@ const styles = (theme: Theme) => createStyles({
   },
   contentDescriptionValue: {
     whiteSpace: 'nowrap',
-    overflow: 'hidden', 
+    overflow: 'hidden',
     textOverflow: 'ellipsis',
     cursor: 'pointer'
   },

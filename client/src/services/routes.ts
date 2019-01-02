@@ -7,15 +7,15 @@ const Routes = {
     emailConfirmation:  '/auth/email-confirmation'
   },
   app: {
-    fs:              '/app/fs',
-    fs_matcher:      '/app/fs:path(.+)',
+    fs:             '/app/fs',
+    fs_matcher:     '/app/fs:path(.+)',
     events:         '/app/events',
-    events_matcher: '/app/events(.+)'
+    events_matcher: '/app/events(.*)'
   },
   api: {
     management: {
       reload: '/api/admin/management/reload',
-      stop: '/api/admin/management/stop',
+      stop:   '/api/admin/management/stop',
     },
     users: {
       base:             '/api/users',

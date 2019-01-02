@@ -17,7 +17,7 @@ export const getEvents = createPureAction((setState, getState) => {
   }))
 
   const state = getState()
-  const offset = state.fs.content ? state.fs.content.length : 0
+  const offset = state.events.events ? state.events.events.length : 0
 
   return Api.user.events.all(offset).then((result: ApiError | ApiList<Event>) => {
     if ('errors' in result) {
