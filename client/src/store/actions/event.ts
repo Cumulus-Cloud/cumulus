@@ -29,7 +29,6 @@ export const getEvents = createPureAction((setState, getState) => {
         }
       }))
     } else {
-      console.log(result)
       setState(state => ({
         events: {
           ...state.events,

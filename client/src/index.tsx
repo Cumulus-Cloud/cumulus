@@ -6,9 +6,9 @@ import { CircularProgress } from '@material-ui/core'
 import WithAuthentication from 'components/utils/WithAuthentication'
 import AppBackground from 'components/utils/AppBackground'
 
-import AppPage from 'pages/AppPage'
-import FailurePage from 'pages/FailurePage'
-import LoginPage from 'pages/LoginPage'
+import AppPage from 'pages/app/AppPage'
+import FailurePage from 'pages/app/FailurePage'
+import LoginPage from 'pages/login/LoginPage'
 
 import { initialState, Store } from 'store/store'
 

@@ -8,6 +8,7 @@ import { distanceInWords } from 'date-fns'
 
 import UserBadge from 'components/fs/fileList/UserBadge'
 import Table from 'components/utils/Table/InfiniteScrollTable'
+import Content, { ContentError } from 'components/utils/layout/Content'
 
 import { ApiError } from 'models/ApiError'
 import { User } from 'models/User'
@@ -17,7 +18,6 @@ import { connect, withStore } from 'store/store'
 import { getEvents } from 'store/actions/event'
 
 import styles from './styles'
-import CumulusContent, { CumulusContentError } from 'components/CumulusContent';
 
 const EventTitle: Record<EventType, string> = {
   'NODE_CREATE': 'Création',
@@ -100,7 +100,7 @@ class EventList extends React.Component<PropsWithStyle, {}> {
     )
   }
 
-  renderElementRow = (event: Event, style: React.CSSProperties, isScrolling: boolean): JSX.Element => {
+  renderElementRow = (event: Event, style: React.CSSProperties, _: boolean): JSX.Element => {
     const { classes } = this.props
 
     const now = new Date()
@@ -154,7 +154,7 @@ class EventList extends React.Component<PropsWithStyle, {}> {
 
     const errorContent = (
       !showLoading && error &&
-      <CumulusContentError
+      <ContentError
         icon={ <WarningIcon /> }
         text={ `Une erreur est survenue au chargement des évènements : ${error.message}` }
       />
@@ -173,7 +173,7 @@ class EventList extends React.Component<PropsWithStyle, {}> {
       <>
         {
           events.length == 0 ? (
-            <CumulusContentError
+            <ContentError
               icon={ <InfoIcon /> }
               text={ 'Aucune action n\'a été effectuée' }
             />
@@ -202,7 +202,7 @@ class EventList extends React.Component<PropsWithStyle, {}> {
     )
 
     return (
-      <CumulusContent
+      <Content
         header={ header }
         error={ errorContent }
         content={ table }

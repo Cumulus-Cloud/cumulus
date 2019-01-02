@@ -15,7 +15,7 @@ import SearchBar from 'components/fs/SearchBar'
 import SearchZone from 'components/fs/SearchZone'
 import UserBadge from 'components/fs/fileList/UserBadge'
 import DraggedElement from 'components/fs/fileList/DraggedElement'
-import CumulusContent, { CumulusContentError } from 'components/CumulusContent'
+import Content, { ContentError } from 'components/utils/layout/Content'
 
 import { Directory, FsNode } from 'models/FsNode'
 import { ApiError } from 'models/ApiError'
@@ -164,7 +164,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
 
     const errorContent = (
       !showLoading && error &&
-      <CumulusContentError
+      <ContentError
         icon={ <WarningIcon /> }
         text={ `Une erreur est survenue au chargement de ${initialPath} : ${error.message}` }
         actions={
@@ -180,7 +180,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
       <>
         {
           files.length == 0 ? (
-            <CumulusContentError
+            <ContentError
               icon={ <InfoIcon /> }
               text={ 'Ce dossier est vide' }
             />
@@ -199,7 +199,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
         onDragLeave={ () => this.onDragLeave() }
       >
         { dropzoneActive && <DropzonePlaceholder /> }
-        <CumulusContent
+        <Content
           header={ header }
           error={ errorContent }
           content={

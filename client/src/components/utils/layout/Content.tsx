@@ -72,7 +72,7 @@ type PropsError = {
 
 type PropsErrorWithStyle = PropsError & WithStyles<typeof styles>
 
-class CumulusContentErrorElement extends React.Component<PropsErrorWithStyle, {}> {
+class ContentErrorElement extends React.Component<PropsErrorWithStyle, {}> {
 
   render() {
     const { icon, text, actions, classes } = this.props
@@ -109,7 +109,7 @@ type Props = {
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
 
-class CumulusContent extends React.Component<PropsWithStyle, {}> {
+class Content extends React.Component<PropsWithStyle, {}> {
 
   render() {
     const { header, content, loading, error, classes } = this.props
@@ -156,7 +156,7 @@ class CumulusContent extends React.Component<PropsWithStyle, {}> {
 
 }
 
-export default withStyles(styles)(CumulusContent)
+export default withStyles(styles)(Content)
 
-export const CumulusContentError = withStyles(styles)(CumulusContentErrorElement)
+export const ContentError = withStyles(styles)(ContentErrorElement)
 

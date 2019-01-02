@@ -19,7 +19,6 @@ export const ApiUtils = {
   maxResultDefault: 50,
 
   pagination(offset: number = 0, limit: number = 50): Map<string, string> {
-    console.log(limit)
     return new Map([['offset', `${offset}`], ['limit', `${limit}`]])
   },
 

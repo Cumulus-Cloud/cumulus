@@ -13,7 +13,8 @@ import NodeDeletionState from 'store/states/nodeDeletionState'
 import FileUploadState, { initialState as initialFileUploadState } from 'store/states/fileUploadState'
 import NotificationsState, { initialState as initialNotificationsState } from 'store/states/notificationsState'
 import PopupsState, { initialState as initialPopupsState, FsPopupType } from 'store/states/popupsState'
-import { FsNode } from 'models/FsNode';
+import Menu from 'store/states/menuState'
+import { FsNode } from 'models/FsNode'
 
 
 export type State = {
@@ -27,7 +28,9 @@ export type State = {
   nodeDeletion: NodeDeletionState
   fileUpload: FileUploadState
   notifications: NotificationsState
+  // TODO other store for UI info ?
   popups: PopupsState<FsPopupType, FsNode[]>
+  menu: Menu,
   router: History
 }
 
@@ -43,6 +46,7 @@ export const initialState: State = {
   fileUpload: initialFileUploadState(),
   notifications: initialNotificationsState(),
   popups: initialPopupsState([]),
+  menu: { show: false },
   router: createBrowserHistory()
 }
 
