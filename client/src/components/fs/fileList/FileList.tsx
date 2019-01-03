@@ -153,7 +153,7 @@ class FilesList extends React.Component<PropsWithStyle, State> {
       currentDirectory ?
       (
         <>
-          <BreadCrumb className={ classes.breadCrumb } {...dragAndDropProps(this.props)} />
+          <BreadCrumb {...dragAndDropProps(this.props)} />
           <SearchBar search={ localSearch } onSearchQueryChange={ (query) => this.onSearchQueryChange(query) } />
           <UserBadge user={ user } />
         </>

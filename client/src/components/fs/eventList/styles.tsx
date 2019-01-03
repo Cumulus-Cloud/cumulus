@@ -8,7 +8,8 @@ const styles = (theme: Theme) => createStyles({
     fontWeight: 'normal'
   },
   icon: {
-    color: 'rgba(0, 0, 0, 0.54)'
+    color: 'rgba(0, 0, 0, 0.54)',
+    marginRight: theme.spacing.unit
   },
   header: {
     flex: 1,

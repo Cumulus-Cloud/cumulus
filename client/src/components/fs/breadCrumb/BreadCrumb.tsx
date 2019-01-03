@@ -13,20 +13,21 @@ import MenuItem from '@material-ui/core/MenuItem'
 import Tooltip from '@material-ui/core/Tooltip'
 import classnames from 'classnames'
 
+import { connect, withStore } from 'store/store'
+import { getDirectory } from 'store/actions/directory'
+import { moveNodes } from 'store/actions/nodeDisplacement'
+
 import { WithDragAndDrop, dragAndDropProps } from 'components/utils/DragAndDrop'
 
 import { FsNode } from 'models/FsNode'
 
+import Routes from 'services/routes'
+
 import styles from './styles'
-import { connect, withStore } from 'store/store';
-import { getDirectory } from 'store/actions/directory';
-import Routes from 'services/routes';
-import { moveNodes } from 'store/actions/nodeDisplacement';
 
 
 interface Props {
   path: string
-  className: string
   onChangePath: (path: string) => void
   onMoveNodes: (nodes: FsNode[], destination: string) => void
 }
@@ -62,7 +63,7 @@ class BreadCrumb extends React.Component<PropsWithStyle, State> {
   componentDidMount() {
     window.addEventListener("resize", () => this.onResize())
   }
-  
+
   componentWillUnmoun() {
     window.removeEventListener("resize", () => this.onResize())
   }
@@ -81,7 +82,7 @@ class BreadCrumb extends React.Component<PropsWithStyle, State> {
   }
 
   render() {
-    const { path, className, onChangePath, onMoveNodes } = this.props
+    const { path, classes, onChangePath, onMoveNodes } = this.props
     const { useLarge } = this.state
 
     const elements =
@@ -97,11 +98,11 @@ class BreadCrumb extends React.Component<PropsWithStyle, State> {
 
     return (
       useLarge ? (
-        <div className={className} ref={(el) => {this.ref = el}}>
+        <div className={ classes.breadCrumb } ref={(el) => {this.ref = el}}>
           <FullSizeBreadCrumbWithStyle path={paths} onChangePath={onChangePath} onMoveNodes={onMoveNodes} {...dragAndDropProps(this.props)} />
         </div>
       ) : (
-        <div className={className}>
+        <div className={ classes.breadCrumb }>
           <LowSizeBreadCrumbWithStyle path={paths} onChangePath={onChangePath} onMoveNodes={onMoveNodes} {...dragAndDropProps(this.props)} />
         </div>
       )
@@ -151,7 +152,7 @@ class LowSizeBreadCrumb extends React.Component<InnerProps, { anchorEl: HTMLElem
 
     const lastPath = path[path.length - 1] || ''
     const pathWithoutLast = path.slice(0, path.length - 1)
-    
+
     return (
       <div className={classes.root}>
         <DropZone onDrop={() => {}} onDragOver={(_, e) => this.onOpenMenu(e)} >

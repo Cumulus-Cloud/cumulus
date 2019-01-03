@@ -9,11 +9,6 @@ const styles = (_: Theme) => createStyles({
     flex: 1,
     flexDirection: 'column'
   },
-  breadCrumb: {
-    flex: 1,
-    width: 100,
-    overflow: 'auto'
-  },
   errorButton: {
     display: 'flex',
     margin: 'auto',
