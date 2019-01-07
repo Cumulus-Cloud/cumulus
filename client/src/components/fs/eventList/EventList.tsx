@@ -5,6 +5,11 @@ import InfoIcon from '@material-ui/icons/Info'
 import WarningIcon from '@material-ui/icons/Warning'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import ArrowBack from '@material-ui/icons/ArrowBack'
+import MoreVertIcon from '@material-ui/icons/MoreVert'
+import Button from '@material-ui/core/Button'
+import IconButton from '@material-ui/core/IconButton'
+import Menu from '@material-ui/core/Menu'
+import MenuItem from '@material-ui/core/MenuItem'
 import { distanceInWords } from 'date-fns'
 
 import UserBadge from 'components/fs/fileList/UserBadge'
@@ -19,7 +24,6 @@ import { connect, withStore } from 'store/store'
 import { getEvents } from 'store/actions/event'
 
 import styles from './styles'
-import Button from '@material-ui/core/Button'
 
 const EventTitle: Record<EventType, string> = {
   'NODE_CREATE': 'Création',
@@ -79,7 +83,12 @@ interface Props {
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
-class EventList extends React.Component<PropsWithStyle, {}> {
+interface State {
+  /** Select menu on a specified event. */
+  selectedMenu?: { eventId: string, anchor: HTMLElement }
+}
+
+class EventList extends React.Component<PropsWithStyle, State> {
 
   constructor(props: PropsWithStyle) {
     super(props)
@@ -88,6 +97,17 @@ class EventList extends React.Component<PropsWithStyle, {}> {
 
   goBack = () => {
     this.props.onGoBack()
+  }
+
+  onToggleMenu<T>(event: Event, reactEvent: React.SyntheticEvent<T>) {
+    const { selectedMenu } = this.state
+
+    reactEvent.stopPropagation()
+
+    if(selectedMenu && selectedMenu.eventId === event.id)
+      this.setState({ selectedMenu: undefined })
+    else
+      this.setState({ selectedMenu: { eventId: event.id, anchor: reactEvent.target as any } })
   }
 
   renderLoadingRow = (style: React.CSSProperties): React.ReactElement<{}> => {
@@ -108,15 +128,15 @@ class EventList extends React.Component<PropsWithStyle, {}> {
     )
   }
 
-  renderElementRow = (event: Event, style: React.CSSProperties, _: boolean): JSX.Element => {
+  renderElementRow = (event: Event, style: React.CSSProperties, isScrolling: boolean): JSX.Element => {
     const { classes } = this.props
+    const { selectedMenu } = this.state
 
     const now = new Date()
 
-    /*
     const menu =
       <div>
-        <IconButton onClick={ (e) => this.onToggleMenu(node, e) } >
+        <IconButton onClick={ (e) => this.onToggleMenu(event, e) } >
           <MoreVertIcon />
         </IconButton>
         {
@@ -124,17 +144,15 @@ class EventList extends React.Component<PropsWithStyle, {}> {
           <Menu
             id="simple-menu"
             anchorEl={ selectedMenu ? selectedMenu.anchor : undefined }
-            open={ !!selectedMenu && (selectedMenu.nodeId === node.id) }
-            onClose={ (e) => this.onToggleMenu(node, e) }
+            open={ !!selectedMenu && (selectedMenu.eventId === event.id) }
+            onClose={ (e) => this.onToggleMenu(event, e) }
           >
-            <MenuItem onClick={ (e) => { this.onToggleMenu(node, e); this.onShowNodeDetail(node)} } >Détails</MenuItem>
-            <MenuItem>Télécharger</MenuItem>
-            <MenuItem onClick={ (e) => { this.onToggleMenu(node, e); this.onDeleteNode(node) }} >Supprimer</MenuItem>
-            <MenuItem>Partager</MenuItem>
+            <MenuItem onClick={ (e) => { this.onToggleMenu(event, e) } } >Détails</MenuItem>
+            <MenuItem>Annuler</MenuItem>
+            <MenuItem onClick={ (e) => { this.onToggleMenu(event, e) }} >Supprimer</MenuItem>
           </Menu>
         }
       </div>
-    */
 
     return (
       <div
@@ -150,6 +168,7 @@ class EventList extends React.Component<PropsWithStyle, {}> {
         <Typography variant="body1" className={ classes.contentCreation } >
           { distanceInWords(new Date(event.creation), now) }
         </Typography>
+        {menu}
       </div>
     )
   }
