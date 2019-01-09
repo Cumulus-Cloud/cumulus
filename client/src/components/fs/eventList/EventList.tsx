@@ -1,15 +1,22 @@
-import React from 'react'
+import React, { ComponentType } from 'react'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import Typography from '@material-ui/core/Typography'
 import InfoIcon from '@material-ui/icons/Info'
 import WarningIcon from '@material-ui/icons/Warning'
 import CircularProgress from '@material-ui/core/CircularProgress'
-import ArrowBack from '@material-ui/icons/ArrowBack'
+import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import Button from '@material-ui/core/Button'
 import IconButton from '@material-ui/core/IconButton'
+import { SvgIconProps } from '@material-ui/core/SvgIcon'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
+import CompareArrowsIcon from '@material-ui/icons/CompareArrows'
+import DeleteIcon from '@material-ui/icons/Delete'
+import ShareIcon from '@material-ui/icons/Share'
+import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder'
+import LockIcon from '@material-ui/icons/Lock'
+import LockOpenIcon from '@material-ui/icons/LockOpen'
 import { distanceInWords } from 'date-fns'
 
 import UserBadge from 'components/fs/fileList/UserBadge'
@@ -32,6 +39,15 @@ const EventTitle: Record<EventType, string> = {
   'NODE_SHARE': 'Partage',
   'USER_LOGIN': 'Connexion',
   'USER_LOGOUT': 'Déconnexion'
+}
+
+const EventIcons: Record<EventType, ComponentType<SvgIconProps>> = {
+  'NODE_CREATE': CreateNewFolderIcon,
+  'NODE_DELETE': DeleteIcon,
+  'NODE_MOVE': CompareArrowsIcon,
+  'NODE_SHARE': ShareIcon,
+  'USER_LOGIN': LockIcon,
+  'USER_LOGOUT': LockOpenIcon
 }
 
 function eventToText(e: Event) {
@@ -92,6 +108,7 @@ class EventList extends React.Component<PropsWithStyle, State> {
 
   constructor(props: PropsWithStyle) {
     super(props)
+    this.state = {}
     props.onLoadMoreContent(0)
   }
 
@@ -134,6 +151,9 @@ class EventList extends React.Component<PropsWithStyle, State> {
 
     const now = new Date()
 
+    const Icon =
+      EventIcons[event.eventType]
+
     const menu =
       <div>
         <IconButton onClick={ (e) => this.onToggleMenu(event, e) } >
@@ -160,6 +180,7 @@ class EventList extends React.Component<PropsWithStyle, State> {
         style={ style }
       >
         <Typography variant="body1" noWrap className={ classes.contentType }>
+          <Icon className={ classes.contentIcon } />
           <span className={ classes.contentDescriptionValue }>{ EventTitle[event.eventType] }</span>
         </Typography>
         <Typography variant="body1" noWrap className={ classes.contentDescription }>
@@ -225,7 +246,7 @@ class EventList extends React.Component<PropsWithStyle, State> {
       <>
         <div className={ classes.header }>
           <Button className={ classes.button } onClick={() => this.goBack()} >
-            <ArrowBack className={ classes.icon } />
+            <ArrowBackIcon className={ classes.icon } />
             <span>Revenir aux fichiers</span>
           </Button>
         </div>

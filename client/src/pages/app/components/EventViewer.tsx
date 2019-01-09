@@ -1,20 +1,16 @@
 import  React from 'react'
-import CloudUpload from '@material-ui/icons/CloudUpload'
-import ShareIcon from '@material-ui/icons/Share'
-import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
 
 import Layout from 'components/utils/layout/Layout'
-import { ActionGroup } from 'components/utils/layout/Menu'
 import EventList from 'components/fs/eventList/EventList'
 
 
 interface Props {}
 
-
 class EventViewer extends React.Component<Props> {
 
   render() {
+    /*
     const actions: ActionGroup = {
       actions: [
         {
@@ -31,9 +27,10 @@ class EventViewer extends React.Component<Props> {
         }
       ]
     }
+    */
 
     return (
-      <Layout actions={ [ actions ] } >
+      <Layout actions={ [] } >
         <EventList />
       </Layout>
     )

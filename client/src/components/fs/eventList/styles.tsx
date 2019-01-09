@@ -17,6 +17,11 @@ const styles = (theme: Theme) => createStyles({
     display: 'flex',
     alignItems: 'center'
   },
+  contentIcon: {
+    color: 'rgba(0, 0, 0, 0.54)',
+    marginLeft: theme.spacing.unit,
+    marginRight: theme.spacing.unit * 2
+  },
   contentDescription: {
     margin: 0,
     flex: 4,
@@ -35,8 +40,9 @@ const styles = (theme: Theme) => createStyles({
     padding: theme.spacing.unit * 2
   },
   contentType: {
-    flex: 1,
-    padding: theme.spacing.unit * 2
+    flex: 2,
+    padding: theme.spacing.unit * 2,
+    display: 'flex'
   },
   contentRow: {
     display: 'flex',
