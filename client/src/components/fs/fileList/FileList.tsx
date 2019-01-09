@@ -1,12 +1,9 @@
 import React from 'react'
 import { debounce } from 'throttle-debounce'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
-import Typography from '@material-ui/core/Typography'
 import InfoIcon from '@material-ui/icons/Info'
 import WarningIcon from '@material-ui/icons/Warning'
 import Button from '@material-ui/core/Button'
-import Slide from '@material-ui/core/Slide'
-import CircularProgress from '@material-ui/core/CircularProgress'
 import { withDragAndDrop, WithDragAndDrop, dragAndDropProps } from 'components/utils/DragAndDrop'
 import uuid = require('uuid/v4')
 
@@ -18,6 +15,7 @@ import SearchBar from 'components/fs/SearchBar'
 import SearchZone from 'components/fs/SearchZone'
 import UserBadge from 'components/fs/fileList/UserBadge'
 import DraggedElement from 'components/fs/fileList/DraggedElement'
+import Content, { ContentError } from 'components/utils/layout/Content'
 
 import { Directory, FsNode } from 'models/FsNode'
 import { ApiError } from 'models/ApiError'
@@ -80,7 +78,8 @@ class FilesList extends React.Component<PropsWithStyle, State> {
   }
 
   debuncedSearchChange = debounce(400, false, (updatedSearch: Search | undefined) => {
-    this.props.onChangeSearch(updatedSearch)
+    if(!updatedSearch || updatedSearch.query !== '')
+      this.props.onChangeSearch(updatedSearch)
   })
 
   onSearchChange(updatedSearch: Search | undefined) {
@@ -150,79 +149,69 @@ class FilesList extends React.Component<PropsWithStyle, State> {
     const files = currentDirectoryContent ? currentDirectoryContent : []
     const showLoading = loading || (contentLoading && files.length === 0)
 
-    const loader = (
-      showLoading && (
-        <div className={ classes.content } >
-          <CircularProgress className={ classes.loader } size={ 100 } color="primary"/>
-        </div>
+    const header = (
+      currentDirectory ?
+      (
+        <>
+          <BreadCrumb {...dragAndDropProps(this.props)} />
+          <SearchBar search={ localSearch } onSearchQueryChange={ (query) => this.onSearchQueryChange(query) } />
+          <UserBadge user={ user } />
+        </>
+      ) : (
+        <div style={ { flex: 1 } } /> // Placeholder during loading
       )
     )
 
     const errorContent = (
       !showLoading && error &&
-      <Slide direction="up" in >
-        <div className={ classes.errorContent } >
-          <Typography variant="caption" className={ classes.emptyDirectory }>
-            <WarningIcon className={ classes.emptyDirectoryIcon }/>
-            { `Une erreur est survenue au chargement de ${initialPath} : ${error.message}` }
-          </Typography>
-          {
-            error.key === 'api-error.not-found' &&
-            <Button variant="outlined" color="primary" className={ classes.errorButton } onClick={ () =>  this.onChangePath('/') } >Go back to the root directory</Button>
-          }
-        </div>
-      </Slide>
+      <ContentError
+        icon={ <WarningIcon /> }
+        text={ `Une erreur est survenue au chargement de ${initialPath} : ${error.message}` }
+        actions={
+          error.key === 'api-error.not-found' ?
+          <Button variant="outlined" color="primary" className={ classes.errorButton } onClick={ () =>  this.onChangePath('/') } >Go back to the root directory</Button> :
+          undefined
+        }
+      />
     )
 
     const content = (
       !showLoading && !error &&
-      <Slide direction="up" in >
-        <div className={ classes.content } >
-          {
-            files.length == 0 ? (
-              <Typography variant="caption" className={classes.emptyDirectory} >
-                <InfoIcon className={classes.emptyDirectoryIcon}/>
-                { 'Ce dossier est vide' }
-              </Typography>
-            ) : (
-              <FileListTable onPathChanged={() => this.setState({ search: undefined })} { ...dragAndDropProps(this.props) } />
-            )
-          }
-        </div>
-      </Slide>
+      <>
+        {
+          files.length == 0 ? (
+            <ContentError
+              icon={ <InfoIcon /> }
+              text={ 'Ce dossier est vide' }
+            />
+          ) : (
+            <FileListTable onPathChanged={() => this.setState({ search: undefined })} { ...dragAndDropProps(this.props) } />
+          )
+        }
+      </>
     )
 
     return (
-      <main className={ classes.root }>
-        <FileDropzone
-          className={ classes.dropzoneWrapper }
-          onDrop={ (files) => this.droppedFiles(files) }
-          onDragEnter={ () => this.onDragEnter() }
-          onDragLeave={ () => this.onDragLeave() }
-        >
-          { dropzoneActive && <DropzonePlaceholder classes={ classes } /> }
-          <div className={ classes.header } >
-            {
-              currentDirectory ?
-              (
-                <>
-                  <BreadCrumb className={ classes.breadCrumb } {...dragAndDropProps(this.props)} />
-                  <SearchBar search={ localSearch } onSearchQueryChange={ (query) => this.onSearchQueryChange(query) } />
-                  <UserBadge user={ user } />
-                </>
-              ) : (
-                <div style={ { flex: 1 } } /> // Placeholder during loading
-              )
-            }
-          </div>
-          { search && <SearchZone search={ search } onEndSearch={ () => this.onEndSearch() } /> }
-          <div className={ classes.contentWrapper } >
-            { loader || errorContent || content }
-          </div>
-        </FileDropzone>
-      </main>
+      <FileDropzone
+        className={ classes.dropzoneWrapper }
+        onDrop={ (files) => this.droppedFiles(files) }
+        onDragEnter={ () => this.onDragEnter() }
+        onDragLeave={ () => this.onDragLeave() }
+      >
+        { dropzoneActive && <DropzonePlaceholder /> }
+        <Content
+          header={ header }
+          error={ errorContent }
+          content={
+            <>
+              { search && <SearchZone search={ search } onEndSearch={ () => this.onEndSearch() } /> }
+              { content }
+            </>
+          }
+          loading={ showLoading }
+        />
+      </FileDropzone>
     )
-
   }
 
 }
@@ -262,8 +251,6 @@ const mappedProps =
       }
     }
   })
-
-
 
 export default withDragAndDrop(
   withStore(withStyles(styles)(FilesList), mappedProps),

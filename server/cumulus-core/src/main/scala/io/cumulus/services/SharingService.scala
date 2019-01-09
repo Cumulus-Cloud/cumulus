@@ -11,7 +11,7 @@ import io.cumulus.core.persistence.query.QueryE._
 import io.cumulus.core.utils.{Base16, Crypto, PaginatedList}
 import io.cumulus.core.validation.AppError
 import io.cumulus.models._
-import io.cumulus.models.fs.{Directory, File, FsNode}
+import io.cumulus.models.fs.{Directory, File, FsNode, Path}
 import io.cumulus.models.sharing.{FileSharingSecurity, Sharing, SharingSecurity}
 import io.cumulus.models.user.User
 import io.cumulus.models.user.session.UserSession

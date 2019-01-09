@@ -9,13 +9,13 @@ const Routes = {
   app: {
     fs:             '/app/fs',
     fs_matcher:     '/app/fs:path(.+)',
-    search:         '/app/search',
-    search_matcher: '/app/search:path(.+)'
+    events:         '/app/events',
+    events_matcher: '/app/events(.*)'
   },
   api: {
     management: {
       reload: '/api/admin/management/reload',
-      stop: '/api/admin/management/stop',
+      stop:   '/api/admin/management/stop',
     },
     users: {
       base:             '/api/users',
@@ -26,6 +26,7 @@ const Routes = {
       setFirstPassword: '/api/users/firstPassword',
       changeLang:       '/api/users/lang',
       changePassword:   '/api/users/password',
+      events:           '/api/users/events',
       sessions: {
         all:                     '/api/users/sessions',
         get:    (ref: string) => `/api/users/sessions/${ref}`,

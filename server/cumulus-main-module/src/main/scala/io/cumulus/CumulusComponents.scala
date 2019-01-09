@@ -128,6 +128,7 @@ class CumulusComponents(
   lazy val fsNodeStore: FsNodeStore   = wire[FsNodeStore]
   lazy val sharingStore: SharingStore = wire[SharingStore]
   lazy val sessionStore: SessionStore = wire[SessionStore]
+  lazy val eventStore: EventStore     = wire[EventStore]
 
   // Services
   lazy val userService: UserService       = wire[UserService]
@@ -135,6 +136,7 @@ class CumulusComponents(
   lazy val storageService: StorageService = wire[StorageService]
   lazy val sharingService: SharingService = wire[SharingService]
   lazy val sessionService: SessionService = wire[SessionService]
+  lazy val eventService: EventService     = wire[EventService]
   lazy val taskService: TaskService       = wire[TaskService]
   lazy val mailService: MailService       = wire[MailService]
 

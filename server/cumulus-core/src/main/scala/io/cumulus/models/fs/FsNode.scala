@@ -6,7 +6,6 @@ import java.util.UUID
 
 import io.cumulus.core.json.JsonFormat
 import io.cumulus.core.utils.PaginatedList
-import io.cumulus.models.Path
 import io.cumulus.models.user.User
 import io.cumulus.persistence.storage.StorageReference
 import play.api.libs.functional.syntax._
@@ -242,13 +241,18 @@ object File {
     OFormat(reader, writer)
 
   // We want different non-implicit writers and readers for the database
-  lazy val internalReader: Reads[File]    = reader
+  lazy val internalReader: Reads[File]   = reader
   lazy val internalWriter: OWrites[File] = Json.writes[File]
   lazy val internalFormat: OFormat[File] = OFormat(internalReader, internalWriter)
 
 }
 
-
+/**
+  * Helper to expose a directory with its content
+  * @param directory The directory itself.
+  * @param content A paginated view of the content of the directory.
+  * @param totalContentLength Total number of item in the directory.
+  */
 case class DirectoryWithContent(
   directory: Directory,
   content: PaginatedList[FsNode],

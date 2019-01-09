@@ -13,8 +13,7 @@ import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.bodyParser.{BodyParserJson, BodyParserStream}
 import io.cumulus.core.persistence.query.QueryPagination
 import io.cumulus.core.validation.AppError
-import io.cumulus.models.Path
-import io.cumulus.models.fs.{Directory, FsNodeType}
+import io.cumulus.models.fs.{Directory, FsNodeType, Path}
 import io.cumulus.persistence.stores.orderings.FsNodeOrdering
 import io.cumulus.services.{FsNodeService, SessionService, SharingService, StorageService}
 import io.cumulus.stages._

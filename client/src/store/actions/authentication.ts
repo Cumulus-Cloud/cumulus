@@ -3,6 +3,7 @@ import Api from 'services/api'
 
 import { ApiError } from 'models/ApiError'
 import { User } from 'models/User'
+import Routes from 'services/routes';
 
 
 export const testUserAuth = createPureAction(setState => {
@@ -51,5 +52,13 @@ export const signUpUser = createAction<{ login: string, email: string, password:
       setState({ signUp: { loading: false, user: result } })
       getState().router.push('/auth/sign-up-confirmation')
     }
+  })
+})
+
+export const signOutUser = createPureAction((setState) => {
+  window.location.href = Routes.api.users.signOut // Redirect to the logout
+  setState({
+    auth: { loading: false, connected: false },
+    signIn: { loading: false }
   })
 })

@@ -9,8 +9,7 @@ import io.cumulus.core.Settings
 import io.cumulus.core.stream.utils.{Chunker, Counter, DigestCalculator}
 import io.cumulus.core.utils.MimeType
 import io.cumulus.core.validation.AppError
-import io.cumulus.models.fs.File
-import io.cumulus.models.Path
+import io.cumulus.models.fs.{File, Path}
 import io.cumulus.models.user.session.UserSession
 import io.cumulus.persistence.storage.{StorageCipher, StorageEngine, StorageObject, StorageReference}
 import io.cumulus.stages.{CipherStage, CompressionStage}

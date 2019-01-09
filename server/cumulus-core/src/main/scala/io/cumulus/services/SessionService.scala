@@ -3,18 +3,19 @@ package io.cumulus.services
 import java.time.Duration
 import java.util.UUID
 
-import io.cumulus.core.persistence.query.{QueryE, QueryPagination, QueryRunner}
 import io.cumulus.core.persistence.query.QueryE._
 import io.cumulus.core.persistence.query.QueryRunner._
+import io.cumulus.core.persistence.query.{QueryE, QueryPagination, QueryRunner}
 import io.cumulus.core.utils.PaginatedList
 import io.cumulus.core.validation.AppError
 import io.cumulus.core.{Logging, Settings}
+import io.cumulus.models.event.{LoginEvent, LogoutEvent}
 import io.cumulus.models.user.User
 import io.cumulus.models.user.session.{AuthenticationToken, SessionInformation, UserSession}
 import io.cumulus.persistence.stores.filters.SessionFilter
 import io.cumulus.persistence.stores.orderings.SessionOrdering
 import io.cumulus.persistence.stores.orderings.SessionOrderingType.OrderByLastActivityDesc
-import io.cumulus.persistence.stores.{SessionStore, UserStore}
+import io.cumulus.persistence.stores.{EventStore, SessionStore, UserStore}
 
 import scala.concurrent.Future
 
@@ -23,6 +24,7 @@ import scala.concurrent.Future
   */
 class SessionService(
   sessionStore: SessionStore,
+  eventStore: EventStore,
   userStore: UserStore
 )(
   implicit
@@ -38,8 +40,18 @@ class SessionService(
     */
   def createSession(from: String, user: User): Future[Either[AppError, SessionInformation]] = {
     val newSession = SessionInformation.create(from, Duration.ofHours(settings.management.sessionDuration))(user)
-    QueryE.lift(sessionStore.create(newSession).map(_ => newSession)).run()
-  }
+
+    for {
+
+      // Save the new session
+      session <- QueryE.lift(sessionStore.create(newSession).map(_ => newSession))
+
+      // Generate an event
+      _ <- QueryE.lift(eventStore.create(LoginEvent.create(from, infinite = false, user)))
+
+    } yield session
+
+  }.commit()
 
   /**
     * Creates a new infinite session. Infinite session cannot expire and should be manually revoked.
@@ -49,8 +61,18 @@ class SessionService(
     */
   def createInfiniteSession(from: String, user: User): Future[Either[AppError, SessionInformation]] = {
     val newSession = SessionInformation.createInfinite(from)(user)
-    QueryE.lift(sessionStore.create(newSession).map(_ => newSession)).run()
-  }
+
+    for {
+
+      // Save the new session
+      session <- QueryE.lift(sessionStore.create(newSession).map(_ => newSession))
+
+      // Generate an event
+      _ <- QueryE.lift(eventStore.create(LoginEvent.create(from, infinite = true, user)))
+
+    } yield session
+
+  }.commit()
 
   /**
     * Retrieves a session.
@@ -59,7 +81,7 @@ class SessionService(
     QueryE.getOrNotFound(sessionStore.find(sessionId, SessionFilter(user))).run()
 
   /**
-    * Retrieves a session from the provided token. Will fail if the session is no valid. This method should be used
+    * Retrieves a session from the provided token. Will fail if the session is not valid. This method should be used
     * when the session needs to be fetch for each query.
     *
     * @param from IP of the call.
@@ -87,8 +109,8 @@ class SessionService(
       _ <- QueryE.pure(UserService.checkUsableUser(user))
 
       // Refresh the session
-      refreshedSession = session.refresh(from)
-      _ <- QueryE.lift(sessionStore.update(refreshedSession))
+      refreshedSession =  session.refresh(from)
+      _                <- QueryE.lift(sessionStore.update(refreshedSession))
 
     } yield UserSession(user, refreshedSession, token.password)
 
@@ -98,8 +120,9 @@ class SessionService(
     * Revokes a session.
     *
     * @param sessionId The ID of the session to revoke.
+    * @param from IP of the call.
     */
-  def revokeSession(sessionId: UUID)(implicit user: User): Future[Either[AppError, SessionInformation]] = {
+  def revokeSession(sessionId: UUID, from: String)(implicit user: User): Future[Either[AppError, SessionInformation]] = {
 
     for {
       // Find the session
@@ -108,6 +131,9 @@ class SessionService(
       // Revoke the session
       revokedSession =  session.revoke
       _              <- QueryE.lift(sessionStore.update(revokedSession))
+
+      // Generate an event
+      _ <- QueryE.lift(eventStore.create(LogoutEvent.create(from, user)))
 
     } yield revokedSession
 

@@ -1,9 +1,11 @@
-package io.cumulus.models
+package io.cumulus.models.fs
 
-import scala.language.implicitConversions
 import org.apache.commons.io.FilenameUtils
 import play.api.libs.json._
 import play.api.mvc.{PathBindable, QueryStringBindable}
+
+import scala.language.implicitConversions
+
 
 /**
   * A path, either for a directory or for a for a file.

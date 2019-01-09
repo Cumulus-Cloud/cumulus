@@ -28,11 +28,11 @@ object QueryPagination {
   val first = QueryPagination(1)
 
   def apply(
-    limit: Option[Int],
-    offset: Option[Int]
+    maybeLimit: Option[Int],
+    maybeOffset: Option[Int]
   )(implicit settings: Settings): QueryPagination =
-    limit
-      .map(QueryPagination(_, offset))
-      .getOrElse(QueryPagination(settings.api.paginationDefaultSize, offset))
+    maybeLimit
+      .map(limit => QueryPagination(if (limit > settings.api.paginationMaximumSize) settings.api.paginationMaximumSize else limit, maybeOffset))
+      .getOrElse(QueryPagination(settings.api.paginationDefaultSize, maybeOffset))
 
 }

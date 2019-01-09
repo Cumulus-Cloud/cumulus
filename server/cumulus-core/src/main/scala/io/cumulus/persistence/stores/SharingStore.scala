@@ -54,7 +54,7 @@ class SharingStore extends AnormPKOperations[Sharing, UUID] with AnormRepository
             #${paginationPlusOne.toLIMIT}
           """.as(rowParser.*)
 
-      result.toPaginatedList(pagination.offset, result.length > pagination.limit)
+      result.take(pagination.limit).toPaginatedList(pagination.offset, result.length > pagination.limit)
     }
 
   /**
@@ -75,7 +75,7 @@ class SharingStore extends AnormPKOperations[Sharing, UUID] with AnormRepository
             #${paginationPlusOne.toLIMIT}
           """.as(rowParser.*)
 
-      result.toPaginatedList(pagination.offset, result.length > pagination.limit)
+      result.take(pagination.limit).toPaginatedList(pagination.offset, result.length > pagination.limit)
     }
 
   /**

@@ -11,7 +11,7 @@ DELETE  /api/admin/users/:ref            io.cumulus.controllers.admin.UserAdminC
 
 # User management routes
 POST    /api/users/login                 io.cumulus.controllers.UserController.login
-POST    /api/users/logout                io.cumulus.controllers.UserController.logout
+GET     /api/users/logout                io.cumulus.controllers.UserController.logout
 POST    /api/users/signup                io.cumulus.controllers.UserController.signUp
 GET     /api/users/me                    io.cumulus.controllers.UserController.me
 POST    /api/users/lang                  io.cumulus.controllers.UserController.changeLang
@@ -21,14 +21,15 @@ POST    /api/users/firstPassword         io.cumulus.controllers.UserController.s
 GET     /api/users/sessions              io.cumulus.controllers.UserController.listSessions(limit: Option[Int], offset: Option[Int])
 GET     /api/users/sessions/:ref         io.cumulus.controllers.UserController.getSession(ref: java.util.UUID)
 POST    /api/users/sessions/:ref/revoke  io.cumulus.controllers.UserController.revokeSession(ref: java.util.UUID)
+GET     /api/users/events                io.cumulus.controllers.UserController.listEvents(limit: Option[Int], offset: Option[Int])
 
 GET     /validateEmail                   io.cumulus.controllers.UserController.validateEmail(userLogin: String, emailCode: String)
 
 # API - FS routes
 GET     /api/fs/index                    io.cumulus.controllers.FileSystemController.index
-GET     /api/fs/search                   io.cumulus.controllers.FileSystemController.search(path: io.cumulus.models.Path, name: String, recursiveSearch: Option[Boolean], nodeType: Option[io.cumulus.models.fs.FsNodeType], `type`: Option[String], limit: Option[Int], offset: Option[Int])
+GET     /api/fs/search                   io.cumulus.controllers.FileSystemController.search(path: io.cumulus.models.fs.Path, name: String, recursiveSearch: Option[Boolean], nodeType: Option[io.cumulus.models.fs.FsNodeType], `type`: Option[String], limit: Option[Int], offset: Option[Int])
 PUT     /api/fs                          io.cumulus.controllers.FileSystemController.create
-GET     /api/fs                          io.cumulus.controllers.FileSystemController.getByPath(path: io.cumulus.models.Path)
+GET     /api/fs                          io.cumulus.controllers.FileSystemController.getByPath(path: io.cumulus.models.fs.Path)
 POST    /api/fs                          io.cumulus.controllers.FileSystemController.update
 GET     /api/fs/:nodeId                  io.cumulus.controllers.FileSystemController.get(nodeId: java.util.UUID)
 GET     /api/fs/:nodeId/content          io.cumulus.controllers.FileSystemController.getContent(nodeId: java.util.UUID, limit: Option[Int], offset: Option[Int], order: Option[io.cumulus.persistence.stores.orderings.FsNodeOrdering])
@@ -43,11 +44,11 @@ DELETE  /api/fs/:nodeId                  io.cumulus.controllers.FileSystemContro
 GET     /api/sharings                    io.cumulus.controllers.SharingController.list(nodeId: Option[java.util.UUID], limit: Option[Int], offset: Option[Int])
 POST    /api/sharings                    io.cumulus.controllers.SharingController.create
 GET     /api/sharings/:ref               io.cumulus.controllers.SharingController.get(ref: String)
-DELETE  /api/sharings/:ref               io.cumulus.controllers.SharingController.delete(ref: io.cumulus.models.Path)
+DELETE  /api/sharings/:ref               io.cumulus.controllers.SharingController.delete(ref: io.cumulus.models.fs.Path)
 
 # API - Shared (visitor)
-GET     /api/shared/fs*path              io.cumulus.controllers.SharingPublicController.get(path: io.cumulus.models.Path, reference, key)
-GET     /api/shared/download*path        io.cumulus.controllers.SharingPublicController.download(path: io.cumulus.models.Path, reference, key, download: Option[Boolean])
+GET     /api/shared/fs*path              io.cumulus.controllers.SharingPublicController.get(path: io.cumulus.models.fs.Path, reference, key)
+GET     /api/shared/download*path        io.cumulus.controllers.SharingPublicController.download(path: io.cumulus.models.fs.Path, reference, key, download: Option[Boolean])
 
 # Shared (visitor) 'pretty' routes for root element (file)
 GET     /shared/download/:ref/:name      io.cumulus.controllers.SharingPublicController.downloadRoot(ref, name, key, download: Option[Boolean])
@@ -59,5 +60,5 @@ GET     /assets/*file                    io.cumulus.controllers.Assets.versioned
 
 # App entrypoints
 GET     /                                io.cumulus.controllers.HomeController.index
-GET     /app/fs*path                     io.cumulus.controllers.HomeController.indexWithPath(path)
-GET     /*path                           io.cumulus.controllers.HomeController.indexWithIgnoredPath(path)
+GET     /app/fs*path                     io.cumulus.controllers.HomeController.indexWithPath(path: io.cumulus.models.fs.Path)
+GET     /*path                           io.cumulus.controllers.HomeController.indexWithIgnoredPath(path: io.cumulus.models.fs.Path)

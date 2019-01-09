@@ -3,26 +3,6 @@ import createStyles from '@material-ui/core/styles/createStyles'
 
 
 const styles = (theme: Theme) => createStyles({
-  root: {
-    boxShadow: 'none',
-    borderTop: 0,
-    marginTop: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    transform: 'none',
-    flex: 1
-  },
-  contentTableHead: {
-    zIndex: 99,
-    boxShadow: 'none',
-    backgroundColor: 'white',
-    borderTop: '1px solid rgba(0, 0, 0, 0.12)',
-    borderBottom: 0
-  },
-  contentTableBody: {
-    flex: 1,
-    display: 'flex'
-  },
   contentTypeIcon: {
     color: 'rgba(0, 0, 0, 0.54)',
     marginRight: theme.spacing.unit * 2,
@@ -55,13 +35,6 @@ const styles = (theme: Theme) => createStyles({
   },
   contentSelected: {
     color: theme.palette.primary.light
-  },
-  contentHeadRow: {
-    display: 'flex',
-    borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
-    height: '45px',
-    alignItems: 'center',
-    paddingRight: '61px' // Let space for the menu icon
   },
   contentRow: {
     display: 'flex',

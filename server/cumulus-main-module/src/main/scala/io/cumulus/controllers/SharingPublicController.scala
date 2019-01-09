@@ -7,7 +7,7 @@ import io.cumulus.controllers.utils.{FileDownloaderUtils, UserAuthentication}
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.utils.Base16
 import io.cumulus.core.validation.AppError
-import io.cumulus.models.Path
+import io.cumulus.models.fs.Path
 import io.cumulus.models.user.session.SharingSession
 import io.cumulus.services.{SessionService, SharingService, StorageService}
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}

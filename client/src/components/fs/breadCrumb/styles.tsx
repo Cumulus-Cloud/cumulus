@@ -3,6 +3,11 @@ import createStyles from '@material-ui/core/styles/createStyles'
 
 
 const styles = (theme: Theme) => createStyles({
+  breadCrumb: {
+    flex: 1,
+    width: 100,
+    overflow: 'auto'
+  },
   root: {
     paddingLeft: theme.spacing.unit * 3,
     paddingRight: theme.spacing.unit * 3,

@@ -1,4 +1,4 @@
-import  React from 'react'
+import React from 'react'
 import Grow from '@material-ui/core/Grow'
 import Paper from '@material-ui/core/Paper'
 import { Theme } from '@material-ui/core/styles/createMuiTheme'
@@ -7,14 +7,14 @@ import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import Typography from '@material-ui/core/Typography'
 import Zoom from '@material-ui/core/Zoom'
 import CloudIcon from '@material-ui/icons/CloudQueue'
+import { Fab } from '@material-ui/core'
 import { Route, Redirect, match, Switch } from 'react-router-dom'
 import { withRouter } from 'react-router-dom'
-import  H from 'history'
+import H from 'history'
 
 import SignUpConfirmation from 'components/login/SignUpConfirmation'
 import SignIn from 'components/login/SignInForm'
 import SignUp from 'components/login/SignUpForm'
-import { Fab } from '@material-ui/core'
 
 
 const styles = (theme: Theme) => createStyles({
