@@ -20,12 +20,14 @@ import { FsNode } from 'models/FsNode'
 import { withStore, connect } from 'store/store'
 import { showPopup } from 'store/actions/popups'
 import { selectedNodes } from 'store/states/fsState'
+import MovePopup from 'components/popups/move/MovePopup';
 
 
 interface Props {
   showCreationPopup: () => void
   showUploadPopup: () => void
   showDeletionPopup: () => void
+  showMovePopup: () => void
   selection: FsNode[]
 }
 
@@ -42,6 +44,10 @@ class FileExplorer extends React.Component<Props> {
 
   showDeletionPopup = () => {
     this.props.showDeletionPopup()
+  }
+
+  showMovePopup = () => {
+    this.props.showMovePopup()
   }
 
   render() {
@@ -76,11 +82,13 @@ class FileExplorer extends React.Component<Props> {
       actions: [
         {
           icon: <CompareArrowsIcon />,
-          label: 'Déplacer la sélection'
+          label: 'Déplacer la sélection',
+          action: this.showMovePopup
         },
         {
           icon: <DeleteIcon />,
-          label: 'Supprimer la sélection'
+          label: 'Supprimer la sélection',
+          action: this.showDeletionPopup
         },
         {
           icon: <ShareIcon />,
@@ -98,6 +106,7 @@ class FileExplorer extends React.Component<Props> {
         <DetailPopup />
         <DeletionPopup />
         <UploadProgressPopup />
+        <MovePopup />
 
       </Layout>
     )
@@ -116,6 +125,7 @@ const mappedProps =
       user: user,
       showCreationPopup: () => dispatch(showPopup({ type: 'DIRECTORY_CREATION' })),
       showUploadPopup: () => dispatch(showPopup({ type: 'FILE_UPLOAD' })),
+      showMovePopup: () => dispatch(showPopup({ type: 'NODE_MOVE' })),
       showDeletionPopup: () => dispatch(showPopup({ type: 'NODE_DELETION', nodes: selection }))
     }
   })

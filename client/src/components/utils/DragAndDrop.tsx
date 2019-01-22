@@ -58,7 +58,7 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
 
   dragEndHandler = (_: MouseEvent) => {
     const { dragInfo } = this.state
-    
+
     if(dragInfo) // Reset everything when the mouse is released
       this.reset()
   }
@@ -125,7 +125,7 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
 
         if(dragInfo)
           props.onDrop(dragInfo.value, e)
-        
+
         this.reset()
       }}
 
@@ -156,7 +156,7 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
 }
 
 /**
- * Injected props. 
+ * Injected props.
  */
 export type WithDragAndDrop<T> = {
   /** Draggable container. */
@@ -172,6 +172,11 @@ export function dragAndDropProps<T, P extends WithDragAndDrop<T>>(props: P): Wit
   return { Draggable, DropZone, dragInfo }
 }
 
+export function dragAndDropPropsOpt<T, P extends Partial<WithDragAndDrop<T>>>(props: P): Partial<WithDragAndDrop<T>> {
+  const { Draggable, DropZone, dragInfo } = props
+  return { Draggable, DropZone, dragInfo }
+}
+
 /**
  * High order component allowing to inject the drag & drop informations into the props. The props of
  * the component must be composed with the type WithDragAndDrop.
@@ -182,7 +187,7 @@ export const withDragAndDrop = <PROPS extends WithDragAndDrop<T>, T, S>(
 ): ComponentType<Difference<PROPS, WithDragAndDrop<T>>> => {
 
   return class extends React.Component<Difference<PROPS, WithDragAndDrop<T>>, S> {
-    
+
     render() {
       return (
         <DragAndDrop<T> renderDraggedElement={ (props) => renderDraggedElement(props) } >
@@ -193,6 +198,6 @@ export const withDragAndDrop = <PROPS extends WithDragAndDrop<T>, T, S>(
       )
     }
 
-  } 
+  }
 
 }

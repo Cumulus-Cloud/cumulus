@@ -3,6 +3,7 @@ export type FsPopupType =
   'DIRECTORY_CREATION' |
   'FILE_UPLOAD' |
   'NODE_DETAIL' |
+  'NODE_MOVE'   |
   'NODE_DELETION'
 
 export type PopupsState<PopupType, Target> = {
