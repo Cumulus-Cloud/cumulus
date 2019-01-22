@@ -10,7 +10,7 @@ import styles from './styles'
 interface Props<T> {
 
   /** Header of the table */
-  header: JSX.Element
+  header?: JSX.Element
 
   /** Row renderer. */
   renderRow: (element: T, style: React.CSSProperties, isScrolling: boolean, index: number) => JSX.Element
@@ -25,7 +25,7 @@ interface Props<T> {
 
   /** When more content needs to be loaded. */
   onLoadMoreElements: (offset: number) => void
-  
+
   /** If more content is loading. */
   loading: boolean
 
@@ -66,11 +66,14 @@ class InfiniteScrollTableBase<T> extends React.Component<PropsWithStyle<T>, {}> 
 
     return (
       <Paper className={classes.root} >
-        <div className={classes.contentTableHead}>
-          <div className={classes.contentHeadRow} >
-            { header }
+        {
+          header &&
+          <div className={classes.contentTableHead}>
+            <div className={classes.contentHeadRow} >
+              { header }
+            </div>
           </div>
-        </div>
+        }
         <div className={classes.contentTableBody}>
           <Resize style={{ flex: 1 }} >
             { ({ height }) =>

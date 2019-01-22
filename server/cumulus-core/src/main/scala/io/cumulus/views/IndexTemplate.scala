@@ -33,6 +33,11 @@ trait IndexTemplate extends View {
         rel   := "stylesheet",
         href  := "https://fonts.googleapis.com/icon?family=Material+Icons"
       ),
+      tag("style")(
+        tpe := "text/css",
+        "form { margin-bottom: 0; }" +
+        "body { margin: 0; padding: 0; height:100%; }"
+      ),
       link(
         rel   := "icon",
         media := "image/x-icon",
@@ -63,10 +68,7 @@ trait IndexTemplate extends View {
   lazy val content: Tag = {
     html(
       head(pageHead),
-      body(
-        pageBody,
-        style := "margin:0px; padding:0px; height:100%;"
-      )
+      body(pageBody)
     )
   }
 

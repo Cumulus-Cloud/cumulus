@@ -28,6 +28,13 @@ const styles = (theme: Theme) => createStyles({
   },
   content: {
     flex: 1
+  },
+  buttonText: {
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    maxWidth: 300,
+    display: 'block'
   }
 })
 
@@ -97,10 +104,10 @@ class DeletionPopup extends React.Component<PropsWithStyle, State> {
           </DialogContent>
           <DialogActions>
             <Button onClick={ () => this.onClose() } disabled={ loading }>
-              { cancel }
+            <span className={ classes.buttonText }>{ cancel }</span>
             </Button>
             <ButtonLoader loading={ loading } disabled={ disabled } color="primary" type="submit" >
-              { action }
+              <span className={ classes.buttonText }>{ action }</span>
             </ButtonLoader>
           </DialogActions>
         </form>

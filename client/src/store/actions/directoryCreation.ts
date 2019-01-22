@@ -16,23 +16,22 @@ export const createDirectory = createAction<string>((path, setState, getState, d
   })
 
   return Api.fs.createDirectory(path)
-    .then((result: ApiError | Directory) => {
-      if ('errors' in result) {
-        setState({
-          directoryCreation: {
-            loading: false,
-            error: result
-          }
-        })
-      } else {
-        const state = getState()
-        const currentPath = state.fs.current ? state.fs.current.path : '/'
-        const name = result.name
+    .then((result: Directory) => {
+      const state = getState()
+      const currentPath = state.fs.current ? state.fs.current.path : '/'
+      const name = result.name
 
-        setState({ directoryCreation: { loading: false } })
+      setState({ directoryCreation: { loading: false } })
 
-        dispatch(getDirectory(currentPath))
-        dispatch(showNotification(`Dossier « ${name} » créé avec succès`))
-      }
+      dispatch(getDirectory(currentPath))
+      dispatch(showNotification(`Dossier « ${name} » créé avec succès`))
+    })
+    .catch((e: ApiError) => {
+      setState({
+        directoryCreation: {
+          loading: false,
+          error: e
+        }
+      })
     })
 })

@@ -17,22 +17,21 @@ export const deleteNodes = createAction<{ nodes: FsNode[], deleteContent: boolea
   })
 
   return Api.fs.deleteNodes(nodes.map(node => node.id), deleteContent)
-    .then((result: ApiError | ApiList<FsNode>) => {
-      if ('errors' in result) {
-        setState({
-          nodeDeletion: {
-            loading: false,
-            error: result
-          }
-        })
-      } else {
-        const state = getState()
-        const currentPath = state.fs.current ? state.fs.current.path : '/'
+    .then((_: ApiList<FsNode>) => {
+      const state = getState()
+      const currentPath = state.fs.current ? state.fs.current.path : '/'
 
-        dispatch(showNotification(`Suppression effectuée avec succès`))
+      dispatch(showNotification(`Suppression effectuée avec succès`))
 
-        setState({ nodeDeletion: { loading: false } })
-        dispatch(getDirectory(currentPath)) // Reload the current path
-      }
+      setState({ nodeDeletion: { loading: false } })
+      dispatch(getDirectory(currentPath)) // Reload the current path
+    })
+    .catch((e: ApiError) => {
+      setState({
+        nodeDeletion: {
+          loading: false,
+          error: e
+        }
+      })
     })
 })

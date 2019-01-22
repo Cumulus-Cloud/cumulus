@@ -1,5 +1,4 @@
 import  React from 'react'
-import TextField from '@material-ui/core/TextField'
 import withMobileDialog from '@material-ui/core/withMobileDialog'
 
 import { connect, withStore } from 'store/store'
@@ -7,7 +6,6 @@ import { createDirectory } from 'store/actions/directoryCreation'
 import { hidePopup } from 'store/actions/popups'
 import { FsPopupType } from 'store/states/popupsState'
 import Table from 'components/utils/Table/InfiniteScrollTable'
-import Content, { ContentError } from 'components/utils/layout/Content'
 
 import { ApiError } from 'models/ApiError'
 import { Directory, FsNode } from 'models/FsNode'
@@ -15,8 +13,9 @@ import { Directory, FsNode } from 'models/FsNode'
 import Popup from 'components/utils/Popup'
 import { BreadCrumb2 } from 'components/fs/breadCrumb/BreadCrumb';
 import { Typography, CircularProgress, WithStyles, createStyles, Theme, withStyles } from '@material-ui/core';
-import Api from 'services/api';
-
+import Api from 'services/api'
+import NodeIcon from 'components/fs/NodeIcon'
+import classnames = require('classnames');
 
 
 const styles = (theme: Theme) => createStyles({
@@ -56,10 +55,13 @@ const styles = (theme: Theme) => createStyles({
     flex: 2,
     padding: theme.spacing.unit * 2
   },
-  contentType: {
+  contentName: {
     flex: 2,
     padding: theme.spacing.unit * 2,
     display: 'flex'
+  },
+  contentSelected: {
+    color: theme.palette.primary.light
   },
   contentRow: {
     display: 'flex',
@@ -69,6 +71,13 @@ const styles = (theme: Theme) => createStyles({
     alignItems: 'center',
     ['&:hover'] : {
       backgroundColor: 'rgba(0, 0, 0, 0.04)'
+    }
+  },
+  contentRowSelected: {
+    backgroundColor: 'rgba(41, 167, 160, 0.08)',
+    color: theme.palette.primary.light,
+    ['&:hover'] : {
+      backgroundColor: 'rgba(41, 167, 160, 0.18)'
     }
   },
   loader: {
@@ -91,16 +100,18 @@ const styles = (theme: Theme) => createStyles({
 
 
 type Props2 = {
-  currentNode: Directory
-  nodes: FsNode[]
-  contentSize: number
+  current: Directory
+  onChange: (directory: Directory) => void
 }
 
 type State2 = {
-  currentNode: Directory
-  nodes: FsNode[]
+  current: Directory
+  nodes: Directory[]
+  selected: FsNode
   contentSize: number
   loading: boolean
+  loadingContent: boolean
+  error?: ApiError
 }
 
 type Props2WithStyle = Props2 & WithStyles<typeof styles>
@@ -120,33 +131,87 @@ class Test extends React.Component<Props2WithStyle, State2> {
   constructor(props: Props2WithStyle) {
     super(props)
     this.state = {
-      currentNode: props.currentNode,
-      nodes: props.nodes,
-      contentSize: props.contentSize,
-      loading: false
+      current: props.current,
+      selected: props.current,
+      nodes: [],
+      contentSize: 0,
+      loading: false,
+      loadingContent: false
     }
   }
 
-  loadContent = (node: FsNode) => {
-    this.setState({ loading: true })
-
-    Api.fs.getContent(node.id).then((result) => {
-      if ('errors' in result) {
-        // TODO
-      } else {
-        this.setState({
-          loading: false,
-          currentNode: result.directory,
-          nodes: result.content.items,
-          contentSize: result.totalContentLength
-        })
-      }
-    })
+  componentDidMount() {
+    this.loadDirectory(this.state.current.path)
   }
 
-  renderElementRow = (node: FsNode, style: React.CSSProperties, _: boolean): JSX.Element => {
+  loadDirectory = (path: string) => {
+    this.setState({ loading: true })
+
+    Api.fs.getDirectory(path)
+      .then((directory) => Api.fs.getContent(directory.id))
+      .then((directoryWithContent) => {
+        this.setState({
+          loading: false,
+          current: directoryWithContent.directory,
+          selected: directoryWithContent.directory,
+          nodes: directoryWithContent.content.items as Directory[],
+          contentSize: directoryWithContent.totalContentLength,
+          error: undefined
+        })
+        this.props.onChange(directoryWithContent.directory)
+      })
+      .catch((e: ApiError) => {
+        this.setState({ loading: false, error: e })
+      })
+  }
+
+  loadMoreContent = (offset: number) => {
+    const { current, nodes } = this.state
+
+    this.setState({ loadingContent: true })
+
+    Api.fs.getContent(current.id, 'DIRECTORY', offset)
+      .then((directoryWithContent) => {
+        this.setState({
+          nodes: nodes.concat(directoryWithContent.content.items as Directory[]),
+          loadingContent: false,
+          error: undefined
+        })
+      })
+      .catch((e: ApiError) => {
+        this.setState({ loadingContent: false, error: e })
+      })
+  }
+
+  selectNode = (node: Directory) => {
+    const { selected, current } = this.state
+
+    if (selected === node) {
+      this.setState({ selected: current })
+      this.props.onChange(current)
+    } else {
+      this.setState({ selected: node })
+      this.props.onChange(node)
+    }
+  }
+
+  renderElementRow = (node: Directory, style: React.CSSProperties, _: boolean): JSX.Element => {
+    const { classes } = this.props
+    const { selected } = this.state
+
+    const isSelected = selected === node
+
     return (
-      <Typography variant="body1" noWrap style={ style } onClick={ () => this.loadContent(node) } >{ node.name }</Typography>
+      <div
+        className={ classnames(classes.contentRow, { [classes.contentRowSelected]: isSelected }) }
+        style={ style }
+        onClick={() => this.selectNode(node)}
+      >
+        <Typography variant="body1" noWrap className={ classnames(classes.contentName, { [classes.contentSelected]: isSelected }) }>
+          <NodeIcon node={ node } selected={ isSelected } />
+          <span className={ classes.contentDescriptionValue } onClick={() => this.loadDirectory(node.path)} >{ node.name }</span>
+        </Typography>
+      </div>
     )
   }
 
@@ -168,44 +233,28 @@ class Test extends React.Component<Props2WithStyle, State2> {
     )
   }
 
-  onLoadMoreContent = (offset: number) => {
-    console.log(offset)
-  }
-
   render() {
-    const { currentNode, nodes, contentSize, loading } = this.state
-
+    const { current, selected, nodes, contentSize, loadingContent } = this.state
 
     const tableHeader = (
-      <>
-        <BreadCrumb2 path={currentNode.path} onChangePath={() => {}} onMoveNodes={() => {}} />
-      </>
+      <span style={{ paddingLeft: '7px', display: 'flex', flex: 1 }} >
+        <BreadCrumb2 path={ current.path } selected={ selected.path } onChangePath={ this.loadDirectory } />
+      </span>
     )
 
     return (
       <div style={{ height: 300, display: 'flex' }} >
-
-      <Content
-        header={
-          <>
-            <Typography variant="caption">Séléctionner le dossier où déplacer</Typography>
-          </>
-        }
-        content={
-          <Table<FsNode>
-            elements={ nodes }
-            elementsSize={ contentSize }
-            rowHeight={ 45 }
-            header={ tableHeader }
-            renderRow={ this.renderElementRow }
-            renderLoadingRow={ this.renderLoadingRow }
-            elementKey={ (node) => node.id }
-            onLoadMoreElements={ this.onLoadMoreContent }
-            loading={ false }
-          />
-        }
-        loading={ loading }
-      />
+        <Table<Directory>
+          elements={ nodes }
+          elementsSize={ contentSize }
+          rowHeight={ 45 }
+          header={ tableHeader }
+          renderRow={ this.renderElementRow }
+          renderLoadingRow={ this.renderLoadingRow }
+          elementKey={ (node) => node.id }
+          onLoadMoreElements={ this.loadMoreContent }
+          loading={ loadingContent }
+        />
       </div>
     )
   }
@@ -223,14 +272,14 @@ interface Props {
   open: boolean
   fullScreen?: boolean
   loading: boolean
-  current?: Directory
+  current: Directory
   nodes: FsNode[]
   contentSize: number
   error?: ApiError
 }
 
 interface State {
-  directoryName: string
+  selected: Directory
 }
 
 
@@ -238,37 +287,33 @@ class CreationPopup extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props)
-    this.state = { directoryName: '' }
+    this.state = { selected: props.current }
   }
 
-  onClose() {
+  selectDirectory = (directory: Directory) => {
+    this.setState({ selected: directory })
+  }
+
+  onClose = () => {
     this.props.onClose()
   }
 
-  onCreateDirectory() {
-    const basePath = this.props.current ? this.props.current.path : '/'
-    //this.props.onCreateDirectory(`${basePath}/${this.state.directoryName}`)
-  }
-
-  onDirectoryNameChange(directoryName: string) {
-    this.setState({ directoryName })
-  }
-
   render() {
-    const { open, error, loading, nodes, current, contentSize } = this.props
+    const { open, error, loading, current } = this.props
+    const { selected } = this.state
 
     return (
       <Popup
-        title="Créer un nouveau dossier"
-        action="Créer le dossier"
+        title="Déplacer la sélection"
+        action={`Déplacer vers ${selected.name ? selected.name : 'dossier racine'}`}
         cancel="Annuler"
         error={ error && error.errors['path'] && error.errors['path'][0] }
         loading={ loading }
         open={ open }
-        onClose={ () => this.onClose() }
-        onValidate={ () => this.onCreateDirectory() }
+        onClose={ this.onClose }
+        onValidate={ () => {}}
       >
-        { current && <Test2 nodes={nodes} currentNode={current} contentSize={contentSize} /> }
+        { current && <Test2 current={current} onChange={ this.selectDirectory } /> }
       </Popup>
     )
   }

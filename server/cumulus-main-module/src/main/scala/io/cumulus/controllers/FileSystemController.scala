@@ -92,7 +92,7 @@ class FileSystemController(
   def get(id: UUID): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
       ApiResponse {
-        fsNodeService.findNode(id) // TODO fix
+        fsNodeService.findNode(id)
       }
     }
 
@@ -107,13 +107,14 @@ class FileSystemController(
     id: UUID,
     limit: Option[Int],
     offset: Option[Int],
-    order: Option[FsNodeOrdering]
+    order: Option[FsNodeOrdering],
+    nodeType: Option[FsNodeType]
   ): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
       ApiResponse {
         val pagination = QueryPagination(limit, offset)
 
-        fsNodeService.findContent(id, pagination, order.getOrElse(FsNodeOrdering.default))
+        fsNodeService.findContent(id, pagination, order.getOrElse(FsNodeOrdering.default), nodeType)
       }
     }
 

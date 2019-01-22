@@ -1,6 +1,7 @@
 import { FsPopupType } from 'store/states/popupsState'
 import { createAction, createPureAction } from 'store/actions'
-import { FsNode } from 'models/FsNode';
+
+import { FsNode } from 'models/FsNode'
 
 
 export const showPopup = createAction<{ type: FsPopupType, nodes?: FsNode[] }>(({ type, nodes }, setState) => {

@@ -21,6 +21,7 @@ import Page from 'components/utils/layout/Page'
 import { withStore, connect } from 'store/store'
 
 import Api from 'services/api'
+import { ApiError } from 'models/ApiError';
 
 
 const styles = (theme: Theme) => createStyles({
@@ -74,35 +75,27 @@ class FailurePage extends React.Component<PropsWithStyle> {
 
   reloadServer = () => {
     Api.management.reload()
-      .then((result) => {
-        if ('errors' in result)
-          this.showNotification(`Cumulus server reloading failed: ${result.message}`)
-        else {
-          this.showNotification('Cumulus server reloading...')
-          setTimeout(() => {
-            location.reload();
-          }, 8000)
-        }
+      .then(() => {
+        this.showNotification('Cumulus server reloading...')
+        setTimeout(() => {
+          location.reload();
+        }, 8000)
       })
-      .catch(() => {
-        this.showNotification('Cumulus server reloading failed')
+      .catch((e: ApiError) => {
+        this.showNotification(`Cumulus server reloading failed: ${e.message}`)
       })
   }
 
   stopServer = () => {
     Api.management.stop()
-      .then((result) => {
-        if ('errors' in result)
-          this.showNotification(`Cumulus server stop failed: ${result.message}`)
-        else {
-          this.showNotification('Stopping Cumulus server...')
-          setTimeout(() => {
-            location.reload();
-          }, 8000)
-        }
+      .then(() => {
+        this.showNotification('Stopping Cumulus server...')
+        setTimeout(() => {
+          location.reload();
+        }, 8000)
       })
-      .catch(() => {
-        this.showNotification('Cumulus server stop failed')
+      .catch((e: ApiError) => {
+        this.showNotification(`Cumulus server stop failed: ${e.message}`)
       })
   }
 

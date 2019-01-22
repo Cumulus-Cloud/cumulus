@@ -91,38 +91,37 @@ export const uploadAllFiles = createPureAction((setState, getState, dispatch) =>
           return { fileUpload: { ...state.fileUpload, uploading: updatedUploads } }
         })
       })
-        .then((result: ApiError | any) => {
-          if ('errors' in result) {
-            setState(state => {
-              const updatedUploads =
-                updateFileProgress(file, state.fileUpload.uploading, (upload) => {
-                  return {
-                    ...upload,
-                    progress: 100,
-                    loading: false,
-                    error: result
-                  }
-                })
-
-              return { fileUpload: { ...state.fileUpload, uploading: updatedUploads } }
+      .then(() => {
+        setState(state => {
+          const updatedUploads =
+            updateFileProgress(file, state.fileUpload.uploading, (upload) => {
+              return {
+                ...upload,
+                progress: 100,
+                loading: false
+              }
             })
-            dispatch(showNotification(`Erreur lors de la mise en ligne du fichier « ${file.filename} »`))
-          } else {
-            setState(state => {
-              const updatedUploads =
-                updateFileProgress(file, state.fileUpload.uploading, (upload) => {
-                  return {
-                    ...upload,
-                    progress: 100,
-                    loading: false
-                  }
-                })
 
-              return { fileUpload: { ...state.fileUpload, uploading: updatedUploads } }
-            })
-            dispatch(showNotification(`Fichier « ${file.filename} » mis en ligne avec succès`))
-          }
+          return { fileUpload: { ...state.fileUpload, uploading: updatedUploads } }
         })
+        dispatch(showNotification(`Fichier « ${file.filename} » mis en ligne avec succès`))
+      })
+      .catch((e: ApiError) => {
+        setState(state => {
+          const updatedUploads =
+            updateFileProgress(file, state.fileUpload.uploading, (upload) => {
+              return {
+                ...upload,
+                progress: 100,
+                loading: false,
+                error: e
+              }
+            })
+
+          return { fileUpload: { ...state.fileUpload, uploading: updatedUploads } }
+        })
+        dispatch(showNotification(`Erreur lors de la mise en ligne du fichier « ${file.filename} »`))
+      })
     })
   ).then(() => { })
 })

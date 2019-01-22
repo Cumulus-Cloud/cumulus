@@ -20,19 +20,8 @@ export const getDirectory = createAction<string>((path, setState, _, dispatch) =
     }
   }))
 
-  return Api.fs.getDirectory(path).then((result: ApiError | Directory) => {
-    if ('errors' in result) {
-      setState({
-        fs: {
-          loadingCurrent: false,
-          loadingContent: false,
-          selectedContent: { type: 'NONE' },
-          error: result
-        }
-      })
-
-      return Promise.resolve()
-    } else {
+  return Api.fs.getDirectory(path)
+    .then((result: Directory) => {
       setState({
         fs: {
           loadingCurrent: false,
@@ -46,8 +35,17 @@ export const getDirectory = createAction<string>((path, setState, _, dispatch) =
       })
 
       return dispatch(getDirectoryContent()).then(() => { })
-    }
-  })
+    })
+    .catch((e: ApiError) => {
+        setState({
+          fs: {
+            loadingCurrent: false,
+            loadingContent: false,
+            selectedContent: { type: 'NONE' },
+            error: e
+          }
+        })
+    })
 
 })
 
@@ -76,16 +74,8 @@ export const getDirectoryContent = createPureAction((setState, getState) => {
     })).then(() => {})
 
   if(search) {
-    return Api.fs.search(current.path, search, offset).then((result: ApiError | SearchResult) => {
-      if ('errors' in result) {
-        setState(state => ({
-          fs: {
-            ...state.fs,
-            loadingContent: false,
-            error: result
-          }
-        }))
-      } else {
+    return Api.fs.search(current.path, search, offset)
+      .then((result: SearchResult) => {
         setState(state => ({
           fs: {
             ...state.fs,
@@ -95,32 +85,38 @@ export const getDirectoryContent = createPureAction((setState, getState) => {
             error: undefined
           }
         }))
-      }
-
-    })
+      })
+      .catch((e: ApiError) => {
+        setState(state => ({
+          fs: {
+            ...state.fs,
+            loadingContent: false,
+            error: e
+          }
+        }))
+      })
   } else {
-    return Api.fs.getContent(current.id, offset).then((result: ApiError | DirectoryWithContent) => {
-      if ('errors' in result) {
+    return Api.fs.getContent(current.id, offset)
+      .then((result: DirectoryWithContent) => {
+          setState(state => ({
+            fs: {
+              ...state.fs,
+              loadingContent: false,
+              content: (state.fs.content || []).concat(result.content.items),
+              contentSize: result.totalContentLength,
+              error: undefined
+            }
+          }))
+      })
+      .catch((e: ApiError) => {
         setState(state => ({
           fs: {
             ...state.fs,
             loadingContent: false,
-            error: result
+            error: e
           }
         }))
-      } else {
-        setState(state => ({
-          fs: {
-            ...state.fs,
-            loadingContent: false,
-            content: (state.fs.content || []).concat(result.content.items),
-            contentSize: result.totalContentLength,
-            error: undefined
-          }
-        }))
-      }
-  
-    })
+      })
   }
 
 })

@@ -8,6 +8,9 @@ const styles = (theme: Theme) => createStyles({
     width: 100,
     overflow: 'auto'
   },
+  selected: {
+    color: theme.palette.primary.light + ' !important'
+  },
   root: {
     paddingLeft: theme.spacing.unit * 3,
     paddingRight: theme.spacing.unit * 3,
