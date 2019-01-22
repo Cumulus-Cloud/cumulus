@@ -7,6 +7,8 @@ import { Difference } from 'utils/types'
 export type DraggingInfo<T> = {
   x: number
   y: number
+  distanceX: number
+  distanceY: number
   value: T
 }
 
@@ -74,7 +76,9 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
         dragInfo: {
           ...dragInfo,
           x: e.clientX,
-          y: e.clientY
+          y: e.clientY,
+          distanceX: dragInfo.distanceX + (e.clientX > dragInfo.x ? e.clientX - dragInfo.x : dragInfo.x - e.clientX),
+          distanceY: dragInfo.distanceY + (e.clientY > dragInfo.y ? e.clientY - dragInfo.y : dragInfo.y - e.clientY)
         }
       })
     } else if (nextDrag) {
@@ -87,7 +91,9 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
         dragInfo: {
           value: nextDrag(),
           x: e.clientX,
-          y: e.clientY
+          y: e.clientY,
+          distanceX: 0,
+          distanceY: 0
         }
       })
     }
@@ -186,13 +192,15 @@ export const withDragAndDrop = <PROPS extends WithDragAndDrop<T>, T, S>(
   renderDraggedElement: (dragInfo: DraggingInfo<T>) => React.ReactNode
 ): ComponentType<Difference<PROPS, WithDragAndDrop<T>>> => {
 
+  const ComponentFix = Component as ComponentType<any> // TODO remove when React is fixed
+
   return class extends React.Component<Difference<PROPS, WithDragAndDrop<T>>, S> {
 
     render() {
       return (
         <DragAndDrop<T> renderDraggedElement={ (props) => renderDraggedElement(props) } >
           { (Draggable, DropZone, dragInfo) =>
-              <Component Draggable={ Draggable } DropZone={ DropZone } dragInfo={ dragInfo } {...this.props} />
+              <ComponentFix Draggable={ Draggable } DropZone={ DropZone } dragInfo={ dragInfo } {...this.props} />
           }
         </DragAndDrop>
       )

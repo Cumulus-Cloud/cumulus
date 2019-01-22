@@ -96,7 +96,7 @@ export const getDirectoryContent = createPureAction((setState, getState) => {
         }))
       })
   } else {
-    return Api.fs.getContent(current.id, offset)
+    return Api.fs.getContent(current.id, undefined, offset)
       .then((result: DirectoryWithContent) => {
           setState(state => ({
             fs: {

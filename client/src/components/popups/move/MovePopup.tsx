@@ -272,14 +272,14 @@ interface Props {
   open: boolean
   fullScreen?: boolean
   loading: boolean
-  current: Directory
+  current?: Directory
   nodes: FsNode[]
   contentSize: number
   error?: ApiError
 }
 
 interface State {
-  selected: Directory
+  selected?: Directory
 }
 
 
@@ -305,7 +305,7 @@ class CreationPopup extends React.Component<Props, State> {
     return (
       <Popup
         title="Déplacer la sélection"
-        action={`Déplacer vers ${selected.name ? selected.name : 'dossier racine'}`}
+        action={`Déplacer vers ${selected && selected.name ? selected.name : 'dossier racine'}`}
         cancel="Annuler"
         error={ error && error.errors['path'] && error.errors['path'][0] }
         loading={ loading }

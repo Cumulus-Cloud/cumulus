@@ -9,7 +9,7 @@ export type StateReader<S> = () => Readonly<S>
 export type Dispatcher<S> = (action: Action<S>) => Promise<S>
 
 // Actions type
-export type Action<S> = (setState: StateUpdater<S>, getState: StateReader<S>, dispatch: Dispatcher<S>) => void | Promise<void> 
+export type Action<S> = (setState: StateUpdater<S>, getState: StateReader<S>, dispatch: Dispatcher<S>) => void | Promise<void>
 export type ActionFactory<T, S> = (param :T) => Action<S>
 export type PureActionFactory<S> = () => Action<S>
 export type ActionFactoryParameter<T, S> = (param :T, setState: StateUpdater<S>, getState: StateReader<S>, dispatch: Dispatcher<S>) => void | Promise<void>
@@ -26,7 +26,7 @@ export function createPureAction<S>(action: PureActionFactoryParameter<S>): () =
 /**
  * Create a new store, and returns the context and the component to create. Once created, the component will propagate in React's context
  * the state of the store along with update methods matching the provided actions.
- * 
+ *
  * @param initialState The initial state, used to initialize the store.
  * @param initialization Method called after the context initialization.
  */
@@ -47,7 +47,7 @@ export function createStore<S>(
 
   // Anonymous class of the component
   const provider = class extends React.Component<{}, S> {
-    
+
     state = initialState
 
     dispatch = (action: Action<S>): Promise<S> => {
@@ -92,16 +92,18 @@ export function createStore<S>(
   ): ComponentType<Difference<PROPS, MAPPED_PROPS>> => {
 
     return class extends React.Component<Difference<PROPS, MAPPED_PROPS>, S> {
-      
       render() {
+
+        const ComponentFix = Component as ComponentType<any> // TODO remove when React is fixed
+
         return (
           <context.Consumer>
-            {(ctx) => <Component { ...connect(ctx.state, ctx.dispatch)} {...this.props} />}
+            {(ctx) => <ComponentFix { ...connect(ctx.state, ctx.dispatch)} {...this.props} />}
           </context.Consumer>
         )
       }
 
-    } 
+    }
 
   }
 

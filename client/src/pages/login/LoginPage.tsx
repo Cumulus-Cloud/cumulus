@@ -8,9 +8,7 @@ import Typography from '@material-ui/core/Typography'
 import Zoom from '@material-ui/core/Zoom'
 import CloudIcon from '@material-ui/icons/CloudQueue'
 import { Fab } from '@material-ui/core'
-import { Route, Redirect, match, Switch } from 'react-router-dom'
-import { withRouter } from 'react-router-dom'
-import H from 'history'
+import { Route, Redirect, Switch } from 'react-router-dom'
 
 import SignUpConfirmation from 'components/login/SignUpConfirmation'
 import SignIn from 'components/login/SignInForm'
@@ -66,55 +64,36 @@ const styles = (theme: Theme) => createStyles({
   }
 })
 
-interface Props {
-  history: H.History
-  location: H.Location
-  match: match<{}>
-  staticContext: undefined
+type PropsWithStyle = WithStyles<typeof styles>
+
+
+function Login({ classes }: PropsWithStyle) {
+
+  return (
+    <div className={classes.root}>
+      <Grow in={true} style={{ transitionDelay: 400 } as any} >
+        <Paper className={classes.loginPanel} elevation={5}>
+          <div className={classes.loginTitle}>
+            <Zoom in={true} style={{ transitionDelay: 600 } as any} >
+              <Fab className={classes.logo} >
+                <CloudIcon/>
+              </Fab>
+            </Zoom>
+            <Typography variant="h5" component="h3" className={classes.logoText}>
+              Cumulus
+            </Typography>
+          </div>
+          <Switch>
+            <Route exact path="/auth/sign-in" render={() => <SignIn/>}/>
+            <Route exact path="/auth/sign-up" render={() => <SignUp/>}/>
+            <Route exact path="/auth/sign-up-confirmation" render={() => <SignUpConfirmation/>}/>
+            <Route render={() => <Redirect to="/auth/sign-in"/>}/>
+          </Switch>
+        </Paper>
+      </Grow>
+    </div>
+  )
+
 }
 
-type PropsWithStyle = Props & WithStyles<typeof styles>
-
-interface State {
-  showSignIn: boolean
-}
-
-class Login extends React.Component<PropsWithStyle, State> {
-
-  constructor(props: PropsWithStyle) {
-    super(props)
-    this.state = { showSignIn: false }
-  }
-
-  render() {
-    const { classes } = this.props
-
-    return (
-      <div className={classes.root}>
-        <Grow in={true} style={{ transitionDelay: 400 } as any} >
-          <Paper className={classes.loginPanel} elevation={5}>
-            <div className={classes.loginTitle}>
-              <Zoom in={true} style={{ transitionDelay: 600 } as any} >
-                <Fab className={classes.logo} >
-                  <CloudIcon/>
-                </Fab>
-              </Zoom>
-              <Typography variant="h5" component="h3" className={classes.logoText}>
-                Cumulus
-              </Typography>
-            </div>
-            <Switch>
-              <Route exact path="/auth/sign-in" render={() => <SignIn/>}/>
-              <Route exact path="/auth/sign-up" render={() => <SignUp/>}/>
-              <Route exact path="/auth/sign-up-confirmation" render={() => <SignUpConfirmation/>}/>
-              <Route render={() => <Redirect to="/auth/sign-in"/>}/>
-            </Switch>
-          </Paper>
-        </Grow>
-      </div>
-    )
-
-  }
-}
-
-export default withRouter(withStyles(styles)(Login))
+export default withStyles(styles)(Login)
