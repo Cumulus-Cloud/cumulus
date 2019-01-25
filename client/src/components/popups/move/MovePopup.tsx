@@ -12,7 +12,7 @@ import BreadCrumb from 'components/fs/breadCrumb/BreadCrumb';
 import { Typography, CircularProgress, WithStyles, createStyles, Theme, withStyles } from '@material-ui/core';
 import Api from 'services/api'
 import NodeIcon from 'components/fs/NodeIcon'
-import { usePopups, useNodeDisplacement, useFilesystem } from 'store/storeHooks';
+import { usePopups, useNodeDisplacement, useFilesystem } from 'store/store';
 
 
 const styles = (theme: Theme) => createStyles({
@@ -79,8 +79,10 @@ const styles = (theme: Theme) => createStyles({
   },
   loader: {
     margin: 'auto',
-    display: 'block',
-    marginTop: theme.spacing.unit * 5
+    marginTop: theme.spacing.unit * 3,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   loaderSpinner: {
     display: 'block',
@@ -95,6 +97,7 @@ const styles = (theme: Theme) => createStyles({
   }
 })
 
+// TODO extract to another file
 
 type Props2 = {
   current: Directory
@@ -112,16 +115,6 @@ type State2 = {
 }
 
 type Props2WithStyle = Props2 & WithStyles<typeof styles>
-
-
-// NEXT TODO
-// - retirer la dépendance au contexte de BreadCrumb
-// - update de l'API pour ne pas retourner un or mais avoir les erreurs dans le catch (plus simple à gérer)
-// - faire marcher le breadcrumb
-// - faire en sorte de pouvoir selectionner un seul element, et dégriser le bouton quand il est selectionné
-// - comment selectionner le dossier root ?
-// - :rocket:
-
 
 class Test extends React.Component<Props2WithStyle, State2> {
 
@@ -145,7 +138,7 @@ class Test extends React.Component<Props2WithStyle, State2> {
     this.setState({ loading: true })
 
     Api.fs.getDirectory(path)
-      .then((directory) => Api.fs.getContent(directory.id))
+      .then((directory) => Api.fs.getContent(directory.id, 'DIRECTORY'))
       .then((directoryWithContent) => {
         this.setState({
           loading: false,

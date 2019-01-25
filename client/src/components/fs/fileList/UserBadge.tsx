@@ -4,7 +4,7 @@ import Avatar from '@material-ui/core/Avatar'
 import MenuItem from '@material-ui/core/MenuItem'
 import Menu from '@material-ui/core/Menu'
 
-import { useAuthentication, useRouting } from 'store/storeHooks'
+import { useAuthentication, useRouting } from 'store/store'
 
 import styles from './styles'
 

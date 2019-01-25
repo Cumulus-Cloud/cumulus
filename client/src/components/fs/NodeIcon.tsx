@@ -21,11 +21,11 @@ const styles = (theme: Theme) => createStyles({
   }
 })
 
+
 type Props = {
   node: FsNode
   selected?: boolean
 } & WithStyles<typeof styles>
-
 
 function NodeIcon(props: Props) {
   const { node, selected, classes } = props
@@ -42,10 +42,10 @@ function NodeIcon(props: Props) {
 
 }
 
+
 type ModesProps = {
   selected?: boolean
 } & WithStyles<typeof styles>
-
 
 function NodesIconComponent(props: ModesProps) {
   const { selected, classes } = props

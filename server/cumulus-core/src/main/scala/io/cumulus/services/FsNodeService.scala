@@ -108,7 +108,7 @@ class FsNodeService(
       content <- QueryE.lift(fsNodeStore.findAll(filter, ordering, pagination))
 
       // Get the total number of entries
-      total <- QueryE.lift(fsNodeStore.countContainedByPathAndUser(directory.path, user))
+      total <- QueryE.lift(fsNodeStore.count(filter))
 
     } yield DirectoryWithContent(directory, content, total)
 

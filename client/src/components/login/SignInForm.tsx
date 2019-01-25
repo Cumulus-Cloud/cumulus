@@ -8,7 +8,7 @@ import TextField from '@material-ui/core/TextField'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import { Typography } from '@material-ui/core'
 
-import { useSignIn, useRouting } from 'store/storeHooks'
+import { useSignIn, useRouting } from 'store/store'
 
 
 const styles = (theme: Theme) => createStyles({

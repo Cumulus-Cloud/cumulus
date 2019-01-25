@@ -2,7 +2,7 @@ import  React from 'react'
 import { Checkbox, DialogContentText, FormControlLabel } from '@material-ui/core'
 
 import { FsPopupType } from 'store/states/popupsState'
-import { usePopups, useNodeDeletion } from 'store/storeHooks'
+import { usePopups, useNodeDeletion } from 'store/store'
 
 import { FsNode, isFile, isDirectory } from 'models/FsNode'
 

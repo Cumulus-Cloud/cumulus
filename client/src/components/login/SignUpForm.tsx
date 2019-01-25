@@ -14,7 +14,7 @@ import Visibility from '@material-ui/icons/Visibility'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import VisibilityOff from '@material-ui/icons/VisibilityOff'
 
-import { useSignUp, useRouting } from 'store/storeHooks'
+import { useSignUp, useRouting } from 'store/store'
 
 
 const styles = (theme: Theme) => createStyles({

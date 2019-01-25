@@ -6,7 +6,7 @@ import Snackbar from '@material-ui/core/Snackbar'
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 
-import { useNotifications } from 'store/storeHooks'
+import { useNotifications } from 'store/store'
 
 
 const styles = (theme: Theme) => createStyles({

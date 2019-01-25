@@ -1,9 +1,12 @@
 import React from 'react'
 
-import Routes from 'services/routes'
 import { createBrowserHistory, History } from 'history'
 
 import { createStore as createContext } from 'utils/store'
+
+import Routes from 'services/routes'
+
+import { FsNode } from 'models/FsNode'
 
 import AuthenticationState, { initialState as initialAuthState } from 'store/states/authenticationState'
 import SignInState from 'store/states/signInState'
@@ -17,9 +20,17 @@ import FileUploadState, { initialState as initialFileUploadState } from 'store/s
 import NotificationsState, { initialState as initialNotificationsState } from 'store/states/notificationsState'
 import PopupsState, { initialState as initialPopupsState, FsPopupType } from 'store/states/popupsState'
 import Menu from 'store/states/menuState'
-import { FsNode } from 'models/FsNode'
-import { testUserAuth, signOutUser, signInUser, signUpUser } from './actions/authentication';
-import { getDirectory, getDirectoryContent, selectNode, deselectNode, search, selectAllNodes, deselectAllNodes } from './actions/directory';
+
+import { testUserAuth, signOutUser, signInUser, signUpUser } from 'store/actions/authentication'
+import { getDirectory, getDirectoryContent, selectNode, deselectNode, search, selectAllNodes, deselectAllNodes } from 'store/actions/directory'
+import { showNotification, hideNotification } from 'store/actions/notifications'
+import { showPopup, hidePopup } from 'store/actions/popups'
+import { selectUploadFile, deleteUploadFile, updateUploadFile, uploadAllFiles, hideUploadProgress, showUploadProgress } from 'store/actions/fileUpload'
+import { createDirectory } from 'store/actions/directoryCreation'
+import { deleteNodes } from 'store/actions/nodeDeletion'
+import { moveNodes } from 'store/actions/nodeDisplacement'
+import { getEvents } from 'store/actions/event'
+import { toggleMenu, forceMenu } from 'store/actions/menu'
 
 
 export type State = {
@@ -33,7 +44,6 @@ export type State = {
   nodeDeletion: NodeDeletionState
   fileUpload: FileUploadState
   notifications: NotificationsState
-  // TODO other store for UI info ?
   popups: PopupsState<FsPopupType, FsNode[]>
   menu: Menu,
   router: History
@@ -67,6 +77,10 @@ export function useRouting() {
 
   return {
     router: state.router,
+    showFs: (path: string) => state.router.push(`${Routes.app.fs}${path}${state.router.location.search}`),
+    showEvents: () => state.router.push(Routes.app.events),
+    showSignUp: () => state.router.push(Routes.auth.signUp),
+    showSignIn: () => state.router.push(Routes.auth.signIn),
     push
   }
 }
@@ -86,7 +100,7 @@ export function useSignIn() {
 
   return {
     ...ctx.state.signIn,
-    singInUser: signInUser(ctx),
+    signInUser: signInUser(ctx),
     signOutUser: signOutUser(ctx)
   }
 }
@@ -96,7 +110,7 @@ export function useSignUp() {
 
   return {
     ...ctx.state.signUp,
-    singInUser: signUpUser(ctx)
+    signUpUser: signUpUser(ctx)
   }
 }
 
@@ -105,6 +119,7 @@ export function useFilesystem() {
 
   return {
     ...ctx.state.fs,
+    initialPath: ctx.state.router.location.pathname.substring(7),
     getDirectory: getDirectory(ctx),
     getDirectoryContent: getDirectoryContent(ctx),
     selectNode: selectNode(ctx),
@@ -115,72 +130,83 @@ export function useFilesystem() {
   }
 }
 
-// TODO le reste en dessous....
-
-export const [FilesUploadContext, FilesUploadProvider] = createContext(initialFileUploadState())
-
 export function useFileUpload() {
-  const store = React.useContext(FilesUploadContext)
+  const ctx = React.useContext(Context)
 
   return {
-    ...store,
-    selectUploadFile: (files: EnrichedFile[]) => {},
-    updateUploadFile: (file: EnrichedFile) => {},
-    deleteUploadFile: (file: EnrichedFile) => {},
-    uploadAllFiles: () => {},
-    showUploadProgress: () => {},
-    hideUploadProgress: () => {},
+    ...ctx.state.fileUpload,
+    selectUploadFile: selectUploadFile(ctx),
+    updateUploadFile: updateUploadFile(ctx),
+    deleteUploadFile: deleteUploadFile(ctx),
+    uploadAllFiles: uploadAllFiles(ctx),
+    showUploadProgress: showUploadProgress(ctx),
+    hideUploadProgress: hideUploadProgress(ctx),
   }
 }
 
-// TODO...
-
 export function useDirectoryCreation() {
-  const store = React.useContext(Context)
+  const ctx = React.useContext(Context)
 
   return {
-    ...store.state.directoryCreation,
-    createDirectory: (path: string) => store.dispatch(createDirectory(path))
+    ...ctx.state.directoryCreation,
+    createDirectory: createDirectory(ctx)
   }
 }
 
 export function useNodeDeletion() {
-  const store = React.useContext(Context)
+  const ctx = React.useContext(Context)
 
   return {
-    ...store.state.nodeDeletion,
-    deleteNodes: (nodes: FsNode[], deleteContent: boolean) => store.dispatch(deleteNodes({ nodes, deleteContent }))
+    ...ctx.state.nodeDeletion,
+    deleteNodes: deleteNodes(ctx)
   }
 }
 
 export function useNodeDisplacement() {
-  const store = React.useContext(Context)
+  const ctx = React.useContext(Context)
 
   return {
-    ...store.state.nodeDisplacement,
-    moveNodes: (nodes: FsNode[], destination: string) => store.dispatch(moveNodes({ nodes, destination }))
+    ...ctx.state.nodeDisplacement,
+    moveNodes: moveNodes(ctx)
+  }
+}
+
+export function useEvents() {
+  const ctx = React.useContext(Context)
+
+  return {
+    ...ctx.state.events,
+    getEvents: getEvents(ctx)
+  }
+}
+
+export function useMenu() {
+  const ctx = React.useContext(Context)
+
+  return {
+    ...ctx.state.menu,
+    forceMenu: forceMenu(ctx),
+    toggleMenu: toggleMenu(ctx)
   }
 }
 
 export function usePopups() {
-  const store = React.useContext(Context)
+  const ctx = React.useContext(Context)
 
   return {
-    ...store.state.popups,
-    showPopup: (type: FsPopupType, nodes?: FsNode[]) => store.dispatch(showPopup({ type, nodes })),
-    hidePopup: () => store.dispatch(hidePopup()),
-    isPopupOpen: (popupType: FsPopupType) => store.state.popups.open === popupType
+    ...ctx.state.popups,
+    showPopup: showPopup(ctx),
+    hidePopup: hidePopup(ctx),
+    isPopupOpen: (popupType: FsPopupType) => ctx.state.popups.open === popupType
   }
 }
 
 export function useNotifications() {
-
-  const store = React.useContext(Context)
+  const ctx = React.useContext(Context)
 
   return {
-    ...store.state.notifications,
-    showNotification: (message: string) => store.dispatch(showNotification(message)),
-    hideNotification: (id: string) => store.dispatch(hideNotification(id))
+    ...ctx.state.notifications,
+    showNotification: showNotification(ctx),
+    hideNotification: hideNotification(ctx)
   }
 }
-*/

@@ -2,9 +2,7 @@ package io.cumulus.core.persistence.anorm
 
 import anorm._
 import io.cumulus.core.Logging
-import io.cumulus.core.persistence.query.{Query, QueryFilter, QueryOrdering, QueryPagination}
-import io.cumulus.core.utils.PaginatedList
-import io.cumulus.core.utils.PaginatedList._
+import io.cumulus.core.persistence.query.{Query, QueryFilter}
 
 /**
  * Abstract class that provides operations based on the private key of the table
@@ -42,25 +40,6 @@ abstract class AnormPKOperations[T, PK](
       SQL(s"SELECT * FROM $table WHERE $pkField = {_pk} ${filter.toAND} FOR UPDATE")
         .on(NamedParameter("_pk", pk) +: filter.namedParameters: _*)
         .as(rowParser.singleOpt)
-    }
-
-  def findAll[Filter <: QueryFilter, Order <: QueryOrdering](filter: Filter, ordering: Order): Query[List[T]] =
-    Query { implicit c =>
-      SQL(s"SELECT * FROM $table ${filter.toWHERE} ${ordering.toORDER}")
-        .on(filter.namedParameters:_*)
-        .as(rowParser.*)
-    }
-
-  def findAll[Filter <: QueryFilter, Order <: QueryOrdering](filter: Filter, ordering: Order, pagination: QueryPagination): Query[PaginatedList[T]] =
-    Query { implicit c =>
-      val paginationPlusOne = pagination.copy(limit = pagination.limit + 1)
-
-      val result =
-        SQL(s"SELECT * FROM $table ${filter.toWHERE} ${ordering.toORDER} ${paginationPlusOne.toLIMIT}")
-          .on(filter.namedParameters: _*)
-          .as(rowParser.*)
-
-      result.take(pagination.limit).toPaginatedList(pagination.offset, result.length > pagination.limit)
     }
 
   def exists(pk: PK): Query[Boolean] =

@@ -4,8 +4,8 @@ import { User } from 'models/User'
 import Routes from 'services/routes'
 import Api from 'services/api'
 
-import { State } from 'store/store';
-import { ContextState } from 'utils/store';
+import { State } from 'store/store'
+import { ContextState } from 'utils/store'
 
 
 export const testUserAuth = ({ setState }: ContextState<State>) => () => {

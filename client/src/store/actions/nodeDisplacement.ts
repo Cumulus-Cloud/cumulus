@@ -1,16 +1,21 @@
 import Api from 'services/api'
 
+
+import { ContextState } from 'utils/store'
+
 import { ApiList } from 'models/utils'
 import { ApiError } from 'models/ApiError'
 import { FsNode, isFile, isDirectory } from 'models/FsNode'
 
 import { getDirectory } from 'store/actions/directory'
 import { showNotification } from 'store/actions/notifications'
-import { createAction } from 'store/actions'
-import { hidePopup } from './popups';
+import { hidePopup } from 'store/actions/popups'
+import { State } from 'store/store'
 
 
-export const moveNodes = createAction<{ nodes: FsNode[], destination: string }>(({ nodes, destination }, setState, getState, dispatch) => {
+export const moveNodes = (ctx: ContextState<State>) => (nodes: FsNode[], destination: string) => {
+  const { getState, setState } = ctx
+
   setState({
     nodeDisplacement: {
       loading: true
@@ -28,22 +33,22 @@ export const moveNodes = createAction<{ nodes: FsNode[], destination: string }>(
       // Show custom message
       if (result.size == 1) {
         if (hasFile)
-          dispatch(showNotification(`Fichier « ${result.items[0].name} » déplacé avec succès`))
+          showNotification(ctx)(`Fichier « ${result.items[0].name} » déplacé avec succès`)
         else
-          dispatch(showNotification(`Dossier « ${result.items[0].name} » déplacé avec succès`))
+          showNotification(ctx)(`Dossier « ${result.items[0].name} » déplacé avec succès`)
       } else {
         if (hasFile && !hasDirectory)
-          dispatch(showNotification(`${result.items.length} fichiers déplacés avec succès`))
+          showNotification(ctx)(`${result.items.length} fichiers déplacés avec succès`)
         else if (!hasFile && hasDirectory)
-          dispatch(showNotification(`${result.items.length} dossiers déplacés avec succès`))
+          showNotification(ctx)(`${result.items.length} dossiers déplacés avec succès`)
         else
-          dispatch(showNotification(`${result.items.length} éléments déplacés avec succès`))
+          showNotification(ctx)(`${result.items.length} éléments déplacés avec succès`)
       }
 
       setState({ nodeDisplacement: { loading: false } })
 
-      dispatch(hidePopup())
-      dispatch(getDirectory(currentPath)) // Reload the current path
+      hidePopup(ctx)()
+      getDirectory(ctx)(currentPath) // Reload the current path
     })
     .catch((e: ApiError) => {
       setState({
@@ -53,4 +58,4 @@ export const moveNodes = createAction<{ nodes: FsNode[], destination: string }>(
         }
       })
     })
-})
+}

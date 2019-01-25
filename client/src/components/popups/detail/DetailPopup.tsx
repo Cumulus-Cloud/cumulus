@@ -11,7 +11,7 @@ import Chip from '@material-ui/core/Chip'
 import { distanceInWords } from 'date-fns'
 
 import { FsPopupType } from 'store/states/popupsState'
-import { usePopups } from 'store/storeHooks'
+import { usePopups } from 'store/store'
 
 import { isFile } from 'models/FsNode'
 

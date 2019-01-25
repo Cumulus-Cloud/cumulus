@@ -1,5 +1,4 @@
 import  React from 'react'
-import withMobileDialog from '@material-ui/core/withMobileDialog'
 
 import Layout from 'components/utils/layout/Layout'
 import EventList from 'components/fs/eventList/EventList'

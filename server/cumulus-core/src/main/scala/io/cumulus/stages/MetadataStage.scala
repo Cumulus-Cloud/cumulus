@@ -44,7 +44,7 @@ trait MetadataExtractor {
   */
 object DefaultMetadataExtractor extends MetadataExtractor {
 
-  override def extract(
+  def extract(
     file: File
   )(implicit
     ec: ExecutionContext,
@@ -57,7 +57,7 @@ object DefaultMetadataExtractor extends MetadataExtractor {
     Right(DefaultMetadata.empty)
   }
 
-  override def applyOn = Seq()
+  def applyOn: Seq[String] = Seq()
 
 }
 
@@ -134,7 +134,7 @@ object ImageMetadataExtractor extends MetadataExtractor {
     }
   }
 
-  def applyOn = Seq(
+  def applyOn: Seq[String] = Seq(
     "image/bmp",
     "image/gif",
     "image/x-icon",
@@ -164,40 +164,46 @@ object PDFDocumentMetadataExtractor extends MetadataExtractor {
     StorageReferenceReader.reader(
       file
     ).map { source =>
+      var document: PDDocument = null
 
-      val fileInputStream = source.runWith(StreamConverters.asInputStream())
-      val document = PDDocument.load(fileInputStream)
+      try {
+        val fileInputStream = source.runWith(StreamConverters.asInputStream())
+        document = PDDocument.load(fileInputStream)
 
-      val info = document.getDocumentInformation
-      val pageCount: Long = Option(document.getNumberOfPages).map(_.toLong).getOrElse(0)
-      val title = Option(info.getTitle)
-      val author = Option(info.getAuthor)
-      val subject = Option(info.getSubject)
-      val tags = Option(info.getKeywords).map(_.split(";").toSeq.filterNot(_.trim.isEmpty)).getOrElse(Seq[String]())
-      val creator = Option(info.getCreator)
-      val producer = Option(info.getProducer)
-      val creation = Option(info.getCreationDate).map(t => t.toInstant.atZone(ZoneId.systemDefault()).toLocalDateTime)
-      val modification = Option(info.getModificationDate).map(t => t.toInstant.atZone(ZoneId.systemDefault()).toLocalDateTime)
+        val info = document.getDocumentInformation
+        val pageCount: Long = Option(document.getNumberOfPages).map(_.toLong).getOrElse(0)
+        val title = Option(info.getTitle)
+        val author = Option(info.getAuthor)
+        val subject = Option(info.getSubject)
+        val tags = Option(info.getKeywords).map(_.split(";").toSeq.filterNot(_.trim.isEmpty)).getOrElse(Seq[String]())
+        val creator = Option(info.getCreator)
+        val producer = Option(info.getProducer)
+        val creation = Option(info.getCreationDate).map(t => t.toInstant.atZone(ZoneId.systemDefault()).toLocalDateTime)
+        val modification = Option(info.getModificationDate).map(t => t.toInstant.atZone(ZoneId.systemDefault()).toLocalDateTime)
 
-      val keys = info.getMetadataKeys.asScala
-      val values = Map(keys.map(key => Option(info.getCustomMetadataValue(key)).map(v => key -> v)).toSeq.flatten: _*)
+        val keys = info.getMetadataKeys.asScala
+        val values = Map(keys.map(key => Option(info.getCustomMetadataValue(key)).map(v => key -> v)).toSeq.flatten: _*)
 
-      PDFDocumentMetadata(
-        pageCount = pageCount,
-        title = title,
-        author = author,
-        subject = subject,
-        tags = tags,
-        creator = creator,
-        producer = producer,
-        creationDate = creation,
-        modificationDate = modification,
-        values = values
-      )
+        PDFDocumentMetadata(
+          pageCount = pageCount,
+          title = title,
+          author = author,
+          subject = subject,
+          tags = tags,
+          creator = creator,
+          producer = producer,
+          creationDate = creation,
+          modificationDate = modification,
+          values = values
+        )
+      } finally {
+        if(document != null)
+          document.close()
+      }
     }
   }
 
-  def applyOn = Seq(
+  def applyOn: Seq[String] = Seq(
     "application/pdf"
   )
 

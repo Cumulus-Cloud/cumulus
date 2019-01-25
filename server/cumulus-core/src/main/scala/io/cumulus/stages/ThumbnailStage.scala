@@ -20,7 +20,7 @@ import scala.util.{Failure, Success, Try}
 trait ThumbnailGenerator extends Logging {
 
   /** JPEG writer at 50% quality */
-  implicit private val writer = JpegWriter().withCompression(50)
+  implicit private val writer: JpegWriter = JpegWriter().withCompression(50)
 
   /** Generate a thumbnail of a file. */
   final def generate(
@@ -122,17 +122,24 @@ object PDFDocumentThumbnailGenerator extends ThumbnailGenerator {
     settings: Settings): Either[AppError, java.awt.Image] = {
 
     StorageReferenceReader.reader(file).map { fileSource =>
-      // Get the PDF document
-      val fileInputStream = fileSource.runWith(StreamConverters.asInputStream())
-      val document = PDDocument.load(fileInputStream)
-      val pdfRenderer = new PDFRenderer(document)
+      var document: PDDocument = null
 
-      // Generate a preview of the first page
-      pdfRenderer.renderImageWithDPI(0, 300, ImageType.RGB)
+      try {
+        // Get the PDF document
+        val fileInputStream = fileSource.runWith(StreamConverters.asInputStream())
+        document = PDDocument.load(fileInputStream)
+        val pdfRenderer = new PDFRenderer(document)
+
+        // Generate a preview of the first page
+        pdfRenderer.renderImageWithDPI(0, 300, ImageType.RGB)
+      } finally {
+        if(document != null)
+          document.close()
+      }
     }
   }
 
-  override def applyOn = Seq(
+  def applyOn: Seq[String] = Seq(
     "application/pdf"
   )
 
@@ -163,7 +170,7 @@ object ImageThumbnailGenerator extends ThumbnailGenerator {
 
   }
 
-  override def applyOn = Seq(
+  def applyOn: Seq[String] = Seq(
     "image/bmp",
     "image/gif",
     "image/x-icon",

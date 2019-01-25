@@ -1,13 +1,15 @@
 import Api from 'services/api'
 
+import { ContextState } from 'utils/store'
+
+import { State } from 'store/store'
+
 import { ApiList } from 'models/utils'
 import { ApiError } from 'models/ApiError'
 import { Event } from 'models/Event'
 
-import { createPureAction } from 'store/actions'
 
-
-export const getEvents = createPureAction((setState, getState) => {
+export const getEvents = ({ setState, getState }: ContextState<State>) => () => {
   // Prepare the loading
   setState(state => ({
     events: {
@@ -42,4 +44,4 @@ export const getEvents = createPureAction((setState, getState) => {
       }))
     })
 
-})
+}

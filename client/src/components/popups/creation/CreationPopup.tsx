@@ -2,7 +2,7 @@ import  React from 'react'
 import TextField from '@material-ui/core/TextField'
 
 import { FsPopupType } from 'store/states/popupsState'
-import { usePopups, useDirectoryCreation, useFilesystem } from 'store/storeHooks'
+import { usePopups, useDirectoryCreation, useFilesystem } from 'store/store'
 
 import Popup from 'components/utils/Popup'
 

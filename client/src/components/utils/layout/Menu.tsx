@@ -14,8 +14,8 @@ import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
 
-import { withStore, connect } from 'store/store'
-import { forceMenu, toggleMenu } from 'store/actions/menu';
+import { useMenu } from 'store/store'
+
 
 const styles = (theme: Theme) => createStyles({
   drawerPaper: {
@@ -69,22 +69,16 @@ export type MenuAction = {
 }
 
 type Props = {
-  forceMenu: (state: boolean) => void
-  onMenuToggle: () => void
-  showDynamicMenu: boolean
   actionGroup: ActionGroup[]
 }
 
 type PropsWithStyle = Props & WithStyles<typeof styles>
 
-class CumulusDrawer extends React.Component<PropsWithStyle> {
+function CumulusDrawer(props: PropsWithStyle) {
 
-  toggleDrawer = () => {
-    this.props.onMenuToggle()
-  }
+  const { forceMenu, toggleMenu, show } = useMenu()
 
-  buildActionGroup(actionGroup: ActionGroup): JSX.Element {
-    const { forceMenu } = this.props
+  function buildActionGroup(actionGroup: ActionGroup): JSX.Element {
     const { title, enabled, actions } = actionGroup
     const groupDisabled = enabled === false
 
@@ -131,64 +125,55 @@ class CumulusDrawer extends React.Component<PropsWithStyle> {
     )
   }
 
-  render() {
-    const { classes, actionGroup, showDynamicMenu } = this.props
+  const { classes, actionGroup } = props
 
-    const actionsElement =
-      actionGroup.map((group, index) => (
-        <div key={`menu-group-${index}`} >
-          <Divider style={{ height: 1 }} />
-          <List>{ this.buildActionGroup(group) }</List>
-        </div>
-      ))
-
-    return (
-      <div>
-        <SwipeableDrawer
-          open={ showDynamicMenu }
-          classes={{ paper: classes.drawerPaper }}
-          onClose={ this.toggleDrawer }
-          onOpen={ this.toggleDrawer }
-        >
-          <div className={ classes.logoContainer } >
-            <Typography variant="h5" className={ classes.logoText } >
-              <CloudIcon  className={ classes.logo } /> <div>Cumulus</div>
-            </Typography>
-          </div>
-          {
-            actionsElement
-          }
-        </SwipeableDrawer>
-        <div className={ classes.drawerBar } >
-          <IconButton onClick={ this.toggleDrawer } >
-            <MenuIcon />
-          </IconButton>
-        </div>
-        <Drawer
-          variant="permanent"
-          className={ classes.drawerStatic }
-          classes={{ paper: classes.drawerPaper }}
-        >
-          <div className={ classes.logoContainer } >
-            <Typography variant="h5" className={ classes.logoText } >
-              <CloudIcon  className={ classes.logo } /> <div>Cumulus</div>
-            </Typography>
-          </div>
-          {
-            actionsElement
-          }
-        </Drawer>
+  const actionsElement =
+    actionGroup.map((group, index) => (
+      <div key={`menu-group-${index}`} >
+        <Divider style={{ height: 1 }} />
+        <List>{ buildActionGroup(group) }</List>
       </div>
-    )
-  }
+    ))
+
+  return (
+    <div>
+      <SwipeableDrawer
+        open={show}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={toggleMenu}
+        onOpen={toggleMenu}
+      >
+        <div className={ classes.logoContainer } >
+          <Typography variant="h5" className={classes.logoText} >
+            <CloudIcon  className={classes.logo} /> <div>Cumulus</div>
+          </Typography>
+        </div>
+        {
+          actionsElement
+        }
+      </SwipeableDrawer>
+      <div className={classes.drawerBar} >
+        <IconButton onClick={toggleMenu} >
+          <MenuIcon />
+        </IconButton>
+      </div>
+      <Drawer
+        variant="permanent"
+        className={classes.drawerStatic}
+        classes={{ paper: classes.drawerPaper }}
+      >
+        <div className={ classes.logoContainer } >
+          <Typography variant="h5" className={classes.logoText} >
+            <CloudIcon  className={classes.logo} /> <div>Cumulus</div>
+          </Typography>
+        </div>
+        {
+          actionsElement
+        }
+      </Drawer>
+    </div>
+  )
 
 }
 
-const mappedProps =
-  connect((state, dispatch) => ({
-    showDynamicMenu: state.menu.show,
-    forceMenu: (show: boolean) => dispatch(forceMenu(show)),
-    onMenuToggle: () => dispatch(toggleMenu())
-  }))
-
-export default withStore(withStyles(styles)(CumulusDrawer), mappedProps)
+export default withStyles(styles)(CumulusDrawer)

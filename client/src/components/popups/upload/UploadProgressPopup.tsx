@@ -18,9 +18,8 @@ import Divider from '@material-ui/core/Divider'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import classnames from 'classnames'
 
-import { connect, withStore } from 'store/store'
-import { hideUploadProgress } from 'store/actions/fileUpload'
-import { FileUploadingState, computeUploadingSpeed } from 'store/states/fileUploadState'
+import { useFileUpload } from 'store/store'
+import { computeUploadingSpeed } from 'store/states/fileUploadState'
 
 import { humanSpeed } from 'utils/humandReadable'
 
@@ -38,11 +37,11 @@ const styles = (theme: Theme) => createStyles({
   },
   header: {
     backgroundColor: theme.palette.primary.main,
-    height: 60
+    height: 28
   },
   headerText: {
     color: theme.palette.primary.contrastText,
-    fontSize: theme.typography.pxToRem(18)
+    fontSize: theme.typography.pxToRem(15)
   },
   headerButton: {
     color: theme.palette.primary.contrastText
@@ -103,122 +102,96 @@ const styles = (theme: Theme) => createStyles({
   }
 })
 
-type Props = {
-  onClose: () => void
-  open: boolean
-  files: FileUploadingState[]
-}
 
-type PropsWithStyle = Props & WithStyles<typeof styles>
+type PropsWithStyle = WithStyles<typeof styles>
 
-type State = {
-  expanded: boolean
-}
 
-class UploadProgressPopup extends React.Component<PropsWithStyle, State> {
+function UploadProgressPopup(props: PropsWithStyle) {
 
-  constructor(props: PropsWithStyle) {
-    super(props)
-    this.state = { expanded: true }
+  const [expanded, setExpanded] = React.useState(false)
+
+  const { showUploadInProgress, uploading, hideUploadProgress } = useFileUpload()
+
+  function toggleExpand() {
+    setExpanded(!expanded)
   }
 
-  onToggleExpand() {
-    this.setState({ expanded: !this.state.expanded })
-  }
+  const { classes } = props
+  // TODO show error
 
-  onClose() {
-    this.props.onClose()
-  }
+  const uploadsInprogess = uploading.filter((f) => f.loading).length
+  const uploadsTerminated = uploading.length - uploadsInprogess
 
-  render() {
-    const { classes, files, open } = this.props
-    // TODO show error
-    
-    const uploadsInprogess = files.filter((f) => f.loading).length
-    const uploadsTerminated = files.length - uploadsInprogess
-
-    const uploadsInfo = files.map((upload) => {
-      // TODO better ID
-      return (
-        <span key={upload.file.id} >
-          <ListItem button className={classes.fileItem} >
-            <ListItemText className={classes.fileIcon} >
-              <FileDownloadButton />
-            </ListItemText>
-            <ListItemText>
-              {upload.file.filename}
-              {
-                upload.loading && (
-                  upload.progress < 100 ?
-                  <LinearProgress variant="determinate" value={upload.progress} /> :
-                  <LinearProgress variant="indeterminate" />
-                )
-              }
-              {
-                (upload.loading && upload.progress < 100) && (
-                  <Typography className={classes.downloadSpeed} variant="caption" >
-                    {humanSpeed(computeUploadingSpeed(upload), 's')}
-                  </Typography>
-                )
-              }
-            </ListItemText>
-          </ListItem>
-          <Divider />
-        </span>
-      )
-    })
-
+  const uploadsInfo = uploading.map((upload) => {
+    // TODO better ID
     return (
-      <Slide direction="up" in={open} mountOnEnter unmountOnExit>
-        <div className={classnames(classes.root)} >
-          <Card className={classes.card}>
-
-            <CardHeader
-              className={classes.header}
-              color="white"
-              action={
-                <div>
-                <IconButton
-                  className={classnames(classes.expand, classes.headerButton, {
-                    [classes.expandOpen]: this.state.expanded,
-                  })}
-                  onClick={() => this.onToggleExpand()}
-                  aria-expanded={this.state.expanded}
-                  aria-label="Show more"
-                >
-                  <ExpandMoreIcon />
-                </IconButton>
-                <IconButton className={classes.headerButton} disabled={uploadsInprogess !== 0} onClick={() => this.onClose()} >
-                  <CloseIcon />
-                </IconButton>
-                </div>
-              }
-              title={<span className={classes.headerText}>{uploadsInprogess} uploads en cours, {uploadsTerminated} uploads terminés</span>}
-            />
-            
-            <Collapse in={this.state.expanded} timeout="auto" unmountOnExit>
-              <CardContent className={classes.content} style={{ padding: 0 }} >
-                <List component="nav" style={{ padding: 0 }} >
-                  {uploadsInfo}
-                </List>
-              </CardContent>
-            </Collapse>
-          </Card>
-        </div>
-      </Slide>
+      <span key={upload.file.id} >
+        <ListItem button className={classes.fileItem} >
+          <ListItemText className={classes.fileIcon} >
+            <FileDownloadButton />
+          </ListItemText>
+          <ListItemText>
+            {upload.file.filename}
+            {
+              upload.loading && (
+                upload.progress < 100 ?
+                <LinearProgress variant="determinate" value={upload.progress} /> :
+                <LinearProgress variant="indeterminate" />
+              )
+            }
+            {
+              (upload.loading && upload.progress < 100) && (
+                <Typography className={classes.downloadSpeed} variant="caption" >
+                  {humanSpeed(computeUploadingSpeed(upload), 's')}
+                </Typography>
+              )
+            }
+          </ListItemText>
+        </ListItem>
+        <Divider />
+      </span>
     )
-  }
+  })
+
+  return (
+    <Slide direction="up" in={showUploadInProgress} mountOnEnter unmountOnExit>
+      <div className={classes.root} >
+        <Card className={classes.card}>
+
+          <CardHeader
+            className={classes.header}
+            color="white"
+            action={
+              <div>
+              <IconButton
+                className={classnames(classes.expand, classes.headerButton, { [classes.expandOpen]: expanded })}
+                onClick={toggleExpand}
+                aria-expanded={expanded}
+                aria-label="Show more"
+              >
+                <ExpandMoreIcon />
+              </IconButton>
+              <IconButton className={classes.headerButton} disabled={uploadsInprogess !== 0} onClick={hideUploadProgress} >
+                <CloseIcon />
+              </IconButton>
+              </div>
+            }
+            title={<span className={classes.headerText}>{uploadsInprogess} uploads en cours, {uploadsTerminated} uploads terminés</span>}
+          />
+
+          <Collapse in={expanded} timeout="auto" unmountOnExit>
+            <CardContent className={classes.content} style={{ padding: 0 }} >
+              <List component="nav" style={{ padding: 0 }} >
+                {uploadsInfo}
+              </List>
+            </CardContent>
+          </Collapse>
+        </Card>
+      </div>
+    </Slide>
+  )
 
 }
 
 
-const mappedProps =
-  connect(({ fileUpload }, dispatch) => ({
-    open: fileUpload.showUploadInProgress,
-    files: fileUpload.uploading,
-    onClose: () => {
-      dispatch(hideUploadProgress())
-    }
-  }))
-
-export default withStore(withStyles(styles)(UploadProgressPopup), mappedProps)
+export default withStyles(styles)(UploadProgressPopup)

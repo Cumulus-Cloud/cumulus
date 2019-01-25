@@ -1,9 +1,10 @@
 import uuid = require('uuid/v4')
 
-import { createAction } from 'store/actions'
+import { ContextState } from 'utils/store'
+import { State } from 'store/store'
 
 
-export const showNotification = createAction<string>((message, setState) => {
+export const showNotification = ({ setState }: ContextState<State>) => (message: string) => {
   const newMessage = { id: uuid(), message }
 
   setState(state => ({
@@ -11,12 +12,12 @@ export const showNotification = createAction<string>((message, setState) => {
       messages: state.notifications.messages.concat(newMessage)
     }
   }))
-})
+}
 
-export const hideNotification = createAction<string>((id, setState) => {
+export const hideNotification = ({ setState }: ContextState<State>) => (id: string) => {
   setState(state => ({
     notifications: {
       messages: state.notifications.messages.slice().filter(m => m.id !== id)
     }
   }))
-})
+}

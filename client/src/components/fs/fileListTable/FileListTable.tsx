@@ -11,7 +11,7 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import classnames from 'classnames'
 
 import { selectedNodes, isNodeSelected } from 'store/states/fsState'
-import { useFilesystem, usePopups, useRouting, useNodeDisplacement } from 'store/storeHooks'
+import { useFilesystem, usePopups, useRouting, useNodeDisplacement } from 'store/store'
 
 import { WithDragAndDrop } from 'components/utils/DragAndDrop'
 import NodeIcon from 'components/fs/NodeIcon'

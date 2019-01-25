@@ -16,7 +16,7 @@ import FileList from 'components/fs/fileList/FileList'
 import MovePopup from 'components/popups/move/MovePopup'
 
 import { selectedNodes } from 'store/states/fsState'
-import { usePopups, useFilesystem } from 'store/storeHooks'
+import { usePopups, useFilesystem } from 'store/store'
 
 
 function FileExplorer() {

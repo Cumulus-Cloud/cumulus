@@ -1,23 +1,25 @@
-import { FsPopupType } from 'store/states/popupsState'
-import { createAction, createPureAction } from 'store/actions'
-
 import { FsNode } from 'models/FsNode'
 
+import { ContextState } from 'utils/store'
 
-export const showPopup = createAction<{ type: FsPopupType, nodes?: FsNode[] }>(({ type, nodes }, setState) => {
+import { FsPopupType } from 'store/states/popupsState'
+import { State } from 'store/store'
+
+
+export const showPopup = ({ setState }: ContextState<State>) => (type: FsPopupType, nodes?: FsNode[]) => {
   setState({
     popups: {
       open: type,
       target: nodes || []
     }
   })
-})
+}
 
-export const hidePopup = createPureAction((setState) => {
+export const hidePopup = ({ setState }: ContextState<State>) => () => {
   setState(state => ({
     popups: {
       open: undefined,
       target: state.popups.target
     }
   }))
-})
+}

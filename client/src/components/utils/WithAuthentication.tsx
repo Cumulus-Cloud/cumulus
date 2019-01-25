@@ -1,6 +1,6 @@
 import  React from 'react'
 
-import { useAuthentication } from 'store/storeHooks'
+import { useAuthentication } from 'store/store'
 
 
 interface Props {
