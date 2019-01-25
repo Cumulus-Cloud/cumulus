@@ -1,92 +1,139 @@
 import React from 'react'
 
 import Routes from 'services/routes'
+import { createBrowserHistory, History } from 'history'
 
+import { createStore as createContext } from 'utils/store'
+
+import AuthenticationState, { initialState as initialAuthState } from 'store/states/authenticationState'
+import SignInState from 'store/states/signInState'
+import SignUpState from 'store/states/signUpState'
+import FsState, { initialState as initialFsState } from 'store/states/fsState'
+import EventState from 'store/states/eventState'
+import DirectoryCreationState from 'store/states/directoryCreationState'
+import NodeDisplacementState from 'store/states/nodeDisplacementState'
+import NodeDeletionState from 'store/states/nodeDeletionState'
+import FileUploadState, { initialState as initialFileUploadState } from 'store/states/fileUploadState'
+import NotificationsState, { initialState as initialNotificationsState } from 'store/states/notificationsState'
+import PopupsState, { initialState as initialPopupsState, FsPopupType } from 'store/states/popupsState'
+import Menu from 'store/states/menuState'
 import { FsNode } from 'models/FsNode'
-import { EnrichedFile } from 'models/EnrichedFile'
+import { testUserAuth, signOutUser, signInUser, signUpUser } from './actions/authentication';
+import { getDirectory, getDirectoryContent, selectNode, deselectNode, search, selectAllNodes, deselectAllNodes } from './actions/directory';
 
-import { Context } from 'store/store'
-import { Search } from 'store/states/fsState'
-import { FsPopupType } from 'store/states/popupsState'
-import { showPopup, hidePopup } from 'store/actions/popups'
-import { createDirectory } from 'store/actions/directoryCreation'
-import { deleteNodes } from 'store/actions/nodeDeletion'
-import { moveNodes } from 'store/actions/nodeDisplacement'
-import { showNotification, hideNotification } from 'store/actions/notifications'
-import { testUserAuth, signInUser, signUpUser, signOutUser } from 'store/actions/authentication'
-import { getDirectory, selectNode, getDirectoryContent, selectAllNodes, deselectNode, deselectAllNodes, search } from 'store/actions/directory'
-import { selectUploadFile, showUploadProgress, hideUploadProgress, uploadAllFiles, deleteUploadFile, updateUploadFile } from 'store/actions/fileUpload'
 
+export type State = {
+  auth: AuthenticationState
+  signIn: SignInState
+  signUp: SignUpState
+  fs: FsState
+  events: EventState
+  directoryCreation: DirectoryCreationState
+  nodeDisplacement: NodeDisplacementState
+  nodeDeletion: NodeDeletionState
+  fileUpload: FileUploadState
+  notifications: NotificationsState
+  // TODO other store for UI info ?
+  popups: PopupsState<FsPopupType, FsNode[]>
+  menu: Menu,
+  router: History
+}
+
+export const initialState: State = {
+  auth: initialAuthState(),
+  signIn: { loading: false },
+  signUp: { loading: false },
+  fs: initialFsState(),
+  events: { loading: false, hasMore: true },
+  directoryCreation: { loading: false },
+  nodeDisplacement: { loading: false },
+  nodeDeletion: { loading: false },
+  fileUpload: initialFileUploadState(),
+  notifications: initialNotificationsState(),
+  popups: initialPopupsState([]),
+  menu: { show: false },
+  router: createBrowserHistory()
+}
+
+
+export const [Context, Provider] = createContext(initialState)
 
 export function useRouting() {
-  const store = React.useContext(Context)
+  const { state } = React.useContext(Context)
+
+  const push = (path: string) => {
+    state.router.push(path)
+  }
 
   return {
-    showFs: (path: string) => store.state.router.push(`${Routes.app.fs}${path}${store.state.router.location.search}`),
-    showEvents: () => store.state.router.push(Routes.app.events),
-    showSignUp: () => store.state.router.push(Routes.auth.signUp),
-    showSignIn: () => store.state.router.push(Routes.auth.signIn)
+    router: state.router,
+    push
   }
 }
 
 export function useAuthentication() {
-  const store = React.useContext(Context)
+  const ctx = React.useContext(Context)
 
   return {
-    ...store.state.auth,
-    testUserAuth: () => store.dispatch(testUserAuth()),
-    signInUser: (login: string, password: string) => store.dispatch(signInUser({ login, password })),
-    signOutUser: () => store.dispatch(signOutUser())
+    ...ctx.state.auth,
+    testUserAuth: testUserAuth(ctx),
+    signOutUser: signOutUser(ctx)
   }
 }
 
 export function useSignIn() {
-  const store = React.useContext(Context)
+  const ctx = React.useContext(Context)
 
   return {
-    ...store.state.signIn,
-    signInUser: (login: string, password: string) => store.dispatch(signInUser({ login, password })),
+    ...ctx.state.signIn,
+    singInUser: signInUser(ctx),
+    signOutUser: signOutUser(ctx)
   }
 }
 
 export function useSignUp() {
-  const store = React.useContext(Context)
+  const ctx = React.useContext(Context)
 
   return {
-    ...store.state.signUp,
-    signUpUser: (login: string, email: string, password: string) => store.dispatch(signUpUser({ login, email, password })),
+    ...ctx.state.signUp,
+    singInUser: signUpUser(ctx)
   }
 }
 
 export function useFilesystem() {
-  const store = React.useContext(Context)
+  const ctx = React.useContext(Context)
 
   return {
-    ...store.state.fs,
-    initialPath: store.state.router.location.pathname.substring(7),
-    getDirectory: (path: string) => store.dispatch(getDirectory(path)),
-    getDirectoryContent: () => store.dispatch(getDirectoryContent()),
-    selectNode: (id: string) => store.dispatch(selectNode(id)),
-    deselectNode: (id: string) => store.dispatch(deselectNode(id)),
-    selectAllNodes: () => store.dispatch(selectAllNodes()),
-    deselectAllNodes: () => store.dispatch(deselectAllNodes()),
-    search: (s?: Search) => store.dispatch(search(s))
+    ...ctx.state.fs,
+    getDirectory: getDirectory(ctx),
+    getDirectoryContent: getDirectoryContent(ctx),
+    selectNode: selectNode(ctx),
+    deselectNode: deselectNode(ctx),
+    selectAllNodes: selectAllNodes(ctx),
+    deselectAllNodes: deselectAllNodes(ctx),
+    search: search(ctx)
   }
 }
+
+// TODO le reste en dessous....
+
+export const [FilesUploadContext, FilesUploadProvider] = createContext(initialFileUploadState())
 
 export function useFileUpload() {
-  const store = React.useContext(Context)
+  const store = React.useContext(FilesUploadContext)
 
   return {
-    ...store.state.fileUpload,
-    selectUploadFile: (files: EnrichedFile[]) => store.dispatch(selectUploadFile(files)),
-    updateUploadFile: (file: EnrichedFile) => store.dispatch(updateUploadFile(file)),
-    deleteUploadFile: (file: EnrichedFile) => store.dispatch(deleteUploadFile(file)),
-    uploadAllFiles: () => store.dispatch(uploadAllFiles()),
-    showUploadProgress: () => store.dispatch(showUploadProgress()),
-    hideUploadProgress: () => store.dispatch(hideUploadProgress())
+    ...store,
+    selectUploadFile: (files: EnrichedFile[]) => {},
+    updateUploadFile: (file: EnrichedFile) => {},
+    deleteUploadFile: (file: EnrichedFile) => {},
+    uploadAllFiles: () => {},
+    showUploadProgress: () => {},
+    hideUploadProgress: () => {},
   }
 }
+
+// TODO...
 
 export function useDirectoryCreation() {
   const store = React.useContext(Context)
@@ -136,3 +183,4 @@ export function useNotifications() {
     hideNotification: (id: string) => store.dispatch(hideNotification(id))
   }
 }
+*/

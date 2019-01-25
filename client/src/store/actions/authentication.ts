@@ -4,15 +4,16 @@ import { User } from 'models/User'
 import Routes from 'services/routes'
 import Api from 'services/api'
 
-import { createPureAction, createAction } from 'store/actions'
+import { State } from 'store/store';
+import { ContextState } from 'utils/store';
 
 
-export const testUserAuth = createPureAction(setState => {
+export const testUserAuth = ({ setState }: ContextState<State>) => () => {
   // Start the loading
   setState(state => ({ auth: { ...state.auth, loading: true } }))
 
   // Start a request to get current user information
-  return Api.user.me()
+  Api.user.me()
     .then((result: User) => {
       // We got the user back, update the state with the connected user
       setState({ auth: { loading: false, connected: true, user: result } })
@@ -21,14 +22,14 @@ export const testUserAuth = createPureAction(setState => {
       // If any error occured (401, 403, ...) assumes the user is not authenticated
       setState({ auth: { loading: false, connected: false } })
     })
-})
+}
 
-export const signInUser = createAction<{ login: string, password: string }>(({ login, password }, setState, getState) => {
+export const signInUser = ({ setState, getState }: ContextState<State>) => (login: string, password: string) => {
   // Start the loading
   setState(state => ({ signIn: { ...state.signIn, loading: true } }))
 
   // Start a request to sign in
-  return Api.user.signIn(login, password)
+  Api.user.signIn(login, password)
     .then((result: { user: User }) => {
       setState({
         auth: { loading: false, connected: true, user: result.user },
@@ -39,26 +40,26 @@ export const signInUser = createAction<{ login: string, password: string }>(({ l
     .catch((e: ApiError) => {
       setState({ signIn: { loading: false, error: e } })
     })
-})
+}
 
-export const signUpUser = createAction<{ login: string, email: string, password: string }>(({ login, email, password }, setState, getState) => {
+export const signUpUser = ({ setState, getState }: ContextState<State>) => (login: string, email: string, password: string) => {
   // Start the loading
   setState((s) => ({ signUp: { ...s.signUp, loading: true } }))
 
   // Start a request to sign up
-  return Api.user.signUp(login, email, password).then((result: User) => {
+  Api.user.signUp(login, email, password).then((result: User) => {
     setState({ signUp: { loading: false, user: result } })
     getState().router.push('/auth/sign-up-confirmation')
   })
   .catch((e: ApiError) => {
     setState({ signUp: { loading: false, error: e } })
   })
-})
+}
 
-export const signOutUser = createPureAction((setState) => {
+export const signOutUser = ({ setState }: ContextState<State>) => () => {
   window.location.href = Routes.api.users.signOut // Redirect to the logout
   setState({
     auth: { loading: false, connected: false },
     signIn: { loading: false }
   })
-})
+}
