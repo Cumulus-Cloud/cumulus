@@ -14,10 +14,7 @@ import Visibility from '@material-ui/icons/Visibility'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import VisibilityOff from '@material-ui/icons/VisibilityOff'
 
-import { signUpUser } from 'store/actions/authentication'
-import { connect, withStore } from 'store/store'
-
-import { ApiError } from 'models/ApiError'
+import { useSignUp, useRouting } from 'store/storeHooks'
 
 
 const styles = (theme: Theme) => createStyles({
@@ -49,33 +46,24 @@ const styles = (theme: Theme) => createStyles({
 })
 
 
-interface Props {
-  loading: boolean
-  error?: ApiError
-  onSignIn:() => void
-  onSignUp:(login: string, email: string, password: string) => void
-}
+type PropsWithStyle = WithStyles<typeof styles>
 
-type PropsWithStyle = Props & WithStyles<typeof styles>
-
-
-function SignUpForm2(props: PropsWithStyle) {
+function SignUpForm(props: PropsWithStyle) {
 
   const [showPassword, togglePassword] = React.useState(false)
   const [login, setLogin] = React.useState('')
   const [email, setEmail] = React.useState('')
   const [password, setPassword] = React.useState('')
 
-  const { classes, error, loading } = props
+  const { loading, error, signUpUser } = useSignUp()
+  const { showSignIn } = useRouting()
 
-  const onSignIn = () => {
-    props.onSignIn()
-  }
+  const { classes } = props
 
   const onSignUp = (e: React.FormEvent) => {
     e.preventDefault()
     // TODO check values ?
-    props.onSignUp(login, email, password)
+    signUpUser(login, email, password)
   }
 
   return (
@@ -134,7 +122,7 @@ function SignUpForm2(props: PropsWithStyle) {
           </Tooltip>
         </div>
         <div className={classes.buttons} >
-          <Button color="primary" disabled={loading} className={classes.backButton} onClick={() => onSignIn()} >
+          <Button color="primary" disabled={loading} className={classes.backButton} onClick={() => showSignIn()} >
             <LeftButton />
             Revenir à la connexion
           </Button>
@@ -149,12 +137,4 @@ function SignUpForm2(props: PropsWithStyle) {
 }
 
 
-const mappedProps =
-  connect((state, dispatch) => ({
-    loading: state.signUp.loading,
-    error: state.signUp.error,
-    onSignIn: () => state.router.push('/auth/sign-in'),
-    onSignUp: (login: string, email: string, password: string) => dispatch(signUpUser({ login, email, password }))
-  }))
-
-export default withStore(withStyles(styles)(SignUpForm2), mappedProps)
+export default withStyles(styles)(SignUpForm)

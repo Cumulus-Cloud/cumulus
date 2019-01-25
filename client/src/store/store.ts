@@ -50,6 +50,7 @@ export const initialState: State = {
   router: createBrowserHistory()
 }
 
-export const { Store, withStore } = createStore<State>(initialState)
+// TODO rename
+export const { Context, Store, withStore } = createStore<State>(initialState)
 
 export const connect = <T>(mapping: (state: State, dispatch: Dispatcher<State>) => T) => ( mapping )

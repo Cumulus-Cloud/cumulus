@@ -17,58 +17,169 @@ import UserBadge from 'components/fs/fileList/UserBadge'
 import DraggedElement from 'components/fs/fileList/DraggedElement'
 import Content, { ContentError } from 'components/utils/layout/Content'
 
-import { Directory, FsNode } from 'models/FsNode'
-import { ApiError } from 'models/ApiError'
-import { EnrichedFile } from 'models/EnrichedFile'
-import { User } from 'models/User'
+import { FsNode } from 'models/FsNode'
 
-import { connect, withStore } from 'store/store'
 import { Search, SearchDefault } from 'store/states/fsState'
-import { getDirectory, search } from 'store/actions/directory'
-import { showPopup, hidePopup } from 'store/actions/popups'
-import { selectUploadFile } from 'store/actions/fileUpload'
-
-import Routes from 'services/routes'
+import { useFilesystem, useAuthentication, useFileUpload, usePopups, useRouting, useNodeDisplacement } from 'store/storeHooks'
 
 import styles from './styles'
 
 
-interface Props {
-  /** Called when the path should be updated, meaning when the path was changed within the app. */
-  onChangePath: (path: string) => void
-  /** Called when the search is updated */
-  onChangeSearch: (searchParams: Search | undefined) => void
-  /** Called when the current directory should be loaded from the api. */
-  onLoadDirectory: (path: string) => void
-  /** List of files selected for the upload */
-  onFileUpload: (files: EnrichedFile[]) => void
-  /** Current user */
-  user: User,
-  /** Initial real path, comming from the browser path */
-  initialPath: string
-  /** Loaded current directory, from the store. */
-  currentDirectory?: Directory
-  /** Content of the loaded current directory, from the store. */
-  currentDirectoryContent?: FsNode[]
-  /** If the store is loading the data */
-  loading: boolean
-  /** If the store is loading more content */
-  contentLoading: boolean
-  /** Loading error */
-  error?: ApiError
-  /** Search */
-  search?: Search
+type PropsWithStyle = WithStyles<typeof styles> & WithDragAndDrop<FsNode[]>
+
+
+function FilesList(props: PropsWithStyle) {
+
+  const [dropzoneActive, setDropzoneActive] = React.useState(false)
+  const [localSearch, setLocalSearch] = React.useState<Search | undefined>(undefined)
+  //const [initialized, setInitialized] = React.useState(false)
+
+  // TODO test
+  React.useEffect(() => {
+    checkIfPathNeedsRefresh()
+  })
+
+  const { current, loadingCurrent, content, loadingContent, error, search, initialPath, getDirectory } = useFilesystem()
+  const { moveNodes } = useNodeDisplacement()
+  const { selectUploadFile } = useFileUpload()
+  const { showPopup, hidePopup } = usePopups()
+  const { showFs } = useRouting()
+  const { user } = useAuthentication()
+
+  const { classes } = props
+
+  if(!user) // Should not happen
+    throw new Error('File list accessed without authentication')
+
+  // TODO move in hooks
+  const checkIfPathNeedsRefresh = () => {
+    // Needs to update if not during a loading, and if the two path have changed (in that case the 'real' path wins)
+    // This will likely occur during the first loading, or if the user use the browser history to navigate
+    const needToUpdatePath =
+      !error && !loadingCurrent && (current ? initialPath !== current.path : true)
+
+    if(needToUpdatePath)
+      onLoadDirectory(initialPath)
+  }
+
+  const onLoadDirectory = (path: string) => {
+    hidePopup() // Security, close popup when changing directory
+    getDirectory(path)
+  }
+
+  const onChangePath = (path: string) => {
+    showFs(path)
+    getDirectory(path)
+  }
+
+  const onDroppedFiles = (files: File[]) => {
+    const enrichedFiles = files.map((file) => {
+      return {
+        id: uuid(),
+        filename: file.name,
+        location: current ? current.path : '/',
+        compressed: false,
+        crypted: true,
+        file
+      }
+    })
+
+    selectUploadFile(enrichedFiles)
+    showPopup('FILE_UPLOAD')
+    setDropzoneActive(false)
+  }
+
+  const onSearchChange = (updatedSearch: Search | undefined) => {
+    setLocalSearch(updatedSearch)
+    debuncedSearchChange(updatedSearch)
+  }
+
+  const onSearchQueryChange = (value: string) => {
+    const search = localSearch || SearchDefault
+    onSearchChange({ ...search, query: value })
+  }
+
+  const onEndSearch = () => {
+    search(undefined)
+    setLocalSearch(undefined)
+  }
+
+  const debuncedSearchChange = debounce(400, false, (updatedSearch: Search | undefined) => {
+    if(!updatedSearch || updatedSearch.query !== '')
+      onSearchChange(updatedSearch)
+  })
+
+
+  const files = content ? content : []
+  const showLoading = loadingCurrent || (loadingContent && files.length === 0)
+
+  const header = (
+    current ?
+    (
+      <>
+        <BreadCrumb path={current.path} onChangePath={onChangePath} onMoveNodes={moveNodes} {...dragAndDropProps(props)} />
+        <SearchBar search={ localSearch } onSearchQueryChange={onSearchQueryChange} />
+        <UserBadge />
+      </>
+    ) : (
+      <div style={ { flex: 1 } } /> // Placeholder during loading
+    )
+  )
+
+  const errorContent = (
+    !showLoading && error &&
+    <ContentError
+      icon={ <WarningIcon /> }
+      text={ `Une erreur est survenue au chargement de ${initialPath} : ${error.message}` }
+      actions={
+        error.key === 'api-error.not-found' ?
+        <Button variant="outlined" color="primary" className={classes.errorButton} onClick={() =>  onChangePath('/')} >Go back to the root directory</Button> :
+        undefined
+      }
+    />
+  )
+
+  const fileList = (
+    !showLoading && !error &&
+    <>
+      {
+        files.length == 0 ? (
+          <ContentError
+            icon={ <InfoIcon /> }
+            text={ 'Ce dossier est vide' }
+          />
+        ) : (
+          <FileListTable onPathChanged={() => setLocalSearch(undefined)} { ...dragAndDropProps(props) } />
+        )
+      }
+    </>
+  )
+
+  return (
+    <FileDropzone
+      className={classes.dropzoneWrapper}
+      onDrop={onDroppedFiles}
+      onDragEnter={() => setDropzoneActive(true)}
+      onDragLeave={() => setDropzoneActive(false)}
+    >
+      { dropzoneActive && <DropzonePlaceholder /> }
+      <Content
+        header={header}
+        error={errorContent}
+        content={
+          <>
+            { localSearch && <SearchZone search={localSearch} onEndSearch={onEndSearch} /> }
+            { fileList }
+          </>
+        }
+        loading={showLoading}
+      />
+    </FileDropzone>
+  )
+
 }
 
-type PropsWithStyle = Props & WithStyles<typeof styles> & WithDragAndDrop<FsNode[]>
-
-interface State {
-  /** If the user is hovering the dropzone */
-  dropzoneActive: boolean
-  searchBarActive: boolean
-  search?: Search
-}
-
+/*
 class FilesList extends React.Component<PropsWithStyle, State> {
 
   constructor(props: PropsWithStyle) {
@@ -250,9 +361,9 @@ const mappedProps =
           .then(() => dispatch(showPopup({ type: 'FILE_UPLOAD' })))
       }
     }
-  })
+  })*/
 
 export default withDragAndDrop(
-  withStore(withStyles(styles)(FilesList), mappedProps),
+  withStyles(styles)(FilesList),
   DraggedElement
 )

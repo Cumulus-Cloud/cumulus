@@ -108,6 +108,7 @@ export function createStore<S>(
   }
 
   return {
+    Context: context,
     Store: provider,
     withStore
   }

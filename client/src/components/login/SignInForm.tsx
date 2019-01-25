@@ -8,10 +8,7 @@ import TextField from '@material-ui/core/TextField'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import { Typography } from '@material-ui/core'
 
-import { ApiError } from 'models/ApiError'
-
-import { connect, withStore } from 'store/store'
-import { signInUser } from 'store/actions/authentication'
+import { useSignIn, useRouting } from 'store/storeHooks'
 
 
 const styles = (theme: Theme) => createStyles({
@@ -46,31 +43,22 @@ const styles = (theme: Theme) => createStyles({
 })
 
 
-interface ContextProps {
-  loading: boolean
-  error?: ApiError
-  onSignUp: () => void
-  onSignIn: (login: string, password: string) => void
-}
+type PropsWithStyle = WithStyles<typeof styles>
 
-type PropsWithStyle = ContextProps & WithStyles<typeof styles>
-
-
-function SignInForm2(props: PropsWithStyle) {
+function SignInForm(props: PropsWithStyle) {
 
   const [login, setLogin] = React.useState('')
   const [password, setPassword] = React.useState('')
 
-  const { classes, error, loading } = props
+  const { loading, error, signInUser } = useSignIn()
+  const { showSignUp } = useRouting()
+
+  const { classes } = props
 
   const onSignIn = (e: React.FormEvent) => {
     e.preventDefault()
     // TODO check that each field is here
-    props.onSignIn(login, password)
-  }
-
-  const onSignUp = () => {
-    props.onSignUp()
+    signInUser(login, password)
   }
 
   return (
@@ -108,7 +96,7 @@ function SignInForm2(props: PropsWithStyle) {
           </Typography>
         </div>
         <div className={classes.buttons} >
-          <Button color="primary" disabled={loading} onClick={() => onSignUp()}>
+          <Button color="primary" disabled={loading} onClick={() => showSignUp()}>
             S'inscrire
           </Button>
           <Button color="primary" disabled={loading} type="submit">
@@ -122,13 +110,4 @@ function SignInForm2(props: PropsWithStyle) {
 
 }
 
-
-const mappedProps =
-  connect((state, dispatch) => ({
-    loading: state.signIn.loading,
-    error: state.signIn.error,
-    onSignUp: () => state.router.push('/auth/sign-up'),
-    onSignIn: (login: string, password: string) => dispatch(signInUser({ login, password }))
-  }))
-
-export default withStore(withStyles(styles)(SignInForm2), mappedProps)
+export default withStyles(styles)(SignInForm)

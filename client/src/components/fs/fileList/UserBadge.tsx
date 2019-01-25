@@ -4,94 +4,56 @@ import Avatar from '@material-ui/core/Avatar'
 import MenuItem from '@material-ui/core/MenuItem'
 import Menu from '@material-ui/core/Menu'
 
-import { connect, withStore } from 'store/store'
-import { signOutUser } from 'store/actions/authentication'
-
-import { User } from 'models/User'
-
-import Routes from 'services/routes'
+import { useAuthentication, useRouting } from 'store/storeHooks'
 
 import styles from './styles'
 
 
-interface Props {
-  user: User
-  onShowProfile: () => void
-  onShowEvents: () => void
-  onLogout: () => void
-}
+type PropsWithStyle = WithStyles<typeof styles>
 
-type PropsWithStyle = Props & WithStyles<typeof styles>
+function UserBadge(props: PropsWithStyle) {
 
-interface State {
-  anchorEl?: HTMLElement | null
-}
+  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null | undefined>(undefined)
 
-class UserBadge extends React.Component<PropsWithStyle, State> {
+  const { user, signOutUser } = useAuthentication()
+  const { showEvents } = useRouting()
 
-  constructor(props: PropsWithStyle) {
-    super(props)
-    this.state = {}
+  const { classes } = props
+
+  const closeMenu = () => setAnchorEl(undefined)
+  const openMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget)
+
+  const onShowProfile = () => {
+    // showProfile() TODO
+    closeMenu()
   }
 
-  onShowProfile = () => {
-    this.props.onShowProfile()
-    this.closeMenu()
+  const onShowEvents = () => {
+    showEvents()
+    closeMenu()
   }
 
-  onShowEvents = () => {
-    this.props.onShowEvents()
-    this.closeMenu()
+  const onLogout= () => {
+    signOutUser()
+    closeMenu()
   }
 
-  onLogout= () => {
-    this.props.onLogout()
-    this.closeMenu()
-  }
-
-  onOpenMenu(event: React.MouseEvent<HTMLElement>) {
-    this.setState({ anchorEl: event.currentTarget })
-  }
-
-  closeMenu() {
-    this.setState({ anchorEl: undefined })
-  }
-
-  render() {
-    const { user, classes } = this.props
-    const { anchorEl } = this.state
-
-    return (
-      <>
-        <Avatar className={ classes.avatar } onClick={(e) => this.onOpenMenu(e)} >{ user.login.charAt(0) }</Avatar>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={() => this.closeMenu()}
-        >
-          <MenuItem onClick={ this.onShowProfile }>Mon profil</MenuItem>
-          <MenuItem onClick={ this.onShowEvents }>Mes dernières actions</MenuItem>
-          <MenuItem onClick={ this.onLogout }>Se déconnecter</MenuItem>
-        </Menu>
-      </>
-    )
-
-  }
+  return (
+    <>
+      <Avatar className={classes.avatar} onClick={openMenu} >{ user ? user.login.charAt(0) : '?' }</Avatar>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={closeMenu}
+      >
+        <MenuItem onClick={onShowProfile}>Mon profil</MenuItem>
+        <MenuItem onClick={onShowEvents}>Mes dernières actions</MenuItem>
+        <MenuItem onClick={onLogout}>Se déconnecter</MenuItem>
+      </Menu>
+    </>
+  )
 
 }
 
 
-const mappedProps =
-  connect(({ router }, dispatch) => ({
-    onShowProfile: () => {
-      // TODO
-    },
-    onShowEvents: () => {
-      router.push(Routes.app.events)
-    },
-    onLogout: () => {
-      dispatch(signOutUser())
-    }
-  }))
-
-export default withStore(withStyles(styles)(UserBadge), mappedProps)
+export default withStyles(styles)(UserBadge)

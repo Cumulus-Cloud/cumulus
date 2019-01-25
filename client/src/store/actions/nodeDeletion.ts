@@ -7,6 +7,7 @@ import { FsNode } from 'models/FsNode'
 import { getDirectory } from 'store/actions/directory'
 import { showNotification } from 'store/actions/notifications'
 import { createAction } from 'store/actions'
+import { hidePopup } from './popups';
 
 
 export const deleteNodes = createAction<{ nodes: FsNode[], deleteContent: boolean }>(({ nodes, deleteContent }, setState, getState, dispatch) => {
@@ -22,8 +23,9 @@ export const deleteNodes = createAction<{ nodes: FsNode[], deleteContent: boolea
       const currentPath = state.fs.current ? state.fs.current.path : '/'
 
       dispatch(showNotification(`Suppression effectuée avec succès`))
-
       setState({ nodeDeletion: { loading: false } })
+
+      dispatch(hidePopup())
       dispatch(getDirectory(currentPath)) // Reload the current path
     })
     .catch((e: ApiError) => {

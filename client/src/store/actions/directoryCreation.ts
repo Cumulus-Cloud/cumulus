@@ -6,7 +6,7 @@ import { Directory } from 'models/FsNode'
 import { getDirectory } from 'store/actions/directory'
 import { showNotification } from 'store/actions/notifications'
 import { createAction } from 'store/actions'
-
+import { hidePopup } from './popups'
 
 export const createDirectory = createAction<string>((path, setState, getState, dispatch) => {
   setState({
@@ -24,6 +24,7 @@ export const createDirectory = createAction<string>((path, setState, getState, d
       setState({ directoryCreation: { loading: false } })
 
       dispatch(getDirectory(currentPath))
+      dispatch(hidePopup())
       dispatch(showNotification(`Dossier « ${name} » créé avec succès`))
     })
     .catch((e: ApiError) => {

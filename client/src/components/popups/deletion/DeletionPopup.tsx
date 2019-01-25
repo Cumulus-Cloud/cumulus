@@ -1,130 +1,72 @@
 import  React from 'react'
-import withMobileDialog from '@material-ui/core/withMobileDialog'
 import { Checkbox, DialogContentText, FormControlLabel } from '@material-ui/core'
 
-import { connect, withStore } from 'store/store'
-import { hidePopup } from 'store/actions/popups'
 import { FsPopupType } from 'store/states/popupsState'
+import { usePopups, useNodeDeletion } from 'store/storeHooks'
 
-import { ApiError } from 'models/ApiError'
 import { FsNode, isFile, isDirectory } from 'models/FsNode'
 
 import NoWrap from 'components/utils/NoWrap'
 import Popup from 'components/utils/Popup'
 
-import { deleteNodes } from 'store/actions/nodeDeletion'
-
 
 const popupType: FsPopupType = 'NODE_DELETION'
 
-interface Props {
-  onClose: () => void
-  onDelete: (deleteContent: boolean) => void
-  open: boolean
-  fullScreen?: boolean
-  loading: boolean
-  nodes: FsNode[]
-  error?: ApiError
+
+function getMessage(nodes: FsNode[]) {
+  const hasFile = !!nodes.find(node => isFile(node))
+  const hasDirectory = !!nodes.find(node => isDirectory(node))
+
+  // TODO i18n
+  if (nodes.length == 1) {
+    if (hasFile)
+      return <>Êtes-vous certain de vouloir supprimer le fichier <NoWrap> { `« ${nodes[0].name} »` } </NoWrap> ?</>
+    else
+      return <>Êtes-vous certain de vouloir supprimer le dossier <NoWrap> { `« ${nodes[0].name} »` } </NoWrap> ?</>
+  } else {
+    if (hasFile && !hasDirectory)
+      return `Êtes-vous certain de vouloir supprimer ces ${nodes.length} fichiers ?`
+    else if (!hasFile && hasDirectory)
+      return `Êtes-vous certain de vouloir supprimer ces ${nodes.length} dossiers ?`
+    else
+      return `Êtes-vous certain de vouloir supprimer ces ${nodes.length} éléments ?`
+  }
 }
 
-interface State {
-  deleteContent: boolean
-}
 
+function DeletionPopup() {
 
-class DeletionPopup extends React.Component<Props, State> {
+  const [deleteContent, setDeleteContent] = React.useState(false)
 
-  constructor(props: Props) {
-    super(props)
-    this.state = { deleteContent: false }
-  }
+  const { isPopupOpen, hidePopup, target } = usePopups()
+  const { deleteNodes, loading, error } = useNodeDeletion()
 
-  onClose() {
-    this.props.onClose()
-  }
+  const nodes = target || []
+  const hasDirectory = !!nodes.find(node => isDirectory(node))
 
-  onDeleteNode() {
-    this.props.onDelete(this.state.deleteContent)
-  }
-
-  onToggleDeleteContent(deleteContent: boolean) {
-    this.setState({ deleteContent })
-  }
-
-  getMessage() {
-    const { nodes } = this.props
-
-    const hasFile = !!nodes.find(node => isFile(node))
-    const hasDirectory = !!nodes.find(node => isDirectory(node))
-
-    // TODO i18n
-    if (nodes.length == 1) {
-      if (hasFile)
-        return <>Êtes-vous certain de vouloir supprimer le fichier <NoWrap> { `« ${nodes[0].name} »` } </NoWrap> ?</>
-      else
-        return <>Êtes-vous certain de vouloir supprimer le dossier <NoWrap> { `« ${nodes[0].name} »` } </NoWrap> ?</>
-    } else {
-      if (hasFile && !hasDirectory)
-        return `Êtes-vous certain de vouloir supprimer ces ${nodes.length} fichiers ?`
-      else if (!hasFile && hasDirectory)
-        return `Êtes-vous certain de vouloir supprimer ces ${nodes.length} dossiers ?`
-      else
-        return `Êtes-vous certain de vouloir supprimer ces ${nodes.length} éléments ?`
-    }
-  }
-
-  render() {
-    const { open, loading, nodes, error } = this.props
-    const { deleteContent } = this.state
-
-    const hasDirectory = !!nodes.find(node => isDirectory(node))
-
-    return (
-      <Popup
-        title="Confirmation de suppression"
-        action="Supprimer"
-        cancel="Annuler"
-        error={ error }
-        loading={ loading }
-        open={ open }
-        onClose={ () => this.onClose() }
-        onValidate={ () => this.onDeleteNode() }
-      >
-        <DialogContentText>
-          { this.getMessage() }
-        </DialogContentText>
-        { hasDirectory &&
-          <FormControlLabel
-            disabled={ loading }
-            control={<Checkbox checked={ deleteContent } color="primary" onChange={ (value) => this.onToggleDeleteContent(value.target.checked) } />}
-            label={<DialogContentText>Également supprimé le contenu des dossiers ?</DialogContentText>}
-          />
-        }
-      </Popup>
-    )
-  }
-
-}
-
-const mappedProps =
-  connect((state, dispatch) => {
-    const nodes = state.popups.target
-
-    return {
-      open: state.popups.open === popupType,
-      nodes: nodes,
-      loading: state.nodeDeletion.loading,
-      error: state.nodeDeletion.error,
-      onClose: () => {
-        dispatch(hidePopup())
-      },
-      onDelete: (deleteContent: boolean) => {
-        dispatch(deleteNodes({ nodes, deleteContent })).then((state) => {
-          if(!state.nodeDeletion.error)
-            dispatch(hidePopup())
-        })
+  return (
+    <Popup
+      title="Confirmation de suppression"
+      action="Supprimer"
+      cancel="Annuler"
+      error={error}
+      loading={loading}
+      open={isPopupOpen(popupType)}
+      onClose={hidePopup}
+      onValidate={() => deleteNodes(nodes, deleteContent)}
+    >
+      <DialogContentText>
+        { getMessage(nodes) }
+      </DialogContentText>
+      { hasDirectory &&
+        <FormControlLabel
+          disabled={ loading }
+          control={<Checkbox checked={ deleteContent } color="primary" onChange={(e) => setDeleteContent(e.target.checked)} />}
+          label={<DialogContentText>Également supprimer le contenu des dossiers ?</DialogContentText>}
+        />
       }
-    }
-  })
+    </Popup>
+  )
+}
 
-export default withStore(withMobileDialog<Props> ({ breakpoint: 'xs' })(DeletionPopup), mappedProps)
+export default DeletionPopup

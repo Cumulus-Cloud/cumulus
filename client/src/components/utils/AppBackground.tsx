@@ -25,27 +25,25 @@ const styles = (_: Theme) => createStyles({
   }
 })
 
-interface PropsTest {
+
+interface Props {
   children: JSX.Element
 }
 
-type PropsWithStyle = PropsTest & WithStyles<typeof styles>
+type PropsWithStyle = Props & WithStyles<typeof styles>
 
-interface State {}
 
-class Test extends React.Component<PropsWithStyle, State> {
+function AppBackground(props: PropsWithStyle) {
 
-  render() {
-    const { children, classes } = this.props
+  const { children, classes } = props
 
-    return (
-      <div className={classes.background} >
-        <div className={classes.backgroundFilter} />
-        {children}
-      </div>
-    )
-  }
+  return (
+    <div className={classes.background} >
+      <div className={classes.backgroundFilter} />
+      {children}
+    </div>
+  )
 
 }
 
-export default withStyles(styles)(withRoot(Test))
+export default withStyles(styles)(withRoot(AppBackground))

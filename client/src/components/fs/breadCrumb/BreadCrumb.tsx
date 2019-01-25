@@ -13,15 +13,9 @@ import MenuItem from '@material-ui/core/MenuItem'
 import Tooltip from '@material-ui/core/Tooltip'
 import classnames from 'classnames'
 
-import { connect, withStore } from 'store/store'
-import { getDirectory } from 'store/actions/directory'
-import { moveNodes } from 'store/actions/nodeDisplacement'
-
 import { WithDragAndDrop, dragAndDropPropsOpt } from 'components/utils/DragAndDrop'
 
 import { FsNode } from 'models/FsNode'
-
-import Routes from 'services/routes'
 
 import styles from './styles'
 
@@ -248,7 +242,6 @@ class FullSizeBreadCrumb extends React.Component<InnerProps> {
 
   render() {
     const { path, selected, classes, DropZone } = this.props
-    console.log(selected)
 
     const homeButton = (
       <Button className={ classnames(classes.homeButton, classes.button) } onClick={ () => this.onChangePath('/') } >
@@ -296,18 +289,4 @@ class FullSizeBreadCrumb extends React.Component<InnerProps> {
 
 const FullSizeBreadCrumbWithStyle = withStyles(styles)(FullSizeBreadCrumb)
 
-export const BreadCrumb2 = withStyles(styles)(BreadCrumb)
-
-const mappedProps =
-  connect(({ fs, router }, dispatch) => ({
-    path: (fs.current && fs.current.path) || '/',
-    onChangePath: (path: string) => {
-      router.push(`${Routes.app.fs}${path}${router.location.search}`) // TODO in an action
-      dispatch(getDirectory(path))
-    },
-    onMoveNodes: (nodes: FsNode[], destination: string) => {
-      dispatch(moveNodes({ nodes, destination }))
-    }
-  }))
-
-export default withStore(withStyles(styles)(BreadCrumb), mappedProps)
+export default withStyles(styles)(BreadCrumb)

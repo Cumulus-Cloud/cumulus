@@ -37,4 +37,4 @@ class EventViewer extends React.Component<Props> {
   }
 }
 
-export default withMobileDialog<Props> ({ breakpoint: 'xs' })(EventViewer)
+export default EventViewer

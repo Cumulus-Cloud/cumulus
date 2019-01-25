@@ -1,9 +1,6 @@
 import  React from 'react'
-import withMobileDialog from '@material-ui/core/withMobileDialog'
+import classnames = require('classnames')
 
-import { connect, withStore } from 'store/store'
-import { createDirectory } from 'store/actions/directoryCreation'
-import { hidePopup } from 'store/actions/popups'
 import { FsPopupType } from 'store/states/popupsState'
 import Table from 'components/utils/Table/InfiniteScrollTable'
 
@@ -11,11 +8,11 @@ import { ApiError } from 'models/ApiError'
 import { Directory, FsNode } from 'models/FsNode'
 
 import Popup from 'components/utils/Popup'
-import { BreadCrumb2 } from 'components/fs/breadCrumb/BreadCrumb';
+import BreadCrumb from 'components/fs/breadCrumb/BreadCrumb';
 import { Typography, CircularProgress, WithStyles, createStyles, Theme, withStyles } from '@material-ui/core';
 import Api from 'services/api'
 import NodeIcon from 'components/fs/NodeIcon'
-import classnames = require('classnames');
+import { usePopups, useNodeDisplacement, useFilesystem } from 'store/storeHooks';
 
 
 const styles = (theme: Theme) => createStyles({
@@ -238,7 +235,7 @@ class Test extends React.Component<Props2WithStyle, State2> {
 
     const tableHeader = (
       <span style={{ paddingLeft: '7px', display: 'flex', flex: 1 }} >
-        <BreadCrumb2 path={ current.path } selected={ selected.path } onChangePath={ this.loadDirectory } />
+        <BreadCrumb path={ current.path } selected={ selected.path } onChangePath={ this.loadDirectory } />
       </span>
     )
 
@@ -266,81 +263,31 @@ const Test2 = withStyles(styles)(Test)
 
 const popupType: FsPopupType = 'NODE_MOVE'
 
-interface Props {
-  onClose: () => void
-  //onCreateDirectory: (name: string) => void
-  open: boolean
-  fullScreen?: boolean
-  loading: boolean
-  current?: Directory
-  nodes: FsNode[]
-  contentSize: number
-  error?: ApiError
-}
 
-interface State {
-  selected?: Directory
-}
+function CreationPopup() {
 
+  const [directory, setDirectory] = React.useState<Directory | undefined>(undefined)
 
-class CreationPopup extends React.Component<Props, State> {
+  const { isPopupOpen, hidePopup, target } = usePopups()
+  const { current } = useFilesystem()
+  const { moveNodes, loading, error } = useNodeDisplacement()
 
-  constructor(props: Props) {
-    super(props)
-    this.state = { selected: props.current }
-  }
+  return (
+    <Popup
+      title="Déplacer la sélection"
+      action={`Déplacer vers ${directory && directory.name ? directory.name : 'dossier racine'}`}
+      cancel="Annuler"
+      error={error && error.errors['path'] && error.errors['path'][0]}
+      loading={loading}
+      open={isPopupOpen(popupType)}
+      onClose={hidePopup}
+      onValidate={() => moveNodes(target, directory ? directory.path : '/')}
+    >
+      { current && <Test2 current={current} onChange={setDirectory} /> }
+    </Popup>
+  )
 
-  selectDirectory = (directory: Directory) => {
-    this.setState({ selected: directory })
-  }
-
-  onClose = () => {
-    this.props.onClose()
-  }
-
-  render() {
-    const { open, error, loading, current } = this.props
-    const { selected } = this.state
-
-    return (
-      <Popup
-        title="Déplacer la sélection"
-        action={`Déplacer vers ${selected && selected.name ? selected.name : 'dossier racine'}`}
-        cancel="Annuler"
-        error={ error && error.errors['path'] && error.errors['path'][0] }
-        loading={ loading }
-        open={ open }
-        onClose={ this.onClose }
-        onValidate={ () => {}}
-      >
-        { current && <Test2 current={current} onChange={ this.selectDirectory } /> }
-      </Popup>
-    )
-  }
 
 }
 
-
-const mappedProps =
-  connect((state, dispatch) => {
-
-    return {
-      open: state.popups.open === popupType,
-      current: state.fs.current,
-      nodes: state.fs.content || [],
-      contentSize: state.fs.contentSize || 0,
-      loading: state.directoryCreation.loading,
-      error: state.directoryCreation.error,
-      onClose: () => {
-        dispatch(hidePopup())
-      },
-      onCreateDirectory: (path: string) => {
-        dispatch(createDirectory(path)).then((state) => {
-          if(!state.directoryCreation.error)
-            dispatch(hidePopup())
-        })
-      }
-    }
-  })
-
-export default withStore(withMobileDialog<Props> ({ breakpoint: 'xs' })(CreationPopup), mappedProps)
+export default CreationPopup

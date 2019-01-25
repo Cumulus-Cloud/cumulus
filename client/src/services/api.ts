@@ -65,13 +65,17 @@ export const ApiUtils = {
           return response.data
       })
       .catch((e) => {
-        console.error(e)
-        throw {
-          key: 'network.error',
-          message: 'La requête a échoué',
-          errors: {},
-          args: []
-        } // The request failed, throw an error
+        if('errors' in e)
+          throw e // Our server sent back an error
+        else {
+          console.error(e)
+          throw {
+            key: 'network.error',
+            message: 'La requête a échoué',
+            errors: {},
+            args: []
+          } // The request failed, throw an error
+        }
       })
   },
 
@@ -89,13 +93,17 @@ export const ApiUtils = {
           return response.data
       })
       .catch((e) => {
-        console.error(e)
-        throw {
-          key: 'network.error',
-          message: 'La requête a échoué',
-          errors: {},
-          args: []
-        } // The request failed, throw an error
+        if('errors' in e)
+          throw e // Our server sent back an error
+        else {
+          console.error(e)
+          throw {
+            key: 'network.error',
+            message: 'La requête a échoué',
+            errors: {},
+            args: []
+          } // The request failed, throw an error
+        }
       })
   }
 

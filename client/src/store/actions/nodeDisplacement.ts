@@ -7,6 +7,7 @@ import { FsNode, isFile, isDirectory } from 'models/FsNode'
 import { getDirectory } from 'store/actions/directory'
 import { showNotification } from 'store/actions/notifications'
 import { createAction } from 'store/actions'
+import { hidePopup } from './popups';
 
 
 export const moveNodes = createAction<{ nodes: FsNode[], destination: string }>(({ nodes, destination }, setState, getState, dispatch) => {
@@ -40,6 +41,8 @@ export const moveNodes = createAction<{ nodes: FsNode[], destination: string }>(
       }
 
       setState({ nodeDisplacement: { loading: false } })
+
+      dispatch(hidePopup())
       dispatch(getDirectory(currentPath)) // Reload the current path
     })
     .catch((e: ApiError) => {
