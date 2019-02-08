@@ -1,4 +1,4 @@
-import React, { ComponentType } from 'react'
+import React, { ComponentType, useEffect } from 'react'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import Typography from '@material-ui/core/Typography'
 import InfoIcon from '@material-ui/icons/Info'
@@ -23,14 +23,12 @@ import UserBadge from 'components/fs/fileList/UserBadge'
 import Table from 'components/utils/Table/InfiniteScrollTable'
 import Content, { ContentError } from 'components/utils/layout/Content'
 
-import { ApiError } from 'models/ApiError'
-import { User } from 'models/User'
 import { Event, EventType } from 'models/Event'
 
-import { connect, withStore } from 'store/store'
-import { getEvents } from 'store/actions/event'
+import { useEvents, useRouting } from 'store/store'
 
 import styles from './styles'
+
 
 const EventTitle: Record<EventType, string> = {
   'NODE_CREATE': 'Création',
@@ -80,56 +78,38 @@ function eventToText(e: Event) {
 }
 
 
-interface Props {
-  /** Current user */
-  user: User,
-  /** Loaded events, from the store. */
-  content: Event[]
-  /** Maximum number of contained node. */
-  hasMore: boolean
-  /** If the store is loading the data. */
-  loading: boolean
-  /** Loading error */
-  error?: ApiError
+type PropsWithStyle = WithStyles<typeof styles>
 
-  onLoadMoreContent: (offset: number) => void
+type SelectedMenu = { eventId: string, anchor: HTMLElement }
 
-  onGoBack: () => void
-}
 
-type PropsWithStyle = Props & WithStyles<typeof styles>
+function EventList(props: PropsWithStyle) {
 
-interface State {
-  /** Select menu on a specified event. */
-  selectedMenu?: { eventId: string, anchor: HTMLElement }
-}
+  const { events: maybeEvents, hasMore, error, loading, getEvents } = useEvents()
+  const { router } = useRouting()
 
-class EventList extends React.Component<PropsWithStyle, State> {
+  const [selectedMenu, setSelectedMenu] = React.useState<SelectedMenu | undefined>(undefined)
 
-  constructor(props: PropsWithStyle) {
-    super(props)
-    this.state = {}
-    props.onLoadMoreContent(0)
+  const { classes } = props
+
+  useEffect(() => {
+    getEvents()
+  }, [])
+
+  function goBack() {
+    router.goBack()
   }
 
-  goBack = () => {
-    this.props.onGoBack()
-  }
-
-  onToggleMenu<T>(event: Event, reactEvent: React.SyntheticEvent<T>) {
-    const { selectedMenu } = this.state
-
+  function toggleMenu<T>(event: Event, reactEvent: React.SyntheticEvent<T>) {
     reactEvent.stopPropagation()
 
     if(selectedMenu && selectedMenu.eventId === event.id)
-      this.setState({ selectedMenu: undefined })
+      setSelectedMenu(undefined)
     else
-      this.setState({ selectedMenu: { eventId: event.id, anchor: reactEvent.target as any } })
+      setSelectedMenu({ eventId: event.id, anchor: reactEvent.target as any })
   }
 
-  renderLoadingRow = (style: React.CSSProperties): React.ReactElement<{}> => {
-    const { classes } = this.props
-
+  function renderLoadingRow(style: React.CSSProperties): React.ReactElement<{}> {
     return (
       <div
         style={style}
@@ -145,10 +125,7 @@ class EventList extends React.Component<PropsWithStyle, State> {
     )
   }
 
-  renderElementRow = (event: Event, style: React.CSSProperties, isScrolling: boolean): JSX.Element => {
-    const { classes } = this.props
-    const { selectedMenu } = this.state
-
+  function renderElementRow(event: Event, style: React.CSSProperties, isScrolling: boolean): JSX.Element {
     const now = new Date()
 
     const Icon =
@@ -156,7 +133,7 @@ class EventList extends React.Component<PropsWithStyle, State> {
 
     const menu =
       <div>
-        <IconButton onClick={ (e) => this.onToggleMenu(event, e) } >
+        <IconButton onClick={ (e) => toggleMenu(event, e) } >
           <MoreVertIcon />
         </IconButton>
         {
@@ -165,11 +142,11 @@ class EventList extends React.Component<PropsWithStyle, State> {
             id="simple-menu"
             anchorEl={ selectedMenu ? selectedMenu.anchor : undefined }
             open={ !!selectedMenu && (selectedMenu.eventId === event.id) }
-            onClose={ (e) => this.onToggleMenu(event, e) }
+            onClose={ (e) => toggleMenu(event, e) }
           >
-            <MenuItem onClick={ (e) => { this.onToggleMenu(event, e) } } >Détails</MenuItem>
+            <MenuItem onClick={ (e) => { toggleMenu(event, e) } } >Détails</MenuItem>
             <MenuItem>Annuler</MenuItem>
-            <MenuItem onClick={ (e) => { this.onToggleMenu(event, e) }} >Supprimer</MenuItem>
+            <MenuItem onClick={ (e) => { toggleMenu(event, e) }} >Supprimer</MenuItem>
           </Menu>
         }
       </div>
@@ -194,99 +171,73 @@ class EventList extends React.Component<PropsWithStyle, State> {
     )
   }
 
-  render() {
-    const { user, content, hasMore, loading, error, classes } = this.props
+  const events = maybeEvents || []
+  const showLoading = loading && events.length === 0
 
-    const events = content ? content : []
-    const showLoading = loading && events.length === 0
+  const errorContent = (
+    !showLoading && error &&
+    <ContentError
+      icon={ <WarningIcon /> }
+      text={ `Une erreur est survenue au chargement des évènements : ${error.message}` }
+    />
+  )
 
-    const errorContent = (
-      !showLoading && error &&
-      <ContentError
-        icon={ <WarningIcon /> }
-        text={ `Une erreur est survenue au chargement des évènements : ${error.message}` }
-      />
-    )
+  const tableHeader = (
+    <>
+      <Typography variant="caption" noWrap className={classes.contentType} >Type</Typography>
+      <Typography variant="caption" noWrap className={classes.contentDescription} >Description</Typography>
+      <Typography variant="caption" className={classes.contentCreation} >Date</Typography>
+    </>
+  )
 
-    const tableHeader = (
-      <>
-        <Typography variant="caption" noWrap className={classes.contentType} >Type</Typography>
-        <Typography variant="caption" noWrap className={classes.contentDescription} >Description</Typography>
-        <Typography variant="caption" className={classes.contentCreation} >Date</Typography>
-      </>
-    )
+  const table = (
+    !showLoading && !error &&
+    <>
+      {
+        events.length == 0 ? (
+          <ContentError
+            icon={<InfoIcon />}
+            text={'Aucune action n\'a été effectuée'}
+          />
+        ) : (
+          <Table<Event>
+            elements={events}
+            elementsSize={events.length + (hasMore ? 1 : 0)}
+            rowHeight={45}
+            header={tableHeader}
+            renderRow={renderElementRow}
+            renderLoadingRow={renderLoadingRow}
+            elementKey={ (node) => node.id }
+            onLoadMoreElements={getEvents}
+            loading={loading}
+          />
+        )
+      }
+    </>
+  )
 
-    const table = (
-      !showLoading && !error &&
-      <>
-        {
-          events.length == 0 ? (
-            <ContentError
-              icon={ <InfoIcon /> }
-              text={ 'Aucune action n\'a été effectuée' }
-            />
-          ) : (
-            <Table<Event>
-              elements={ events }
-              elementsSize={ events.length + (hasMore ? 1 : 0) }
-              rowHeight={ 45 }
-              header={ tableHeader }
-              renderRow={ this.renderElementRow }
-              renderLoadingRow={ this.renderLoadingRow }
-              elementKey={ (node) => node.id }
-              onLoadMoreElements={ (offset) => this.props.onLoadMoreContent(offset) }
-              loading={ loading }
-            />
-          )
-        }
-      </>
-    )
+  const header = (
+    <>
+      <div className={classes.header}>
+        <Button className={classes.button} onClick={goBack} >
+          <ArrowBackIcon className={classes.icon} />
+          <span>Revenir aux fichiers</span>
+        </Button>
+      </div>
+      <UserBadge />
+    </>
+  )
 
-    const header = (
-      <>
-        <div className={ classes.header }>
-          <Button className={ classes.button } onClick={() => this.goBack()} >
-            <ArrowBackIcon className={ classes.icon } />
-            <span>Revenir aux fichiers</span>
-          </Button>
-        </div>
-        <UserBadge user={ user } />
-      </>
-    )
-
-    return (
-      <Content
-        header={ header }
-        error={ errorContent }
-        content={ table }
-        loading={ showLoading }
-      />
-    )
-
-  }
+  return (
+    <Content
+      header={ header }
+      error={ errorContent }
+      content={ table }
+      loading={ showLoading }
+    />
+  )
 
 }
 
-const mappedProps =
-  connect(({ events, auth, router }, dispatch) => {
-    const { user } = auth
 
-    if(!user) // Should not happen
-      throw new Error('Event list accessed without authentication')
-
-    return {
-      user: auth.user,
-      loading: events.loading,
-      content: events.events || [],
-      hasMore: events.hasMore,
-      error: events.error,
-      onLoadMoreContent: () => {
-        dispatch(getEvents())
-      },
-      onGoBack: () => {
-        router.goBack()
-      }
-    }
-  })
-
-export default withStore(withStyles(styles)(EventList), mappedProps)
+export default withStyles(styles)(EventList)

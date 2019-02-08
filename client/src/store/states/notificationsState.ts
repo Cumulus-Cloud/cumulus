@@ -1,9 +1,11 @@
 
+type NotificationMessage = {
+  id: string,
+  message: string
+}
+
 type NotificationsState = {
-  messages: {
-    id: string,
-    message: string
-  }[]
+  messages: NotificationMessage[]
 }
 
 export const initialState: () => NotificationsState =

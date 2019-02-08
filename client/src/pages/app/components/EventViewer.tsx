@@ -1,5 +1,4 @@
 import  React from 'react'
-import withMobileDialog from '@material-ui/core/withMobileDialog'
 
 import Layout from 'components/utils/layout/Layout'
 import EventList from 'components/fs/eventList/EventList'
@@ -37,4 +36,4 @@ class EventViewer extends React.Component<Props> {
   }
 }
 
-export default withMobileDialog<Props> ({ breakpoint: 'xs' })(EventViewer)
+export default EventViewer

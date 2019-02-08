@@ -10,7 +10,7 @@ import AppPage from 'pages/app/AppPage'
 import FailurePage from 'pages/app/FailurePage'
 import LoginPage from 'pages/login/LoginPage'
 
-import { initialState, Store } from 'store/store'
+import { initialState, Provider } from 'store/store'
 
 
 const loader = (
@@ -21,7 +21,7 @@ const loader = (
 
 ReactDOM.render(
   <Router history={initialState.router}>
-    <Store>
+    <Provider>
       <AppBackground>
         {
           error ?
@@ -43,7 +43,7 @@ ReactDOM.render(
           />
         }
       </AppBackground>
-    </Store>
+    </Provider>
   </Router>,
   document.querySelector('#app')
 )

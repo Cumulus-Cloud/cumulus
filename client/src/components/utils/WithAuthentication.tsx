@@ -1,7 +1,6 @@
 import  React from 'react'
 
-import { withStore } from 'store/store'
-import { testUserAuth } from 'store/actions/authentication'
+import { useAuthentication } from 'store/store'
 
 
 interface Props {
@@ -10,33 +9,28 @@ interface Props {
   loader: JSX.Element
 }
 
-interface ContextProps {
-  onLoad: () => void
-  connected: boolean
-  loading: boolean
+function WithAuthentication(props: Props) {
+
+  const [initialized, setInitialized] = React.useState(false)
+
+  const { loading, connected, testUserAuth } = useAuthentication()
+
+  const { authenticated, fallback, loader } = props
+
+  React.useEffect(() => {
+    if (!initialized) {
+      testUserAuth()
+      setInitialized(true)
+    }
+  })
+
+  if(connected)
+    return authenticated
+  else if(loading)
+    return loader
+  else
+    return fallback
+
 }
 
-class WithAuthentication extends React.Component<Props & ContextProps, {}> {
-
-  componentDidMount() {
-    this.props.onLoad()
-  }
-
-  render() {
-    const { connected, loading, authenticated, fallback, loader } = this.props
-
-    if(connected)
-      return authenticated
-    else if(loading)
-      return loader
-    else
-      return fallback
-  }
-
-}
-
-export default withStore(WithAuthentication, (state, dispatch) => ({
-  onLoad: () => { if(!state.auth.connected) dispatch(testUserAuth()) },
-  connected: state.auth.connected,
-  loading: state.auth.loading
-}))
+export default WithAuthentication

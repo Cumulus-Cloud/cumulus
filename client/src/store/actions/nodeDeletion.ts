@@ -1,15 +1,20 @@
-import { ApiList } from 'models/utils'
 import Api from 'services/api'
+
+import { ContextState } from 'utils/store'
 
 import { ApiError } from 'models/ApiError'
 import { FsNode } from 'models/FsNode'
+import { ApiList } from 'models/utils'
 
 import { getDirectory } from 'store/actions/directory'
 import { showNotification } from 'store/actions/notifications'
-import { createAction } from 'store/actions'
+import { hidePopup } from 'store/actions/popups'
+import { State } from 'store/store'
 
 
-export const deleteNodes = createAction<{ nodes: FsNode[], deleteContent: boolean }>(({ nodes, deleteContent }, setState, getState, dispatch) => {
+export const deleteNodes = (ctx: ContextState<State>) => (nodes: FsNode[], deleteContent: boolean) => {
+  const { getState, setState } = ctx
+
   setState({
     nodeDeletion: {
       loading: true
@@ -17,22 +22,22 @@ export const deleteNodes = createAction<{ nodes: FsNode[], deleteContent: boolea
   })
 
   return Api.fs.deleteNodes(nodes.map(node => node.id), deleteContent)
-    .then((result: ApiError | ApiList<FsNode>) => {
-      if ('errors' in result) {
-        setState({
-          nodeDeletion: {
-            loading: false,
-            error: result
-          }
-        })
-      } else {
-        const state = getState()
-        const currentPath = state.fs.current ? state.fs.current.path : '/'
+    .then((_: ApiList<FsNode>) => {
+      const state = getState()
+      const currentPath = state.fs.current ? state.fs.current.path : '/'
 
-        dispatch(showNotification(`Suppression effectuée avec succès`))
+      showNotification(ctx)(`Suppression effectuée avec succès`)
+      setState({ nodeDeletion: { loading: false } })
 
-        setState({ nodeDeletion: { loading: false } })
-        dispatch(getDirectory(currentPath)) // Reload the current path
-      }
+      hidePopup(ctx)()
+      getDirectory(ctx)(currentPath) // Reload the current path
     })
-})
+    .catch((e: ApiError) => {
+      setState({
+        nodeDeletion: {
+          loading: false,
+          error: e
+        }
+      })
+    })
+}

@@ -1,13 +1,18 @@
 import Api from 'services/api'
 
+import { ContextState } from 'utils/store'
+
 import { ApiError } from 'models/ApiError'
 import { Directory, DirectoryWithContent, SearchResult } from 'models/FsNode'
 
-import { createAction, createPureAction } from 'store/actions'
 import { Search } from 'store/states/fsState'
+import { State } from 'store/store'
 
 
-export const getDirectory = createAction<string>((path, setState, _, dispatch) => {
+export const getDirectory = (ctx: ContextState<State>) => (path: string) => {
+
+  const { setState } = ctx
+
   // Prepare the loading
   setState(state => ({
     fs: {
@@ -20,19 +25,8 @@ export const getDirectory = createAction<string>((path, setState, _, dispatch) =
     }
   }))
 
-  return Api.fs.getDirectory(path).then((result: ApiError | Directory) => {
-    if ('errors' in result) {
-      setState({
-        fs: {
-          loadingCurrent: false,
-          loadingContent: false,
-          selectedContent: { type: 'NONE' },
-          error: result
-        }
-      })
-
-      return Promise.resolve()
-    } else {
+  Api.fs.getDirectory(path)
+    .then((result: Directory) => {
       setState({
         fs: {
           loadingCurrent: false,
@@ -45,13 +39,22 @@ export const getDirectory = createAction<string>((path, setState, _, dispatch) =
         }
       })
 
-      return dispatch(getDirectoryContent()).then(() => { })
-    }
-  })
+      getDirectoryContent(ctx)()
+    })
+    .catch((e: ApiError) => {
+        setState({
+          fs: {
+            loadingCurrent: false,
+            loadingContent: false,
+            selectedContent: { type: 'NONE' },
+            error: e
+          }
+        })
+    })
 
-})
+}
 
-export const getDirectoryContent = createPureAction((setState, getState) => {
+export const getDirectoryContent = ({ setState, getState }: ContextState<State>) => () => {
   // Prepare the loading
   setState(state => ({
     fs: {
@@ -76,16 +79,8 @@ export const getDirectoryContent = createPureAction((setState, getState) => {
     })).then(() => {})
 
   if(search) {
-    return Api.fs.search(current.path, search, offset).then((result: ApiError | SearchResult) => {
-      if ('errors' in result) {
-        setState(state => ({
-          fs: {
-            ...state.fs,
-            loadingContent: false,
-            error: result
-          }
-        }))
-      } else {
+    return Api.fs.search(current.path, search, offset)
+      .then((result: SearchResult) => {
         setState(state => ({
           fs: {
             ...state.fs,
@@ -95,37 +90,43 @@ export const getDirectoryContent = createPureAction((setState, getState) => {
             error: undefined
           }
         }))
-      }
-
-    })
+      })
+      .catch((e: ApiError) => {
+        setState(state => ({
+          fs: {
+            ...state.fs,
+            loadingContent: false,
+            error: e
+          }
+        }))
+      })
   } else {
-    return Api.fs.getContent(current.id, offset).then((result: ApiError | DirectoryWithContent) => {
-      if ('errors' in result) {
+    return Api.fs.getContent(current.id, undefined, offset)
+      .then((result: DirectoryWithContent) => {
+          setState(state => ({
+            fs: {
+              ...state.fs,
+              loadingContent: false,
+              content: (state.fs.content || []).concat(result.content.items),
+              contentSize: result.totalContentLength,
+              error: undefined
+            }
+          }))
+      })
+      .catch((e: ApiError) => {
         setState(state => ({
           fs: {
             ...state.fs,
             loadingContent: false,
-            error: result
+            error: e
           }
         }))
-      } else {
-        setState(state => ({
-          fs: {
-            ...state.fs,
-            loadingContent: false,
-            content: (state.fs.content || []).concat(result.content.items),
-            contentSize: result.totalContentLength,
-            error: undefined
-          }
-        }))
-      }
-  
-    })
+      })
   }
 
-})
+}
 
-export const selectNode = createAction<string>((nodeId, setState) => {
+export const selectNode = ({ setState }: ContextState<State>) => (nodeId: string) => {
   setState(state => {
     switch (state.fs.selectedContent.type) {
       case 'ALL':
@@ -152,9 +153,9 @@ export const selectNode = createAction<string>((nodeId, setState) => {
         }
     }
   })
-})
+}
 
-export const selectAllNodes = createPureAction((setState) => {
+export const selectAllNodes = ({ setState }: ContextState<State>) => () => {
   setState(state => ({
     fs: {
       ...state.fs,
@@ -163,9 +164,9 @@ export const selectAllNodes = createPureAction((setState) => {
       }
     }
   }))
-})
+}
 
-export const deselectNode = createAction<string>((nodeId, setState) => {
+export const deselectNode = ({ setState }: ContextState<State>) => (nodeId: string) => {
   setState(state => {
     switch (state.fs.selectedContent.type) {
       case 'ALL': {
@@ -197,9 +198,9 @@ export const deselectNode = createAction<string>((nodeId, setState) => {
         }
     }
   })
-})
+}
 
-export const deselectAllNodes = createPureAction((setState) => {
+export const deselectAllNodes = ({ setState }: ContextState<State>) => () => {
   setState(state => ({
     fs: {
       ...state.fs,
@@ -208,11 +209,13 @@ export const deselectAllNodes = createPureAction((setState) => {
       }
     }
   }))
-})
+}
 
-export const search = createAction<Search | undefined>((search, setState, _, dispatch) => {
+export const search = (ctx: ContextState<State>) => (search: Search | undefined) => {
+  const { setState } = ctx
+
   // Update the search state
-  return setState(state => ({
+  setState(state => ({
     fs: {
       ...state.fs,
       content: undefined, // Needed to force a full reload of the search
@@ -220,7 +223,7 @@ export const search = createAction<Search | undefined>((search, setState, _, dis
     }
   })).then(() => {
     // Restart the get directory content action, which will take into account the search params we provided
-    return dispatch(getDirectoryContent()).then(() => {})
+    getDirectoryContent(ctx)
   })
 
-})
+}

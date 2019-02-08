@@ -95,7 +95,8 @@ class FsNodeService(
   def findContent(
     id: UUID,
     pagination: QueryPagination,
-    ordering: FsNodeOrdering
+    ordering: FsNodeOrdering,
+    nodeType: Option[FsNodeType] = None
   )(implicit user: User): Future[Either[AppError, DirectoryWithContent]] = {
 
     for {
@@ -103,10 +104,11 @@ class FsNodeService(
       directory <- getDirectory(id)
 
       // Get the paginated content
-      content <- QueryE.lift(fsNodeStore.findContainedByPathAndUser(directory.path, user, pagination, ordering))
+      filter = FsNodeFilter("", directory.path, Some(false), nodeType, None, user)
+      content <- QueryE.lift(fsNodeStore.findAll(filter, ordering, pagination))
 
       // Get the total number of entries
-      total <- QueryE.lift(fsNodeStore.countContainedByPathAndUser(directory.path, user))
+      total <- QueryE.lift(fsNodeStore.count(filter))
 
     } yield DirectoryWithContent(directory, content, total)
 

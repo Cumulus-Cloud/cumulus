@@ -1,12 +1,15 @@
 import Api from 'services/api'
 
+import { ContextState } from 'utils/store'
+
+import { State } from 'store/store'
+
 import { ApiList } from 'models/utils'
 import { ApiError } from 'models/ApiError'
 import { Event } from 'models/Event'
 
-import { createPureAction } from 'store/actions'
 
-export const getEvents = createPureAction((setState, getState) => {
+export const getEvents = ({ setState, getState }: ContextState<State>) => () => {
   // Prepare the loading
   setState(state => ({
     events: {
@@ -19,16 +22,8 @@ export const getEvents = createPureAction((setState, getState) => {
   const state = getState()
   const offset = state.events.events ? state.events.events.length : 0
 
-  return Api.user.events.all(offset).then((result: ApiError | ApiList<Event>) => {
-    if ('errors' in result) {
-      setState(state => ({
-        events: {
-          ...state.events,
-          loading: false,
-          error: result
-        }
-      }))
-    } else {
+  return Api.user.events.all(offset)
+    .then((result: ApiList<Event>) => {
       setState(state => ({
         events: {
           ...state.events,
@@ -38,7 +33,15 @@ export const getEvents = createPureAction((setState, getState) => {
           error: undefined
         }
       }))
-    }
-  })
+    })
+    .catch((e: ApiError) => {
+      setState(state => ({
+        events: {
+          ...state.events,
+          loading: false,
+          error: e
+        }
+      }))
+    })
 
-})
+}

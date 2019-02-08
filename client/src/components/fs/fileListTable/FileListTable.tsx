@@ -10,8 +10,8 @@ import Checkbox from '@material-ui/core/Checkbox'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import classnames from 'classnames'
 
-import { withStore, connect } from 'store/store'
-import { FsNodeSelection, selectedNodes, isNodeSelected } from 'store/states/fsState'
+import { selectedNodes, isNodeSelected } from 'store/states/fsState'
+import { useFilesystem, usePopups, useRouting, useNodeDisplacement } from 'store/store'
 
 import { WithDragAndDrop } from 'components/utils/DragAndDrop'
 import NodeIcon from 'components/fs/NodeIcon'
@@ -19,158 +19,112 @@ import Table from 'components/utils/Table/InfiniteScrollTable'
 
 import { Directory, FsNode, isDirectory } from 'models/FsNode'
 
-import { selectNode, selectAllNodes, deselectNode, deselectAllNodes, getDirectoryContent } from 'store/actions/directory'
-import { showPopup } from 'store/actions/popups'
-
-import Routes from 'services/routes'
-import { moveNodes } from 'store/actions/nodeDisplacement'
-
 import styles from './styles'
 
+
 interface Props {
-  /** When details for a node are requested. */
-  onShowNodeDetail: (node: FsNode) => void
-  /** When a node is deleted. */
-  onDeleteNode: (node: FsNode) => void
-  /** When a directory is selected, to change the viewer current directory. */
-  onNavigateDirectory: (directory: Directory) => void
-  /** When a node is selected. */
-  onSelectedNode: (node: FsNode) => void
-  /** When all node are selected. */
-  onSelectAllNodes: () => void
-  /** When a node is deselected. */
-  onDeselectNode: (node: FsNode) => void
-  /** When all node are deselected. */
-  onDeselectAllNodes: () => void
-  /** On moved nodes */
-  onMoveNodes: (nodes: FsNode[], destination: string) => void,
-  /** When more content needs to be loaded. */
-  onLoadMoreContent: (offset: number) => void
   /** Callback for the parent component. */
   onPathChanged: () => void
-  /** If more content is loading. */
-  loading: boolean
-  /** Current node */
-  current?: Directory
-  /** Content of the loaded current directory. */
-  content: FsNode[]
-  /** Maximum number of contained node. */
-  contentSize: number
-  /** List of selected nodes. */
-  selection: FsNodeSelection
 }
-
 
 type PropsWithStyle = Props & WithStyles<typeof styles> & WithDragAndDrop<FsNode[]>
 
-interface State {
-  /** If the checkboxes should be displayed. By default the checkboxes are hiddens. */
-  showCheckboxes: boolean,
-  /** Select menu on a specified node. */
-  selectedMenu?: { nodeId: string, anchor: HTMLElement }
-}
 
-/**
- * Agnostic node list representation, using a table (or at least looking like a table).
- */
-class FilesListTable extends React.Component<PropsWithStyle, State> {
+function FilesListTable(props: PropsWithStyle) {
 
-  state: State = { showCheckboxes: false, selectedMenu: undefined }
+  const [showCheckboxes, setShowCheckboxes] = React.useState(false)
+  const [selectedMenu, setSelectedMenu] = React.useState<{ nodeId: string, anchor: HTMLElement } | undefined>(undefined)
 
-  onShowNodeDetail(node: FsNode) {
-    this.props.onShowNodeDetail(node)
+  const {
+    current,
+    loadingContent,
+    content,
+    contentSize,
+    selectedContent,
+    selectNode,
+    deselectNode,
+    selectAllNodes,
+    deselectAllNodes,
+    getDirectoryContent
+  } = useFilesystem()
+  const { moveNodes } = useNodeDisplacement()
+  const { showPopup } = usePopups()
+  const { showFs } = useRouting()
+
+  const { classes, Draggable, DropZone } = props
+
+  const showNodeDetail = (node: FsNode) => {
+    showPopup('NODE_DETAIL', [ node ])
   }
 
-  onDeleteNode(node: FsNode) {
-    this.props.onDeleteNode(node)
+  const showDeleteNode = (node: FsNode) => {
+    showPopup('NODE_DELETION', [ node ])
   }
 
-  onNavigateDirectory(directory: Directory) {
-    this.props.onPathChanged()
-    this.props.onNavigateDirectory(directory)
+  const navigateDirectory = (directory: Directory) => {
+    props.onPathChanged()
+    showFs(directory.path)
   }
 
-  isRowLoaded(index: number) {
-    return !!this.props.content[index]
-  }
-
-  onLoadMoreContent() {
-    if(!this.props.loading)
-      this.props.onLoadMoreContent(this.props.content.length)
+  const loadMoreContent = () => {
+    if(!loadingContent)
+      getDirectoryContent()
     return Promise.resolve()
   }
 
-  onSelectNode(node: FsNode) {
-    this.setState({ showCheckboxes: true })
-    this.props.onSelectedNode(node)
+  const onSelectNode = (node: FsNode) => {
+    setShowCheckboxes(true)
+    selectNode(node.id)
   }
 
-  onSelectAllNodes() {
-    this.setState({ showCheckboxes: true })
-    this.props.onSelectAllNodes()
+  const onSelectAllNodes = () => {
+    setShowCheckboxes(true)
+    selectAllNodes()
   }
 
-  onDeselectNode(node: FsNode) {
-    this.setState({ showCheckboxes: true })
-    this.props.onDeselectNode(node)
+  const onDeselectNode = (node: FsNode) => {
+    setShowCheckboxes(true)
+    deselectNode(node.id)
   }
 
-  onDeselectAllNodes() {
-    this.setState({ showCheckboxes: true })
-    this.props.onDeselectAllNodes()
+  const onDeselectAllNodes = () => {
+    setShowCheckboxes(true)
+    deselectAllNodes()
   }
 
-  onClickNode(node: FsNode) {
+  const onClickNode = (node: FsNode) => {
     if(isDirectory(node))
-      this.onNavigateDirectory(node)
+      navigateDirectory(node)
     else
-      this.onShowNodeDetail(node)
+      showNodeDetail(node)
   }
 
-  onToggleAllNodesSelection() {
-    const { selection } = this.props
-
-    switch(selection.type) {
+  const onToggleAllNodesSelection = () => {
+    switch(selectedContent.type) {
       case 'ALL':
-        return this.onDeselectAllNodes()
+        return onDeselectAllNodes()
       case 'NONE':
-        return this.onSelectAllNodes()
+        return onSelectAllNodes()
       case 'SOME':
-        return this.onSelectAllNodes()
+        return onSelectAllNodes()
     }
   }
 
-  selectedNodes() {
-    const { selection, content } = this.props
-
-    return selectedNodes(content, selection)
-  }
-
-  isNodeSelected(node: FsNode) {
-    const { selection } = this.props
-
-    return isNodeSelected(node, selection)
-  }
-
-  onToggleMenu<T>(node: FsNode, event: React.SyntheticEvent<T>) {
-    const { selectedMenu } = this.state
-
+  const toggleMenu = (node: FsNode, event: React.SyntheticEvent<any>) => {
     event.stopPropagation()
 
     if(selectedMenu && selectedMenu.nodeId === node.id)
-      this.setState({ selectedMenu: undefined })
+      setSelectedMenu(undefined)
     else
-      this.setState({ selectedMenu: { nodeId: node.id, anchor: event.target as any } })
+      setSelectedMenu({ nodeId: node.id, anchor: event.target as any })
   }
 
-  onMoveNodes(nodes: FsNode[], destination: FsNode) {
+  const onMoveNodes = (nodes: FsNode[], destination: FsNode) => {
     if(isDirectory(destination))
-      this.props.onMoveNodes(nodes, destination.path)
+      moveNodes(nodes, destination.path)
   }
 
-  renderLoadingRow = (style: React.CSSProperties): React.ReactElement<{}> => {
-    const { classes } = this.props
-
+  const renderLoadingRow = (style: React.CSSProperties): React.ReactElement<{}> => {
     return (
       <div
         style={style}
@@ -186,25 +140,22 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     )
   }
 
-  renderElementRow = (node: FsNode, style: React.CSSProperties, isScrolling: boolean): JSX.Element => {
-    const { classes, Draggable, DropZone } = this.props
-    const { showCheckboxes, selectedMenu } = this.state
-
+  const renderElementRow = (node: FsNode, style: React.CSSProperties, isScrolling: boolean): JSX.Element => {
     const now = new Date()
 
     //const isDragged = dragInfo && dragInfo.value.id === node.id
-    const isSelected = this.isNodeSelected(node)
+    const isSelected = isNodeSelected(node, selectedContent)
 
     const checkbox =
       showCheckboxes ? (
         isSelected ?
-          <Checkbox key={ node.id + '_checked' } className={ classes.contentCheck} checked onClick={() => this.onDeselectNode(node) } /> :
-          <Checkbox key={ node.id + '_not-checked' } className={ classes.contentCheck } onClick={() => this.onSelectNode(node) } />
+          <Checkbox key={ node.id + '_checked' } className={ classes.contentCheck} checked onClick={() => onDeselectNode(node) } /> :
+          <Checkbox key={ node.id + '_not-checked' } className={ classes.contentCheck } onClick={() => onSelectNode(node) } />
       ) : <Checkbox key={ node.id + '_not-checked' } style={ { display: 'none' } } />
 
     const menu =
       <div>
-        <IconButton onClick={ (e) => this.onToggleMenu(node, e) } >
+        <IconButton onClick={ (e) => toggleMenu(node, e) } >
           <MoreVertIcon />
         </IconButton>
         {
@@ -213,11 +164,11 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
             id="simple-menu"
             anchorEl={ selectedMenu ? selectedMenu.anchor : undefined }
             open={ !!selectedMenu && (selectedMenu.nodeId === node.id) }
-            onClose={ (e) => this.onToggleMenu(node, e) }
+            onClose={ (e) => toggleMenu(node, e) }
           >
-            <MenuItem onClick={ (e) => { this.onToggleMenu(node, e); this.onShowNodeDetail(node)} } >Détails</MenuItem>
+            <MenuItem onClick={ (e) => { toggleMenu(node, e); showNodeDetail(node) } } >Détails</MenuItem>
             <MenuItem>Télécharger</MenuItem>
-            <MenuItem onClick={ (e) => { this.onToggleMenu(node, e); this.onDeleteNode(node) }} >Supprimer</MenuItem>
+            <MenuItem onClick={ (e) => { toggleMenu(node, e); showDeleteNode(node) }} >Supprimer</MenuItem>
             <MenuItem>Partager</MenuItem>
           </Menu>
         }
@@ -226,19 +177,19 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     return (
       <Draggable
         onDrag={() => {
-          const selected = this.selectedNodes()
+          const selected = selectedNodes(content || [], selectedContent)
           return isSelected && selected.length > 0 ? selected : [ node ]
         }}
       >
-        <DropZone onDrop={(dropped) => this.onMoveNodes(dropped, node)} >
+        <DropZone onDrop={(dropped) => onMoveNodes(dropped, node)} >
           <div
             className={ classnames(classes.contentRow, { [classes.contentRowSelected]: isSelected }) }
             style={ style }
             onClick={() => {
               if(!isSelected)
-                this.onSelectNode(node)
+                onSelectNode(node)
               else
-                this.onDeselectNode(node)
+                onDeselectNode(node)
             }}
           >
             <div className={ classes.contentCheck }>
@@ -246,7 +197,7 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
             </div>
             <Typography variant="body1" noWrap className={ classnames(classes.contentName, { [classes.contentSelected]: isSelected }) }>
               <NodeIcon node={ node } selected={ isSelected } />
-              <span className={ classes.contentNameValue } onClick={(e) => { this.onClickNode(node); e.stopPropagation()} }>{node.name}</span>
+              <span className={ classes.contentNameValue } onClick={(e) => { onClickNode(node); e.stopPropagation()} }>{node.name}</span>
             </Typography>
             <Typography variant="body1" className={ classes.contentModification } >
               { distanceInWords(new Date(node.modification), now) }
@@ -261,79 +212,38 @@ class FilesListTable extends React.Component<PropsWithStyle, State> {
     )
   }
 
-  render() {
-    const { current, content, contentSize, classes, selection, loading } = this.props
-    const { showCheckboxes } = this.state
+  const header = (
+    <>
+      { showCheckboxes ?
+        <div className={classes.contentCheck}>
+          <Checkbox checked={selectedContent.type === 'ALL'} indeterminate={selectedContent.type === 'SOME'} onClick={() => onToggleAllNodesSelection()} />
+        </div> :
+        <span/>
+      }
+      <Typography variant="caption" noWrap className={classes.contentName} >Nom</Typography>
+      <Typography variant="caption" className={classes.contentModification} >Modification</Typography>
+      <Typography variant="caption" className={classes.contentSize} >Taille</Typography>
+    </>
+  )
 
-    const header = (
-      <>
-        { showCheckboxes ?
-          <div className={classes.contentCheck}>
-            <Checkbox checked={selection.type === 'ALL'} indeterminate={selection.type === 'SOME'} onClick={() => this.onToggleAllNodesSelection()} />
-          </div> :
-          <span/>
-        }
-        <Typography variant="caption" noWrap className={classes.contentName} >Nom</Typography>
-        <Typography variant="caption" className={classes.contentModification} >Modification</Typography>
-        <Typography variant="caption" className={classes.contentSize} >Taille</Typography>
-      </>
+  if(current) {
+    return (
+      <Table<FsNode>
+        elements={content || []}
+        elementsSize={contentSize || 0}
+        rowHeight={45}
+        header={header}
+        renderRow={renderElementRow}
+        renderLoadingRow={renderLoadingRow}
+        elementKey={(node) => node.id}
+        onLoadMoreElements={() => loadMoreContent()}
+        loading={loadingContent}
+      />
     )
-
-    if(current) {
-      return (
-        <Table<FsNode>
-          elements={ content }
-          elementsSize={ contentSize }
-          rowHeight={ 45 }
-          header={ header }
-          renderRow={ this.renderElementRow }
-          renderLoadingRow={ this.renderLoadingRow }
-          elementKey={ (node) => node.id }
-          onLoadMoreElements={ (offset) => this.props.onLoadMoreContent(offset) }
-          loading={ loading }
-        />
-      )
-    } else
-      return null
-  }
+  } else
+    return null
 
 }
 
 
-const mappedProps =
-  connect(({ fs, router }, dispatch) => ({
-    loading: fs.loadingContent,
-    current: fs.current,
-    content: fs.content || [],
-    contentSize: fs.contentSize || 0,
-    selection: fs.selectedContent,
-    onShowNodeDetail: (node: FsNode) => {
-      dispatch(showPopup({ type: 'NODE_DETAIL', nodes: [ node ] }))
-    },
-    onDeleteNode: (node: FsNode) => {
-      dispatch(showPopup({ type: 'NODE_DELETION', nodes: [ node ] }))
-    },
-    onNavigateDirectory: (directory: Directory) => {
-      router.push(`${Routes.app.fs}${directory.path}`) // TODO inside an action
-    },
-    onSelectedNode: (node: FsNode) => {
-      dispatch(selectNode(node.id))
-    },
-    onSelectAllNodes: () => {
-      dispatch(selectAllNodes())
-    },
-    onDeselectNode: (node: FsNode) => {
-      dispatch(deselectNode(node.id))
-    },
-    onDeselectAllNodes: () => {
-      dispatch(deselectAllNodes())
-    },
-    onMoveNodes: (nodes: FsNode[], destination: string) => {
-      dispatch(moveNodes({ nodes, destination }))
-    },
-    onLoadMoreContent: () => {
-      dispatch(getDirectoryContent())
-    }
-  }))
-
-export default withStore(withStyles(styles)(FilesListTable), mappedProps)
+export default withStyles(styles)(FilesListTable)

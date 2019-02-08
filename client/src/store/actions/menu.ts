@@ -1,18 +1,20 @@
+import { ContextState } from 'utils/store'
 
-import { createAction, createPureAction } from 'store/actions'
+import { State } from 'store/store'
 
-export const forceMenu = createAction<boolean>((show, setState) => {
+
+export const forceMenu = ({ setState }: ContextState<State>) => (show: boolean) => {
   setState({
     menu: {
       show
     }
   })
-})
+}
 
-export const toggleMenu = createPureAction((setState) => {
+export const toggleMenu = ({ setState }: ContextState<State>) => () => {
   setState(state => ({
     menu: {
       show: !state.menu.show
     }
   }))
-})
+}

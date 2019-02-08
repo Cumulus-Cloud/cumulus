@@ -8,10 +8,8 @@ import TextField from '@material-ui/core/TextField'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import { Typography } from '@material-ui/core'
 
-import { ApiError } from 'models/ApiError'
+import { useSignIn, useRouting } from 'store/store'
 
-import { connect, withStore } from 'store/store'
-import { signInUser } from 'store/actions/authentication'
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -44,104 +42,72 @@ const styles = (theme: Theme) => createStyles({
   }
 })
 
-interface ContextProps {
-  loading: boolean
-  error?: ApiError
-  onSignUp: () => void
-  onSignIn: (login: string, password: string) => void
-}
 
-type PropsWithStyle = ContextProps & WithStyles<typeof styles>
+type PropsWithStyle = WithStyles<typeof styles>
 
-interface State {
-  login: string
-  password: string
-}
+function SignInForm(props: PropsWithStyle) {
 
+  const [login, setLogin] = React.useState('')
+  const [password, setPassword] = React.useState('')
 
-class SignInForm extends React.Component<PropsWithStyle, State> {
+  const { loading, error, signInUser } = useSignIn()
+  const { showSignUp } = useRouting()
 
-  constructor(props: PropsWithStyle) {
-    super(props)
-    this.state = { login: '', password: '' }
-  }
+  const { classes } = props
 
-  onSignUp() {
-    this.props.onSignUp()
-  }
-
-  onSignIn(e: React.FormEvent) {
+  const onSignIn = (e: React.FormEvent) => {
     e.preventDefault()
     // TODO check that each field is here
-    this.props.onSignIn(this.state.login, this.state.password)
+    signInUser(login, password)
   }
 
-  onLoginChange(login: string) {
-    this.setState({ ...this.state, login })
-  }
+  return (
+    <Grow in={true}>
+      <form onSubmit={onSignIn} >
+        <div className={classes.root}>
+          <TextField
+            id="login-input"
+            label="Login"
+            className={classes.textField}
+            type="text"
+            margin="normal"
+            onChange={(e) => setLogin(e.target.value)}
+            error={!!error}
+          />
+          <TextField
+            id="password-input"
+            label="Mot de passe"
+            className={classes.textField}
+            type="password"
+            margin="normal"
+            onChange={(e) => setPassword(e.target.value)}
+            error={!!error}
+          />
+          <Typography color="error" variant="body1" className={classes.errorMessage} >
+            {
+              error ?
+              <Grow in={true}>
+                <span>
+                  {error.message /* TODO key + i18n */ }
+                </span>
+              </Grow> :
+              <span/>
+            }
+          </Typography>
+        </div>
+        <div className={classes.buttons} >
+          <Button color="primary" disabled={loading} onClick={() => showSignUp()}>
+            S'inscrire
+          </Button>
+          <Button color="primary" disabled={loading} type="submit">
+            Se connecter
+            {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
+          </Button>
+        </div>
+      </form>
+    </Grow>
+  )
 
-  onPasswordChange(password: string) {
-    this.setState({ ...this.state, password })
-  }
-
-  render() {
-    const { classes, error, loading } = this.props
-
-    return (
-      <Grow in={true}>
-        <form onSubmit={(e) => this.onSignIn(e)} >
-          <div className={classes.root}>
-            <TextField
-              id="login-input"
-              label="Login"
-              className={classes.textField}
-              type="text"
-              margin="normal"
-              onChange={(e) => this.onLoginChange(e.target.value)}
-              error={!!error}
-            />
-            <TextField
-              id="password-input"
-              label="Mot de passe"
-              className={classes.textField}
-              type="password"
-              margin="normal"
-              onChange={(e) => this.onPasswordChange(e.target.value)}
-              error={!!error}
-            />
-            <Typography color="error" variant="body1" className={classes.errorMessage} >
-              {
-                error ?
-                <Grow in={true}>
-                  <span>
-                    {error.message /* TODO key + i18n */ }
-                  </span>
-                </Grow> :
-                <span/>
-              }
-            </Typography>
-          </div>
-          <div className={classes.buttons} >
-            <Button color="primary" disabled={loading} onClick={() => this.onSignUp()}>
-              S'inscrire
-            </Button>
-            <Button color="primary" disabled={loading} type="submit">
-              Se connecter
-              {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
-            </Button>
-          </div>
-        </form>
-      </Grow>
-    )
-  }
 }
 
-const mappedProps =
-  connect((state, dispatch) => ({
-    loading: state.signIn.loading,
-    error: state.signIn.error,
-    onSignUp: () => state.router.push('/auth/sign-up'),
-    onSignIn: (login: string, password: string) => dispatch(signInUser({ login, password }))
-  }))
-
-export default withStore(withStyles(styles)(SignInForm), mappedProps)
+export default withStyles(styles)(SignInForm)

@@ -1,8 +1,7 @@
 import axios from 'axios'
 
-import { ApiError } from 'models/ApiError'
 import { EnrichedFile } from 'models/EnrichedFile'
-import { Directory, File, FsNode, DirectoryWithContent, SearchResult, isDirectory, isFile } from 'models/FsNode'
+import { Directory, File, FsNode, DirectoryWithContent, SearchResult, isDirectory, isFile, FsNodeType } from 'models/FsNode'
 import { User } from 'models/User'
 import { Event } from 'models/Event'
 import { AppSession } from 'models/AppSession'
@@ -11,7 +10,6 @@ import { ApiList } from 'models/utils'
 import Routes from 'services/routes'
 
 import { Search } from 'store/states/fsState'
-
 
 
 export const ApiUtils = {
@@ -32,23 +30,23 @@ export const ApiUtils = {
     return queryString === '' ? '' : `?${queryString.substring(0, queryString.length - 1)}`
   },
 
-  post<B, R>(path: string, body: B, queryParams: Map<string, string> = new Map(), onProgress: (p: number) => void = () => {}): Promise<ApiError | R> {
+  post<B, R>(path: string, body: B, queryParams: Map<string, string> = new Map(), onProgress: (p: number) => void = () => {}): Promise<R> {
     return this.withPayload<B, R>('POST', path, body, queryParams, onProgress)
   },
 
-  put<B, R>(path: string, body: B, queryParams: Map<string, string> = new Map(), onProgress: (p: number) => void = () => {}): Promise<ApiError | R> {
+  put<B, R>(path: string, body: B, queryParams: Map<string, string> = new Map(), onProgress: (p: number) => void = () => {}): Promise<R> {
     return this.withPayload<B, R>('PUT', path, body, queryParams, onProgress)
   },
 
-  get<R>(path: string, queryParams: Map<string, string> = new Map()): Promise<ApiError | R> {
+  get<R>(path: string, queryParams: Map<string, string> = new Map()): Promise<R> {
     return this.withoutPayload('GET', path, queryParams)
   },
 
-  delete<R>(path: string, queryParams: Map<string, string> = new Map()): Promise<ApiError | R> {
+  delete<R>(path: string, queryParams: Map<string, string> = new Map()): Promise<R> {
     return this.withoutPayload('DELETE', path, queryParams)
   },
 
-  withPayload<B, R>(method: string, path: string, body: B, queryParams: Map<string, string>, onProgress: (p: number) => void): Promise<ApiError | R> {
+  withPayload<B, R>(method: string, path: string, body: B, queryParams: Map<string, string>, onProgress: (p: number) => void): Promise<R> {
     return axios
       .request({
         method: method,
@@ -60,24 +58,52 @@ export const ApiUtils = {
         data: body,
         validateStatus: () => true
       })
-      .then((response) => response.data)
+      .then((response) => {
+        if('errors' in response.data)
+          throw response.data // Our server sent back an error
+        else
+          return response.data
+      })
       .catch((e) => {
-        console.error(e)
-        // TODO handle error
+        if('errors' in e)
+          throw e // Our server sent back an error
+        else {
+          console.error(e)
+          throw {
+            key: 'network.error',
+            message: 'La requête a échoué',
+            errors: {},
+            args: []
+          } // The request failed, throw an error
+        }
       })
   },
 
-  withoutPayload<R>(method: string, path: string, queryParams: Map<string, string> = new Map()): Promise<ApiError | R> {
+  withoutPayload<R>(method: string, path: string, queryParams: Map<string, string> = new Map()): Promise<R> {
     return axios
       .request({
         method: method,
         url: path + this.serializeQueryParams(queryParams),
         validateStatus: () => true
       })
-      .then((response) => response.data)
+      .then((response) => {
+        if('errors' in response.data)
+          throw response.data // Our server sent back an error
+        else
+          return response.data
+      })
       .catch((e) => {
-        console.error(e)
-        // TODO handle error
+        if('errors' in e)
+          throw e // Our server sent back an error
+        else {
+          console.error(e)
+          throw {
+            key: 'network.error',
+            message: 'La requête a échoué',
+            errors: {},
+            args: []
+          } // The request failed, throw an error
+        }
       })
   }
 
@@ -86,55 +112,55 @@ export const ApiUtils = {
 const Api = {
 
   management: {
-    reload(): Promise<ApiError | {}> {
+    reload(): Promise<void> {
       return ApiUtils.get(Routes.api.management.reload)
     },
-    stop(): Promise<ApiError | {}> {
+    stop(): Promise<void> {
       return ApiUtils.get(Routes.api.management.stop)
     }
   },
 
   user: {
-    me(): Promise<ApiError | User> {
+    me(): Promise<User> {
       return ApiUtils.get(Routes.api.users.me)
     },
 
-    signIn(login: string, password: string): Promise<ApiError | { token: string, user: User }> {
+    signIn(login: string, password: string): Promise<{ token: string, user: User }> {
       return ApiUtils.post(Routes.api.users.login, { login, password })
     },
 
-    signUp(login: string, email: string, password: string): Promise<ApiError | User> {
+    signUp(login: string, email: string, password: string): Promise<User> {
       return ApiUtils.post(Routes.api.users.signUp, { login, email, password })
     },
 
-    setFirstPassword(password: string): Promise<ApiError | User> {
+    setFirstPassword(password: string): Promise<User> {
       return ApiUtils.post(Routes.api.users.setFirstPassword, { password })
     },
 
-    changeLang(lang: string): Promise<ApiError | User> {
+    changeLang(lang: string): Promise<User> {
       return ApiUtils.post(Routes.api.users.changeLang, { lang })
     },
 
-    changePassword(previousPassword: string, newPassword: string): Promise<ApiError | User> {
+    changePassword(previousPassword: string, newPassword: string): Promise<User> {
       return ApiUtils.post(Routes.api.users.changePassword, { previousPassword, newPassword })
     },
 
     events: {
-      all(offset: number): Promise<ApiError | ApiList<Event>> {
+      all(offset: number): Promise<ApiList<Event>> {
         return ApiUtils.get(Routes.api.users.events, ApiUtils.pagination(offset = offset))
       }
     },
 
     sessions: {
-      all(offset: number): Promise<ApiError | ApiList<AppSession>> {
+      all(offset: number): Promise<ApiList<AppSession>> {
         return ApiUtils.get(Routes.api.users.sessions.all, ApiUtils.pagination(offset = offset))
       },
 
-      get(ref: string): Promise<ApiError | AppSession> {
+      get(ref: string): Promise<AppSession> {
         return ApiUtils.get(Routes.api.users.sessions.get(ref))
       },
 
-      revoke(ref: string): Promise<ApiError | AppSession> {
+      revoke(ref: string): Promise<AppSession> {
         return ApiUtils.post(Routes.api.users.sessions.revoke(ref), {})
       }
     }
@@ -142,18 +168,16 @@ const Api = {
   },
 
   fs: {
-    get(path: string): Promise<ApiError | FsNode> {
+    get(path: string): Promise<FsNode> {
       return ApiUtils.get<FsNode>(Routes.api.fs.base, new Map([[ 'path', path ]]))
     },
 
-    getDirectory(path: string): Promise<ApiError | Directory> {
+    getDirectory(path: string): Promise<Directory> {
       return this.get(path).then((result) => {
-        if('errors' in result)
-          return result
         if(isDirectory(result))
           return result
         else
-          return {
+          throw {
             key: 'todo', // Proper error message
             message: 'todo',
             errors: {},
@@ -162,14 +186,12 @@ const Api = {
       })
     },
 
-    getFile(path: string): Promise<ApiError | File> {
+    getFile(path: string): Promise<File> {
       return this.get(path).then((result) => {
-        if('errors' in result)
-          return result
         if(isFile(result))
           return result
         else
-          return {
+          throw {
             key: 'todo', // Proper error message
             message: 'todo',
             errors: {},
@@ -178,15 +200,19 @@ const Api = {
       })
     },
 
-    getContent(id: string, contentOffset?: number, contentLimit?: number): Promise<ApiError | DirectoryWithContent> {
+    getContent(id: string, nodeType?: FsNodeType, contentOffset?: number, contentLimit?: number): Promise<DirectoryWithContent> {
+      const pagination = ApiUtils.pagination(contentOffset || 0, contentLimit || ApiUtils.maxResultDefault)
+      const nodeTypeParam = nodeType ? new Map([[ 'nodeType', nodeType ]]) : new Map()
+
+      const params = new Map([...nodeTypeParam, ...pagination])
+
       return ApiUtils.get<DirectoryWithContent>(
         Routes.api.fs.getContent(id),
-        ApiUtils.pagination(contentOffset || 0, contentLimit || ApiUtils.maxResultDefault)
+        params
       )
     },
 
-    // TODO test
-    search(path: string, search: Search, contentOffset?: number, contentLimit?: number): Promise<ApiError | SearchResult> {
+    search(path: string, search: Search, contentOffset?: number, contentLimit?: number): Promise<SearchResult> {
       const pagination = ApiUtils.pagination(contentOffset || 0, contentLimit || ApiUtils.maxResultDefault)
       const searchParam = new Map([
         [ 'path', path ],
@@ -203,11 +229,11 @@ const Api = {
       )
     },
 
-    createDirectory(path: string): Promise<ApiError | Directory> {
+    createDirectory(path: string): Promise<Directory> {
       return ApiUtils.put(Routes.api.fs.create, { path: path })
     },
 
-    uploadFile(parentId: string, file: EnrichedFile, onProgress: (percentage: number) => void): Promise<ApiError | any> {
+    uploadFile(parentId: string, file: EnrichedFile, onProgress: (percentage: number) => void): Promise<any> {
       // TODO error handling
       function fileReader(file: EnrichedFile) {
         return new Promise((resolve) => {
@@ -234,24 +260,24 @@ const Api = {
       })
     },
 
-    moveNodes(ids: string[], destination: string): Promise<ApiError | ApiList<FsNode>> {
+    moveNodes(ids: string[], destination: string): Promise<ApiList<FsNode>> {
       return ApiUtils.post(
         Routes.api.fs.base,
         {
           nodes: ids,
           destination,
-          _type: 'io.cumulus.controllers.payloads.FsNodesDisplacementPayload'
+          _type: 'io.cumulus.controllers.payloads.FsNodesDisplacementPayload' // Ugly
         }
       )
     },
 
-    deleteNodes(ids: string[], deleteContent: boolean): Promise<ApiError | ApiList<FsNode>> {
+    deleteNodes(ids: string[], deleteContent: boolean): Promise<ApiList<FsNode>> {
       return ApiUtils.post(
         Routes.api.fs.base,
         {
           nodes: ids,
           deleteContent,
-          _type: 'io.cumulus.controllers.payloads.FsNodesDeletionPayload'
+          _type: 'io.cumulus.controllers.payloads.FsNodesDeletionPayload' // Ugly
         }
       )
     }

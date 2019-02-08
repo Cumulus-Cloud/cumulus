@@ -1,14 +1,19 @@
 import Api from 'services/api'
 
+import { ContextState } from 'utils/store'
+
 import { ApiError } from 'models/ApiError'
 import { Directory } from 'models/FsNode'
 
 import { getDirectory } from 'store/actions/directory'
 import { showNotification } from 'store/actions/notifications'
-import { createAction } from 'store/actions'
+import { hidePopup } from 'store/actions/popups'
+import { State } from 'store/store'
 
 
-export const createDirectory = createAction<string>((path, setState, getState, dispatch) => {
+export const createDirectory =  (ctx: ContextState<State>) => (path: string) => {
+  const { getState, setState } = ctx
+
   setState({
     directoryCreation: {
       loading: true
@@ -16,23 +21,23 @@ export const createDirectory = createAction<string>((path, setState, getState, d
   })
 
   return Api.fs.createDirectory(path)
-    .then((result: ApiError | Directory) => {
-      if ('errors' in result) {
-        setState({
-          directoryCreation: {
-            loading: false,
-            error: result
-          }
-        })
-      } else {
-        const state = getState()
-        const currentPath = state.fs.current ? state.fs.current.path : '/'
-        const name = result.name
+    .then((result: Directory) => {
+      const state = getState()
+      const currentPath = state.fs.current ? state.fs.current.path : '/'
+      const name = result.name
 
-        setState({ directoryCreation: { loading: false } })
+      setState({ directoryCreation: { loading: false } })
 
-        dispatch(getDirectory(currentPath))
-        dispatch(showNotification(`Dossier « ${name} » créé avec succès`))
-      }
+      getDirectory(ctx)(currentPath)
+      hidePopup(ctx)()
+      showNotification(ctx)(`Dossier « ${name} » créé avec succès`)
     })
-})
+    .catch((e: ApiError) => {
+      setState({
+        directoryCreation: {
+          loading: false,
+          error: e
+        }
+      })
+    })
+}

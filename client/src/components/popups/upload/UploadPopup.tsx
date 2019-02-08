@@ -3,17 +3,11 @@ import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import Button from '@material-ui/core/Button'
-import withMobileDialog from '@material-ui/core/withMobileDialog'
 import Slide from '@material-ui/core/Slide'
 import uuid = require('uuid/v4')
 
-import { connect, withStore } from 'store/store'
-import { selectUploadFile, deleteUploadFile, updateUploadFile, uploadAllFiles } from 'store/actions/fileUpload'
-import { hidePopup } from 'store/actions/popups'
 import { FsPopupType } from 'store/states/popupsState'
-
-import { Directory } from 'models/FsNode'
-import { EnrichedFile } from 'models/EnrichedFile'
+import { useFilesystem, useFileUpload, usePopups } from 'store/store'
 
 import Popup from 'components/utils/Popup'
 
@@ -77,45 +71,23 @@ const styles = (theme: Theme) => createStyles({
 
 const popupType: FsPopupType = 'FILE_UPLOAD'
 
-interface Props {
-  onClose: () => void
-  onFilesSelected: (files: EnrichedFile[]) => void
-  onDeleteFile: (file: EnrichedFile) => void
-  onUpdateFile: (file: EnrichedFile) => void
-  onUploadFiles: () => void
-  open: boolean
-  fullScreen?: boolean
-  files: EnrichedFile[]
-  current?: Directory
-}
 
-type PropsWithStyle = Props & WithStyles<typeof styles>
+type PropsWithStyle = WithStyles<typeof styles>
 
-interface State {}
 
-class UploadPopup extends React.Component<PropsWithStyle, State> {
+function UploadPopup({ classes }: PropsWithStyle) {
 
-  constructor(props: PropsWithStyle) {
-    super(props)
-    this.state = { files: [] }
-  }
+  const { isPopupOpen, hidePopup } = usePopups()
+  const { current } = useFilesystem()
+  const {
+    files,
+    selectUploadFile,
+    deleteUploadFile,
+    updateUploadFile,
+    uploadAllFiles
+  } = useFileUpload()
 
-  onClose() {
-    this.props.onClose()
-  }
-
-  onUploadFiles() {
-    // TODO check the provided string for forbidden char
-    this.props.onUploadFiles()
-  }
-
-  onUpdateFile(updatedFile: EnrichedFile) {
-    this.props.onUpdateFile(updatedFile)
-  }
-
-  onFileSelected(fileList: FileList | null) {
-    const { current } = this.props
-
+  function selectFiles(fileList: FileList | null) {
     if(fileList !== null) {
       let files = []
       for(let i = 0; i < fileList.length; i++) {
@@ -130,94 +102,60 @@ class UploadPopup extends React.Component<PropsWithStyle, State> {
         })
       }
 
-      this.props.onFilesSelected(files)
+      selectUploadFile(files)
     }
   }
 
-  onDeleteFile(removedFile: EnrichedFile) {
-    this.props.onDeleteFile(removedFile)
-  }
-
-  render() {
-    const { classes, files, open } = this.props
-
-    const fileList = files.map((file, i) => {
-      return (
-        <UploadFile
-          key={i}
-          file={file}
-          onDelete={() => this.onDeleteFile(file)}
-          onUpdate={(updated) => this.onUpdateFile(updated)}
-        />
-      )
-    })
-
+  const fileList = files.map((file, i) => {
     return (
-      <Popup
-        title="Mettre en ligne de nouveaux fichiers"
-        action={files.length > 0 ? "Envoyer les fichiers selectionnés" : "Envoyer le fichier selectionné"}
-        cancel="Annuler"
-        loading={ false }
-        disabled={ files.length === 0 }
-        open={ open }
-        onClose={ () => this.onClose() }
-        onValidate={ () => this.onUploadFiles() }
-      >
-        <div className={classes.content} >
-          {
-            files.length === 0 ?
-            <span/> :
-            <Slide direction="up" in={true}>
-              <div className={classes.root}>
-                {fileList}
-              </div>
-            </Slide>
-          }
-        </div>
-        <div className={classes.inputContainer} >
-          <input
-            className={classes.input}
-            id="raised-button-file"
-            multiple
-            type="file"
-            onChange={(e) => this.onFileSelected(e.target.files) }
-          />
-          <label htmlFor="raised-button-file">
-            <Button variant="outlined" color="primary" component="span" className={classes.fileButton}>
-              Selectionner des fichiers
-            </Button>
-          </label>
-        </div>
-      </Popup>
+      <UploadFile
+        key={i}
+        file={file}
+        onDelete={() => deleteUploadFile(file)}
+        onUpdate={(updated) => updateUploadFile(updated)}
+      />
     )
-  }
+  })
+
+  return (
+    <Popup
+      title="Mettre en ligne de nouveaux fichiers"
+      action={files.length > 0 ? "Envoyer les fichiers selectionnés" : "Envoyer le fichier selectionné"}
+      cancel="Annuler"
+      loading={false}
+      disabled={files.length === 0}
+      open={isPopupOpen(popupType)}
+      onClose={hidePopup}
+      onValidate={uploadAllFiles}
+    >
+      <div className={classes.content} >
+        {
+          files.length === 0 ?
+          <span/> :
+          <Slide direction="up" in={true}>
+            <div className={classes.root}>
+              {fileList}
+            </div>
+          </Slide>
+        }
+      </div>
+      <div className={classes.inputContainer} >
+        <input
+          className={classes.input}
+          id="raised-button-file"
+          multiple
+          type="file"
+          onChange={(e) => selectFiles(e.target.files) }
+        />
+        <label htmlFor="raised-button-file">
+          <Button variant="outlined" color="primary" component="span" className={classes.fileButton}>
+            Selectionner des fichiers
+          </Button>
+        </label>
+      </div>
+    </Popup>
+  )
 
 }
 
-
-const mappedProps =
-  connect((state, dispatch) => {
-    return {
-      open: state.popups.open === popupType,
-      current: state.fs.current,
-      files: state.fileUpload.files,
-      onFilesSelected: (files: EnrichedFile[]) => {
-        dispatch(selectUploadFile(files))
-      },
-      onDeleteFile: (deletedFile: EnrichedFile) => {
-        dispatch(deleteUploadFile(deletedFile))
-      },
-      onUpdateFile: (updatedFile: EnrichedFile) => {
-        dispatch(updateUploadFile(updatedFile))
-      },
-      onClose: () => {
-        dispatch(hidePopup())
-      },
-      onUploadFiles: () => {
-        dispatch(hidePopup())
-        dispatch(uploadAllFiles())
-      }
-    }
-  })
-
-export default withStore(withMobileDialog<Props> ({ breakpoint: 'xs' })(withStyles(styles) (UploadPopup)), mappedProps)
+export default withStyles(styles)(UploadPopup)

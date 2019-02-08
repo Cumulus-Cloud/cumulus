@@ -13,7 +13,7 @@ import NodeIcon, { NodesIcon } from 'components/fs/NodeIcon'
 const draggedElementRoot = document.getElementById('app-dragged')
 
 // Dragging placeholder static component
-function DraggedElement(dragInfo: DraggingInfo<FsNode[]>): React.ReactNode {
+function DraggedElement(dragInfo: DraggingInfo<FsNode[]>) {
   if(draggedElementRoot) {
     const { x, y, value: nodes } = dragInfo
 
