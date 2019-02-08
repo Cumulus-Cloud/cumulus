@@ -32,9 +32,7 @@ function FilesList(props: PropsWithStyle) {
 
   const [dropzoneActive, setDropzoneActive] = React.useState(false)
   const [localSearch, setLocalSearch] = React.useState<Search | undefined>(undefined)
-  //const [initialized, setInitialized] = React.useState(false)
 
-  // TODO test
   React.useEffect(() => {
     checkIfPathNeedsRefresh()
   })
@@ -51,7 +49,6 @@ function FilesList(props: PropsWithStyle) {
   if(!user) // Should not happen
     throw new Error('File list accessed without authentication')
 
-  // TODO move in hooks
   const checkIfPathNeedsRefresh = () => {
     // Needs to update if not during a loading, and if the two path have changed (in that case the 'real' path wins)
     // This will likely occur during the first loading, or if the user use the browser history to navigate
