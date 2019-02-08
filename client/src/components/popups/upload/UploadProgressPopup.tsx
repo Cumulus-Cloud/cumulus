@@ -123,7 +123,6 @@ function UploadProgressPopup(props: PropsWithStyle) {
   const uploadsTerminated = uploading.length - uploadsInprogess
 
   const uploadsInfo = uploading.map((upload) => {
-    // TODO better ID
     return (
       <span key={upload.file.id} >
         <ListItem button className={classes.fileItem} >

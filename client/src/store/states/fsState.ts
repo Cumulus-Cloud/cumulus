@@ -21,7 +21,7 @@ export interface Search {
   query: string
   nodeType: 'ALL' | 'DIRECTORY' | 'FILE'
   recursiveSearch: boolean
-  // TODO type filtering
+  // TODO file type filtering
 }
 
 export const SearchDefault: Search = {
@@ -67,7 +67,7 @@ export default interface FsState {
   error?: ApiError
 }
 
-export const initialState: () => FsState = 
+export const initialState: () => FsState =
   () => directoryWithContent ? {
     current: directoryWithContent.directory,
     content: directoryWithContent.content.items,
