@@ -8,8 +8,6 @@ export type DraggingInfo<T> = {
   y: number
   offsetX: number
   offsetY: number
-  distanceX: number
-  distanceY: number
   value: T
 }
 
@@ -27,14 +25,15 @@ type DropZoneProps<T> = {
 type DragAndDropProps<T> = {
   renderDraggedElement: (dragInfo: DraggingInfo<T>) => React.ReactNode
   children: (
-    Draggable: React.SFC<DraggableProps<T>>,
-    DropZone: React.SFC<DropZoneProps<T>>,
+    Draggable: React.FunctionComponent<DraggableProps<T>>,
+    DropZone: React.FunctionComponent<DropZoneProps<T>>,
     dragInfo?: DraggingInfo<T>
   ) => React.ReactNode
 }
 
 type State<T> = {
   nextDrag?: () => T
+  nextDragOffset?: { x: number, y: number }
   dragInfo?: DraggingInfo<T>
 }
 
@@ -62,12 +61,12 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
   dragEndHandler = (_: MouseEvent) => {
     const { dragInfo } = this.state
 
-    if(dragInfo) // Reset everything when the mouse is released
+    if (dragInfo) // Reset everything when the mouse is released
       this.reset()
   }
 
   dragHandler = (e: MouseEvent) => {
-    const { dragInfo, nextDrag } = this.state
+    const { dragInfo, nextDrag, nextDragOffset } = this.state
 
     e.preventDefault()
 
@@ -77,9 +76,7 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
         dragInfo: {
           ...dragInfo,
           x: e.clientX,
-          y: e.clientY,
-          distanceX: dragInfo.distanceX + (e.clientX > dragInfo.x ? e.clientX - dragInfo.x : dragInfo.x - e.clientX),
-          distanceY: dragInfo.distanceY + (e.clientY > dragInfo.y ? e.clientY - dragInfo.y : dragInfo.y - e.clientY)
+          y: e.clientY
         }
       })
     } else if (nextDrag) {
@@ -93,10 +90,8 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
           value: nextDrag(),
           x: e.clientX,
           y: e.clientY,
-          offsetX: e.offsetX,
-          offsetY: e.offsetY,
-          distanceX: 0,
-          distanceY: 0
+          offsetX: nextDragOffset ? nextDragOffset.x : 0,
+          offsetY: nextDragOffset ? nextDragOffset.y : 0
         }
       })
     }
@@ -107,22 +102,38 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
     document.body.style.cursor = null
   }
 
-  draggable = (props: DraggableProps<T>) => (
-    <div
-      onMouseDown={e => {
-        e.stopPropagation()
-        e.preventDefault()
+  draggable = (props: DraggableProps<T>) => {
+    // Local reference of the react component
+    const ref = React.createRef() as React.RefObject<HTMLDivElement>
 
-        // We don't want to fire the drag event right now, and we at least wait
-        // for a next event to be fired
-        this.setState({
-          nextDrag: () => props.onDrag()
-        })
-      }}
-    >
-      {props.children}
-    </div>
-  )
+    return (
+      <div
+        ref={ref}
+        onMouseDown={e => {
+          // Only start dragging with the left click
+          if (e.nativeEvent.which === 1) {
+            e.stopPropagation()
+            e.preventDefault()
+
+            // Using the component reference, we can compute the draggable element offset
+            const offset =
+              ref.current ?
+              { x: e.clientX - ref.current.getBoundingClientRect().left, y: e.clientY - ref.current.getBoundingClientRect().top } :
+              { x: 0, y: 0}
+
+            // We don't want to fire the drag event right now, and we at least wait
+            // for a next event to be fired
+            this.setState({
+              nextDrag: () => props.onDrag(),
+              nextDragOffset: offset
+            })
+          }
+        }}
+      >
+        {props.children}
+      </div>
+    )
+  }
 
   dropZone = (props: DropZoneProps<T>) => (
     <div
@@ -142,7 +153,7 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
         const { dragInfo } = this.state
         const { onDragOver } = props
 
-        if(dragInfo && onDragOver)
+        if (dragInfo && onDragOver)
           onDragOver(dragInfo.value, e)
       }}
     >
@@ -169,9 +180,9 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
  */
 export type WithDragAndDrop<T> = {
   /** Draggable container. */
-  Draggable: React.SFC<DraggableProps<T>>,
+  Draggable: React.FunctionComponent<DraggableProps<T>>,
   /** Drop zone (for a draggable container). */
-  DropZone: React.SFC<DropZoneProps<T>>,
+  DropZone: React.FunctionComponent<DropZoneProps<T>>,
   /** If a dragging is in progress, the dragging information. */
   dragInfo?: DraggingInfo<T>
 }
@@ -195,7 +206,8 @@ export const withDragAndDrop = <PROPS extends WithDragAndDrop<T>, T, S>(
   renderDraggedElement: (dragInfo: DraggingInfo<T>) => React.ReactNode
 ): ComponentType<Difference<PROPS, WithDragAndDrop<T>>> => {
 
-  const ComponentFix = Component as ComponentType<any> // TODO remove when React is fixed
+  /* The cast fix a typescript bug https://github.com/Microsoft/TypeScript/issues/13948 */
+  const ComponentFix = Component as ComponentType<any> // TODO remove when TypeScript is fixed
 
   return class extends React.Component<Difference<PROPS, WithDragAndDrop<T>>, S> {
 
