@@ -1,5 +1,4 @@
-import React from 'react'
-import { ComponentType } from 'react'
+import React, { ComponentType } from 'react'
 
 import { Difference } from 'utils/types'
 
@@ -7,6 +6,8 @@ import { Difference } from 'utils/types'
 export type DraggingInfo<T> = {
   x: number
   y: number
+  offsetX: number
+  offsetY: number
   distanceX: number
   distanceY: number
   value: T
@@ -18,8 +19,8 @@ type DraggableProps<T> = {
 }
 
 type DropZoneProps<T> = {
-  onDrop: (dropped: T, e:  React.MouseEvent<HTMLElement>) => void
-  onDragOver?: (dragged: T, e:  React.MouseEvent<HTMLElement>) => void
+  onDrop: (dropped: T, e: React.MouseEvent<HTMLElement>) => void
+  onDragOver?: (dragged: T, e: React.MouseEvent<HTMLElement>) => void
   children?: React.ReactNode
 }
 
@@ -70,7 +71,7 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
 
     e.preventDefault()
 
-    if(dragInfo) {
+    if (dragInfo) {
       // Update the drag info with the new position
       this.setState({
         dragInfo: {
@@ -92,6 +93,8 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
           value: nextDrag(),
           x: e.clientX,
           y: e.clientY,
+          offsetX: e.offsetX,
+          offsetY: e.offsetY,
           distanceX: 0,
           distanceY: 0
         }
@@ -129,7 +132,7 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
 
         const { dragInfo } = this.state
 
-        if(dragInfo)
+        if (dragInfo)
           props.onDrop(dragInfo.value, e)
 
         this.reset()

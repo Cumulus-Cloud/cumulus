@@ -106,7 +106,7 @@ function FilesListTable(props: PropsWithStyle) {
       case 'NONE':
         return onSelectAllNodes()
       case 'SOME':
-        return onSelectAllNodes()
+        return onDeselectAllNodes()
     }
   }
 
