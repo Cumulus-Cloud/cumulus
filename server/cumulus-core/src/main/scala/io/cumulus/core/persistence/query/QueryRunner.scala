@@ -22,10 +22,12 @@ trait QueryRunner[F[_]] {
   def run[A](query: Query[A], logException: Boolean = true): F[A]
 
   /**
-    * Run the query, within an SQL transaction.
+    * Run the query, within an SQL transaction. The result should be an either to express the result of the query. If an
+    * error is thrown or a left is return, the transaction will be rolled back. 
     * @param query The query to be run.
     * @param logException If the runner should log exceptions or not.
-    * @tparam A The return type of the query.
+    * @tparam E The error type of the query.
+    * @tparam A The success type of the query.
     * @return An effect of the query's run, containing the return type of the query.
     */
   def commit[E, A](query: Query[Either[E, A]], logException: Boolean = true): F[Either[E, A]]
@@ -105,7 +107,7 @@ class FutureQueryRunner(db: CumulusDB, ec: ExecutionContext) extends QueryRunner
     result.recover {
       case e: Exception if logException =>
         logger.error(s"Operation failed: ${e.getMessage}")
-        throw e
+        throw e // Throw back the error
     }(ec)
 
     result
@@ -126,6 +128,7 @@ class FutureQueryRunner(db: CumulusDB, ec: ExecutionContext) extends QueryRunner
               success
           }
         } catch {
+          // In case of an exception, roll back the transaction and re-throw the error
           case e: Throwable =>
             c.rollback()
             throw e
@@ -136,7 +139,7 @@ class FutureQueryRunner(db: CumulusDB, ec: ExecutionContext) extends QueryRunner
     result.recover {
       case e: Exception if logException =>
         logger.error(s"Transaction failed: ${e.getMessage}")
-        throw e
+        throw e // Throw back the error
     }(ec)
 
     result
