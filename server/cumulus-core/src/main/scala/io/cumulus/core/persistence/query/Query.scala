@@ -2,8 +2,6 @@ package io.cumulus.core.persistence.query
 
 import java.sql.Connection
 
-import scala.language.higherKinds
-
 
 /**
   * An SQL query monad. Behave like a regular reader monad, and will accumulate transformation based on an SQLConnection.

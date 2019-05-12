@@ -1,7 +1,5 @@
 package io.cumulus.persistence.stores.filters
 
-import java.time.LocalDateTime
-
 import io.cumulus.core.persistence.anorm.AnormSupport._
 import io.cumulus.core.persistence.query.{ParameterizedSqlFilter, QueryFilter}
 import io.cumulus.models.event.EventType
