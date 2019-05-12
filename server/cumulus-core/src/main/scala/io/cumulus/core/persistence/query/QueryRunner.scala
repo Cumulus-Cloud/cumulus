@@ -22,13 +22,15 @@ trait QueryRunner[F[_]] {
   def run[A](query: Query[A], logException: Boolean = true): F[A]
 
   /**
-    * Run the query, within an SQL transaction.
+    * Run the query, within an SQL transaction. The result should be an either to express the result of the query. If an
+    * error is thrown or a left is return, the transaction will be rolled back. 
     * @param query The query to be run.
     * @param logException If the runner should log exceptions or not.
-    * @tparam A The return type of the query.
+    * @tparam E The error type of the query.
+    * @tparam A The success type of the query.
     * @return An effect of the query's run, containing the return type of the query.
     */
-  def commit[A](query: Query[A], logException: Boolean = true): F[A]
+  def commit[E, A](query: Query[Either[E, A]], logException: Boolean = true): F[Either[E, A]]
 
 }
 
@@ -45,10 +47,14 @@ object QueryRunner {
     def run(logException: Boolean = true): F[A] =
       queryRunner.run(query, logException)
 
+  }
+
+  case class CommitableQuery[F[_], E, A](query: Query[Either[E, A]], queryRunner: QueryRunner[F]) {
+
     /**
       * @see [[io.cumulus.core.persistence.query.QueryRunner#commit(io.cumulus.core.persistence.query.Query, boolean) QueryRunner.commit]]
       */
-    def commit(logException: Boolean = true): F[A] =
+    def commit(logException: Boolean = true): F[Either[E, A]] =
       queryRunner.commit(query, logException)
 
   }
@@ -60,6 +66,13 @@ object QueryRunner {
   ): RunnableQuery[F, A] =
     RunnableQuery(query, queryRunner)
 
+  implicit def toCommitableQuery[F[_], E, A](
+    query: Query[Either[E, A]]
+  )(implicit
+    queryRunner: QueryRunner[F]
+  ): CommitableQuery[F, E, A] =
+    CommitableQuery(query, queryRunner)
+
   implicit def toRunnableQueryWithConversion[F[_], QueryType, A](
     query: QueryType
   )(implicit
@@ -67,6 +80,14 @@ object QueryRunner {
     queryRunner: QueryRunner[F]
   ): RunnableQuery[F, A] =
     RunnableQuery(converter(query), queryRunner)
+
+  implicit def toCommitableQueryWithConversion[F[_], QueryType, E, A](
+    query: QueryType
+  )(implicit
+    converter: QueryType =>  Query[Either[E, A]],
+    queryRunner: QueryRunner[F]
+  ): CommitableQuery[F, E, A] =
+    CommitableQuery(converter(query), queryRunner)
 
 }
 
@@ -83,11 +104,10 @@ class FutureQueryRunner(db: CumulusDB, ec: ExecutionContext) extends QueryRunner
       db.getDB.withConnection(query.atomic)
     }(ec)
 
-    result.foreach {
-      case ex: Exception if logException =>
-        logger.error(s"Connection failed: ${ex.getMessage}")
-        ()
-      case _ => ()
+    result.recover {
+      case e: Exception if logException =>
+        logger.error(s"Operation failed: ${e.getMessage}")
+        throw e // Throw back the error
     }(ec)
 
     result
@@ -96,16 +116,30 @@ class FutureQueryRunner(db: CumulusDB, ec: ExecutionContext) extends QueryRunner
   /**
     * @see [[io.cumulus.core.persistence.query.QueryRunner#commit(io.cumulus.core.persistence.query.Query, boolean) QueryRunner.commit]]
     */
-  def commit[A](query: Query[A], logException: Boolean): Future[A] = {
+  def commit[E, A](query: Query[Either[E, A]], logException: Boolean): Future[Either[E, A]] = {
     val result = Future {
-      db.getDB.withTransaction(query.atomic)
+      db.getDB.withTransaction { c =>
+        try {
+          query.atomic(c) match {
+            case error: Left[E, A] =>
+              c.rollback()
+              error
+            case success: Right[E, A] =>
+              success
+          }
+        } catch {
+          // In case of an exception, roll back the transaction and re-throw the error
+          case e: Throwable =>
+            c.rollback()
+            throw e
+        }
+      }
     }(ec)
 
-    result.foreach {
-      case ex: Exception if logException =>
-        logger.error(s"Transaction failed: ${ex.getMessage}")
-        ()
-      case _ => ()
+    result.recover {
+      case e: Exception if logException =>
+        logger.error(s"Transaction failed: ${e.getMessage}")
+        throw e // Throw back the error
     }(ec)
 
     result
