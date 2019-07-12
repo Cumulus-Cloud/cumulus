@@ -17,11 +17,11 @@ const styles = (theme: Theme) => createStyles({
     display: 'flex',
     flexDirection: 'column',
     margin: 'auto',
-    left: theme.spacing.unit * 2
+    left: theme.spacing() * 2
   },
   snackbar: {
     position: 'relative',
-    marginBottom: theme.spacing.unit * 2
+    marginBottom: theme.spacing() * 2
   }
 })
 

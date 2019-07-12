@@ -37,28 +37,28 @@ const styles = (theme: Theme) => createStyles({
   loginTitle: {
     color: 'white',
     backgroundColor: '#29A7A0',
-    padding: theme.spacing.unit * 3,
+    padding: theme.spacing() * 3,
     display: 'flex'
   },
   logo: {
     backgroundColor: '#F1FBFA',
     color: '#29A7A0',
-    marginRight: theme.spacing.unit * 2
+    marginRight: theme.spacing() * 2
   },
   logoText: {
     color: '#F1FBFA',
-    paddingTop: theme.spacing.unit,
+    paddingTop: theme.spacing(),
     fontSize: theme.typography.pxToRem(28)
   },
   emailPanel: {
-    padding: theme.spacing.unit * 3,
+    padding: theme.spacing() * 3,
     display: 'flex',
     flexFlow: 'column',
     alignContent: 'center'
   },
   emailLogo: {
-    paddingTop: theme.spacing.unit * 3,
-    paddingBottom: theme.spacing.unit * 2,
+    paddingTop: theme.spacing() * 3,
+    paddingBottom: theme.spacing() * 2,
     textAlign: 'center',
     fontSize: theme.typography.pxToRem(28)
   }

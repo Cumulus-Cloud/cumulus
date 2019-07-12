@@ -5,8 +5,8 @@ import createStyles from '@material-ui/core/styles/createStyles'
 const styles = (theme: Theme) => createStyles({
   contentTypeIcon: {
     color: 'rgba(0, 0, 0, 0.54)',
-    marginRight: theme.spacing.unit * 2,
-    marginLeft: theme.spacing.unit
+    marginRight: theme.spacing() * 2,
+    marginLeft: theme.spacing()
   },
   contentCheck: {
     marginRight: '-6px',
@@ -15,7 +15,7 @@ const styles = (theme: Theme) => createStyles({
   contentName: {
     margin: 0,
     flex: 4,
-    padding: theme.spacing.unit * 2,
+    padding: theme.spacing() * 2,
     display: 'flex',
     alignItems: 'center'
   },
@@ -27,11 +27,11 @@ const styles = (theme: Theme) => createStyles({
   },
   contentModification: {
     flex: 2,
-    padding: theme.spacing.unit * 2
+    padding: theme.spacing() * 2
   },
   contentSize: {
     flex: 1,
-    padding: theme.spacing.unit * 2
+    padding: theme.spacing() * 2
   },
   contentSelected: {
     color: theme.palette.primary.light
@@ -65,7 +65,7 @@ const styles = (theme: Theme) => createStyles({
   },
   loaderSpinner: {
     display: 'block',
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(),
     marginBottom: 0
   },
   loaderText: {

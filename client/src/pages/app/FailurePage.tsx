@@ -38,7 +38,7 @@ const styles = (theme: Theme) => createStyles({
     marginRight: 'auto'
   },
   margin: {
-    margin: theme.spacing.unit,
+    margin: theme.spacing(),
     backgroundColor: theme.palette.primary.light,
     color: 'white'
   },
@@ -56,7 +56,7 @@ const styles = (theme: Theme) => createStyles({
     overflow: 'auto'
   },
   errorTitle: {
-    marginTop: theme.spacing.unit * 3
+    marginTop: theme.spacing() * 3
   }
 })
 

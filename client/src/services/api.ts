@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { Method } from 'axios'
 
 import { EnrichedFile } from 'models/EnrichedFile'
 import { Directory, File, FsNode, DirectoryWithContent, SearchResult, isDirectory, isFile, FsNodeType } from 'models/FsNode'
@@ -46,7 +46,7 @@ export const ApiUtils = {
     return this.withoutPayload('DELETE', path, queryParams)
   },
 
-  withPayload<B, R>(method: string, path: string, body: B, queryParams: Map<string, string>, onProgress: (p: number) => void): Promise<R> {
+  withPayload<B, R>(method: Method, path: string, body: B, queryParams: Map<string, string>, onProgress: (p: number) => void): Promise<R> {
     return axios
       .request({
         method: method,
@@ -79,7 +79,7 @@ export const ApiUtils = {
       })
   },
 
-  withoutPayload<R>(method: string, path: string, queryParams: Map<string, string> = new Map()): Promise<R> {
+  withoutPayload<R>(method: Method, path: string, queryParams: Map<string, string> = new Map()): Promise<R> {
     return axios
       .request({
         method: method,

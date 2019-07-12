@@ -22,7 +22,7 @@ const styles = (theme: Theme) => createStyles({
   },
   icon: {
     color: 'rgba(0, 0, 0, 0.54)',
-    marginRight: theme.spacing.unit
+    marginRight: theme.spacing()
   },
   header: {
     flex: 1,
@@ -32,13 +32,13 @@ const styles = (theme: Theme) => createStyles({
   },
   contentIcon: {
     color: 'rgba(0, 0, 0, 0.54)',
-    marginLeft: theme.spacing.unit,
-    marginRight: theme.spacing.unit * 2
+    marginLeft: theme.spacing(),
+    marginRight: theme.spacing() * 2
   },
   contentDescription: {
     margin: 0,
     flex: 4,
-    padding: theme.spacing.unit * 2,
+    padding: theme.spacing() * 2,
     display: 'flex',
     alignItems: 'center'
   },
@@ -50,11 +50,11 @@ const styles = (theme: Theme) => createStyles({
   },
   contentCreation: {
     flex: 2,
-    padding: theme.spacing.unit * 2
+    padding: theme.spacing() * 2
   },
   contentName: {
     flex: 2,
-    padding: theme.spacing.unit * 2,
+    padding: theme.spacing() * 2,
     display: 'flex'
   },
   contentSelected: {
@@ -79,14 +79,14 @@ const styles = (theme: Theme) => createStyles({
   },
   loader: {
     margin: 'auto',
-    marginTop: theme.spacing.unit * 3,
+    marginTop: theme.spacing() * 3,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'
   },
   loaderSpinner: {
     display: 'block',
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(),
     marginBottom: 0
   },
   loaderText: {

@@ -63,7 +63,7 @@ const styles = (theme: Theme) => createStyles({
     maxHeight: 250,
     overflowY: 'scroll',
     ['&::-webkit-scrollbar']: {
-      width: theme.spacing.unit
+      width: theme.spacing()
     },
     ['&::-webkit-scrollbar-track']: {
       background: theme.palette.background.paper

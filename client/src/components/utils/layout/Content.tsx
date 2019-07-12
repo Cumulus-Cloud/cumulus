@@ -13,8 +13,8 @@ const styles = (theme: Theme) => createStyles({
     flexGrow: 1,
     flexDirection: 'column',
     minWidth: 0,
-    paddingLeft: theme.spacing.unit * 3,
-    paddingRight: theme.spacing.unit * 3,
+    paddingLeft: theme.spacing() * 3,
+    paddingRight: theme.spacing() * 3,
     [theme.breakpoints.down('xs')]: {
       paddingLeft: 0,
       paddingRight: 0,
@@ -47,19 +47,19 @@ const styles = (theme: Theme) => createStyles({
     color: theme.palette.grey[600]
   },
   errorIcon: {
-    marginRight: theme.spacing.unit
+    marginRight: theme.spacing()
   },
   errorInfo : {
     alignItems: 'center',
     display: 'flex'
   },
   errorActions: {
-    paddingTop: theme.spacing.unit * 3
+    paddingTop: theme.spacing() * 3
   },
   loader: {
     display: 'block',
     margin: 'auto',
-    marginTop: theme.spacing.unit * 5
+    marginTop: theme.spacing() * 5
   }
 })
 

@@ -45,13 +45,13 @@ const styles = (theme: Theme) => createStyles({
     display: 'flex',
     alignItems: 'center',
     color: theme.palette.primary.light,
-    paddingRight: theme.spacing.unit * 2,
-    paddingLeft: theme.spacing.unit * 3,
+    paddingRight: theme.spacing() * 2,
+    paddingLeft: theme.spacing() * 3,
     paddingTop: '2px'
   },
   logo: {
     fontSize: '4rem',
-    paddingRight: theme.spacing.unit * 2
+    paddingRight: theme.spacing() * 2
   }
 })
 

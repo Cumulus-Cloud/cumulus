@@ -9,14 +9,14 @@ import { Typography } from '@material-ui/core'
 
 const styles = (theme: Theme) => createStyles({
   root: {
-    padding: theme.spacing.unit * 3,
+    padding: theme.spacing() * 3,
     display: 'flex',
     flexFlow: 'column',
     alignContent: 'center'
   },
   logo: {
-    paddingTop: theme.spacing.unit * 3,
-    paddingBottom: theme.spacing.unit * 2,
+    paddingTop: theme.spacing() * 3,
+    paddingBottom: theme.spacing() * 2,
     textAlign: 'center',
     fontSize: theme.typography.pxToRem(28)
   }
