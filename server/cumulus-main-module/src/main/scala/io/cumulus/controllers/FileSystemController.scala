@@ -7,7 +7,7 @@ import akka.util.ByteString
 import cats.data.EitherT
 import cats.implicits._
 import io.cumulus.controllers.payloads._
-import io.cumulus.controllers.utils.{FileDownloaderUtils, UserAuthentication}
+import io.cumulus.controllers.utils.{FileDownloaderSupport, UserAuthenticationSupport}
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.bodyParser.{BodyParserJson, BodyParserStream}
@@ -33,7 +33,7 @@ class FileSystemController(
 )(implicit
   val ec: ExecutionContext,
   settings: Settings
-) extends AbstractController(cc) with UserAuthentication with ApiUtils with FileDownloaderUtils with BodyParserJson with BodyParserStream {
+) extends AbstractController(cc) with UserAuthenticationSupport with ApiUtils with FileDownloaderSupport with BodyParserJson with BodyParserStream {
 
   /**
     * List all the elements of the filesystem.

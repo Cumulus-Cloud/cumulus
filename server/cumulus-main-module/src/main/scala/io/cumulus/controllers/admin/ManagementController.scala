@@ -1,7 +1,7 @@
 package io.cumulus.controllers.admin
 
 import akka.actor.Scheduler
-import io.cumulus.controllers.utils.UserAuthentication
+import io.cumulus.controllers.utils.UserAuthenticationSupport
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
 import io.cumulus.core.utils.ServerWatchdog
@@ -24,7 +24,7 @@ class ManagementController(
   val sessionService: SessionService
 )(
   implicit val ec: ExecutionContext
-) extends AbstractController(cc) with UserAuthentication with ApiUtils with BodyParserJson {
+) extends AbstractController(cc) with UserAuthenticationSupport with ApiUtils with BodyParserJson {
 
   /**
     * Reload programmatically the server. This will stop then restart the server, reloading everything on the server.

@@ -1,12 +1,10 @@
 package io.cumulus
 
 import java.security.Security
-import scala.concurrent.ExecutionContextExecutor
 
 import _root_.controllers.AssetsComponents
 import akka.actor.Scheduler
 import com.github.ghik.silencer.silent
-import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.softwaremill.macwire._
 import io.cumulus.controllers.utils.LoggingFilter
 import io.cumulus.controllers.{Assets, RecoveryController}
@@ -14,11 +12,13 @@ import io.cumulus.core.controllers.utils.api.{ApiUtils, HttpErrorHandler}
 import io.cumulus.core.utils.ServerWatchdog
 import jsmessages.{JsMessages, JsMessagesFactory}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import play.api.i18n.MessagesApi
+import play.api.i18n.{I18nComponents, MessagesApi}
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
 import play.api.routing.sird._
 import play.api.{ApplicationLoader, BuiltInComponentsFromContext}
+
+import scala.concurrent.ExecutionContextExecutor
 
 
 class CumulusRecoveryComponents(
@@ -27,7 +27,7 @@ class CumulusRecoveryComponents(
 )(
   error: Throwable
 ) extends BuiltInComponentsFromContext(context)
-  with HoconI18nComponents
+  with I18nComponents
   with AssetsComponents
   with ApiUtils {
 
@@ -47,9 +47,9 @@ class CumulusRecoveryComponents(
       controller.index
   }
 
-  // Override messagesApi to use Hocon config
-  override implicit lazy val messagesApi: MessagesApi = wire[HoconMessagesApiProvider].get
-  lazy val jsMessages: JsMessages                     = wire[JsMessagesFactory].all
+  // Implicit message + JS messages
+  implicit lazy val implicitMessagesApi: MessagesApi = messagesApi
+  lazy val jsMessages: JsMessages = wire[JsMessagesFactory].all
 
   // Execution contexts
   implicit lazy val defaultEc: ExecutionContextExecutor = actorSystem.dispatcher

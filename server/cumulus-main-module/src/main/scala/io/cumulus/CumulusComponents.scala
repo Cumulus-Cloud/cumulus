@@ -6,7 +6,6 @@ import java.security.Security
 import _root_.controllers.AssetsComponents
 import akka.actor.{ActorRef, Scheduler}
 import akka.stream.{ActorMaterializer, Materializer}
-import com.marcospereira.play.i18n.{HoconI18nComponents, HoconMessagesApiProvider}
 import com.softwaremill.macwire._
 import com.typesafe.config.{Config, ConfigFactory}
 import io.cumulus.controllers._
@@ -28,7 +27,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
 import play.api._
 import play.api.db.evolutions.{ClassLoaderEvolutionsReader, EvolutionsComponents}
 import play.api.db.{DBComponents, Database, HikariCPComponents}
-import play.api.i18n.MessagesApi
+import play.api.i18n.{I18nComponents, MessagesApi}
 import play.api.libs.mailer.MailerComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
@@ -44,7 +43,7 @@ class CumulusComponents(
   context: ApplicationLoader.Context,
   watchdog: ServerWatchdog
 ) extends BuiltInComponentsFromContext(context)
-  with HoconI18nComponents
+  with I18nComponents
   with AssetsComponents
   with AhcWSComponents
   with DBComponents
@@ -114,9 +113,9 @@ class CumulusComponents(
 
   override implicit lazy val materializer: Materializer = ActorMaterializer()(actorSystem)
 
-  // Override messagesApi to use Hocon config
-  override implicit lazy val messagesApi: MessagesApi = wire[HoconMessagesApiProvider].get
-  lazy val jsMessages: JsMessages                     = wire[JsMessagesFactory].all
+  // Implicit message + JS messages
+  implicit lazy val implicitMessagesApi: MessagesApi = messagesApi
+  lazy val jsMessages: JsMessages                    = wire[JsMessagesFactory].all
 
   // HTTP components
   lazy val loggingFilter: LoggingFilter                = wire[LoggingFilter]
@@ -162,6 +161,5 @@ class CumulusComponents(
 
   // TODO from conf
   //actorSystem.scheduler.schedule(30 second, 60 seconds, taskExecutor, TaskExecutor.ScheduledRun)
-
 
 }

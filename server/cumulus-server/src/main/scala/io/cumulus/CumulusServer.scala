@@ -10,7 +10,7 @@ class CumulusServer(watchdog: ServerWatchdog) extends CumulusAkkaServer {
 
   val application: Application = {
     // Create the default context of the application
-    val context: ApplicationLoader.Context = ApplicationLoader.createContext(env)
+    val context = ApplicationLoader.Context.create(env)
 
     // Init the logger
     LoggerConfigurator(context.environment.classLoader).foreach {

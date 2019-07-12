@@ -10,6 +10,9 @@ class Settings(
   conf: Configuration
 ) {
 
+  val underlying: Configuration =
+    conf
+
   object management {
     val allowSignUp: Boolean = conf.get[Boolean]("cumulus.management.allow-sign-up")
     val sessionDuration: Int = conf.get[Int]("cumulus.management.session-duration")

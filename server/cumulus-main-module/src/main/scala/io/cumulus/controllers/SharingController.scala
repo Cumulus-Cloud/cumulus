@@ -3,7 +3,7 @@ package io.cumulus.controllers
 import java.util.UUID
 
 import io.cumulus.controllers.payloads.SharingCreationPayload
-import io.cumulus.controllers.utils.UserAuthentication
+import io.cumulus.controllers.utils.UserAuthenticationSupport
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
@@ -25,7 +25,7 @@ class SharingController(
 )(implicit
   val ec: ExecutionContext,
   settings: Settings
-) extends AbstractController(cc) with UserAuthentication with BodyParserJson with ApiUtils {
+) extends AbstractController(cc) with UserAuthenticationSupport with BodyParserJson with ApiUtils {
 
   /**
     * Lists all sharings of the authenticated user.

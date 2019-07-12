@@ -1,6 +1,6 @@
 organization in ThisBuild := "io.cumulus"
 
-scalaVersion in ThisBuild := "2.12.5"
+scalaVersion in ThisBuild := "2.12.8"
 
 scalacOptions in ThisBuild := Seq(
   "-encoding",
@@ -29,7 +29,7 @@ lazy val commonSettings = Seq(
   // Application common info
   version := "0.1-SNAPSHOT",
   organization := "io.cumulus",
-  scalaVersion := "2.12.7",
+  scalaVersion := "2.12.8",
 
   // Wart warnings
   wartremoverWarnings ++= Seq(
@@ -68,7 +68,7 @@ lazy val cumulusCore =
       libraryDependencies ++= Seq(
         // i18n
         Dependencies.jsMessages.core,
-        Dependencies.i18nHocon.core,
+        //Dependencies.i18nHocon.core,
         // Persistence
         jdbc,
         Dependencies.postgresql.core,

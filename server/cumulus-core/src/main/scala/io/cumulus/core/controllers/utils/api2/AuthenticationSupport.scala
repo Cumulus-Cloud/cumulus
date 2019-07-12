@@ -1,10 +1,12 @@
-package io.cumulus.core.controllers.utils.authentication
+package io.cumulus.core.controllers.utils.api2
 
-import io.cumulus.core.Logging
-import io.cumulus.core.controllers.utils.api.ApiErrors
-import io.cumulus.core.controllers.utils.authentication.Authentication._
+import java.time.Clock
+
+import io.cumulus.core.{Logging, Settings}
 import io.cumulus.core.validation.AppError
+import io.cumulus.core.controllers.utils.api2.AuthenticationSupport._
 import pdi.jwt.JwtSession
+import play.api.Configuration
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Format
 import play.api.mvc._
@@ -58,7 +60,13 @@ import scala.concurrent.{ExecutionContext, Future}
   * @tparam SESSION The enriched session type read from the local server. The way to retrieve this session
   *                 using the `SESSION` session is up to the implementation.
   */
-trait Authentication[TOKEN, SESSION] extends BaseController with I18nSupport with Logging {
+trait AuthenticationSupport[TOKEN, SESSION] extends BaseController with I18nSupport with ErrorSupport with Logging {
+
+  implicit def settings: Settings
+
+  // Implicit used by jwt sessions
+  implicit val clock: Clock = Clock.systemUTC
+  implicit val conf: Configuration = settings.underlying
 
   case class AuthenticatedRequest[A](authenticatedSession: SESSION, request: Request[A]) extends WrappedRequest[A](request)
 
@@ -90,7 +98,7 @@ trait Authentication[TOKEN, SESSION] extends BaseController with I18nSupport wit
       * Default error handler returning a `ApiErrors.unauthorized("api-error.forbidden").toResult`.
       */
     def defaultErrorHandler: ErrorHandlerAsync = { implicit request: Request[_] =>
-      Future.successful(ApiErrors.unauthorized("api-error.forbidden").toResult)
+      Future.successful(AppError.unauthorized.toResult)
     }
 
     def apply(
@@ -195,14 +203,8 @@ trait Authentication[TOKEN, SESSION] extends BaseController with I18nSupport wit
   /**
     * Implicit converter from authenticated request to SESSION.
     */
-  implicit def authenticatedRequestToAuthentication[A](implicit r: AuthenticatedRequest[A]): SESSION =
-    r.authenticatedSession
-
-  /**
-    * Implicit converter from authenticated request to anything able to be implicitly be converted from SESSION.
-    */
-  implicit def authenticatedRequestTo[A, B](implicit r: AuthenticatedRequest[A], converter: SESSION => B): B =
-    converter(r.authenticatedSession)
+  implicit def authenticatedRequestToAuthentication(implicit request: AuthenticatedRequest[_]): SESSION =
+    request.authenticatedSession
 
   /**
     * Create the JWT token for the session.
@@ -214,7 +216,7 @@ trait Authentication[TOKEN, SESSION] extends BaseController with I18nSupport wit
 
 }
 
-object Authentication {
+object AuthenticationSupport {
 
   val tokenField = "content"
 
@@ -229,13 +231,13 @@ object Authentication {
       * @param jwtSession The JWT session to serialize.
       */
     def withAuthentication(jwtSession: JwtSession): Result =
-      result.withCookies(Cookie(Authentication.cookieName, jwtSession.refresh().serialize))
+      result.withCookies(Cookie(AuthenticationSupport.cookieName, jwtSession.refresh().serialize))
 
     /**
       * Remove the cookie containing the aforementioned session.
       */
     def withoutAuthentication: Result =
-      result.discardingCookies(DiscardingCookie(Authentication.cookieName))
+      result.discardingCookies(DiscardingCookie(AuthenticationSupport.cookieName))
 
   }
 }

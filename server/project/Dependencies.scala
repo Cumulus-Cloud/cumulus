@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
 
   object postgresql {
-    val version = "42.2.2"
+    val version = "42.2.6"
 
     val core = "org.postgresql" % "postgresql" % version
   }
@@ -33,12 +33,6 @@ object Dependencies {
     val core = "org.typelevel" %% "cats-core" % version
   }
 
-  object i18nHocon {
-    val version = "1.0.1"
-
-    val core = "com.github.marcospereira" %% "play-hocon-i18n" % version
-  }
-
   object commonsIO {
     val version = "2.6"
 
@@ -58,13 +52,13 @@ object Dependencies {
   }
 
   object jwtPlay {
-    val version = "0.16.0"
+    val version = "3.0.1"
 
     val core = "com.pauldijou" %% "jwt-play" % version
   }
 
   object bouncyCastle {
-    val version = "1.59"
+    val version = "1.62"
 
     val core = "org.bouncycastle" % "bcprov-jdk15on" % version
   }
@@ -77,32 +71,32 @@ object Dependencies {
   }
 
   object pdfbox {
-    val version = "2.0.9"
+    val version = "2.0.16"
 
     val core = "org.apache.pdfbox" % "pdfbox" % version exclude("commons-logging", "commons-logging")
   }
 
   object scalatags {
-    val version = "0.6.7"
+    val version = "0.7.0"
 
     val core = "com.lihaoyi" %% "scalatags" % version
   }
 
   object scalacss {
-    val version = "0.5.3"
+    val version = "0.5.6"
 
     val core = "com.github.japgolly.scalacss" %% "core" % version
     val scalatagsExt = "com.github.japgolly.scalacss" %% "ext-scalatags" % version
   }
 
   object macWire {
-    val version = "2.3.1"
+    val version = "2.3.3"
 
     val macros = "com.softwaremill.macwire" %% "macros" % version
   }
 
   object silencer {
-    val version = "0.6"
+    val version = "1.4.1"
 
     val plugin = compilerPlugin("com.github.ghik" %% "silencer-plugin" % version)
     val lib    = "com.github.ghik" %% "silencer-lib" % version

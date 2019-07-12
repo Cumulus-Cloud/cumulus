@@ -1,7 +1,7 @@
 package io.cumulus.controllers.admin
 
 import io.cumulus.controllers.payloads.{SignUpPayload, UserCreationPayload}
-import io.cumulus.controllers.utils.UserAuthentication
+import io.cumulus.controllers.utils.UserAuthenticationSupport
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
@@ -20,7 +20,7 @@ class UserAdminController(
 )(implicit
   val ec: ExecutionContext,
   settings: Settings
-) extends AbstractController(cc) with UserAuthentication with ApiUtils with BodyParserJson {
+) extends AbstractController(cc) with UserAuthenticationSupport with ApiUtils with BodyParserJson {
 
   /**
     * Creates a new user.

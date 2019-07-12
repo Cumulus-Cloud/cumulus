@@ -8,8 +8,7 @@ import play.api.mvc.{Filter, RequestHeader, Result}
 
 class LoggingFilter(implicit val mat: Materializer, ec: ExecutionContext) extends Filter {
 
-  def apply(nextFilter: RequestHeader => Future[Result])
-    (requestHeader: RequestHeader): Future[Result] = {
+  def apply(nextFilter: RequestHeader => Future[Result])(requestHeader: RequestHeader): Future[Result] = {
 
     val startTime = System.currentTimeMillis
 
@@ -23,4 +22,5 @@ class LoggingFilter(implicit val mat: Materializer, ec: ExecutionContext) extend
       result.withHeaders("Request-Time" -> requestTime.toString)
     }
   }
+
 }

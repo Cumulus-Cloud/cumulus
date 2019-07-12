@@ -1,7 +1,7 @@
 package io.cumulus.controllers
 
 import com.github.ghik.silencer.silent
-import io.cumulus.controllers.utils.UserAuthentication
+import io.cumulus.controllers.utils.UserAuthenticationSupport
 import io.cumulus.core.Settings
 import io.cumulus.core.controllers.utils.api.ApiUtils
 import io.cumulus.core.persistence.query.QueryPagination
@@ -22,7 +22,7 @@ class HomeController(
 )(implicit
   val ec: ExecutionContext,
   settings: Settings
-) extends AbstractController(cc) with UserAuthentication with ApiUtils {
+) extends AbstractController(cc) with UserAuthenticationSupport with ApiUtils {
 
   val index: Action[AnyContent] = AuthenticatedAction.withErrorHandler { implicit request =>
 

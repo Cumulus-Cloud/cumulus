@@ -1,7 +1,8 @@
 package io.cumulus.controllers.utils
 
-import io.cumulus.core.controllers.utils.authentication.Authentication
+import io.cumulus.core.controllers.utils.api2.AuthenticationSupport
 import io.cumulus.core.validation.AppError
+import io.cumulus.models.user.User
 import io.cumulus.models.user.session.{AuthenticationToken, UserSession}
 import io.cumulus.services.SessionService
 import play.api.i18n.{I18nSupport, Lang, Messages}
@@ -10,10 +11,11 @@ import play.api.mvc.{Request, RequestHeader}
 
 import scala.concurrent.Future
 
+
 /**
   * Authentication for Cumulus controllers, using the `SessionService` to load users.
   */
-trait UserAuthentication extends Authentication[AuthenticationToken, UserSession] with I18nSupport {
+trait UserAuthenticationSupport extends AuthenticationSupport[AuthenticationToken, UserSession] with I18nSupport {
 
   def sessionService: SessionService
 
@@ -41,5 +43,12 @@ trait UserAuthentication extends Authentication[AuthenticationToken, UserSession
         // Fallback if not an authenticated request
         super.request2Messages(otherRequest)
     }
+
+
+  /**
+    * Implicit converter from an authenticated request to user.
+    */
+  implicit def authenticatedRequestToUser(implicit request: AuthenticatedRequest[_]): User =
+    request.authenticatedSession.user
 
 }

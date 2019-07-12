@@ -9,7 +9,42 @@ import play.api.http.HttpEntity
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 
-trait FileDownloaderUtils {
+trait DownloadSupport {
+
+  protected def downloadFile(
+    file: File,
+    content: Source[ByteString, _],
+    forceDownload: Boolean
+  ): Result =
+    downloadFile(file.name, file.size, file.mimeType, content, forceDownload)
+
+  protected def downloadFile(
+    fileName: String,
+    size: Long,
+    mimeType: String,
+    content: Source[ByteString, _],
+    forceDownload: Boolean
+  ): Result = {
+
+    Ok.sendEntity(
+      HttpEntity.Streamed(
+        content,
+        Some(size),
+        Some(mimeType)
+      )
+    )
+      .withHeaders(
+        if(forceDownload)
+          "Content-Disposition" -> s"attachment; filename*=UTF-8''$fileName"
+        else
+          "Content-Disposition" -> "inline"
+      )
+
+  }
+
+}
+
+trait StreamSupport {
 
   protected def headerRange(request: Request[_], file: File): Either[AppError, Option[Range]] = {
 
@@ -34,37 +69,6 @@ trait FileDownloaderUtils {
       case maybeValidRange =>
         Right(maybeValidRange)
     }
-  }
-
-  protected def downloadFile(
-    file: File,
-    content: Source[ByteString, _],
-    forceDownload: Boolean
-  ): Result =
-    downloadFile(file.name, file.size, file.mimeType, content, forceDownload)
-
-  protected def downloadFile(
-    fileName: String,
-    size: Long,
-    mimeType: String,
-    content: Source[ByteString, _],
-    forceDownload: Boolean
-  ): Result = {
-
-    Ok.sendEntity(
-      HttpEntity.Streamed(
-        content,
-        Some(size),
-        Some(mimeType)
-      )
-    )
-    .withHeaders(
-      if(forceDownload)
-        "Content-Disposition" -> s"attachment; filename*=UTF-8''$fileName"
-      else
-        "Content-Disposition" -> "inline"
-    )
-
   }
 
   protected def streamFile(

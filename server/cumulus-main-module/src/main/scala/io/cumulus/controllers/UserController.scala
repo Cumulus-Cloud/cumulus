@@ -5,11 +5,9 @@ import java.util.UUID
 import cats.data.EitherT
 import cats.implicits._
 import io.cumulus.controllers.payloads._
-import io.cumulus.controllers.utils.UserAuthentication
+import io.cumulus.controllers.utils.Api
 import io.cumulus.core.Settings
-import io.cumulus.core.controllers.utils.api.ApiUtils
-import io.cumulus.core.controllers.utils.authentication.Authentication._
-import io.cumulus.core.controllers.utils.bodyParser.BodyParserJson
+import io.cumulus.core.controllers.utils.api2.AuthenticationSupport._
 import io.cumulus.core.persistence.query.QueryPagination
 import io.cumulus.core.validation.AppError
 import io.cumulus.models.user.session.UserSession
@@ -20,6 +18,7 @@ import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
+
 class UserController (
   cc: ControllerComponents,
   userService: UserService,
@@ -27,25 +26,21 @@ class UserController (
   val sessionService: SessionService
 )(implicit
   val ec: ExecutionContext,
-  settings: Settings
-) extends AbstractController(cc) with UserAuthentication with ApiUtils with BodyParserJson {
+  val settings: Settings
+) extends Api(cc) {
 
   /**
     * The sign up action, to create a new account.
     */
   def signUp: Action[SignUpPayload] =
     Action.async(parseJson[SignUpPayload]) { implicit request =>
-      ApiResponse {
-        val signInPayload = request.body
+      val signInPayload = request.body
 
-        request2Messages
-
-        userService.createUser(
-          signInPayload.email,
-          signInPayload.login,
-          signInPayload.password
-        )
-      }
+      userService.createUser(
+        signInPayload.email,
+        signInPayload.login,
+        signInPayload.password
+      ).toResult
     }
 
   /**
@@ -53,15 +48,13 @@ class UserController (
     */
   def setFirstPassword: Action[SetFirstPasswordPayload] =
     Action.async(parseJson[SetFirstPasswordPayload]) { implicit request =>
-      ApiResponse {
-        val passwordPayload = request.body
+      val passwordPayload = request.body
 
-        userService.setUserFirstPassword(
-          passwordPayload.login,
-          passwordPayload.password,
-          passwordPayload.validationCode
-        )
-      }
+      userService.setUserFirstPassword(
+        passwordPayload.login,
+        passwordPayload.password,
+        passwordPayload.validationCode
+      ).toResult
     }
 
   /**
@@ -85,9 +78,7 @@ class UserController (
     Action.async(parseJson[LoginPayload]) { implicit request =>
       val loginPayload = request.body
 
-      ApiResponse {
-        userService.resendEmail(loginPayload.login, loginPayload.password)
-      }
+      userService.resendEmail(loginPayload.login, loginPayload.password).toResult
     }
 
   /**
@@ -99,23 +90,17 @@ class UserController (
     Action.async(parseJson[LoginPayload]) { implicit request =>
       val loginPayload = request.body
 
-      val maybeSession =
-        for {
-          user               <- EitherT(userService.checkLoginUser(loginPayload.login, loginPayload.password))
-          sessionInformation <- EitherT(sessionService.createSession(request.remoteAddress, user))
-          session            =  UserSession(user, sessionInformation, loginPayload.password)
-        } yield session
-
-      maybeSession
-      .map { session =>
-        val token = createJwtSession(session)
-        Ok(Json.obj(
-          "token" -> token.refresh().serialize,
+      for {
+        user               <- EitherT(userService.checkLoginUser(loginPayload.login, loginPayload.password))
+        sessionInformation <- EitherT(sessionService.createSession(request.remoteAddress, user))
+        session            =  UserSession(user, sessionInformation, loginPayload.password)
+        token              =  createJwtSession(session)
+      } yield {
+        Json.obj(
+          "token" -> token.serialize,
           "user" -> Json.toJson(session.user)
-        )).withAuthentication(token)
+        ).toResult.withAuthentication(token)
       }
-      .leftMap(toApiError)
-      .merge
     }
 
   /**
@@ -123,9 +108,7 @@ class UserController (
     */
   def me: Action[AnyContent] =
     AuthenticatedAction { implicit request =>
-      ApiResponse {
-        Right(request.authenticatedSession.user)
-      }
+      request.authenticatedSession.user.toResult
     }
 
   /**
@@ -133,11 +116,9 @@ class UserController (
     */
   def changeLang: Action[LangUpdatePayload] =
     AuthenticatedAction.async(parseJson[LangUpdatePayload]) { implicit request =>
-      ApiResponse {
-        val langUpdatePayload = request.body
+      val langUpdatePayload = request.body
 
-        userService.updateUserLanguage(langUpdatePayload.lang)
-      }
+      userService.updateUserLanguage(langUpdatePayload.lang).toResult
     }
 
   /**
@@ -145,24 +126,25 @@ class UserController (
     */
   def changePassword: Action[PasswordUpdatePayload] =
     AuthenticatedAction.action(parseJson[PasswordUpdatePayload])(refreshToken = false).async { implicit request =>
-      ApiResponse.result {
-        val passwordUpdatePayload = request.body
+      val passwordUpdatePayload = request.body
 
-        userService
-          .updateUserPassword(
-            passwordUpdatePayload.previousPassword,
-            passwordUpdatePayload.newPassword
-          )
-          .map(_.map { updatedUser =>
-            val session = UserSession(updatedUser, request.authenticatedSession.information, passwordUpdatePayload.newPassword)
-            val token   = createJwtSession(session)
+      userService
+        .updateUserPassword(
+          passwordUpdatePayload.previousPassword,
+          passwordUpdatePayload.newPassword
+        )
+        .map(_.map { updatedUser =>
+          val session = UserSession(updatedUser, request.authenticatedSession.information, passwordUpdatePayload.newPassword)
+          val token   = createJwtSession(session)
 
-            Ok(Json.obj(
+          Json
+            .obj(
               "token" -> token.refresh().serialize,
               "user" -> Json.toJson(session.user)
-            )).withAuthentication(token)
-          })
-      }
+            )
+            .toResult
+            .withAuthentication(token)
+        })
     }
 
   // TODO: route to change email (+email validation)
@@ -175,28 +157,23 @@ class UserController (
     */
   def listSessions(limit: Option[Int], offset: Option[Int]): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
-      ApiResponse.paginated {
-        // TODO allow filter to only active session, with a custom duration
-        val pagination = QueryPagination(limit, offset)
+      // TODO allow filter to only active session, with a custom duration
+      val pagination = QueryPagination(limit, offset)
 
-        sessionService.listSessions(pagination)
-      }
+      sessionService.listSessions(pagination).toResult
     }
 
   /**
     * List the events for the current user.
-    * @param limit
-    * @param offset
-    * @return
+    * @param limit The maximum number of events to return. Used for pagination.
+    * @param offset The offset of sessions to events. Used for pagination.
     */
   def listEvents(limit: Option[Int], offset: Option[Int]): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
-      ApiResponse.paginated {
-        // TODO allow filter type of event
-        val pagination = QueryPagination(limit, offset)
+      // TODO allow filter type of event
+      val pagination = QueryPagination(limit, offset)
 
-        eventService.listEvents(pagination)
-      }
+      eventService.listEvents(pagination).toResult
     }
 
   /**
@@ -204,9 +181,7 @@ class UserController (
     */
   def getSession(sessionId: UUID): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
-      ApiResponse {
-        sessionService.findSession(sessionId)
-      }
+      sessionService.findSession(sessionId).toResult
     }
 
   /**
@@ -216,12 +191,10 @@ class UserController (
     */
   def revokeSession(sessionId: UUID): Action[AnyContent] =
     AuthenticatedAction.async { implicit request =>
-      ApiResponse {
-        if(request.authenticatedSession.information.id == sessionId)
-          Future.successful(Left(AppError.validation("validation.user.session-cant-revoke-self")))
-        else
-          sessionService.revokeSession(sessionId, request.remoteAddress)
-      }
+      if(request.authenticatedSession.information.id == sessionId)
+        Future.successful(AppError.validation("validation.user.session-cant-revoke-self").toResult)
+      else
+        sessionService.revokeSession(sessionId, request.remoteAddress).toResult
     }
 
   /**
