@@ -2,7 +2,7 @@ import Api from 'services/api'
 
 import { ContextState } from 'utils/store'
 
-import { ApiError } from 'models/ApiError'
+import { AppError } from 'models/ApiError'
 import { FsNode } from 'models/FsNode'
 import { ApiList } from 'models/utils'
 
@@ -32,7 +32,7 @@ export const deleteNodes = (ctx: ContextState<State>) => (nodes: FsNode[], delet
       hidePopup(ctx)()
       getDirectory(ctx)(currentPath) // Reload the current path
     })
-    .catch((e: ApiError) => {
+    .catch((e: AppError) => {
       setState({
         nodeDeletion: {
           loading: false,

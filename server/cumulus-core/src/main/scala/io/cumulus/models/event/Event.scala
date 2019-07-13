@@ -4,7 +4,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
-import io.cumulus.core.persistence.anorm.AnormEnum
+import io.cumulus.persistence.anorm.AnormEnum
 import io.cumulus.models.fs.{FsNode, FsNodeType, Path}
 import io.cumulus.models.user.User
 import play.api.libs.json._

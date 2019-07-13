@@ -6,6 +6,7 @@ import scalatags.Text.all.Tag
 
 import scala.language.postfixOps
 
+
 /**
   * Base for all static pages. Static pages are not handled by react, and usually show some information with
   * limited interactions with the user.

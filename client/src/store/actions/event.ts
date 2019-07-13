@@ -5,7 +5,7 @@ import { ContextState } from 'utils/store'
 import { State } from 'store/store'
 
 import { ApiList } from 'models/utils'
-import { ApiError } from 'models/ApiError'
+import { AppError } from 'models/ApiError'
 import { Event } from 'models/Event'
 
 
@@ -34,7 +34,7 @@ export const getEvents = ({ setState, getState }: ContextState<State>) => () => 
         }
       }))
     })
-    .catch((e: ApiError) => {
+    .catch((e: AppError) => {
       setState(state => ({
         events: {
           ...state.events,

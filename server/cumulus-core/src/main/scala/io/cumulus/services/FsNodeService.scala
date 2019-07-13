@@ -3,12 +3,13 @@ package io.cumulus.services
 import java.time.LocalDateTime
 import java.util.UUID
 
-import io.cumulus.core.Logging
-import io.cumulus.core.persistence.query.{QueryE, QueryPagination, QueryRunner}
-import io.cumulus.core.persistence.query.QueryRunner._
-import io.cumulus.core.persistence.query.QueryE._
-import io.cumulus.core.utils.PaginatedList
-import io.cumulus.core.validation.AppError
+import io.cumulus.Logging
+import io.cumulus.persistence.query.{QueryE, QueryPagination, QueryRunner}
+import io.cumulus.persistence.query.QueryRunner._
+import io.cumulus.persistence.query.QueryE._
+import io.cumulus.utils.{EnrichedList, PaginatedList}
+import io.cumulus.utils.EnrichedList._
+import io.cumulus.validation.AppError
 import io.cumulus.models.event.{NodeCreationEvent, NodeDeletionEvent, NodeMoveEvent}
 import io.cumulus.models.fs._
 import io.cumulus.models.user.User
@@ -241,7 +242,7 @@ class FsNodeService(
     * @param to The new path of the node.
     * @param user The user performing the operation.
     */
-  def moveNodes(ids: Seq[UUID], to: Path)(implicit user: User): Future[Either[AppError, Seq[FsNode]]] = {
+  def moveNodes(ids: Seq[UUID], to: Path)(implicit user: User): Future[Either[AppError, EnrichedList[FsNode]]] = {
 
     for {
       // Test that the destination folder exists
@@ -255,7 +256,7 @@ class FsNodeService(
         moveNodeInternal(node.id, to ++ node.name).query
       })
 
-    } yield movedNodes
+    } yield movedNodes.toEnrichedList
 
   }.commit()
 
@@ -322,12 +323,12 @@ class FsNodeService(
     *                        any children.
     * @param user The user performing the operation.
     */
-  def deleteNodes(ids: Seq[UUID], deleteContent: Boolean)(implicit user: User): Future[Either[AppError, Seq[FsNode]]] = {
+  def deleteNodes(ids: Seq[UUID], deleteContent: Boolean)(implicit user: User): Future[Either[AppError, EnrichedList[FsNode]]] = {
 
     if (deleteContent)
-      QueryE.seq(ids.map(deleteNodeWithContent(_).query))
+      QueryE.seq(ids.map(deleteNodeWithContent(_).query)).map(_.toEnrichedList)
     else
-      QueryE.seq(ids.map(deleteNodeWithoutContent(_).query))
+      QueryE.seq(ids.map(deleteNodeWithoutContent(_).query)).map(_.toEnrichedList)
 
   }.commit()
 

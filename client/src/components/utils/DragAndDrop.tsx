@@ -55,7 +55,7 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
     document.removeEventListener('mousemove', this.dragHandler)
     document.removeEventListener('mouseup', this.dragEndHandler)
     document.removeEventListener('contextmenu', this.dragEndHandler)
-    delete document.body.style.cursor
+    document.body.style.cursor = ""
   }
 
   dragEndHandler = (_: MouseEvent) => {
@@ -101,7 +101,7 @@ export class DragAndDrop<T> extends React.Component<DragAndDropProps<T>, State<T
 
   reset() {
     this.setState({ nextDrag: undefined, dragInfo: undefined })
-    delete document.body.style.cursor
+    document.body.style.cursor = ""
   }
 
   draggable = (props: DraggableProps<T>) => (

@@ -1,11 +1,11 @@
 package io.cumulus.services.admin
 
-import io.cumulus.core.Settings
-import io.cumulus.core.persistence.query.{QueryE, QueryPagination, QueryRunner}
-import io.cumulus.core.persistence.query.QueryE._
-import io.cumulus.core.persistence.query.QueryRunner._
-import io.cumulus.core.utils.PaginatedList
-import io.cumulus.core.validation.AppError
+import io.cumulus.Settings
+import io.cumulus.persistence.query.{QueryE, QueryPagination, QueryRunner}
+import io.cumulus.persistence.query.QueryE._
+import io.cumulus.persistence.query.QueryRunner._
+import io.cumulus.utils.PaginatedList
+import io.cumulus.validation.AppError
 import io.cumulus.models.user.{User, UserRole, UserSecurity, UserUpdate}
 import io.cumulus.persistence.stores.UserStore.{emailField, loginField}
 import io.cumulus.persistence.stores.filters.UserFilter
@@ -16,6 +16,7 @@ import io.cumulus.services.{MailService, UserService, UserServiceCommon}
 import play.api.i18n.Messages
 
 import scala.concurrent.Future
+
 
 /**
   * User admin service, which handle the administration of the users.
@@ -65,9 +66,10 @@ class UserAdminService(
 
   /**
     * Lists all the users. Only usable by an admin.
-    * @param pagination The pagination to use. See [[io.cumulus.core.persistence.query.QueryPagination QueryPagination]].
-    * @param filter The filter to use. See [[io.cumulus.persistence.stores.filters.UserFilter UserFilter]].
-    * @param admin The admin performing the operation.
+ *
+    * @param pagination The pagination to use. See [[io.cumulus.persistence.query.QueryPagination QueryPagination]].
+    * @param filter     The filter to use. See [[io.cumulus.persistence.stores.filters.UserFilter UserFilter]].
+    * @param admin      The admin performing the operation.
     */
   def listUsers(
     pagination: QueryPagination,

@@ -20,7 +20,6 @@
     "react-dom": "16.8.6",
     "react-router-dom": "5.0.1",
     "react-window": "1.8.5",
-    "throttle-debounce": "2.1.0",
     "jss": "10.0.0-alpha.3",
     "uuid": "3.3.2"
   },
@@ -31,7 +30,6 @@
     "@types/react-router-dom": "4.3.4",
     "@types/uuid": "3.4.5",
     "@types/classnames": "2.2.9",
-    "@types/throttle-debounce": "1.1.1",
     "@types/jss": "9.5.8",
     "awesome-typescript-loader": "5.2.1",
     "cross-env": "5.2.0",

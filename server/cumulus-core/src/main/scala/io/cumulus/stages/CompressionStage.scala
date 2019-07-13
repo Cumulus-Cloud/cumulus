@@ -3,7 +3,8 @@ package io.cumulus.stages
 import akka.NotUsed
 import akka.stream.scaladsl.{Compression, Flow}
 import akka.util.ByteString
-import io.cumulus.core.validation.AppError
+import io.cumulus.validation.AppError
+
 
 /**
   * Abstract compression stage used to compress or decompress a file.

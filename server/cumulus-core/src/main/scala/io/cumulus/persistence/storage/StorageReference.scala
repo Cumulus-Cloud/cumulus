@@ -4,8 +4,8 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 import akka.util.ByteString
-import io.cumulus.core.json.JsonFormat._
-import io.cumulus.core.utils.Crypto
+import io.cumulus.json.JsonFormat._
+import io.cumulus.utils.Crypto
 import play.api.libs.json.{Format, Json}
 
 /**

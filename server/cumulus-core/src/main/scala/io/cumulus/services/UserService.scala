@@ -1,10 +1,10 @@
 package io.cumulus.services
 
-import io.cumulus.core.Settings
-import io.cumulus.core.persistence.query.{QueryE, QueryRunner}
-import io.cumulus.core.persistence.query.QueryRunner._
-import io.cumulus.core.persistence.query.QueryE._
-import io.cumulus.core.validation.AppError
+import io.cumulus.Settings
+import io.cumulus.persistence.query.{QueryE, QueryRunner}
+import io.cumulus.persistence.query.QueryRunner._
+import io.cumulus.persistence.query.QueryE._
+import io.cumulus.validation.AppError
 import io.cumulus.models.user.session.UserSession
 import io.cumulus.models.user.{User, UserSecurity}
 import io.cumulus.persistence.stores.UserStore._
@@ -15,6 +15,7 @@ import play.api.i18n.{Lang, Messages}
 
 import scala.concurrent.Future
 import scala.util.Try
+
 
 /**
   * User service, which handle the business logic and validations of the users.

@@ -1,17 +1,18 @@
 package io.cumulus.services
 
-import io.cumulus.core.Logging
-import io.cumulus.core.persistence.query.QueryRunner._
-import io.cumulus.core.persistence.query.{QueryE, QueryPagination, QueryRunner}
-import io.cumulus.core.utils.PaginatedList
-import io.cumulus.core.validation.AppError
+import io.cumulus.Logging
 import io.cumulus.models.event.Event
 import io.cumulus.models.user.User
+import io.cumulus.persistence.query.{QueryE, QueryPagination, QueryRunner}
+import io.cumulus.persistence.query.QueryRunner._
 import io.cumulus.persistence.stores.EventStore
 import io.cumulus.persistence.stores.filters.EventFilter
 import io.cumulus.persistence.stores.orderings.{EventOrdering, EventOrderingType}
+import io.cumulus.utils.PaginatedList
+import io.cumulus.validation.AppError
 
 import scala.concurrent.Future
+
 
 class EventService(
   eventStore: EventStore

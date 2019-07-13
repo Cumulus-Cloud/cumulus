@@ -1,8 +1,8 @@
 package io.cumulus.services
 
-import io.cumulus.core.Logging
-import io.cumulus.core.validation.AppError
-import io.cumulus.core.task.{OnceTask, RecurrentTask}
+import io.cumulus.Logging
+import io.cumulus.validation.AppError
+import io.cumulus.task.{OnceTask, RecurrentTask}
 
 import scala.concurrent.{ExecutionContext, Future}
 

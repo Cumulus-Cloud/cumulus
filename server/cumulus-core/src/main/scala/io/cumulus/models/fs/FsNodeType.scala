@@ -3,7 +3,7 @@ package io.cumulus.models.fs
 import scala.collection.immutable
 
 import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
-import io.cumulus.core.persistence.anorm.AnormEnum
+import io.cumulus.persistence.anorm.AnormEnum
 import play.api.mvc.QueryStringBindable
 
 sealed abstract class FsNodeType extends EnumEntry

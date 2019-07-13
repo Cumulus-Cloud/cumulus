@@ -1,4 +1,4 @@
-import  React from 'react'
+import React from 'react'
 import { Theme } from '@material-ui/core/styles/createMuiTheme'
 import createStyles from '@material-ui/core/styles/createStyles'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
@@ -7,7 +7,6 @@ import InputAdornment from '@material-ui/core/InputAdornment'
 import SearchIcon from '@material-ui/icons/Search'
 import { Search } from 'store/states/fsState'
 import classnames from 'classnames'
-
 
 const styles = (_: Theme) => createStyles({
   searchBar: {
@@ -26,42 +25,36 @@ type Props = {
   className?: string
 } & WithStyles<typeof styles>
 
-type State = {}
+function SearchBar(props: Props) {
 
-class SearchBar extends React.Component<Props, State> {
-
-  state: State = {}
-
-  onSearchBarFocus() {
-    this.props.onSearchBarFocus && this.props.onSearchBarFocus()
+  function onSearchBarFocus() {
+    props.onSearchBarFocus && props.onSearchBarFocus()
   }
 
-  onSearchBarBlur() {
-    this.props.onSearchBarBlur && this.props.onSearchBarBlur()
+  function onSearchBarBlur() {
+    props.onSearchBarBlur && props.onSearchBarBlur()
   }
 
-  render() {
-    const { search, classes, onSearchQueryChange, className } = this.props
+  const { search, onSearchQueryChange, classes, className } = props
 
-    return (
-      <TextField
-        placeholder="Rechercher un élément.."
-        margin="normal"
-        className={ classnames(classes.searchBar, className) }
-        onFocus={ () => this.onSearchBarFocus() }
-        onBlur={ () => this.onSearchBarBlur() }
-        onChange={ (e) => onSearchQueryChange(e.target.value) }
-        value={ search ? search.query : '' }
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon />
-            </InputAdornment>
-          ),
-        }}
-      />
-    )
-  }
+  return (
+    <TextField
+      placeholder="Rechercher un élément.."
+      margin="normal"
+      className={ classnames(classes.searchBar, className) }
+      onFocus={ () => onSearchBarFocus() }
+      onBlur={ () => onSearchBarBlur() }
+      onChange={ (e) => onSearchQueryChange(e.target.value) }
+      value={ search ? search.query : '' }
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <SearchIcon />
+          </InputAdornment>
+        ),
+      }}
+    />
+  )
 
 }
 

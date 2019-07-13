@@ -1,7 +1,7 @@
 package io.cumulus.services
 
-import io.cumulus.core.{Logging, Settings}
-import io.cumulus.core.validation.AppError
+import io.cumulus.{Logging, Settings}
+import io.cumulus.validation.AppError
 import io.cumulus.models.user.User
 import io.cumulus.views.email.CumulusEmailTemplate
 import play.api.libs.mailer.{Email, SMTPMailer}

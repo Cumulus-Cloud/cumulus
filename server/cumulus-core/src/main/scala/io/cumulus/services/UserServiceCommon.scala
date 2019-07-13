@@ -2,9 +2,9 @@ package io.cumulus.services
 
 import java.util.UUID
 
-import io.cumulus.core.{Logging, Settings}
-import io.cumulus.core.persistence.query.QueryE
-import io.cumulus.core.validation.AppError
+import io.cumulus.{Logging, Settings}
+import io.cumulus.persistence.query.QueryE
+import io.cumulus.validation.AppError
 import io.cumulus.models.fs.Directory
 import io.cumulus.models.user.User
 import io.cumulus.persistence.stores.UserStore.{emailField, loginField}
@@ -14,6 +14,7 @@ import play.api.i18n.Messages
 import play.api.libs.json.__
 
 import scala.util.Try
+
 
 trait UserServiceCommon extends Logging {
 

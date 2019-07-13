@@ -1,8 +1,8 @@
 package io.cumulus.persistence.stores.orderings
 
 import enumeratum.{Enum, EnumEntry}
-import io.cumulus.core.persistence.query.QueryOrderingDirection.{ASC, DESC}
-import io.cumulus.core.persistence.query.{QueryOrdering, QueryOrderingDirection, SqlOrdering}
+import io.cumulus.persistence.query.QueryOrderingDirection.{ASC, DESC}
+import io.cumulus.persistence.query.{QueryOrdering, QueryOrderingDirection, SqlOrdering}
 import io.cumulus.persistence.stores.EventStore._
 
 import scala.collection.immutable

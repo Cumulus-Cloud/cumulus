@@ -3,11 +3,11 @@ package io.cumulus.persistence.storage
 import java.io.{InputStream, OutputStream}
 import java.util.UUID
 
-import io.cumulus.core.validation.AppError
+import io.cumulus.validation.AppError
 import play.api.Configuration
 import scala.concurrent.{ExecutionContext, Future}
 
-import io.cumulus.core.stream.storage.StorageReferenceReader.logger
+import io.cumulus.stream.storage.StorageReferenceReader.logger
 
 /**
   * Storage engine, used to write and read objects.

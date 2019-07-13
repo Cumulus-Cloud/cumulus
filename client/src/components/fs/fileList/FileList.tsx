@@ -1,5 +1,4 @@
-import React from 'react'
-import { debounce } from 'throttle-debounce'
+import React, { useState, useEffect } from 'react'
 import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles'
 import InfoIcon from '@material-ui/icons/Info'
 import WarningIcon from '@material-ui/icons/Warning'
@@ -25,6 +24,26 @@ import { useFilesystem, useAuthentication, useFileUpload, usePopups, useRouting,
 import styles from './styles'
 
 
+function useDebounce<T>(value: T, delay: number) {
+  // State and setters for debounced value
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(
+    () => {
+      const handler = setTimeout(() => {
+        setDebouncedValue(value)
+      }, delay)
+      return () => {
+        clearTimeout(handler)
+      }
+    },
+    [value] 
+  )
+
+  return debouncedValue;
+}
+
+
 type PropsWithStyle = WithStyles<typeof styles> & WithDragAndDrop<FsNode[]>
 
 
@@ -32,6 +51,7 @@ function FilesList(props: PropsWithStyle) {
 
   const [dropzoneActive, setDropzoneActive] = React.useState(false)
   const [localSearch, setLocalSearch] = React.useState<Search | undefined>(undefined)
+  const debouncedSearchTerm = useDebounce(localSearch, 500)
 
   React.useEffect(() => {
     checkIfPathNeedsRefresh()
@@ -65,6 +85,7 @@ function FilesList(props: PropsWithStyle) {
   }
 
   const onChangePath = (path: string) => {
+    setLocalSearch(undefined)
     showFs(path)
     getDirectory(path)
   }
@@ -86,26 +107,23 @@ function FilesList(props: PropsWithStyle) {
     setDropzoneActive(false)
   }
 
-  const onSearchChange = (updatedSearch: Search | undefined) => {
-    setLocalSearch(updatedSearch)
-    debuncedSearchChange(updatedSearch)
-  }
-
   const onSearchQueryChange = (value: string) => {
     const search = localSearch || SearchDefault
-    onSearchChange({ ...search, query: value })
+    setLocalSearch({ ...search, query: value })
   }
 
-  const onEndSearch = () => {
+  useEffect(
+    () => {
+      if (debouncedSearchTerm && debouncedSearchTerm.query !== '')
+        search(debouncedSearchTerm)
+    },
+    [debouncedSearchTerm]
+  )
+
+  function onEndSearch() {
     search(undefined)
     setLocalSearch(undefined)
   }
-
-  const debuncedSearchChange = debounce(400, false, (updatedSearch: Search | undefined) => {
-    if(!updatedSearch || updatedSearch.query !== '')
-      onSearchChange(updatedSearch)
-  })
-
 
   const files = content ? content : []
   const showLoading = loadingCurrent || (loadingContent && files.length === 0)
@@ -115,7 +133,7 @@ function FilesList(props: PropsWithStyle) {
     (
       <>
         <BreadCrumb path={current.path} onChangePath={onChangePath} onMoveNodes={moveNodes} {...dragAndDropProps(props)} />
-        <SearchBar search={ localSearch } onSearchQueryChange={onSearchQueryChange} />
+        <SearchBar search={localSearch} onSearchQueryChange={onSearchQueryChange} />
         <UserBadge />
       </>
     ) : (
@@ -130,7 +148,7 @@ function FilesList(props: PropsWithStyle) {
       text={ `Une erreur est survenue au chargement de ${initialPath} : ${error.message}` }
       actions={
         error.key === 'api-error.not-found' ?
-        <Button variant="outlined" color="primary" className={classes.errorButton} onClick={() =>  onChangePath('/')} >Go back to the root directory</Button> :
+        <Button variant="outlined" color="primary" className={classes.errorButton} onClick={() =>  onChangePath('/')} >Revenir au dossier racine</Button> :
         undefined
       }
     />

@@ -2,7 +2,7 @@ import Api from 'services/api'
 
 import { ContextState } from 'utils/store'
 
-import { ApiError } from 'models/ApiError'
+import { AppError } from 'models/ApiError'
 import { EnrichedFile } from 'models/EnrichedFile'
 
 import { showNotification } from 'store/actions/notifications'
@@ -109,7 +109,7 @@ export const uploadAllFiles = (ctx: ContextState<State>) => () => {
         })
         showNotification(ctx)(`Fichier « ${file.filename} » mis en ligne avec succès`)
       })
-      .catch((e: ApiError) => {
+      .catch((e: AppError) => {
         setState(state => {
           const updatedUploads =
             updateFileProgress(file, state.fileUpload.uploading, (upload) => {

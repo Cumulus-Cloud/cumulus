@@ -1,11 +1,11 @@
 import { User } from 'models/User'
-import { ApiError } from 'models/ApiError'
+import { AppError } from 'models/ApiError'
 
 export default interface SignUpState {
   /** True if the sign up is in progress. */
   loading: boolean
   /** If the sign up has failed. */
-  error?: ApiError
+  error?: AppError
   /** The created user. */
   user?: User
 }

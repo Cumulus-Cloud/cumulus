@@ -1,6 +1,6 @@
 import difference_in_milliseconds = require('date-fns/difference_in_milliseconds')
 
-import { ApiError } from 'models/ApiError'
+import { AppError } from 'models/ApiError'
 import { EnrichedFile } from 'models/EnrichedFile'
 
 
@@ -15,7 +15,7 @@ export interface FileUploadingState {
   progress: number
   loading: boolean
   start: Date
-  error?: ApiError
+  error?: AppError
 }
 
 export default interface FileUploadState {
@@ -34,23 +34,20 @@ export const initialState: () => FileUploadState =
 export function computeUploadingSpeed(uploadingState: FileUploadingState): number {
 
   const progress = uploadingState.progressOverTime.slice().reverse()
-  const size = progress.length > 10 ? 10 : progress.length - (progress.length % 2)
-  let couples = []
+  const fileSize = uploadingState.file.file.size
 
-  for(let i = 0; i < size; i++) {
-    const i2 = Math.floor(i/2)
-    couples[i2] ? couples[i2].push(progress[i]) : couples[i2] = [progress[i]]
-  }
+  // Scan over the last minutes
 
-  const speeds = couples.map((couple) => {
-    const progress = couple[0].progress - couple[1].progress
-    const duration = difference_in_milliseconds(couple[0].date, couple[1].date)
+  const lastMinute = new Date(new Date().getTime() - 1000 * 60)
+  const progressLastMinutes = progress.filter(value => value.date.getTime() > lastMinute.getTime())
+  const recentProgress = progressLastMinutes[0]
+  const oldProgress = progressLastMinutes[progressLastMinutes.length - 1]
 
-    const bytes = (progress / 100) * uploadingState.file.file.size
-    const bytesPerSecons = bytes/(duration / 1000)
+  const percentageOfUpload = recentProgress.progress - oldProgress.progress
+  const realDuration = difference_in_milliseconds(recentProgress.date, oldProgress.date)
 
-    return bytesPerSecons
-  })
+  const bytes = (percentageOfUpload / 100) * fileSize
+  const bytesPerSecons = bytes/(realDuration / 1000)
 
-  return Math.round(speeds.reduce((p, c) => p + c, 0) / speeds.length)
+  return bytesPerSecons
 }

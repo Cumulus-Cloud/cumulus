@@ -1,8 +1,8 @@
 package io.cumulus.models.user
 
 import akka.util.ByteString
-import io.cumulus.core.json.JsonFormat._
-import io.cumulus.core.utils.{Base16, Crypto}
+import io.cumulus.json.JsonFormat._
+import io.cumulus.utils.{Base16, Crypto}
 import play.api.libs.json.{Format, Json}
 
 /**

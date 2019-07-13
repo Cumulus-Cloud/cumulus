@@ -4,9 +4,9 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Keep, StreamConverters}
 import com.sksamuel.scrimage.Image
 import com.sksamuel.scrimage.nio.JpegWriter
-import io.cumulus.core.stream.storage.{StorageReferenceReader, StorageReferenceWriter}
-import io.cumulus.core.validation.AppError
-import io.cumulus.core.{Logging, Settings}
+import io.cumulus.{Logging, Settings}
+import io.cumulus.stream.storage.{StorageReferenceReader, StorageReferenceWriter}
+import io.cumulus.validation.AppError
 import io.cumulus.models.fs.File
 import io.cumulus.models.user.session.UserSession
 import io.cumulus.persistence.storage.{StorageEngines, StorageReference}
@@ -16,6 +16,7 @@ import org.apache.pdfbox.rendering.{ImageType, PDFRenderer}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
+
 
 trait ThumbnailGenerator extends Logging {
 

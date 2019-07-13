@@ -1,7 +1,7 @@
 package io.cumulus.views.email
 
-import io.cumulus.core.Settings
-import io.cumulus.core.utils.Base16
+import io.cumulus.Settings
+import io.cumulus.utils.Base16
 import io.cumulus.models.user.User
 import play.api.i18n.Messages
 import scalatags.Text.all._

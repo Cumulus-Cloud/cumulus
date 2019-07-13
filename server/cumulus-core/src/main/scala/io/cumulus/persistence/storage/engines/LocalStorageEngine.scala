@@ -5,7 +5,7 @@ import java.nio.file.Paths
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
-import io.cumulus.core.validation.AppError
+import io.cumulus.validation.AppError
 import io.cumulus.persistence.storage.{StorageEngine, StorageEngineFactory}
 import play.api.Configuration
 

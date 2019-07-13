@@ -4,7 +4,7 @@ import Api from 'services/api'
 import { ContextState } from 'utils/store'
 
 import { ApiList } from 'models/utils'
-import { ApiError } from 'models/ApiError'
+import { AppError } from 'models/ApiError'
 import { FsNode, isFile, isDirectory } from 'models/FsNode'
 
 import { getDirectory } from 'store/actions/directory'
@@ -50,7 +50,7 @@ export const moveNodes = (ctx: ContextState<State>) => (nodes: FsNode[], destina
       hidePopup(ctx)()
       getDirectory(ctx)(currentPath) // Reload the current path
     })
-    .catch((e: ApiError) => {
+    .catch((e: AppError) => {
       setState({
         nodeDisplacement: {
           loading: false,

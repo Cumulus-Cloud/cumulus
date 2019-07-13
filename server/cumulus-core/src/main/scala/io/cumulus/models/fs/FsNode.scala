@@ -4,12 +4,13 @@ import java.net.URLEncoder
 import java.time.LocalDateTime
 import java.util.UUID
 
-import io.cumulus.core.json.JsonFormat
-import io.cumulus.core.utils.PaginatedList
+import io.cumulus.json.JsonFormat
+import io.cumulus.utils.PaginatedList
 import io.cumulus.models.user.User
 import io.cumulus.persistence.storage.StorageReference
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+
 
 sealed trait FsNode {
   def id: UUID

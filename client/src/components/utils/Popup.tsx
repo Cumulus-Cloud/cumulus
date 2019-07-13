@@ -13,7 +13,7 @@ import DialogContentText from '@material-ui/core/DialogContentText'
 import Grow from '@material-ui/core/Grow'
 
 import Error from 'components/utils/Error'
-import { ApiError } from 'models/ApiError'
+import { AppError } from 'models/ApiError'
 
 
 const styles = (theme: Theme) => createStyles({
@@ -49,7 +49,7 @@ interface Props {
   title: string,
   cancel: string
   action: string,
-  error?: ApiError
+  error?: AppError
 }
 
 type PropsWithStyle = Props & WithStyles<typeof styles>

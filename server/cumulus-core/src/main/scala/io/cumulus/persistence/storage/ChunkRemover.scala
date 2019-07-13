@@ -5,7 +5,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import akka.actor.{Actor, ActorLogging, Props}
 import cats.data.EitherT
 import cats.implicits._
-import io.cumulus.core.validation.AppError
+import io.cumulus.validation.AppError
 import io.cumulus.models.fs.File
 
 class ChunkRemover(

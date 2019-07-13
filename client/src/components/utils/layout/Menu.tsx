@@ -18,6 +18,9 @@ import { useMenu } from 'store/store'
 
 
 const styles = (theme: Theme) => createStyles({
+  root: {
+    display: 'flex'
+  },
   drawerPaper: {
     backgroundColor: 'rgb(246, 251, 251)', // TODO via theme
     position: 'relative',
@@ -136,7 +139,7 @@ function CumulusDrawer(props: PropsWithStyle) {
     ))
 
   return (
-    <div>
+    <div className={classes.root} >
       <SwipeableDrawer
         open={show}
         classes={{ paper: classes.drawerPaper }}
@@ -145,7 +148,7 @@ function CumulusDrawer(props: PropsWithStyle) {
       >
         <div className={ classes.logoContainer } >
           <Typography variant="h5" className={classes.logoText} >
-            <CloudIcon  className={classes.logo} /> <div>Cumulus</div>
+            <CloudIcon className={classes.logo} /> <div>Cumulus</div>
           </Typography>
         </div>
         {

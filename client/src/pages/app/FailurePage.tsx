@@ -18,7 +18,7 @@ import Page from 'components/utils/layout/Page'
 
 import Api from 'services/api'
 
-import { ApiError } from 'models/ApiError'
+import { AppError } from 'models/ApiError'
 
 import { useNotifications } from 'store/store'
 
@@ -76,7 +76,7 @@ function FailurePage({ classes }: PropsWithStyle) {
           location.reload();
         }, 8000)
       })
-      .catch((e: ApiError) => {
+      .catch((e: AppError) => {
         showNotification(`Cumulus server reloading failed: ${e.message}`)
       })
   }
@@ -89,7 +89,7 @@ function FailurePage({ classes }: PropsWithStyle) {
           location.reload();
         }, 8000)
       })
-      .catch((e: ApiError) => {
+      .catch((e: AppError) => {
         showNotification(`Cumulus server stop failed: ${e.message}`)
       })
   }

@@ -59,13 +59,13 @@ export const ApiUtils = {
         validateStatus: () => true
       })
       .then((response) => {
-        if('errors' in response.data)
+        if(response.status >= 400)
           throw response.data // Our server sent back an error
         else
           return response.data
       })
       .catch((e) => {
-        if('errors' in e)
+        if('key' in e)
           throw e // Our server sent back an error
         else {
           console.error(e)
@@ -87,13 +87,13 @@ export const ApiUtils = {
         validateStatus: () => true
       })
       .then((response) => {
-        if('errors' in response.data)
+        if(response.status >= 400)
           throw response.data // Our server sent back an error
         else
           return response.data
       })
       .catch((e) => {
-        if('errors' in e)
+        if('key' in e)
           throw e // Our server sent back an error
         else {
           console.error(e)
@@ -234,30 +234,16 @@ const Api = {
     },
 
     uploadFile(parentId: string, file: EnrichedFile, onProgress: (percentage: number) => void): Promise<any> {
-      // TODO error handling
-      function fileReader(file: EnrichedFile) {
-        return new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            resolve(reader.result as any) // TODO fix
-          }
-
-          reader.readAsArrayBuffer(file.file)
-        })
-      }
-
-      return fileReader(file).then((result) => {
-        return ApiUtils.post(
-          Routes.api.fs.upload(parentId),
-          result,
-          new Map([
-            [ 'filename', file.filename ],
-            [ 'cipher', file.crypted ? 'AES' : '' ],
-            [ 'compression', file.compressed ? 'DEFLATE' : '' ]
-          ]),
-          onProgress
-        )
-      })
+      return ApiUtils.post(
+        Routes.api.fs.upload(parentId),
+        file.file,
+        new Map([
+          [ 'filename', file.filename ],
+          [ 'cipher', file.crypted ? 'AES' : '' ],
+          [ 'compression', file.compressed ? 'DEFLATE' : '' ]
+        ]),
+        onProgress
+      )
     },
 
     moveNodes(ids: string[], destination: string): Promise<ApiList<FsNode>> {

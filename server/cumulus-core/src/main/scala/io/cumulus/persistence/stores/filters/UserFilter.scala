@@ -1,6 +1,6 @@
 package io.cumulus.persistence.stores.filters
 
-import io.cumulus.core.persistence.query.{ParameterizedSqlFilter, QueryFilter}
+import io.cumulus.persistence.query.{ParameterizedSqlFilter, QueryFilter}
 import io.cumulus.persistence.stores.UserStore._
 
 /**

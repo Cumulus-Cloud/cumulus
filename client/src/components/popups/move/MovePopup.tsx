@@ -4,7 +4,7 @@ import classnames = require('classnames')
 import { FsPopupType } from 'store/states/popupsState'
 import Table from 'components/utils/Table/InfiniteScrollTable'
 
-import { ApiError } from 'models/ApiError'
+import { AppError } from 'models/ApiError'
 import { Directory, FsNode } from 'models/FsNode'
 
 import Popup from 'components/utils/Popup'
@@ -111,7 +111,7 @@ type State2 = {
   contentSize: number
   loading: boolean
   loadingContent: boolean
-  error?: ApiError
+  error?: AppError
 }
 
 type Props2WithStyle = Props2 & WithStyles<typeof styles>
@@ -150,7 +150,7 @@ class Test extends React.Component<Props2WithStyle, State2> {
         })
         this.props.onChange(directoryWithContent.directory)
       })
-      .catch((e: ApiError) => {
+      .catch((e: AppError) => {
         this.setState({ loading: false, error: e })
       })
   }
@@ -168,7 +168,7 @@ class Test extends React.Component<Props2WithStyle, State2> {
           error: undefined
         })
       })
-      .catch((e: ApiError) => {
+      .catch((e: AppError) => {
         this.setState({ loadingContent: false, error: e })
       })
   }
@@ -270,7 +270,7 @@ function CreationPopup() {
       title="Déplacer la sélection"
       action={`Déplacer vers ${directory && directory.name ? directory.name : 'dossier racine'}`}
       cancel="Annuler"
-      error={error && error.errors['path'] && error.errors['path'][0]}
+      error={error && error.errors && error.errors['path'] && error.errors['path'][0]}
       loading={loading}
       open={isPopupOpen(popupType)}
       onClose={hidePopup}

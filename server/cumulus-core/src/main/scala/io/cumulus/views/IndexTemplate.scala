@@ -5,6 +5,7 @@ import play.api.libs.json.{JsValue, Json}
 import scalatags.Text.all._
 import scalatags.Text.tags2.title
 
+
 /**
   * Base for all templates of the application.
   */

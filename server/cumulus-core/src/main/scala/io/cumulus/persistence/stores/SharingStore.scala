@@ -3,11 +3,11 @@ package io.cumulus.persistence.stores
 import java.util.UUID
 
 import anorm._
-import io.cumulus.core.persistence.anorm.AnormSupport._
-import io.cumulus.core.persistence.anorm.{AnormPKOperations, AnormRepository, AnormSupport}
-import io.cumulus.core.persistence.query.{Query, QueryPagination}
-import io.cumulus.core.utils.PaginatedList
-import io.cumulus.core.utils.PaginatedList._
+import io.cumulus.persistence.anorm.AnormSupport._
+import io.cumulus.persistence.anorm.{AnormPKOperations, AnormRepository, AnormSupport}
+import io.cumulus.persistence.query.{Query, QueryPagination}
+import io.cumulus.utils.PaginatedList
+import io.cumulus.utils.PaginatedList._
 import io.cumulus.models.fs.FsNode
 import io.cumulus.models.sharing.Sharing
 import io.cumulus.models.user.User

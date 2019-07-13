@@ -1,0 +1,61 @@
+
+# Administration endpoints
+POST    /api/admin/users                 io.cumulus.controllers.admin.UserAdminController.create
+GET     /api/admin/users                 io.cumulus.controllers.admin.UserAdminController.list(limit: Option[Int], offset: Option[Int])
+GET     /api/admin/users/:ref            io.cumulus.controllers.admin.UserAdminController.get(ref: String)
+POST    /api/admin/users/:ref            io.cumulus.controllers.admin.UserAdminController.update(ref: String)
+DELETE  /api/admin/users/:ref            io.cumulus.controllers.admin.UserAdminController.deactivate(ref: String)
+
+# User management routes
+POST    /api/users/login                 io.cumulus.controllers.UserController.login
+GET     /api/users/logout                io.cumulus.controllers.UserController.logout
+POST    /api/users/signup                io.cumulus.controllers.UserController.signUp
+GET     /api/users/me                    io.cumulus.controllers.UserController.me
+POST    /api/users/lang                  io.cumulus.controllers.UserController.changeLang
+POST    /api/users/password              io.cumulus.controllers.UserController.changePassword
+POST    /api/users/emailValidationResend io.cumulus.controllers.UserController.resendValidationEmail
+POST    /api/users/firstPassword         io.cumulus.controllers.UserController.setFirstPassword
+GET     /api/users/sessions              io.cumulus.controllers.UserController.listSessions(limit: Option[Int], offset: Option[Int])
+GET     /api/users/sessions/:ref         io.cumulus.controllers.UserController.getSession(ref: java.util.UUID)
+POST    /api/users/sessions/:ref/revoke  io.cumulus.controllers.UserController.revokeSession(ref: java.util.UUID)
+GET     /api/users/events                io.cumulus.controllers.UserController.listEvents(limit: Option[Int], offset: Option[Int])
+
+GET     /validateEmail                   io.cumulus.controllers.UserController.validateEmail(userLogin: String, emailCode: String)
+
+# API - FS routes
+GET     /api/fs/index                    io.cumulus.controllers.FileSystemController.index
+GET     /api/fs/search                   io.cumulus.controllers.FileSystemController.search(path: io.cumulus.models.fs.Path, name: String, recursiveSearch: Option[Boolean], nodeType: Option[io.cumulus.models.fs.FsNodeType], `type`: Option[String], limit: Option[Int], offset: Option[Int])
+PUT     /api/fs                          io.cumulus.controllers.FileSystemController.create
+GET     /api/fs                          io.cumulus.controllers.FileSystemController.getByPath(path: io.cumulus.models.fs.Path)
+POST    /api/fs                          io.cumulus.controllers.FileSystemController.update
+GET     /api/fs/:nodeId                  io.cumulus.controllers.FileSystemController.get(nodeId: java.util.UUID)
+GET     /api/fs/:nodeId/content          io.cumulus.controllers.FileSystemController.getContent(nodeId: java.util.UUID, limit: Option[Int], offset: Option[Int], order: Option[io.cumulus.persistence.stores.orderings.FsNodeOrdering], nodeType: Option[io.cumulus.models.fs.FsNodeType])
+GET     /api/fs/:nodeId/sharings         io.cumulus.controllers.FileSystemController.getSharings(nodeId: java.util.UUID, limit: Option[Int], offset: Option[Int])
+POST    /api/fs/:nodeId/upload           io.cumulus.controllers.FileSystemController.upload(nodeId: java.util.UUID, filename: String, cipher: Option[String], compression: Option[String])
+GET     /api/fs/:nodeId/download         io.cumulus.controllers.FileSystemController.download(nodeId: java.util.UUID, forceDownload: Option[Boolean])
+GET     /api/fs/:nodeId/thumbnail        io.cumulus.controllers.FileSystemController.downloadThumbnail(nodeId: java.util.UUID, forceDownload: Option[Boolean])
+POST    /api/fs/:nodeId                  io.cumulus.controllers.FileSystemController.move(nodeId: java.util.UUID)
+DELETE  /api/fs/:nodeId                  io.cumulus.controllers.FileSystemController.delete(nodeId: java.util.UUID)
+
+# API - Sharing manager (authenticated side)
+GET     /api/sharings                    io.cumulus.controllers.SharingController.list(nodeId: Option[java.util.UUID], limit: Option[Int], offset: Option[Int])
+POST    /api/sharings                    io.cumulus.controllers.SharingController.create
+GET     /api/sharings/:ref               io.cumulus.controllers.SharingController.get(ref: String)
+DELETE  /api/sharings/:ref               io.cumulus.controllers.SharingController.delete(ref: io.cumulus.models.fs.Path)
+
+# API - Shared (visitor)
+GET     /api/shared/fs*path              io.cumulus.controllers.SharingPublicController.get(path: io.cumulus.models.fs.Path, reference, key)
+GET     /api/shared/download*path        io.cumulus.controllers.SharingPublicController.download(path: io.cumulus.models.fs.Path, reference, key, download: Option[Boolean])
+
+# Shared (visitor) 'pretty' routes for root element (file)
+GET     /shared/download/:ref/:name      io.cumulus.controllers.SharingPublicController.downloadRoot(ref, name, key, download: Option[Boolean])
+
+# Map static resources to the /assets URL path
+GET     /favicon.ico                     io.cumulus.controllers.Assets.favicon
+GET     /assets/messages.js              io.cumulus.controllers.Assets.messages
+GET     /assets/*file                    io.cumulus.controllers.Assets.versioned(file: controllers.Assets.Asset)
+
+# App entrypoints
+GET     /                                io.cumulus.controllers.HomeController.index
+GET     /app/fs*path                     io.cumulus.controllers.HomeController.indexWithPath(path: io.cumulus.models.fs.Path)
+GET     /*path                           io.cumulus.controllers.HomeController.indexWithIgnoredPath(path: io.cumulus.models.fs.Path)

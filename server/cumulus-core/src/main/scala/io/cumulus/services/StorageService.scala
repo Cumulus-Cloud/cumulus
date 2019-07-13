@@ -8,19 +8,20 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
 import cats.data.EitherT
 import cats.implicits._
-import io.cumulus.core.stream.storage.{StorageReferenceReader, StorageReferenceWriter}
-import io.cumulus.core.utils.Range
-import io.cumulus.core.validation.AppError
-import io.cumulus.core.{Logging, Settings}
 import io.cumulus.models.fs.{DefaultMetadata, File}
-import io.cumulus.services.tasks.{MetadataExtractionTask, StorageReferenceDeletionTask, ThumbnailCreationTask}
 import io.cumulus.models.user.User
 import io.cumulus.models.user.session.{Session, UserSession}
 import io.cumulus.persistence.storage.{StorageEngines, StorageObject, StorageReference}
+import io.cumulus.services.tasks.{MetadataExtractionTask, StorageReferenceDeletionTask, ThumbnailCreationTask}
 import io.cumulus.stages._
+import io.cumulus.stream.storage.{StorageReferenceReader, StorageReferenceWriter}
+import io.cumulus.utils.Range
+import io.cumulus.validation.AppError
+import io.cumulus.{Logging, Settings}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
+
 
 class StorageService(
   fsNodeService: FsNodeService,

@@ -110,7 +110,7 @@ function FilesListTable(props: PropsWithStyle) {
     }
   }
 
-  const toggleMenu = (node: FsNode, event: React.SyntheticEvent<any>) => {
+  const toggleMenu = (node: FsNode, event: any) => {
     event.stopPropagation()
 
     if(selectedMenu && selectedMenu.nodeId === node.id)
