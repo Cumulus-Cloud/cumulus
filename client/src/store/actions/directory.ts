@@ -2,7 +2,7 @@ import Api from 'services/api'
 
 import { ContextState } from 'utils/store'
 
-import { ApiError } from 'models/ApiError'
+import { AppError } from 'models/ApiError'
 import { Directory, DirectoryWithContent, SearchResult } from 'models/FsNode'
 
 import { Search } from 'store/states/fsState'
@@ -41,7 +41,7 @@ export const getDirectory = (ctx: ContextState<State>) => (path: string) => {
 
       getDirectoryContent(ctx)()
     })
-    .catch((e: ApiError) => {
+    .catch((e: AppError) => {
         setState({
           fs: {
             loadingCurrent: false,
@@ -91,7 +91,7 @@ export const getDirectoryContent = ({ setState, getState }: ContextState<State>)
           }
         }))
       })
-      .catch((e: ApiError) => {
+      .catch((e: AppError) => {
         setState(state => ({
           fs: {
             ...state.fs,
@@ -113,7 +113,7 @@ export const getDirectoryContent = ({ setState, getState }: ContextState<State>)
             }
           }))
       })
-      .catch((e: ApiError) => {
+      .catch((e: AppError) => {
         setState(state => ({
           fs: {
             ...state.fs,
@@ -223,7 +223,7 @@ export const search = (ctx: ContextState<State>) => (search: Search | undefined)
     }
   })).then(() => {
     // Restart the get directory content action, which will take into account the search params we provided
-    getDirectoryContent(ctx)
+    getDirectoryContent(ctx)()
   })
 
 }

@@ -4,6 +4,7 @@ import play.api.http.{ContentTypeOf, ContentTypes, Writeable}
 import play.api.mvc.Codec
 import scalatags.Text.all._
 
+
 /**
   * Base for HTML view of the application.
   */

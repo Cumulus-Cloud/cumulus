@@ -3,8 +3,9 @@ package io.cumulus.stages
 import akka.NotUsed
 import akka.stream.scaladsl.Flow
 import akka.util.ByteString
-import io.cumulus.core.stream.utils.AESCipher
-import io.cumulus.core.validation.AppError
+import io.cumulus.stream.utils.AESCipher
+import io.cumulus.validation.AppError
+
 
 /**
   * Abstract cipher stage used to encrypt or decrypt a file.
@@ -37,7 +38,8 @@ case class Ciphers(ciphers: CipherStage*) {
 
 /**
   * Cipher stage using AES/CBC.
-  * @see [[io.cumulus.core.stream.utils.AESCipher AESCipher]]
+ *
+  * @see [[io.cumulus.stream.utils.AESCipher AESCipher]]
   */
 object AESCipherStage extends CipherStage {
 

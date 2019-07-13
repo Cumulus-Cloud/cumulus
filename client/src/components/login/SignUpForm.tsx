@@ -19,16 +19,16 @@ import { useSignUp, useRouting } from 'store/store'
 
 const styles = (theme: Theme) => createStyles({
   root: {
-    padding: theme.spacing.unit * 3,
+    padding: theme.spacing() * 3,
     flex: 1
   },
   textField: {
-    marginLeft: theme.spacing.unit,
-    marginRight: theme.spacing.unit,
+    marginLeft: theme.spacing(),
+    marginRight: theme.spacing(),
     display: 'flex'
   },
   buttons: {
-    padding: theme.spacing.unit * 3,
+    padding: theme.spacing() * 3,
     display: 'flex',
     justifyContent: 'flex-end'
   },

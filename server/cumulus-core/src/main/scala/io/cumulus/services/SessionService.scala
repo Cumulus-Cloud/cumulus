@@ -3,21 +3,22 @@ package io.cumulus.services
 import java.time.Duration
 import java.util.UUID
 
-import io.cumulus.core.persistence.query.QueryE._
-import io.cumulus.core.persistence.query.QueryRunner._
-import io.cumulus.core.persistence.query.{QueryE, QueryPagination, QueryRunner}
-import io.cumulus.core.utils.PaginatedList
-import io.cumulus.core.validation.AppError
-import io.cumulus.core.{Logging, Settings}
 import io.cumulus.models.event.{LoginEvent, LogoutEvent}
 import io.cumulus.models.user.User
 import io.cumulus.models.user.session.{AuthenticationToken, SessionInformation, UserSession}
+import io.cumulus.persistence.query.QueryE._
+import io.cumulus.persistence.query.QueryRunner._
+import io.cumulus.persistence.query.{QueryE, QueryPagination, QueryRunner}
 import io.cumulus.persistence.stores.filters.SessionFilter
 import io.cumulus.persistence.stores.orderings.SessionOrdering
 import io.cumulus.persistence.stores.orderings.SessionOrderingType.OrderByLastActivityDesc
 import io.cumulus.persistence.stores.{EventStore, SessionStore, UserStore}
+import io.cumulus.utils.PaginatedList
+import io.cumulus.validation.AppError
+import io.cumulus.{Logging, Settings}
 
 import scala.concurrent.Future
+
 
 /**
   * Session service, handling session creation, revoking, and management.

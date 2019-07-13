@@ -3,8 +3,8 @@ package io.cumulus.services.tasks
 import java.time.LocalDateTime
 import java.util.UUID
 
-import io.cumulus.core.task.{OnceTask, Task, TaskStatus}
-import io.cumulus.core.validation.AppError
+import io.cumulus.task.{OnceTask, Task, TaskStatus}
+import io.cumulus.validation.AppError
 import io.cumulus.models.fs.File
 import io.cumulus.models.user.session.UserSession
 import io.cumulus.services._

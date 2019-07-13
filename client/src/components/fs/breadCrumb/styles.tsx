@@ -12,8 +12,8 @@ const styles = (theme: Theme) => createStyles({
     color: theme.palette.primary.light + ' !important'
   },
   root: {
-    paddingLeft: theme.spacing.unit * 3,
-    paddingRight: theme.spacing.unit * 3,
+    paddingLeft: theme.spacing() * 3,
+    paddingRight: theme.spacing() * 3,
     height: '70px',
     display: 'flex',
     alignItems: 'center'
@@ -23,7 +23,7 @@ const styles = (theme: Theme) => createStyles({
     alignItems: 'center'
   },
   homeButton: {
-    marginLeft:  theme.spacing.unit * -2,
+    marginLeft:  theme.spacing() * -2,
     minWidth: 0,
     height: '36px',
     paddingTop: '5px'

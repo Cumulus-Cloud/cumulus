@@ -2,7 +2,7 @@ import Api from 'services/api'
 
 import { ContextState } from 'utils/store'
 
-import { ApiError } from 'models/ApiError'
+import { AppError } from 'models/ApiError'
 import { Directory } from 'models/FsNode'
 
 import { getDirectory } from 'store/actions/directory'
@@ -32,7 +32,7 @@ export const createDirectory =  (ctx: ContextState<State>) => (path: string) => 
       hidePopup(ctx)()
       showNotification(ctx)(`Dossier « ${name} » créé avec succès`)
     })
-    .catch((e: ApiError) => {
+    .catch((e: AppError) => {
       setState({
         directoryCreation: {
           loading: false,

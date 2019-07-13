@@ -1,4 +1,4 @@
-import { ApiError } from 'models/ApiError'
+import { AppError } from 'models/ApiError'
 import { Directory, FsNode } from 'models/FsNode'
 
 
@@ -27,7 +27,7 @@ export interface Search {
 export const SearchDefault: Search = {
   query: '',
   nodeType: 'ALL',
-  recursiveSearch: false
+  recursiveSearch: true
 }
 
 export function selectedNodes(nodes: FsNode[], selection: FsNodeSelection) {
@@ -64,7 +64,7 @@ export default interface FsState {
   /** Search for the current directory */
   search?: Search
   /** If an error occured. */
-  error?: ApiError
+  error?: AppError
 }
 
 export const initialState: () => FsState =

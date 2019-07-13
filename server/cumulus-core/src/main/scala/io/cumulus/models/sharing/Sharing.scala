@@ -3,10 +3,11 @@ package io.cumulus.models.sharing
 import java.time.LocalDateTime
 import java.util.UUID
 
-import io.cumulus.core.json.JsonFormat._
-import io.cumulus.core.utils.Crypto
+import io.cumulus.json.JsonFormat._
+import io.cumulus.utils.Crypto
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+
 
 case class Sharing(
   id: UUID,

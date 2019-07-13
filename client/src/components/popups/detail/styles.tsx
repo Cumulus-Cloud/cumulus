@@ -26,7 +26,7 @@ const styles = (theme: Theme) => createStyles({
     flexBasis: 200,
     [theme.breakpoints.down('xs')]: {
       textAlign: 'center',
-      paddingBottom: theme.spacing.unit * 2
+      paddingBottom: theme.spacing() * 2
     }
   },
   previewImage: {
@@ -36,9 +36,9 @@ const styles = (theme: Theme) => createStyles({
   },
   columnInner: {
     paddingTop: 3,
-    padding: theme.spacing.unit * 2,
+    padding: theme.spacing() * 2,
     [theme.breakpoints.down('xs')]: {
-      padding:  theme.spacing.unit
+      padding:  theme.spacing()
     },
     flexGrow: 1,
     justifyContent: 'center',

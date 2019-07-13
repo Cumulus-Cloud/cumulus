@@ -4,7 +4,7 @@ import classnames = require('classnames')
 import { FsPopupType } from 'store/states/popupsState'
 import Table from 'components/utils/Table/InfiniteScrollTable'
 
-import { ApiError } from 'models/ApiError'
+import { AppError } from 'models/ApiError'
 import { Directory, FsNode } from 'models/FsNode'
 
 import Popup from 'components/utils/Popup'
@@ -22,7 +22,7 @@ const styles = (theme: Theme) => createStyles({
   },
   icon: {
     color: 'rgba(0, 0, 0, 0.54)',
-    marginRight: theme.spacing.unit
+    marginRight: theme.spacing()
   },
   header: {
     flex: 1,
@@ -32,13 +32,13 @@ const styles = (theme: Theme) => createStyles({
   },
   contentIcon: {
     color: 'rgba(0, 0, 0, 0.54)',
-    marginLeft: theme.spacing.unit,
-    marginRight: theme.spacing.unit * 2
+    marginLeft: theme.spacing(),
+    marginRight: theme.spacing() * 2
   },
   contentDescription: {
     margin: 0,
     flex: 4,
-    padding: theme.spacing.unit * 2,
+    padding: theme.spacing() * 2,
     display: 'flex',
     alignItems: 'center'
   },
@@ -50,11 +50,11 @@ const styles = (theme: Theme) => createStyles({
   },
   contentCreation: {
     flex: 2,
-    padding: theme.spacing.unit * 2
+    padding: theme.spacing() * 2
   },
   contentName: {
     flex: 2,
-    padding: theme.spacing.unit * 2,
+    padding: theme.spacing() * 2,
     display: 'flex'
   },
   contentSelected: {
@@ -79,14 +79,14 @@ const styles = (theme: Theme) => createStyles({
   },
   loader: {
     margin: 'auto',
-    marginTop: theme.spacing.unit * 3,
+    marginTop: theme.spacing() * 3,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'
   },
   loaderSpinner: {
     display: 'block',
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(),
     marginBottom: 0
   },
   loaderText: {
@@ -111,7 +111,7 @@ type State2 = {
   contentSize: number
   loading: boolean
   loadingContent: boolean
-  error?: ApiError
+  error?: AppError
 }
 
 type Props2WithStyle = Props2 & WithStyles<typeof styles>
@@ -150,7 +150,7 @@ class Test extends React.Component<Props2WithStyle, State2> {
         })
         this.props.onChange(directoryWithContent.directory)
       })
-      .catch((e: ApiError) => {
+      .catch((e: AppError) => {
         this.setState({ loading: false, error: e })
       })
   }
@@ -168,7 +168,7 @@ class Test extends React.Component<Props2WithStyle, State2> {
           error: undefined
         })
       })
-      .catch((e: ApiError) => {
+      .catch((e: AppError) => {
         this.setState({ loadingContent: false, error: e })
       })
   }
@@ -270,7 +270,7 @@ function CreationPopup() {
       title="Déplacer la sélection"
       action={`Déplacer vers ${directory && directory.name ? directory.name : 'dossier racine'}`}
       cancel="Annuler"
-      error={error && error.errors['path'] && error.errors['path'][0]}
+      error={error && error.errors && error.errors['path'] && error.errors['path'][0]}
       loading={loading}
       open={isPopupOpen(popupType)}
       onClose={hidePopup}

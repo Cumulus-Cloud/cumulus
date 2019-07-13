@@ -1,4 +1,4 @@
-import { ApiError } from 'models/ApiError'
+import { AppError } from 'models/ApiError'
 import { User } from 'models/User'
 
 import Routes from 'services/routes'
@@ -37,7 +37,7 @@ export const signInUser = ({ setState, getState }: ContextState<State>) => (logi
       })
       getState().router.push('/app')
     })
-    .catch((e: ApiError) => {
+    .catch((e: AppError) => {
       setState({ signIn: { loading: false, error: e } })
     })
 }
@@ -51,7 +51,7 @@ export const signUpUser = ({ setState, getState }: ContextState<State>) => (logi
     setState({ signUp: { loading: false, user: result } })
     getState().router.push('/auth/sign-up-confirmation')
   })
-  .catch((e: ApiError) => {
+  .catch((e: AppError) => {
     setState({ signUp: { loading: false, error: e } })
   })
 }

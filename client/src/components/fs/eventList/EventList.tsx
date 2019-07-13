@@ -100,7 +100,7 @@ function EventList(props: PropsWithStyle) {
     router.goBack()
   }
 
-  function toggleMenu<T>(event: Event, reactEvent: React.SyntheticEvent<T>) {
+  function toggleMenu(event: Event, reactEvent: any) {
     reactEvent.stopPropagation()
 
     if(selectedMenu && selectedMenu.eventId === event.id)

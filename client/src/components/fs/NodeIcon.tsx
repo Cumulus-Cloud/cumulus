@@ -13,8 +13,8 @@ import { FsNode, isDirectory } from 'models/FsNode'
 const styles = (theme: Theme) => createStyles({
   root: {
     color: 'rgba(0, 0, 0, 0.54)',
-    marginRight: theme.spacing.unit * 2,
-    marginLeft: theme.spacing.unit
+    marginRight: theme.spacing() * 2,
+    marginLeft: theme.spacing()
   },
   selected: {
     color: theme.palette.primary.light

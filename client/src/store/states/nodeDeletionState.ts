@@ -1,6 +1,6 @@
-import { ApiError } from 'models/ApiError'
+import { AppError } from 'models/ApiError'
 
 export default interface NodeDeletionState {
   loading: boolean
-  error?: ApiError
+  error?: AppError
 }

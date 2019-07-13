@@ -23,7 +23,7 @@ function CreationPopup() {
       title="Créer un nouveau dossier"
       action="Créer le dossier"
       cancel="Annuler"
-      error={error && error.errors['path'] && error.errors['path'][0]}
+      error={error && error.errors && error.errors['path'] && error.errors['path'][0]}
       loading={loading }
       open={isPopupOpen(popupType)}
       onClose={hidePopup}

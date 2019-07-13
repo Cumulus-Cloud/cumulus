@@ -1,4 +1,4 @@
-import { ApiError } from 'models/ApiError'
+import { AppError } from 'models/ApiError'
 import { Event } from 'models/Event'
 
 export default interface EventState {
@@ -9,5 +9,5 @@ export default interface EventState {
   /** If more events can be loaded. */
   hasMore: boolean
   /** If the sign in has failed. */
-  error?: ApiError
+  error?: AppError
 }

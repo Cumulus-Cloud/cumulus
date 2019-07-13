@@ -1,7 +1,9 @@
 package io.cumulus.views
+
 import play.api.i18n.Messages
 import scalatags.Text.all._
 import scalatags.Text.tags2.title
+
 
 /**
   * Base for all templates of the application.

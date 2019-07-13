@@ -1,12 +1,12 @@
 
-export interface ApiError {
+export interface AppError {
   key: string
   message: string
-  errors: Record<string, ApiError[]>
+  errors?: Record<string, AppError[]>
   args: string[]
 }
 
-export function getErrorMessage(error: ApiError): string {
+export function getErrorMessage(error: AppError): string {
   if (error.errors) {
     const firstKey = Object.keys(error.errors).pop()
     if (firstKey && error.errors[firstKey].length > 0) {

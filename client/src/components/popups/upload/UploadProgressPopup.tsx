@@ -37,7 +37,7 @@ const styles = (theme: Theme) => createStyles({
   },
   header: {
     backgroundColor: theme.palette.primary.main,
-    height: 28
+    height: 63
   },
   headerText: {
     color: theme.palette.primary.contrastText,
@@ -63,7 +63,7 @@ const styles = (theme: Theme) => createStyles({
     maxHeight: 250,
     overflowY: 'scroll',
     ['&::-webkit-scrollbar']: {
-      width: theme.spacing.unit
+      width: theme.spacing()
     },
     ['&::-webkit-scrollbar-track']: {
       background: theme.palette.background.paper
@@ -83,7 +83,7 @@ const styles = (theme: Theme) => createStyles({
   },
   fileIcon: {
     flex: 0,
-    marginRight: 13
+    marginRight: 36
   },
   downloadSpeed: {
     textAlign: 'right'

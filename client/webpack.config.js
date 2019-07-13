@@ -19,7 +19,7 @@ module.exports = {
 
   entry: path.resolve(__dirname, './src/index.tsx'),
   output: {
-    path: __dirname + '/../server/cumulus-server-resources/src/main/resources/public',
+    path: __dirname + '/../server/cumulus-server/src/main/resources/public',
     filename: 'bundle.js'
   },
   

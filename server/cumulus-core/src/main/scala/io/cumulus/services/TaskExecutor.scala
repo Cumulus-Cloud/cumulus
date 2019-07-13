@@ -4,10 +4,10 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 import akka.actor.{Actor, ActorLogging, Props}
-import io.cumulus.core.Settings
-import io.cumulus.core.validation.AppError
-import io.cumulus.core.task.TaskStatus._
-import io.cumulus.core.task.{OnceTask, RecurrentTask, Task}
+import io.cumulus.Settings
+import io.cumulus.validation.AppError
+import io.cumulus.task.TaskStatus._
+import io.cumulus.task.{OnceTask, RecurrentTask, Task}
 import io.cumulus.services.TaskExecutor._
 
 import scala.collection.mutable

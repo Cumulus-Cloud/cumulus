@@ -1,5 +1,5 @@
 package io.cumulus.views
-import io.cumulus.core.Settings
+import io.cumulus.Settings
 import io.cumulus.models.fs.DirectoryWithContent
 import io.cumulus.models.user.User
 import play.api.i18n.Messages

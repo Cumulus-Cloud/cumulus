@@ -6,8 +6,8 @@ import java.time.{LocalDateTime, ZoneId}
 import akka.stream.Materializer
 import akka.stream.scaladsl.StreamConverters
 import com.sksamuel.scrimage
-import io.cumulus.core.stream.storage.StorageReferenceReader
-import io.cumulus.core.validation.AppError
+import io.cumulus.stream.storage.StorageReferenceReader
+import io.cumulus.validation.AppError
 import io.cumulus.models.fs._
 import io.cumulus.models.user.session.Session
 import io.cumulus.persistence.storage.StorageEngines
@@ -16,6 +16,7 @@ import org.apache.pdfbox.pdmodel.PDDocument
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
 import scala.util.Try
+
 
 /**
   * Abstract metadata extractor, used to read metadata from an uploaded file.
