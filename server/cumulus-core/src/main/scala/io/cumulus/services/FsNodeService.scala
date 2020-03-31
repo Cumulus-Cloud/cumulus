@@ -3,11 +3,10 @@ package io.cumulus.services
 import java.time.LocalDateTime
 import java.util.UUID
 
-import io.cumulus.Logging
 import io.cumulus.persistence.query.{QueryE, QueryPagination, QueryRunner}
 import io.cumulus.persistence.query.QueryRunner._
 import io.cumulus.persistence.query.QueryE._
-import io.cumulus.utils.{EnrichedList, PaginatedList}
+import io.cumulus.utils.{EnrichedList, Logging, PaginatedList}
 import io.cumulus.utils.EnrichedList._
 import io.cumulus.validation.AppError
 import io.cumulus.models.event.{NodeCreationEvent, NodeDeletionEvent, NodeMoveEvent}

@@ -9,9 +9,8 @@ import akka.stream._
 import akka.stream.scaladsl.Flow
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.util.ByteString
-import io.cumulus.Logging
 import io.cumulus.stream.storage.StorageObjectReader.ObjectReaderState
-import io.cumulus.utils.Base64
+import io.cumulus.utils.{Base64, Logging}
 import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
 
 

@@ -1,8 +1,8 @@
 package io.cumulus.persistence.anorm
 
 import anorm._
-import io.cumulus.Logging
 import io.cumulus.persistence.query.{Query, QueryFilter}
+import io.cumulus.utils.Logging
 
 /**
  * Abstract class that provides operations based on the private key of the table

@@ -15,9 +15,9 @@ import io.cumulus.persistence.storage.{StorageEngines, StorageObject, StorageRef
 import io.cumulus.services.tasks.{MetadataExtractionTask, StorageReferenceDeletionTask, ThumbnailCreationTask}
 import io.cumulus.stages._
 import io.cumulus.stream.storage.{StorageReferenceReader, StorageReferenceWriter}
-import io.cumulus.utils.Range
+import io.cumulus.utils.{Logging, Range}
 import io.cumulus.validation.AppError
-import io.cumulus.{Logging, Settings}
+import io.cumulus.Settings
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}

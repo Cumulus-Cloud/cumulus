@@ -4,12 +4,13 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Keep, StreamConverters}
 import com.sksamuel.scrimage.Image
 import com.sksamuel.scrimage.nio.JpegWriter
-import io.cumulus.{Logging, Settings}
+import io.cumulus.Settings
 import io.cumulus.stream.storage.{StorageReferenceReader, StorageReferenceWriter}
 import io.cumulus.validation.AppError
 import io.cumulus.models.fs.File
 import io.cumulus.models.user.session.UserSession
 import io.cumulus.persistence.storage.{StorageEngines, StorageReference}
+import io.cumulus.utils.Logging
 import javax.imageio.ImageIO
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.{ImageType, PDFRenderer}

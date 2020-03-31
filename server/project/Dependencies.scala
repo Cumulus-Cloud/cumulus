@@ -21,12 +21,6 @@ object Dependencies {
     val play = "com.beachape"  %% "enumeratum-play" % version
   }
 
-  object scalatest {
-    val version = "3.1.2"
-
-    val play = "org.scalatestplus.play" %% "scalatestplus-play" % version
-  }
-
   object cats {
     val version = "1.1.0"
 
@@ -45,16 +39,11 @@ object Dependencies {
     val core = "com.typesafe.play" %% "play-mailer" % version
   }
 
-  object jsMessages {
-    val version = "3.0.0"
-
-    val core = "org.julienrf" %% "play-jsmessages" % version
-  }
-
   object jwtPlay {
     val version = "3.0.1"
 
-    val core = "com.pauldijou" %% "jwt-play" % version
+    val core = "com.pauldijou" %% "jwt-core" % version
+    val playJson = "com.pauldijou" %% "jwt-play-json" % version
   }
 
   object bouncyCastle {

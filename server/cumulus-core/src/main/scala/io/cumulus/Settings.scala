@@ -1,5 +1,6 @@
 package io.cumulus
 
+import io.cumulus.utils.Configuration
 import pdi.jwt.JwtAlgorithm
 import pdi.jwt.algorithms.JwtHmacAlgorithm
 

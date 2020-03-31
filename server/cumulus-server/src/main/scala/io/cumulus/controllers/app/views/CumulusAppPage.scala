@@ -1,5 +1,6 @@
 package io.cumulus.controllers.app.views
 
+import io.cumulus.views.CumulusTemplate
 import play.api.i18n.Messages
 import scalatags.Text.all._
 

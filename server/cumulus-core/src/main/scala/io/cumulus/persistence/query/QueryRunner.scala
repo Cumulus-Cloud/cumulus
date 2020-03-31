@@ -1,7 +1,7 @@
 package io.cumulus.persistence.query
 
-import io.cumulus.Logging
 import io.cumulus.persistence.Database
+import io.cumulus.utils.Logging
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.{higherKinds, implicitConversions}

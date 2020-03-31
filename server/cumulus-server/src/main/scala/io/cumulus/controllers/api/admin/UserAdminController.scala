@@ -1,13 +1,16 @@
 package io.cumulus.controllers.api.admin
 
-import io.cumulus.Settings
-import io.cumulus.controllers.Api
-import io.cumulus.controllers.api.payloads.{SignUpPayload, UserCreationPayload}
-import io.cumulus.persistence.query.QueryPagination
+import akka.http.scaladsl.server.Directives.{path, post, _}
+import akka.http.scaladsl.server.Route
+import io.cumulus.controllers.api.payloads.UserCreationPayload
+import io.cumulus.controllers.utils
+import io.cumulus.controllers.utils.ApiComponent
+import io.cumulus.i18n.Messages
 import io.cumulus.models.user.UserUpdate
-import io.cumulus.services.SessionService
+import io.cumulus.models.user.session.{AuthenticationToken, UserSession}
 import io.cumulus.services.admin.UserAdminService
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import io.cumulus.{Authenticator, LangSupport, Settings}
+import play.api.mvc.ControllerComponents
 
 import scala.concurrent.ExecutionContext
 
@@ -15,65 +18,73 @@ import scala.concurrent.ExecutionContext
 class UserAdminController(
   cc: ControllerComponents,
   userServiceAdmin: UserAdminService,
-  val sessionService: SessionService
+  val auth: utils.Authenticator[AuthenticationToken, UserSession]
 )(implicit
+  val m: Messages,
   val ec: ExecutionContext,
   val settings: Settings
-) extends Api(cc) {
+) extends ApiComponent {
+
+  val routes: Route =
+    concat(
+      create,
+      list,
+      getById,
+      updateById,
+      deactivateById
+    )
 
   /**
     * Creates a new user.
     */
-  def create: Action[UserCreationPayload] =
-    AuthenticatedAction.andThen(WithAdmin).async(parseJson[UserCreationPayload]){ implicit request =>
-      val userCreationPayload = request.body
-
-      userServiceAdmin.createUser(
-        userCreationPayload.email,
-        userCreationPayload.login
-      ).toResult
+  def create: Route =
+    (post & path("api" / "admin" / "users") & payload[UserCreationPayload]) { payload =>
+      withAuthentication { implicit ctx =>
+        userServiceAdmin.createUser(
+          payload.email,
+          payload.login
+        ).toResult
+      }
     }
 
   /**
     * Lists existing user.
-    * @param limit The maximum number of sharings to return. Used for pagination.
-    * @param offset The offset of elements to return. Used for pagination.
     */
-  def list(limit: Option[Int], offset: Option[Int]): Action[AnyContent] =
-    AuthenticatedAction.andThen(WithAdmin).async { implicit request =>
-        // TODO allow filter user
-        val pagination = QueryPagination(limit, offset)
-
+  def list: Route =
+    (get & path("api" / "admin" / "users") & paginationParams) { pagination =>
+      withAuthentication { implicit ctx =>
         userServiceAdmin.listUsers(pagination).toResult
+      }
     }
 
   /**
     * Returns an user by its ID.
-    * @param userId The ID of the user to return.
     */
-  def get(userId: String): Action[AnyContent] =
-    AuthenticatedAction.andThen(WithAdmin).async { implicit request =>
-      userServiceAdmin.findUser(userId).toResult
+  def getById: Route =
+    (get & path("api" / "admin" / "users" / JavaUUID)) { userId =>
+      withAuthentication { implicit ctx =>
+        userServiceAdmin.findUser(userId).toResult
+      }
     }
 
   /**
     * Update an user with the provided information.
-    * @param userId The ID of the user to update.
     */
-  def update(userId: String): Action[UserUpdate] =
-    AuthenticatedAction.andThen(WithAdmin).async(parseJson[UserUpdate]) { implicit request =>
-      val update = request.body
-
-      userServiceAdmin.updateUser(userId, update).toResult
+  def updateById: Route =
+    (post & path("api" / "admin" / "users" / JavaUUID) & payload[UserUpdate]) { (userId, payload) =>
+      withAuthentication { implicit ctx =>
+        userServiceAdmin.updateUser(userId, payload).toResult
+      }
     }
 
   /**
     * Deactivate an user.
-    * @param userId The ID of the user to update.
     */
-  def deactivate(userId: String): Action[SignUpPayload] =
-    AuthenticatedAction.andThen(WithAdmin).async(parseJson[SignUpPayload]) { implicit request =>
-      userServiceAdmin.deactivateUser(userId).toResult
+  def deactivateById: Route =
+    (delete & path("api" / "admin" / "users" / JavaUUID)) { userId =>
+      withAuthentication { implicit ctx =>
+        userServiceAdmin.deactivateUser(userId).toResult
+      }
     }
 
 }

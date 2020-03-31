@@ -4,9 +4,8 @@ import scala.concurrent.ExecutionContext
 import akka.NotUsed
 import akka.stream.scaladsl.{Flow, Source}
 import akka.util.ByteString
-import io.cumulus.Logging
 import io.cumulus.stream.utils.ByteRange
-import io.cumulus.utils.Range
+import io.cumulus.utils.{Logging, Range}
 import io.cumulus.validation.AppError
 import io.cumulus.models.fs.File
 import io.cumulus.models.user.session.Session

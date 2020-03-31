@@ -1,6 +1,5 @@
 package io.cumulus.services
 
-import io.cumulus.Logging
 import io.cumulus.models.event.Event
 import io.cumulus.models.user.User
 import io.cumulus.persistence.query.{QueryE, QueryPagination, QueryRunner}
@@ -8,7 +7,7 @@ import io.cumulus.persistence.query.QueryRunner._
 import io.cumulus.persistence.stores.EventStore
 import io.cumulus.persistence.stores.filters.EventFilter
 import io.cumulus.persistence.stores.orderings.{EventOrdering, EventOrderingType}
-import io.cumulus.utils.PaginatedList
+import io.cumulus.utils.{Logging, PaginatedList}
 import io.cumulus.validation.AppError
 
 import scala.concurrent.Future

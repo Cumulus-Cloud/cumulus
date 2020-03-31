@@ -11,10 +11,9 @@ import akka.stream._
 import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, ZipWith}
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.util.ByteString
-import io.cumulus.Logging
 import io.cumulus.stream.storage.StorageObjectWriter.ObjectWriterState
 import io.cumulus.stream.utils.{Counter, DigestCalculator}
-import io.cumulus.utils.Base64
+import io.cumulus.utils.{Base64, Logging}
 import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
 
 

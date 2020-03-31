@@ -1,65 +1,48 @@
 package io.cumulus
 
-import java.io.File
 import java.security.Security
 
-import _root_.controllers.AssetsComponents
-import akka.actor.{ActorRef, Scheduler}
+import akka.actor.{ActorRef, ActorSystem, Scheduler}
+import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Route
 import akka.stream.{ActorMaterializer, Materializer}
 import com.softwaremill.macwire._
-import com.typesafe.config.{Config, ConfigFactory}
-import io.cumulus.controllers.{LoggingFilter, _}
+import com.typesafe.config.ConfigFactory
 import io.cumulus.controllers.api.admin.UserAdminController
-import io.cumulus.controllers.ErrorHandler
-import io.cumulus.i18n.HoconMessagesApiProvider
-import io.cumulus.persistence.CumulusDB
+import io.cumulus.controllers.api._
+import io.cumulus.controllers.app.AppController
+import io.cumulus.controllers.utils.{AssetController, QueryLogger}
+import io.cumulus.i18n._
 import io.cumulus.persistence.query.{FutureQueryRunner, QueryRunner}
 import io.cumulus.persistence.storage.StorageEngines
 import io.cumulus.persistence.storage.engines.LocalStorage
 import io.cumulus.persistence.stores._
+import io.cumulus.persistence.{Database, PooledDatabase}
 import io.cumulus.services._
 import io.cumulus.services.admin.UserAdminService
 import io.cumulus.stages._
-import jsmessages.{JsMessages, JsMessagesFactory}
+import io.cumulus.utils.{Configuration, Logging}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import play.api._
-import play.api.db.evolutions.{ClassLoaderEvolutionsReader, EvolutionsComponents}
-import play.api.db.{DBComponents, Database, HikariCPComponents}
-import play.api.http.HttpErrorHandler
-import play.api.i18n.{I18nComponents, MessagesApi}
-import play.api.libs.mailer.MailerComponents
-import play.api.libs.ws.ahc.AhcWSComponents
-import play.api.mvc.EssentialFilter
-import router.Routes
 
+import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.language.{implicitConversions, postfixOps}
 
 
-class CumulusApplicationLoader extends ApplicationLoader {
 
-  def load(context: ApplicationLoader.Context): Application = {
-    LoggerConfigurator(context.environment.classLoader).foreach {
-      _.configure(context.environment)
-    }
-    new CumulusComponents(context).application
-  }
+object Main extends App with Logging {
 
-}
+  val langs: Seq[Lang] = Seq(
+    Lang("en"),
+    Lang("fr")
+  )
 
-/**
-  * Create the components of the Cumulus web application.
-  * @param context The context of the app.
-  */
-class CumulusComponents(
-  context: ApplicationLoader.Context
-) extends BuiltInComponentsFromContext(context)
-  with I18nComponents
-  with AssetsComponents
-  with AhcWSComponents
-  with DBComponents
-  with HikariCPComponents
-  with MailerComponents
-  with EvolutionsComponents {
+  // Load the configuration
+  implicit lazy val configuration: Configuration =
+    Configuration(ConfigFactory.systemEnvironment().withFallback(ConfigFactory.load()))
+
+  // Derive the settings from the loaded configuration
+  implicit lazy val settings: Settings = wire[Settings]
 
   // List of supported ciphers
   implicit lazy val ciphers: Ciphers =
@@ -97,40 +80,21 @@ class CumulusComponents(
   // Security provider
   Security.addProvider(new BouncyCastleProvider)
 
-  // Compile time generated router
-  val routerPrefix: String = "/"
-  lazy val router: Routes  = wire[Routes]
-
-  override implicit lazy val configuration: Configuration =
-    context.initialConfiguration ++ Configuration(ConfigFactory.parseFile(new File("conf/override.conf")))
-
-  implicit lazy val config: Config     = configuration.underlying // for MailerComponents
-  implicit lazy val settings: Settings = wire[Settings]
-
-  // SQL evolutions
-  override lazy val evolutionsReader = new ClassLoaderEvolutionsReader
-  applicationEvolutions // Access the lazy val to trigger evolutions
-
   // Database & QueryMonad to access DB
-  implicit lazy val database: Database = dbApi.database("default")
-  implicit lazy val queryRunner: QueryRunner[Future] = new FutureQueryRunner(CumulusDB(database), databaseEc)
+  implicit lazy val database: Database = new PooledDatabase("default", settings)
+  implicit lazy val queryRunner: QueryRunner[Future] = new FutureQueryRunner(database, databaseEc)
 
   // Execution contexts
+  implicit val actorSystem: ActorSystem                 = ActorSystem("cumulus-server")
   implicit lazy val defaultEc: ExecutionContextExecutor = actorSystem.dispatcher
   lazy val databaseEc: ExecutionContextExecutor         = actorSystem.dispatchers.lookup("db-context")
   lazy val tasksEc: ExecutionContextExecutor            = actorSystem.dispatchers.lookup("task-context")
   lazy val scheduler: Scheduler                         = actorSystem.scheduler
 
-  override implicit lazy val materializer: Materializer = ActorMaterializer()(actorSystem)
+  implicit lazy val materializer: Materializer = ActorMaterializer()(actorSystem)
 
-  // Override messagesApi to use Hocon config
-  override implicit lazy val messagesApi: MessagesApi = wire[HoconMessagesApiProvider].get
-  lazy val jsMessages: JsMessages                     = wire[JsMessagesFactory].all
-
-  // HTTP components
-  lazy val loggingFilter: LoggingFilter                = wire[LoggingFilter]
-  override lazy val httpFilters: Seq[EssentialFilter]  = Seq(loggingFilter)
-  override lazy val httpErrorHandler: HttpErrorHandler = ErrorHandler(environment, messagesApi)
+  lazy val messageProvider: MessagesProvider = HoconMessagesProvider.at("langs")
+  implicit lazy val messages: Messages       = wire[Messages]
 
   // Stores
   lazy val userStore: UserStore       = wire[UserStore]
@@ -147,28 +111,38 @@ class CumulusComponents(
   lazy val sessionService: SessionService = wire[SessionService]
   lazy val eventService: EventService     = wire[EventService]
   lazy val taskService: TaskService       = wire[TaskService]
-  lazy val mailService: MailService       = wire[MailService]
+  lazy val mailService: MailService       = ??? // TODO wire[MailService]
 
   // Admin services
   lazy val userServiceAdmin: UserAdminService = wire[UserAdminService]
 
   // Controllers
-  lazy val homeController: HomeController                 = wire[HomeController]
-  lazy val userController: UserController                 = wire[UserController]
-  lazy val fsController: FileSystemController             = wire[FileSystemController]
-  lazy val sharingController: SharingPublicController     = wire[SharingPublicController]
-  lazy val sharingManagementController: SharingController = wire[SharingController]
-  lazy val assetController: Assets                        = wire[Assets]
-
-  // Admin controllers
+  lazy val fileSystemController: FileSystemController = wire[FileSystemController]
+  lazy val sharingController: SharingController = wire[SharingController]
+  lazy val sharingPublicController: SharingPublicController = wire[SharingPublicController]
+  lazy val userController: UserController = wire[UserController]
   lazy val userAdminController: UserAdminController = wire[UserAdminController]
 
+  lazy val apiController: ApiController = wire[ApiController]
+  lazy val assetController: AssetController = wire[AssetController]
+  lazy val appController: AppController = wire[AppController]
+
+  lazy val routes: Route =
+    QueryLogger.logger(
+      level = "info",
+      concat(
+        assetController.routes,
+        apiController.routes,
+        appController.routes // Catch-all
+      )
+    )
+
   // Actors
-  lazy val taskExecutor: ActorRef = actorSystem.actorOf(TaskExecutor.props(taskService)(executionContext, settings), "TaskExecutor")
+  lazy val taskExecutor: ActorRef = actorSystem.actorOf(TaskExecutor.props(taskService)(defaultEc, settings), "TaskExecutor")
 
-  //import scala.concurrent.duration._
+  // TODO from conf through a service
+  actorSystem.scheduler.scheduleAtFixedRate(30 second, 60 seconds, taskExecutor, TaskExecutor.ScheduledRun)
 
-  // TODO from conf
-  //actorSystem.scheduler.schedule(30 second, 60 seconds, taskExecutor, TaskExecutor.ScheduledRun)
-
+  // Starts the akka HTTP server
+  // TODO HERE + reorganize packages
 }

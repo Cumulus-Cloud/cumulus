@@ -1,14 +1,15 @@
 package io.cumulus.services
 
 import io.cumulus.i18n.{Lang, Messages}
-import io.cumulus.{Logging, Settings}
+import io.cumulus.Settings
 import io.cumulus.persistence.query.QueryE
 import io.cumulus.validation.AppError
 import io.cumulus.models.fs.Directory
 import io.cumulus.models.user.User
 import io.cumulus.persistence.stores.UserStore.{emailField, loginField}
 import io.cumulus.persistence.stores.{FsNodeStore, UserStore}
-import io.cumulus.controllers.app.views.email.CumulusEmailValidationEmail
+import io.cumulus.utils.Logging
+import io.cumulus.views.email.CumulusEmailValidationEmail
 import play.api.libs.json.__
 
 

@@ -66,10 +66,7 @@ lazy val cumulusCore =
       libraryDependencies ++= Seq(
         "org.scalikejdbc" %% "scalikejdbc"   % "3.4.+",
         "org.flywaydb" % "flyway-core" % "6.2.4",
-        // i18n
-        Dependencies.jsMessages.core,
         // Persistence
-        jdbc,
         Dependencies.postgresql.core,
         Dependencies.anorm.core,
         Dependencies.commonsIO.core,
@@ -80,6 +77,7 @@ lazy val cumulusCore =
         Dependencies.cats.core,
         // JWT
         Dependencies.jwtPlay.core,
+        Dependencies.jwtPlay.playJson,
         // Emails
         Dependencies.playMailer.core,
         // Templating
@@ -100,47 +98,6 @@ lazy val cumulusCore =
     )
 
 // Cumulus akka server
-lazy val cumulusServerAkka =
-  project
-    .in(file("cumulus-server-akka"))
-    .settings(commonSettings: _*)
-    .settings(
-      name := "cumulus-server-akka",
-
-      // Twirl templates
-      sourceDirectories in (Compile, TwirlKeys.compileTemplates) := (unmanagedSourceDirectories in Compile).value,
-      TwirlKeys.templateImports := Seq(),
-
-      // Dependencies
-      libraryDependencies ++= Seq(
-        "com.typesafe.akka" %% "akka-http"   % "10.1.11",
-        "com.typesafe.akka" %% "akka-stream" % "2.5.26",
-        "de.heikoseeberger" %% "akka-http-play-json" % "1.31.0",
-        // Test dependencies
-        Dependencies.scalatest.play % Test,
-        // Silencer plugin
-        Dependencies.silencer.plugin,
-        Dependencies.silencer.lib,
-        // Persistence
-        jdbc,
-        evolutions,
-        Dependencies.postgresql.core,
-        Dependencies.anorm.core,
-        // cats
-        Dependencies.cats.core,
-        // Emails
-        Dependencies.playMailer.core,
-        // MacWire
-        Dependencies.macWire.macros,
-        // Silencer plugin
-        Dependencies.silencer.plugin,
-        Dependencies.silencer.lib
-      )
-    )
-    .dependsOn(cumulusCore)
-    .enablePlugins(SbtTwirl, JavaAppPackaging)
-
-// Cumulus server
 lazy val cumulusServer =
   project
     .in(file("cumulus-server"))
@@ -148,25 +105,15 @@ lazy val cumulusServer =
     .settings(
       name := "cumulus-server",
 
-      // Twirl templates
-      sourceDirectories in (Compile, TwirlKeys.compileTemplates) := (unmanagedSourceDirectories in Compile).value,
-      TwirlKeys.templateImports := Seq(),
-      
       // Dependencies
       libraryDependencies ++= Seq(
-        // Play server
-        akkaHttpServer,
-        nettyServer,
-        playCore,
-        ws,
-        // Test dependencies
-        Dependencies.scalatest.play % Test,
+        "com.typesafe.akka" %% "akka-http"   % "10.1.11",
+        "com.typesafe.akka" %% "akka-stream" % "2.5.26",
+        "de.heikoseeberger" %% "akka-http-play-json" % "1.31.0",
         // Silencer plugin
         Dependencies.silencer.plugin,
         Dependencies.silencer.lib,
         // Persistence
-        jdbc,
-        evolutions,
         Dependencies.postgresql.core,
         Dependencies.anorm.core,
         // cats
@@ -181,8 +128,7 @@ lazy val cumulusServer =
       )
     )
     .dependsOn(cumulusCore)
-    .enablePlugins(SbtTwirl, PlayScala, JavaAppPackaging)
-    .disablePlugins(PlayLayoutPlugin)
+    .enablePlugins(JavaAppPackaging)
 
 // Main project
 lazy val cumulusRoot =

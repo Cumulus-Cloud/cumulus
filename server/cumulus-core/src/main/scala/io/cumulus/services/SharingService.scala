@@ -4,11 +4,10 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 import akka.util.ByteString
-import io.cumulus.Logging
 import io.cumulus.persistence.query.{QueryE, QueryPagination, QueryRunner}
 import io.cumulus.persistence.query.QueryRunner._
 import io.cumulus.persistence.query.QueryE._
-import io.cumulus.utils.{Base16, Crypto, PaginatedList}
+import io.cumulus.utils.{Base16, Crypto, Logging, PaginatedList}
 import io.cumulus.validation.AppError
 import io.cumulus.models.fs.{Directory, File, FsNode, Path}
 import io.cumulus.models.sharing.{FileSharingSecurity, Sharing, SharingSecurity}

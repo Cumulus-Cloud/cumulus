@@ -13,9 +13,9 @@ import io.cumulus.persistence.stores.filters.SessionFilter
 import io.cumulus.persistence.stores.orderings.SessionOrdering
 import io.cumulus.persistence.stores.orderings.SessionOrderingType.OrderByLastActivityDesc
 import io.cumulus.persistence.stores.{EventStore, SessionStore, UserStore}
-import io.cumulus.utils.PaginatedList
+import io.cumulus.utils.{Logging, PaginatedList}
 import io.cumulus.validation.AppError
-import io.cumulus.{Logging, Settings}
+import io.cumulus.Settings
 
 import scala.concurrent.Future
 

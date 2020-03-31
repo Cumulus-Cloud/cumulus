@@ -3,6 +3,7 @@ package io.cumulus.controllers.app.views
 import io.cumulus.Settings
 import io.cumulus.validation.{AppError, GlobalError}
 import io.cumulus.models.user.User
+import io.cumulus.views.CumulusStaticTemplate
 import play.api.i18n.Messages
 import scalatags.Text
 import scalatags.Text.all._
