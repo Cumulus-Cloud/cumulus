@@ -3,7 +3,7 @@ package io.cumulus.controllers
 import java.util.UUID
 
 import io.cumulus.Settings
-import io.cumulus.controllers.payloads.SharingCreationPayload
+import io.cumulus.controllers.api.payloads.SharingCreationPayload
 import io.cumulus.persistence.query.QueryPagination
 import io.cumulus.models.sharing.Sharing
 import io.cumulus.services.{SessionService, SharingService}

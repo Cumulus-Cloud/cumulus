@@ -9,7 +9,7 @@ import akka.stream.{ActorMaterializer, Materializer}
 import com.softwaremill.macwire._
 import com.typesafe.config.{Config, ConfigFactory}
 import io.cumulus.controllers.{LoggingFilter, _}
-import io.cumulus.controllers.admin.UserAdminController
+import io.cumulus.controllers.api.admin.UserAdminController
 import io.cumulus.controllers.ErrorHandler
 import io.cumulus.i18n.HoconMessagesApiProvider
 import io.cumulus.persistence.CumulusDB

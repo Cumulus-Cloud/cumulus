@@ -1,10 +1,11 @@
 package io.cumulus.persistence.query
 
 import io.cumulus.Logging
-import io.cumulus.persistence.CumulusDB
+import io.cumulus.persistence.Database
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.{higherKinds, implicitConversions}
+
 
 /**
   * A Query runner, able to run query to produce a specified effect type of the query's combined result.
@@ -94,14 +95,14 @@ object QueryRunner {
 /**
   * Default query runner implementation, using Scala's future to produce asynchronous SQL queries.
   */
-class FutureQueryRunner(db: CumulusDB, ec: ExecutionContext) extends QueryRunner[Future] with Logging {
+class FutureQueryRunner(db: Database, ec: ExecutionContext) extends QueryRunner[Future] with Logging {
 
   /**
     * @see [[io.cumulus.persistence.query.QueryRunner#run(io.cumulus.persistence.query.Query, boolean) QueryRunner.run]]
     */
   def run[A](query: Query[A], logException: Boolean): Future[A] = {
     val result = Future {
-      db.getDB.withConnection(query.atomic)
+      db.withConnection(query.atomic)
     }(ec)
 
     result.recover {
@@ -118,10 +119,11 @@ class FutureQueryRunner(db: CumulusDB, ec: ExecutionContext) extends QueryRunner
     */
   def commit[E, A](query: Query[Either[E, A]], logException: Boolean): Future[Either[E, A]] = {
     val result = Future {
-      db.getDB.withTransaction { c =>
+      db.withTransaction { c =>
         try {
           query.atomic(c) match {
             case error: Left[E, A] =>
+              // Handled error
               c.rollback()
               error
             case success: Right[E, A] =>

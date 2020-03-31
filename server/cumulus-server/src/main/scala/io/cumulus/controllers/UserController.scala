@@ -5,13 +5,13 @@ import java.util.UUID
 import cats.data.EitherT
 import cats.implicits._
 import io.cumulus.Settings
-import io.cumulus.controllers.payloads._
+import io.cumulus.controllers.api.payloads._
 import io.cumulus.controllers.AuthenticationSupport._
 import io.cumulus.persistence.query.QueryPagination
 import io.cumulus.validation.AppError
 import io.cumulus.models.user.session.UserSession
 import io.cumulus.services.{EventService, SessionService, UserService}
-import io.cumulus.views.CumulusEmailValidationPage
+import io.cumulus.controllers.app.views.CumulusEmailValidationPage
 import play.api.libs.json.Json
 import play.api.mvc._
 

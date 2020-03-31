@@ -1,6 +1,9 @@
 package io.cumulus.services.admin
 
+import java.util.UUID
+
 import io.cumulus.Settings
+import io.cumulus.i18n.{Lang, Messages}
 import io.cumulus.persistence.query.{QueryE, QueryPagination, QueryRunner}
 import io.cumulus.persistence.query.QueryE._
 import io.cumulus.persistence.query.QueryRunner._
@@ -13,7 +16,6 @@ import io.cumulus.persistence.stores.orderings.UserOrdering
 import io.cumulus.persistence.stores.orderings.UserOrderingType.OrderByCreationAsc
 import io.cumulus.persistence.stores.{FsNodeStore, UserStore}
 import io.cumulus.services.{MailService, UserService, UserServiceCommon}
-import play.api.i18n.Messages
 
 import scala.concurrent.Future
 
@@ -28,6 +30,7 @@ class UserAdminService(
 )(
   implicit
   val settings: Settings,
+  val messages: Messages,
   queryRunner: QueryRunner[Future]
 ) extends UserServiceCommon {
 
@@ -45,14 +48,14 @@ class UserAdminService(
     roles: Seq[UserRole] = Seq(UserRole.User)
   )(implicit
     admin: User,
-    messages: Messages
+    lang: Lang
   ): Future[Either[AppError, User]] = {
     val user =
       User.create(
         email,
         login,
-        UserSecurity.createTemporary,  // Use temporary password
-        messages.lang.locale,          // Use default lang
+        UserSecurity.createTemporary, // Use temporary password
+        lang.locale,                  // Use default lang
         roles
       )
 
@@ -92,16 +95,19 @@ class UserAdminService(
     * Updates an use with the provided information. The user target should be different from the current user.
     */
   def updateUser(
-    userId: String,
+    userId: UUID,
     update: UserUpdate
-  )(implicit admin: User, messages: Messages): Future[Either[AppError, User]] = {
+  )(implicit
+    admin: User,
+    lang: Lang
+  ): Future[Either[AppError, User]] = {
 
     for {
       // Check that the user is an admin
       _ <- QueryE.pure(UserService.checkRequireAdmin(admin))
 
       // Find the user to update
-      user <- findUserInternal(userId)
+      user <- QueryE.getOrNotFound(userStore.find(userId))
 
       // Cannot performs any operation on the current user
       _ <- QueryE.pure(UserService.checkNotSelf(user))
@@ -143,7 +149,7 @@ class UserAdminService(
     * @param userId The ID of the user to deactivate.
     */
   def deactivateUser(
-    userId: String
+    userId: UUID
   )(implicit admin: User): Future[Either[AppError, User]] = {
 
     for {
@@ -151,7 +157,7 @@ class UserAdminService(
       _ <- QueryE.pure(UserService.checkRequireAdmin(admin))
 
       // Find the user to update
-      user <- findUserInternal(userId)
+      user <- QueryE.getOrNotFound(userStore.find(userId))
 
       // Cannot performs any operation on the current user
       _ <- QueryE.pure(UserService.checkNotSelf(user))
@@ -165,16 +171,16 @@ class UserAdminService(
 
   /**
     * Finds an user by its ID. Only usable by an admin.
-    * @param id The user of the user.
+    * @param userId The user of the user.
     */
-  def findUser(id: String)(implicit admin: User): Future[Either[AppError, User]] = {
+  def findUser(userId: UUID)(implicit admin: User): Future[Either[AppError, User]] = {
 
     for {
       // Check that the user is an admin
       _ <- QueryE.pure(UserService.checkRequireAdmin(admin))
 
       // Find the user by its ID
-      user <- findUserInternal(id)
+      user <- QueryE.getOrNotFound(userStore.find(userId))
 
     } yield user
 

@@ -40,10 +40,9 @@ class SessionService(
     * @param user The user performing the operation.
     */
   def createSession(from: String, user: User): Future[Either[AppError, SessionInformation]] = {
-    val newSession = SessionInformation.create(from, Duration.ofHours(settings.management.sessionDuration))(user)
+    val newSession = SessionInformation.create(from, Duration.ofSeconds(settings.security.sessionDuration))(user)
 
     for {
-
       // Save the new session
       session <- QueryE.lift(sessionStore.create(newSession).map(_ => newSession))
 
@@ -64,7 +63,6 @@ class SessionService(
     val newSession = SessionInformation.createInfinite(from)(user)
 
     for {
-
       // Save the new session
       session <- QueryE.lift(sessionStore.create(newSession).map(_ => newSession))
 

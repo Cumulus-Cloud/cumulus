@@ -1,7 +1,6 @@
 package io.cumulus.services
 
-import java.util.UUID
-
+import io.cumulus.i18n.{Lang, Messages}
 import io.cumulus.{Logging, Settings}
 import io.cumulus.persistence.query.QueryE
 import io.cumulus.validation.AppError
@@ -9,11 +8,8 @@ import io.cumulus.models.fs.Directory
 import io.cumulus.models.user.User
 import io.cumulus.persistence.stores.UserStore.{emailField, loginField}
 import io.cumulus.persistence.stores.{FsNodeStore, UserStore}
-import io.cumulus.views.email.CumulusEmailValidationEmail
-import play.api.i18n.Messages
+import io.cumulus.controllers.app.views.email.CumulusEmailValidationEmail
 import play.api.libs.json.__
-
-import scala.util.Try
 
 
 trait UserServiceCommon extends Logging {
@@ -23,7 +19,7 @@ trait UserServiceCommon extends Logging {
   protected def mailService: MailService
 
   protected implicit def settings: Settings
-
+  protected implicit def messages: Messages
 
   /**
     * Creates a new user. The provided user should have an unique ID, email and login ; otherwise the creation will
@@ -33,7 +29,7 @@ trait UserServiceCommon extends Logging {
   protected def createUserInternal(
     user: User
   )(implicit
-    messages: Messages
+    lang: Lang
   ): QueryE[User] = {
 
     for {
@@ -74,26 +70,6 @@ trait UserServiceCommon extends Logging {
   }
 
   /**
-    * Find an user by its ID.
-    */
-  def findUserInternal(id: String): QueryE[User] = {
-
-    for {
-      // Validate the provided UUID
-      uuid <- QueryE.pure {
-        Try(UUID.fromString(id))
-          .toEither
-          .left.map(_ => AppError.validation("validation.user.uuid-invalid", id))
-      }
-
-      // Find the user by its ID
-      user <- QueryE.getOrNotFound(userStore.find(uuid))
-
-    } yield user
-
-  }
-
-  /**
     * Change the user login.
     */
   protected def changeUserLogin(
@@ -116,7 +92,7 @@ trait UserServiceCommon extends Logging {
     user: User,
     email: String,
     emailValidated: Boolean
-  )(implicit messages: Messages): QueryE[User] = {
+  )(implicit lang: Lang): QueryE[User] = {
     val updatedUser = user.copy(email = email, security = user.security.copy(emailValidated = emailValidated))
 
     if(user != updatedUser) {

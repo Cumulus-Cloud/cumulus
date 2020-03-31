@@ -1,21 +1,46 @@
 package io.cumulus
 
-import play.api.Configuration
+import pdi.jwt.JwtAlgorithm
+import pdi.jwt.algorithms.JwtHmacAlgorithm
 
 /**
   * Settings of the application
-  * @param conf Underlying configuration.
+ *
+ * @param conf Underlying configuration.
   */
 class Settings(
   conf: Configuration
 ) {
+
+  object security {
+    val secret: String = conf.get[String]("cumulus.security.secret")
+    val algorithm: JwtHmacAlgorithm =
+      JwtAlgorithm.fromString(conf.get[String]("cumulus.security.algorithm")) match {
+        case algorithm: JwtHmacAlgorithm =>
+          algorithm
+        case algorithm =>
+          throw new Exception(s"Unsupported algorithm configured $algorithm")
+      }
+    val sessionDuration: Int = conf.get[Int]("cumulus.security.session-duration")
+  }
+
+  object database {
+    val url: String = conf.get[String]("cumulus.database.url")
+    val user: String = conf.get[String]("cumulus.database.user")
+    val password: String = conf.get[String]("cumulus.database.password")
+
+    object pool {
+      val minSize: Int = conf.get[Int]("cumulus.database.pool.min-size")
+      val maxSize: Int = conf.get[Int]("cumulus.database.pool.max-size")
+      val connectionTimeout: Int = conf.get[Int]("cumulus.database.pool.connection-timeout")
+    }
+  }
 
   val underlying: Configuration =
     conf
 
   object management {
     val allowSignUp: Boolean = conf.get[Boolean]("cumulus.management.allow-sign-up")
-    val sessionDuration: Int = conf.get[Int]("cumulus.management.session-duration")
   }
 
   object backgroundTask {

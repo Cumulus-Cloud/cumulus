@@ -1,6 +1,7 @@
 package io.cumulus.services
 
 import io.cumulus.Settings
+import io.cumulus.i18n.{Lang, Messages}
 import io.cumulus.persistence.query.{QueryE, QueryRunner}
 import io.cumulus.persistence.query.QueryRunner._
 import io.cumulus.persistence.query.QueryE._
@@ -10,8 +11,7 @@ import io.cumulus.models.user.{User, UserSecurity}
 import io.cumulus.persistence.stores.UserStore._
 import io.cumulus.persistence.stores.filters.SessionFilter
 import io.cumulus.persistence.stores.{FsNodeStore, SessionStore, UserStore}
-import io.cumulus.views.email.CumulusEmailValidationEmail
-import play.api.i18n.{Lang, Messages}
+import io.cumulus.controllers.app.views.email.CumulusEmailValidationEmail
 
 import scala.concurrent.Future
 import scala.util.Try
@@ -28,6 +28,7 @@ class UserService(
 )(
   implicit
   val settings: Settings,
+  val messages: Messages,
   queryRunner: QueryRunner[Future]
 ) extends UserServiceCommon {
 
@@ -42,13 +43,13 @@ class UserService(
     email: String,
     login: String,
     password: String
-  )(implicit messages: Messages): Future[Either[AppError, User]] = {
+  )(implicit lang: Lang): Future[Either[AppError, User]] = {
     val user =
       User.create(
         email,
         login,
         password,
-        messages.lang.locale // Use default lang
+        messages.preferredLocale.locale // Use default lang
       )
 
     if(settings.management.allowSignUp)
@@ -86,7 +87,7 @@ class UserService(
   def resendEmail(
     login: String,
     password: String
-  )(implicit messages: Messages): Future[Either[AppError, User]] = {
+  )(implicit lang: Lang): Future[Either[AppError, User]] = {
 
     for {
       // Find the user by login and password

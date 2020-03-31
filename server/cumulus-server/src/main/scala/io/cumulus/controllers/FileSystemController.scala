@@ -7,7 +7,7 @@ import akka.util.ByteString
 import cats.data.EitherT
 import cats.implicits._
 import io.cumulus.Settings
-import io.cumulus.controllers.payloads._
+import io.cumulus.controllers.api.payloads._
 import io.cumulus.persistence.query.QueryPagination
 import io.cumulus.validation.AppError
 import io.cumulus.models.fs.{Directory, FsNodeType, Path}

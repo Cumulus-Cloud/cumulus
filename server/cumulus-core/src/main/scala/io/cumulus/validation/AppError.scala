@@ -2,7 +2,8 @@ package io.cumulus.validation
 
 import scala.language.implicitConversions
 import cats.data.NonEmptyList
-import play.api.libs.json.{JsError, JsPath}
+import io.cumulus.i18n.{Lang, Messages}
+import play.api.libs.json._
 
 import scala.util.Random
 
@@ -91,6 +92,53 @@ object AppError {
 
   implicit class EitherToError[A](val result: Either[NonEmptyList[FieldValidationError], A]) extends AnyVal {
     def toValidationError: Either[ValidationError, A] = result.left.map(ValidationError)
+  }
+
+  implicit def writes(m: Messages)(implicit l: Lang): Writes[AppError] = new Writes[AppError] {
+
+    override def writes(error: AppError): JsValue = {
+
+      error match {
+        case globalError: GlobalError =>
+          // Directly render to JSON
+          Json.obj(
+            "key"     -> globalError.key,
+            "message" -> m(globalError.key, globalError.args: _*),
+            "args"    -> Json.toJson(globalError.args)
+          )
+
+        case validationError: ValidationError =>
+          // Accumulate all validation errors
+          val errors =
+            validationError.errors.foldLeft(Json.obj()) {
+              case (obj, fieldValidationError) =>
+                obj + {
+                  pathDotted(fieldValidationError.path) ->
+                    Json.obj(
+                      "key"     -> fieldValidationError.key,
+                      "message" -> m(fieldValidationError.key, fieldValidationError.args: _*),
+                      "args"    -> Json.toJson(fieldValidationError.args)
+                    )
+                }
+
+            }
+
+          // And then render to JSON
+          Json.obj(
+            "key"     -> validationError.key,
+            "message" -> m(validationError.key, validationError.args: _*),
+            "args"    -> Json.toJson(validationError.args),
+            "errors"  -> errors
+          )
+      }
+    }
+
+    /** Helper to convert a js path to a dotted path, for error rendering. */
+    private def pathDotted(jsPath: JsPath): String = jsPath.toString() match {
+      case path if path.nonEmpty => path.tail.replace("/", ".").replace("(", ".").replace(")", "")
+      case _                     => ""
+    }
+
   }
 
 }

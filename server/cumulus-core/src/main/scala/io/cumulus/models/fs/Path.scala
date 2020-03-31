@@ -2,7 +2,6 @@ package io.cumulus.models.fs
 
 import org.apache.commons.io.FilenameUtils
 import play.api.libs.json._
-import play.api.mvc.{PathBindable, QueryStringBindable}
 
 import scala.language.implicitConversions
 
@@ -142,30 +141,6 @@ object Path {
     new Format[Path] {
       override def reads(json: JsValue): JsResult[Path] = Json.fromJson[String](json).map(Path.convertStringToPath)
       override def writes(o: Path): JsValue             = JsString(o)
-    }
-
-  implicit def pathBinder(implicit stringBinder: PathBindable[String]): PathBindable[Path] =
-    new PathBindable[Path] {
-
-      def bind(key: String, value: String): Either[String, Path] =
-        stringBinder.bind(key, value).map(Path.sanitize)
-
-      def unbind(key: String, value: Path): String =
-        value.toString
-
-    }
-
-  implicit def queryStringBindable(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[Path] =
-    new QueryStringBindable[Path] {
-
-      def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, Path]] =
-        params
-          .get(key).flatMap(_.headOption.map(Path.convertStringToPath))
-          .map(Right.apply)
-
-      def unbind(key: String, ordering: Path): String =
-        stringBinder.unbind(key, ordering.toString)
-
     }
 
 }

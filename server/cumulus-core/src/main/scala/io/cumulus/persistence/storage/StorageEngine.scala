@@ -3,10 +3,10 @@ package io.cumulus.persistence.storage
 import java.io.{InputStream, OutputStream}
 import java.util.UUID
 
+import io.cumulus.Configuration
 import io.cumulus.validation.AppError
-import play.api.Configuration
-import scala.concurrent.{ExecutionContext, Future}
 
+import scala.concurrent.{ExecutionContext, Future}
 import io.cumulus.stream.storage.StorageReferenceReader.logger
 
 /**

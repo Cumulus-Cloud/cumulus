@@ -6,7 +6,7 @@ import io.cumulus.persistence.query.QueryPagination
 import io.cumulus.models.fs.FsNodeType
 import io.cumulus.persistence.stores.orderings.FsNodeOrdering
 import io.cumulus.services.{FsNodeService, SessionService}
-import io.cumulus.views.IndexPage
+import io.cumulus.controllers.app.views.IndexPage
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
