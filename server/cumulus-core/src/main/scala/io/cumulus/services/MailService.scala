@@ -5,17 +5,20 @@ import io.cumulus.validation.AppError
 import io.cumulus.models.user.User
 import io.cumulus.utils.Logging
 import io.cumulus.views.email.CumulusEmailTemplate
-import play.api.libs.mailer.{Email, SMTPMailer}
+import courier._
+import javax.mail.internet.InternetAddress
 
-import scala.util.Try
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 /**
   * Mail service.
   */
 class MailService(
-  mailer: SMTPMailer
+  mailer: Mailer
 )(
   implicit
+  ec: ExecutionContext,
   settings: Settings
 ) extends Logging {
 
@@ -26,17 +29,21 @@ class MailService(
     * @param emailContent Content of the mail.
     * @param to Recipient user.
     */
-  def sendToUser(subject: String, emailContent: CumulusEmailTemplate, to: User): Either[AppError, String] = {
+  def sendToUser(subject: String, emailContent: CumulusEmailTemplate, to: User): Future[Either[AppError, Unit]] = {
+    val mail =
+      Envelope
+        .from(new InternetAddress(settings.mail.from, settings.mail.personal))
+        .to(new InternetAddress(to.email, to.login))
+        .subject(s"Cumulus Cloud - $subject")
+        .content(Multipart().html(emailContent.content.render))
 
-    val email = Email(
-      s"Cumulus Cloud - $subject",
-      s"<${settings.mail.from}>",
-      Seq(s"${to.login} <${to.email}>"),
-      bodyHtml = Some(emailContent.content.render)
-    )
-
-    // TODO send using an actor
-    Try(mailer.send(email)).toEither.left.map(e => AppError.technical(e.getMessage))
+    // TODO send using an actor to handle retry
+    mailer(mail)
+      .map(Right(_))
+      .recover {
+        case NonFatal(e) =>
+          Left(AppError.technical(e.getMessage))
+      }
   }
 
 }

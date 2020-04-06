@@ -2,6 +2,15 @@ import sbt._
 
 object Dependencies {
 
+  object akka {
+    val version = "2.5.26"
+
+    val actor = "com.typesafe.akka" %% "akka-actor" % "2.5.26"
+    val stream = "com.typesafe.akka" %% "akka-stream" % "2.5.26"
+    val http = "com.typesafe.akka" %% "akka-http" % "10.1.11"
+    val httpPlayJson = "de.heikoseeberger" %% "akka-http-play-json" % "1.31.0",
+  }
+
   object postgresql {
     val version = "42.2.6"
 
@@ -12,6 +21,18 @@ object Dependencies {
     val version = "2.5.3"
 
     val core = "com.typesafe.play" %% "anorm" % version
+  }
+
+  object flyway {
+    val version = "6.2.4"
+
+    val core = "org.flywaydb" % "flyway-core" % version
+  }
+
+  object scalikejdbc {
+    val version = "3.4.+"
+
+    val core = "org.scalikejdbc" %% "scalikejdbc" % version
   }
 
   object enumeratum {
@@ -33,13 +54,13 @@ object Dependencies {
     val core = "commons-io" % "commons-io" % version
   }
 
-  object playMailer {
-    val version = "6.0.1"
+  object courier {
+    val version = "2.0.0"
 
-    val core = "com.typesafe.play" %% "play-mailer" % version
+    val core = "com.github.daddykotex" %% "courier" % version
   }
 
-  object jwtPlay {
+  object jwt {
     val version = "3.0.1"
 
     val core = "com.pauldijou" %% "jwt-core" % version

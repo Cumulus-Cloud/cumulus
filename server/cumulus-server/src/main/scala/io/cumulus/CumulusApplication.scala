@@ -3,15 +3,11 @@ package io.cumulus
 import java.security.Security
 
 import akka.actor.{ActorRef, ActorSystem, Scheduler}
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.Route
-import akka.stream.{ActorMaterializer, Materializer}
+import akka.pattern.after
+import akka.stream.Materializer
 import com.softwaremill.macwire._
 import com.typesafe.config.ConfigFactory
-import io.cumulus.controllers.api.admin.UserAdminController
-import io.cumulus.controllers.api._
-import io.cumulus.controllers.app.AppController
-import io.cumulus.controllers.utils.{AssetController, QueryLogger}
+import courier.Mailer
 import io.cumulus.i18n._
 import io.cumulus.persistence.query.{FutureQueryRunner, QueryRunner}
 import io.cumulus.persistence.storage.StorageEngines
@@ -25,17 +21,16 @@ import io.cumulus.utils.{Configuration, Logging}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.{Await, ExecutionContextExecutor, Future}
+import scala.io.StdIn
 import scala.language.{implicitConversions, postfixOps}
+import scala.util.control.NonFatal
 
 
+object CumulusApplication extends App with Logging {
 
-object Main extends App with Logging {
-
-  val langs: Seq[Lang] = Seq(
-    Lang("en"),
-    Lang("fr")
-  )
+  // Security provider
+  Security.addProvider(new BouncyCastleProvider)
 
   // Load the configuration
   implicit lazy val configuration: Configuration =
@@ -44,57 +39,53 @@ object Main extends App with Logging {
   // Derive the settings from the loaded configuration
   implicit lazy val settings: Settings = wire[Settings]
 
-  // List of supported ciphers
-  implicit lazy val ciphers: Ciphers =
-    Ciphers(
-      AESCipherStage
-    )
-
-  // List of supported compressors
-  implicit lazy val compressors: Compressions =
-    Compressions(
-      GzipStage,
-      DeflateStage
-    )
-
   // List of metadata extractors available
-  implicit lazy val metadataExtractors: MetadataExtractors =
+  lazy val metadataExtractors: MetadataExtractors =
     MetadataExtractors(
       ImageMetadataExtractor,
       PDFDocumentMetadataExtractor
     )
 
   // List of thumbnail generator available
-  implicit lazy val thumbnailGenerators: ThumbnailGenerators =
+  lazy val thumbnailGenerators: ThumbnailGenerators =
     ThumbnailGenerators(
       ImageThumbnailGenerator,
       PDFDocumentThumbnailGenerator
     )
 
   // List of storage engine available
-  implicit lazy val storageEngines: StorageEngines =
+  lazy val storageEngines: StorageEngines =
     StorageEngines(
       LocalStorage
     )
 
-  // Security provider
-  Security.addProvider(new BouncyCastleProvider)
-
   // Database & QueryMonad to access DB
-  implicit lazy val database: Database = new PooledDatabase("default", settings)
+  implicit lazy val database: Database               = new PooledDatabase("default", settings.database("default"))
   implicit lazy val queryRunner: QueryRunner[Future] = new FutureQueryRunner(database, databaseEc)
 
   // Execution contexts
   implicit val actorSystem: ActorSystem                 = ActorSystem("cumulus-server")
   implicit lazy val defaultEc: ExecutionContextExecutor = actorSystem.dispatcher
-  lazy val databaseEc: ExecutionContextExecutor         = actorSystem.dispatchers.lookup("db-context")
   lazy val tasksEc: ExecutionContextExecutor            = actorSystem.dispatchers.lookup("task-context")
   lazy val scheduler: Scheduler                         = actorSystem.scheduler
 
-  implicit lazy val materializer: Materializer = ActorMaterializer()(actorSystem)
+  implicit lazy val materializer: Materializer = Materializer.createMaterializer(actorSystem).withNamePrefix("cumulus")
 
+  // Message providers
   lazy val messageProvider: MessagesProvider = HoconMessagesProvider.at("langs")
   implicit lazy val messages: Messages       = wire[Messages]
+
+  // Mailer configuration
+  lazy val mailer: Mailer =
+    if(settings.mail.auth)
+      Mailer(settings.mail.host, settings.mail.port)
+        .auth(true)
+        .as(settings.mail.user, settings.mail.password)
+        .ssl(settings.mail.ssl)
+        .startTls(settings.mail.tls)()
+    else
+      Mailer(settings.mail.host, settings.mail.port)
+        .auth(false)()
 
   // Stores
   lazy val userStore: UserStore       = wire[UserStore]
@@ -111,31 +102,10 @@ object Main extends App with Logging {
   lazy val sessionService: SessionService = wire[SessionService]
   lazy val eventService: EventService     = wire[EventService]
   lazy val taskService: TaskService       = wire[TaskService]
-  lazy val mailService: MailService       = ??? // TODO wire[MailService]
+  lazy val mailService: MailService       = wire[MailService]
 
   // Admin services
   lazy val userServiceAdmin: UserAdminService = wire[UserAdminService]
-
-  // Controllers
-  lazy val fileSystemController: FileSystemController = wire[FileSystemController]
-  lazy val sharingController: SharingController = wire[SharingController]
-  lazy val sharingPublicController: SharingPublicController = wire[SharingPublicController]
-  lazy val userController: UserController = wire[UserController]
-  lazy val userAdminController: UserAdminController = wire[UserAdminController]
-
-  lazy val apiController: ApiController = wire[ApiController]
-  lazy val assetController: AssetController = wire[AssetController]
-  lazy val appController: AppController = wire[AppController]
-
-  lazy val routes: Route =
-    QueryLogger.logger(
-      level = "info",
-      concat(
-        assetController.routes,
-        apiController.routes,
-        appController.routes // Catch-all
-      )
-    )
 
   // Actors
   lazy val taskExecutor: ActorRef = actorSystem.actorOf(TaskExecutor.props(taskService)(defaultEc, settings), "TaskExecutor")
@@ -143,6 +113,49 @@ object Main extends App with Logging {
   // TODO from conf through a service
   actorSystem.scheduler.scheduleAtFixedRate(30 second, 60 seconds, taskExecutor, TaskExecutor.ScheduledRun)
 
-  // Starts the akka HTTP server
-  // TODO HERE + reorganize packages
+  // HTTP server
+  val httpServer = wire[CumulusHttpServer]
+
+  // Starts the HTTP server
+  httpServer.startServer()
+    .map { bindingFuture =>
+
+      def shutdownHttpServer(timeout: FiniteDuration): Unit = {
+        Await.result(
+          bindingFuture.terminate(timeout).transformWith(_ => actorSystem.terminate()),
+          timeout + (2 minutes)
+        )
+        ()
+      }
+
+      actorSystem.registerOnTermination {
+        logger.info("Application gracefully stopped")
+      }
+
+      // Waits for the end of the akka HTTP server
+      if (settings.app.mode == Dev) {
+        logger.info(s"Started in dev mode, press ENTER to stop...")
+        StdIn.readLine() // Wait for ENTER key to be pressed
+        logger.info(s"Stopping the application...")
+        shutdownHttpServer(1 minute)
+      } else {
+        logger.info(s"Started in production mode, press CTRL-C to stop...")
+
+        // Bind when the scala app is stopped
+        scala.sys.addShutdownHook {
+          logger.info(s"Stopping the application...")
+          shutdownHttpServer(2 minute)
+        }
+      }
+
+    }
+    .recoverWith {
+      case NonFatal(e) => // If we failed our initialization, terminate the actor system
+        logger.error(s"Error during application initialization '${e.getMessage}', stopping the application...")
+        e.printStackTrace()
+        // Avoid error (noise) when killing the actor system while still creating actors
+        after(2 seconds,  actorSystem.scheduler)(actorSystem.terminate())
+        throw e
+    }
+
 }

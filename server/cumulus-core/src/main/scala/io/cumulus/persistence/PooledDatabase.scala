@@ -2,19 +2,19 @@ package io.cumulus.persistence
 
 import java.sql.Connection
 
-import io.cumulus.Settings
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.configuration.ClassicConfiguration
 import scalikejdbc.{ConnectionPool, ConnectionPoolSettings}
 
+import scala.concurrent.duration.FiniteDuration
 import scala.util.control.NonFatal
 
 
 
-class PooledDatabase(val name: String, settings: Settings) extends Database {
+class PooledDatabase(val name: String, settings: DatabaseSettings) extends Database {
 
   // Init the JDBC driver
-  Class.forName("org.postgresql.Driver")
+  Class.forName(settings.driver)
 
   // Do any migration needed
   doDatabaseMigration()
@@ -50,16 +50,16 @@ class PooledDatabase(val name: String, settings: Settings) extends Database {
     // Load the pool settings from the settings
     val poolSettings =
       ConnectionPoolSettings(
-        initialSize = settings.database.pool.minSize,
-        maxSize = settings.database.pool.maxSize,
-        connectionTimeoutMillis = settings.database.pool.connectionTimeout
+        initialSize = settings.pool.minSize,
+        maxSize = settings.pool.maxSize,
+        connectionTimeoutMillis = settings.pool.connectionTimeout.toMillis
       )
 
     // Create the connection pool from the defined settings
     ConnectionPool(
-      settings.database.url,
-      settings.database.user,
-      settings.database.password,
+      settings.url,
+      settings.user,
+      settings.password,
       poolSettings
     )
   }
@@ -73,9 +73,9 @@ class PooledDatabase(val name: String, settings: Settings) extends Database {
 
     flywayConfiguration
       .setDataSource(
-        settings.database.url,
-        settings.database.user,
-        settings.database.password
+        settings.url,
+        settings.user,
+        settings.password
       )
 
     flywayConfiguration
@@ -86,3 +86,17 @@ class PooledDatabase(val name: String, settings: Settings) extends Database {
   }
 
 }
+
+case class DatabaseSettings(
+  driver: String,
+  url: String,
+  user: String ,
+  password: String,
+  pool: DatabasePoolSettings
+)
+
+case class DatabasePoolSettings(
+  minSize: Int,
+  maxSize: Int,
+  connectionTimeout: FiniteDuration
+)

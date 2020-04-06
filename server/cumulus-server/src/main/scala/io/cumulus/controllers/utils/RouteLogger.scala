@@ -7,9 +7,9 @@ import akka.http.scaladsl.server.directives.{DebuggingDirectives, LogEntry, Logg
 import akka.http.scaladsl.server.{Route, RouteResult}
 import io.cumulus.utils.Logging
 
-object QueryLogger { self: Logging =>
+object RouteLogger { self: Logging =>
 
-  def logger(level: String, route: Route): Route = {
+  def log(level: String, route: Route): Route = {
     val logLevel = Logging.levelFor(level) getOrElse Logging.InfoLevel
 
     def logResponse(loggingAdapter: LoggingAdapter, reqTimestamp: Long)(req: HttpRequest)(res: RouteResult): Unit = {

@@ -57,13 +57,13 @@ trait UserServiceCommon extends Logging {
       _ <- QueryE.lift(fsNodeStore.create(Directory.create(user, "/")))
 
       // Finally, send the user a mail with a link to validate its account
-      _ <- QueryE.pure {
-        mailService
-          .sendToUser(
-            messages("email.email-validation.object"),
-            CumulusEmailValidationEmail(user),
-            user
-          )
+      _ = {
+        // Non blocking
+        mailService.sendToUser(
+          messages("email.email-validation.object"),
+          CumulusEmailValidationEmail(user),
+          user
+        )
       }
 
     } yield user
@@ -103,14 +103,16 @@ trait UserServiceCommon extends Logging {
 
         // Only send the email validation if the email is not validated
         _ <- QueryE.pure {
-          if(!emailValidated)
+          if(!emailValidated) {
+            // Non blocking
             mailService
               .sendToUser(
                 messages("email.email-validation.object"),
                 CumulusEmailValidationEmail(user),
                 user
               )
-          else
+            ()
+          } else
             ()
         }
       } yield updatedUser

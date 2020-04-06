@@ -1,8 +1,13 @@
 package io.cumulus
 
+import io.cumulus.i18n.Lang
+import io.cumulus.stages.{AESCipherStage, Ciphers, Compressions, DeflateStage, GzipStage}
 import io.cumulus.utils.Configuration
 import pdi.jwt.JwtAlgorithm
 import pdi.jwt.algorithms.JwtHmacAlgorithm
+
+import scala.concurrent.duration.FiniteDuration
+
 
 /**
   * Settings of the application
@@ -13,6 +18,23 @@ class Settings(
   conf: Configuration
 ) {
 
+  val underlying: Configuration =
+    conf
+
+  object app {
+    val allowSignUp: Boolean = conf.get[Boolean]("cumulus.app.allow-sign-up")
+    val mode: AppEnv = if (conf.get[String]("cumulus.app.mode") == "dev") Dev else Prod
+    val langs: Set[Lang] = conf.get[Seq[String]]("cumulus.app.langs").toSet.map(Lang(_))
+  }
+
+  object http {
+    val hostname: String = conf.get[String]("cumulus.http.hostname")
+    val port: Int = conf.get[Int]("cumulus.http.port")
+    val protocol: String = conf.get[String]("cumulus.http.protocol")
+    lazy val url = s"$protocol://$hostname${if (port == 80 || port == 443) "" else s":$port" }"
+    val timeout: FiniteDuration = conf.get[FiniteDuration]("cumulus.http.timeout")
+  }
+
   object security {
     val secret: String = conf.get[String]("cumulus.security.secret")
     val algorithm: JwtHmacAlgorithm =
@@ -22,26 +44,34 @@ class Settings(
         case algorithm =>
           throw new Exception(s"Unsupported algorithm configured $algorithm")
       }
-    val sessionDuration: Int = conf.get[Int]("cumulus.security.session-duration")
+    val sessionDuration: FiniteDuration = conf.get[FiniteDuration]("cumulus.security.session-duration")
   }
 
-  object database {
-    val url: String = conf.get[String]("cumulus.database.url")
-    val user: String = conf.get[String]("cumulus.database.user")
-    val password: String = conf.get[String]("cumulus.database.password")
+  val database = {
 
-    object pool {
-      val minSize: Int = conf.get[Int]("cumulus.database.pool.min-size")
-      val maxSize: Int = conf.get[Int]("cumulus.database.pool.max-size")
-      val connectionTimeout: Int = conf.get[Int]("cumulus.database.pool.connection-timeout")
-    }
-  }
+    val dbConfigurations = conf.get[Configuration]("cumulus.database")
 
-  val underlying: Configuration =
-    conf
+    dbConfigurations
+      .subKeys
+      .map { key =>
+        val dbConfiguration = dbConfigurations.get[Configuration](key)
 
-  object management {
-    val allowSignUp: Boolean = conf.get[Boolean]("cumulus.management.allow-sign-up")
+        val databaseSettings =
+          DatabaseSettings(
+            driver = dbConfiguration.get[String]("driver"),
+            url = dbConfiguration.get[String]("url"),
+            user = dbConfiguration.get[String]("user"),
+            password = dbConfiguration.get[String]("password"),
+            pool = DatabasePoolSettings(
+              minSize = dbConfiguration.get[Int]("pool.min-size"),
+              maxSize = dbConfiguration.get[Int]("pool.max-size"),
+              connectionTimeout = dbConfiguration.get[FiniteDuration]("pool.connection-timeout")
+            )
+          )
+
+        key -> databaseSettings
+      }
+      .toMap
   }
 
   object backgroundTask {
@@ -49,14 +79,16 @@ class Settings(
   }
 
   object mail {
-    val from: String = conf.get[String]("cumulus.mail.from")
-  }
+    val host: String = conf.get[String]("cumulus.mail.host")
+    val port: Int = conf.get[Int]("cumulus.mail.port")
+    val ssl: Boolean = conf.get[Option[Boolean]]("cumulus.mail.ssl").getOrElse(false)
+    val tls: Boolean = conf.get[Option[Boolean]]("cumulus.mail.tls").getOrElse(false)
+    val auth: Boolean = conf.get[Option[Boolean]]("cumulus.mail.auth").getOrElse(false)
+    val user: String = conf.get[Option[String]]("cumulus.mail.user").getOrElse("")
+    val password: String = conf.get[Option[String]]("cumulus.mail.password").getOrElse("")
 
-  object host {
-    val name: String = conf.get[String]("cumulus.host.name")
-    val port: Int = conf.get[Int]("cumulus.host.port")
-    val protocol: String = conf.get[String]("cumulus.host.protocol")
-    lazy val url = s"$protocol://$name${if (port == 80 || port == 443) "" else s":$port" }"
+    val from: String = conf.get[String]("cumulus.mail.from")
+    val personal: String = conf.get[String]("cumulus.mail.personal")
   }
 
   object api {
@@ -67,6 +99,25 @@ class Settings(
   object storage {
     val chunkSize: Int = conf.get[Int]("cumulus.storage.chunkSize")
     val objectSize: Long = conf.get[Long]("cumulus.storage.objectSize")
+
+    // List of supported ciphers
+    val ciphers: Ciphers =
+      Ciphers(
+        AESCipherStage
+      )
+
+    // List of supported compressors
+    val compressors: Compressions =
+      Compressions(
+        GzipStage,
+        DeflateStage
+      )
+
   }
 
 }
+
+sealed trait AppEnv
+object Dev extends AppEnv
+object Prod extends AppEnv
+

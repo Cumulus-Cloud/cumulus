@@ -52,7 +52,7 @@ class UserService(
         messages.preferredLocale.locale // Use default lang
       )
 
-    if(settings.management.allowSignUp)
+    if(settings.app.allowSignUp)
       createUserInternal(user).commit()
     else
       Future.successful(Left(AppError.forbidden("validation.user.sign-up-deactivated")))
@@ -108,15 +108,15 @@ class UserService(
           Left(AppError.validation("validation.user.email-already-validated"))
         else if(!user.security.activated)
           Left(AppError.validation("validation.user.user-deactivated "))
-        else
-          Right(
-            mailService
-              .sendToUser(
-                messages("email.email-validation.object"),
-                CumulusEmailValidationEmail(user),
-                user
-              )
-          )
+        else {
+          mailService
+            .sendToUser(
+              messages("email.email-validation.object"),
+              CumulusEmailValidationEmail(user),
+              user
+            )
+          Right(())
+        }
       }
 
     } yield user

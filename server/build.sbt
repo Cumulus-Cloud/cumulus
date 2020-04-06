@@ -49,6 +49,12 @@ lazy val commonSettings = Seq(
     Wart.Var
   ),
 
+  libraryDependencies ++= Seq(
+    // Silencer plugin
+    Dependencies.silencer.plugin,
+    Dependencies.silencer.lib
+  ),
+
   // Do not show eviction warnings, because we can't really do anything
   // to suppress them...
   evictionWarningOptions in update := EvictionWarningOptions.default
@@ -64,22 +70,25 @@ lazy val cumulusCore =
     .settings(
       name := "cumulus-core",
       libraryDependencies ++= Seq(
-        "org.scalikejdbc" %% "scalikejdbc"   % "3.4.+",
-        "org.flywaydb" % "flyway-core" % "6.2.4",
+        // Akka
+        Dependencies.akka.actor,
+        Dependencies.akka.stream,
         // Persistence
+        Dependencies.flyway.core,
+        Dependencies.scalikejdbc.core,
         Dependencies.postgresql.core,
         Dependencies.anorm.core,
         Dependencies.commonsIO.core,
-        // enums utils
+        // Enums utils
         Dependencies.enumeratum.core,
         Dependencies.enumeratum.play,
-        // cats
+        // Cats
         Dependencies.cats.core,
         // JWT
-        Dependencies.jwtPlay.core,
-        Dependencies.jwtPlay.playJson,
+        Dependencies.jwt.core,
+        Dependencies.jwt.playJson,
         // Emails
-        Dependencies.playMailer.core,
+        Dependencies.courier.core,
         // Templating
         Dependencies.scalatags.core,
         Dependencies.scalacss.core,
@@ -90,10 +99,7 @@ lazy val cumulusCore =
         // PDF handling
         Dependencies.pdfbox.core,
         // Crypto
-        Dependencies.bouncyCastle.core,
-        // Silencer plugin
-        Dependencies.silencer.plugin,
-        Dependencies.silencer.lib
+        Dependencies.bouncyCastle.core
       )
     )
 
@@ -107,19 +113,9 @@ lazy val cumulusServer =
 
       // Dependencies
       libraryDependencies ++= Seq(
-        "com.typesafe.akka" %% "akka-http"   % "10.1.11",
-        "com.typesafe.akka" %% "akka-stream" % "2.5.26",
-        "de.heikoseeberger" %% "akka-http-play-json" % "1.31.0",
-        // Silencer plugin
-        Dependencies.silencer.plugin,
-        Dependencies.silencer.lib,
-        // Persistence
-        Dependencies.postgresql.core,
-        Dependencies.anorm.core,
-        // cats
-        Dependencies.cats.core,
-        // Emails
-        Dependencies.playMailer.core,
+        // Akka HTTP
+        Dependencies.akka.http,
+        Dependencies.akka.httpPlayJson,
         // MacWire
         Dependencies.macWire.macros,
         // Silencer plugin
@@ -143,4 +139,3 @@ lazy val cumulusRoot =
       cumulusCore
     )
     .dependsOn(cumulusServer)
-
