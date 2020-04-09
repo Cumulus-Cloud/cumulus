@@ -40,7 +40,7 @@ class SessionService(
     * @param user The user performing the operation.
     */
   def createSession(from: String, user: User): Future[Either[AppError, SessionInformation]] = {
-    val newSession = SessionInformation.create(from, Duration.ofSeconds(settings.security.sessionDuration))(user)
+    val newSession = SessionInformation.create(from, Duration.ofNanos(settings.security.sessionDuration.toNanos))(user)
 
     for {
       // Save the new session

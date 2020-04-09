@@ -16,7 +16,7 @@ import io.cumulus.persistence.stores.orderings.FsNodeOrdering
 import io.cumulus.services.{FsNodeService, SharingService, StorageService}
 import io.cumulus.stages._
 import io.cumulus.validation.AppError
-import io.cumulus.{Authenticator, Settings}
+import io.cumulus.Settings
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps

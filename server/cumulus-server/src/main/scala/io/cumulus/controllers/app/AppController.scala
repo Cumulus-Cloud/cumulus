@@ -11,8 +11,8 @@ import io.cumulus.persistence.query.QueryPagination
 import io.cumulus.persistence.stores.orderings.FsNodeOrdering
 import io.cumulus.services.FsNodeService
 import io.cumulus.validation.AppErrorType.Unauthorized
-import io.cumulus.views.IndexPage
-import io.cumulus.{AppComponent, Authenticator, ErrorSupport, RejectionSupport, Settings}
+import io.cumulus.Settings
+import io.cumulus.views.pages.AppPage
 import play.api.mvc._
 
 import scala.concurrent.ExecutionContext
@@ -36,7 +36,7 @@ class AppController(
     RejectionHandler.newBuilder().handle {
       case AppErrorRejection(appError) if appError.errorType == Unauthorized =>
         withContext { implicit ctx =>
-          IndexPage(None, None).toResult
+          AppPage(None, None).toResult
         }
     }.result().withFallback(rejectionHandler)
 
@@ -55,7 +55,7 @@ class AppController(
   def index: Route =
     (get & pathSingleSlash) {
       withAuthentication { implicit ctx =>
-        IndexPage(Some(ctx.user), None).toResult
+        AppPage(Some(ctx.user), None).toResult
       }
     }
 
@@ -73,11 +73,11 @@ class AppController(
               fsNodeService.findContent(node.id, QueryPagination(50), FsNodeOrdering.default)
           }
           .map { maybeDirectory =>
-            IndexPage(Some(ctx.user), maybeDirectory.toOption)
+            AppPage(Some(ctx.user), maybeDirectory.toOption)
           }
           .recover {
             case NonFatal(_) =>
-              IndexPage(Some(ctx.user), None)
+              AppPage(Some(ctx.user), None)
           }
           .toResult
       }
@@ -87,7 +87,7 @@ class AppController(
     (get & path(RemainingPath)) { _ =>
       withAuthentication { implicit ctx =>
         // Authenticated, show the app page with the connected user
-        IndexPage(Some(ctx.user), None).toResult
+        AppPage(Some(ctx.user), None).toResult
       }
     }
 

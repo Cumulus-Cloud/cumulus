@@ -1,9 +1,9 @@
 package io.cumulus.views.email
 
-import io.cumulus.Settings
-import io.cumulus.i18n.Messages
+import io.cumulus.i18n.Lang
 import io.cumulus.views.View
 import scalatags.Text.all._
+
 
 /**
   * Template for Cumulus mails. The template should be compatible with the majority of
@@ -11,20 +11,17 @@ import scalatags.Text.all._
   */
 trait CumulusEmailTemplate extends View {
 
-  protected def settings: Settings
-  protected def messages: Messages
+  override def render(implicit l: Lang): String =
+    rawContent
 
-  override lazy val content: Frag =
-    raw(rawContent)
-
-  protected val mailTitle: String =
+  protected def mailTitle(implicit l: Lang): String =
     messages("email.title")
 
-  protected def mailContentTitle: String
+  protected def mailContentTitle(implicit l: Lang): String
 
-  protected def mailContent: Seq[Tag]
+  protected def mailContent(implicit l: Lang): Seq[Tag]
 
-  protected val mailFooter: Tag = {
+  protected def mailFooter(implicit l: Lang): Tag = {
     span(
       messages("email.footer", settings.mail.from)
     )
@@ -34,7 +31,7 @@ trait CumulusEmailTemplate extends View {
     * Mail are an horrible format which can't really be used with scalatags, so the mail is instead
     * used as a large string..
     */
-  protected lazy val rawContent: String =
+  protected def rawContent(implicit l: Lang): String =
     s"""
       |<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN"
       |    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -397,7 +394,7 @@ trait CumulusEmailTemplate extends View {
       |                    <div style="color:#3dc7be;line-height:120%;font-family:'Lato', Tahoma, Verdana, Segoe, sans-serif; padding-right: 10px; padding-left: 10px; padding-top: 10px; padding-bottom: 10px;">
       |                      <div style="font-size:12px;line-height:14px;font-family:Lato, Tahoma, Verdana, Segoe, sans-serif;color:#3dc7be;text-align:left;">
       |                        <p style="margin: 0;font-size: 14px;line-height: 17px">
-      |                          <img border="0" src="${settings.host.url}/assets/cumulus-logo.png" alt="Logo" title="Logo" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline; border: 0; height: 25px; float: none; width: auto; padding-right: 7px;" height="25">
+      |                          <img border="0" src="${settings.http.url}/assets/cumulus-logo.png" alt="Logo" title="Logo" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline; border: 0; height: 25px; float: none; width: auto; padding-right: 7px;" height="25">
       |                          <span style="font-size: 20px; line-height: 24px;">$mailTitle</span>
       |                        </p>
       |                      </div>
@@ -442,7 +439,7 @@ trait CumulusEmailTemplate extends View {
       |                        <td style="padding-right: 0px; padding-left: 0px;" align="center">
       |                    <![endif]-->
       |                    <img class="center  autowidth  fullwidth" align="center" border="0"
-      |                         src="${settings.host.url}/assets/mail.jpg" alt="Image" title="Image"
+      |                         src="${settings.http.url}/assets/mail.jpg" alt="Image" title="Image"
       |                         style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: 0;height: auto;float: none;width: 100%;max-width: 640px"
       |                         width="640">
       |                    <!--[if mso]></td></tr></table><![endif]-->
@@ -587,7 +584,7 @@ trait CumulusEmailTemplate extends View {
       |                        <tr style="vertical-align: top">
       |                          <td align="left" valign="middle" style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
       |                            <a href="https://github.com/Cumulus-Cloud/cumulus" title="Github" target="_blank">
-      |                              <img src="${settings.host.url}/assets/github-logo.png" alt="Github" title="Github" width="32" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: none;height: auto;float: none;max-width: 32px !important">
+      |                              <img src="${settings.http.url}/assets/github-logo.png" alt="Github" title="Github" width="32" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: none;height: auto;float: none;max-width: 32px !important">
       |                            </a>
       |                            <div style="line-height:5px;font-size:1px">&#160;</div>
       |                          </td>

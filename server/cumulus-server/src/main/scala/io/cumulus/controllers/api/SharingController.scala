@@ -12,7 +12,7 @@ import io.cumulus.i18n.Messages
 import io.cumulus.models.sharing.Sharing
 import io.cumulus.models.user.session.{AuthenticationToken, UserSession}
 import io.cumulus.services.SharingService
-import io.cumulus.{Authenticator, Settings}
+import io.cumulus.Settings
 import play.api.libs.json.{JsString, Json}
 
 import scala.concurrent.ExecutionContext

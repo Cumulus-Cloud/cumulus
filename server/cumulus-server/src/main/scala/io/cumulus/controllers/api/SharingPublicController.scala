@@ -12,7 +12,7 @@ import io.cumulus.models.user.session.{AuthenticationToken, SharingSession, User
 import io.cumulus.services.{SharingService, StorageService}
 import io.cumulus.utils.Base16
 import io.cumulus.validation.AppError
-import io.cumulus.{Authenticator, Authenticator => _, _}
+import io.cumulus.Settings
 
 import scala.concurrent.{ExecutionContext, Future}
 

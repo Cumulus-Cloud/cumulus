@@ -59,17 +59,18 @@ object CumulusApplication extends App with Logging {
       LocalStorage
     )
 
-  // Database & QueryMonad to access DB
-  implicit lazy val database: Database               = new PooledDatabase("default", settings.database("default"))
-  implicit lazy val queryRunner: QueryRunner[Future] = new FutureQueryRunner(database, databaseEc)
-
   // Execution contexts
   implicit val actorSystem: ActorSystem                 = ActorSystem("cumulus-server")
   implicit lazy val defaultEc: ExecutionContextExecutor = actorSystem.dispatcher
   lazy val tasksEc: ExecutionContextExecutor            = actorSystem.dispatchers.lookup("task-context")
+  lazy val databaseEc: ExecutionContextExecutor         = actorSystem.dispatchers.lookup("db-context")
   lazy val scheduler: Scheduler                         = actorSystem.scheduler
 
   implicit lazy val materializer: Materializer = Materializer.createMaterializer(actorSystem).withNamePrefix("cumulus")
+
+  // Database & QueryMonad to access DB
+  implicit lazy val database: Database               = new PooledDatabase("default", settings.database("default"))
+  implicit lazy val queryRunner: QueryRunner[Future] = new FutureQueryRunner(database, databaseEc)
 
   // Message providers
   lazy val messageProvider: MessagesProvider = HoconMessagesProvider.at("langs")

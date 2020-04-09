@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Directives._
 import io.cumulus.controllers.api.admin.UserAdminController
 import io.cumulus.controllers.utils
 import io.cumulus.controllers.utils.{ApiComponent, ErrorSupport, RejectionSupport}
-import io.cumulus.{Authenticator, ErrorSupport, RejectionSupport, Settings}
+import io.cumulus.Settings
 import io.cumulus.i18n.Messages
 import io.cumulus.models.user.session.{AuthenticationToken, UserSession}
 

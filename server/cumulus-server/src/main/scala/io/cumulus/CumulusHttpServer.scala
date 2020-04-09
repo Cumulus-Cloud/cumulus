@@ -10,8 +10,9 @@ import com.softwaremill.macwire.wire
 import io.cumulus.controllers.api._
 import io.cumulus.controllers.api.admin._
 import io.cumulus.controllers.app.AppController
-import io.cumulus.controllers.utils.{AssetController, RouteLogger}
+import io.cumulus.controllers.utils.{AssetController, Authenticator, RouteLogger, UserAuthenticator}
 import io.cumulus.i18n.Messages
+import io.cumulus.models.user.session.{AuthenticationToken, UserSession}
 import io.cumulus.persistence.query.QueryRunner
 import io.cumulus.persistence.storage.StorageEngines
 import io.cumulus.services._
@@ -30,6 +31,7 @@ class CumulusHttpServer(
   eventService: EventService,
   taskService: TaskService,
   mailService: MailService,
+  tokenService: TokenService[AuthenticationToken],
   userServiceAdmin: UserAdminService,
   storageEngines: StorageEngines,
 )(
@@ -41,6 +43,8 @@ class CumulusHttpServer(
   settings: Settings,
   messages: Messages
 ) extends Logging {
+
+  lazy val authenticator: Authenticator[AuthenticationToken, UserSession] = wire[UserAuthenticator]
 
   // Controllers
   lazy val fileSystemController: FileSystemController       = wire[FileSystemController]

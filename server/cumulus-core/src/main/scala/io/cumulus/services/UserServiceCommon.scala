@@ -9,7 +9,7 @@ import io.cumulus.models.user.User
 import io.cumulus.persistence.stores.UserStore.{emailField, loginField}
 import io.cumulus.persistence.stores.{FsNodeStore, UserStore}
 import io.cumulus.utils.Logging
-import io.cumulus.views.email.CumulusEmailValidationEmail
+import io.cumulus.views.email.ValidationEmail
 import play.api.libs.json.__
 
 
@@ -61,7 +61,7 @@ trait UserServiceCommon extends Logging {
         // Non blocking
         mailService.sendToUser(
           messages("email.email-validation.object"),
-          CumulusEmailValidationEmail(user),
+          ValidationEmail(user),
           user
         )
       }
@@ -108,7 +108,7 @@ trait UserServiceCommon extends Logging {
             mailService
               .sendToUser(
                 messages("email.email-validation.object"),
-                CumulusEmailValidationEmail(user),
+                ValidationEmail(user),
                 user
               )
             ()

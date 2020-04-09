@@ -17,6 +17,7 @@ import io.cumulus.i18n.{Lang, LangMessages, Messages}
 import io.cumulus.models.fs.{File, Path}
 import io.cumulus.models.user.User
 import io.cumulus.models.user.session.{AuthenticationToken, UserSession}
+import io.cumulus.controllers.utils.AppErrorRejection._
 import io.cumulus.persistence.query.QueryPagination
 import io.cumulus.utils.Range
 import io.cumulus.validation.AppError
@@ -123,7 +124,7 @@ trait HtmlResponseWriterSupport extends ResponseWriterSupport {
     def completeWith(value: T, forcedStatus: Option[StatusCode] = None)(implicit l: Lang, m: Messages): Route =
       complete(
         forcedStatus.getOrElse(StatusCodes.OK),
-        HttpEntity(ContentTypes.`text/html(UTF-8)`, value.content.render)
+        HttpEntity(ContentTypes.`text/html(UTF-8)`, value.render(l))
       )
   }
 

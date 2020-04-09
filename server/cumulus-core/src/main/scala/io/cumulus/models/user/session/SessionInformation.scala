@@ -4,6 +4,7 @@ import java.time.temporal.ChronoUnit._
 import java.time.{Duration, LocalDateTime}
 import java.util.UUID
 
+import com.github.ghik.silencer.silent
 import io.cumulus.models.user.User
 import play.api.libs.json.{Format, Json, OFormat}
 
@@ -104,6 +105,7 @@ object SessionInformation {
     )
   }
 
+  @silent // Don't know why scalac think its unused
   implicit val format: OFormat[SessionInformation] =
     Json.format[SessionInformation]
 

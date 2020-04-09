@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import cats.data.EitherT
 import cats.implicits._
-import io.cumulus.{Authenticator, controllers, _}
+import io.cumulus.{controllers, _}
 import io.cumulus.controllers.api.payloads._
 import io.cumulus.controllers.utils.ApiComponent
 import io.cumulus.i18n.Messages

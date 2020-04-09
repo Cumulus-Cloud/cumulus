@@ -9,14 +9,12 @@ import io.cumulus.i18n.Messages
 import io.cumulus.models.user.UserUpdate
 import io.cumulus.models.user.session.{AuthenticationToken, UserSession}
 import io.cumulus.services.admin.UserAdminService
-import io.cumulus.{Authenticator, LangSupport, Settings}
-import play.api.mvc.ControllerComponents
+import io.cumulus.Settings
 
 import scala.concurrent.ExecutionContext
 
 
 class UserAdminController(
-  cc: ControllerComponents,
   userServiceAdmin: UserAdminService,
   val auth: utils.Authenticator[AuthenticationToken, UserSession]
 )(implicit

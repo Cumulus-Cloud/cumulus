@@ -56,12 +56,16 @@ class PooledDatabase(val name: String, settings: DatabaseSettings) extends Datab
       )
 
     // Create the connection pool from the defined settings
-    ConnectionPool(
-      settings.url,
-      settings.user,
-      settings.password,
-      poolSettings
+    ConnectionPool.add(
+      name = name,
+      url = settings.url,
+      user = settings.user,
+      password = settings.password,
+      settings = poolSettings
     )
+
+    // Keep the created connection pool
+    ConnectionPool.get(name)
   }
 
 

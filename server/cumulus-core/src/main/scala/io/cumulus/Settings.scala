@@ -1,6 +1,7 @@
 package io.cumulus
 
 import io.cumulus.i18n.Lang
+import io.cumulus.persistence.{DatabasePoolSettings, DatabaseSettings}
 import io.cumulus.stages.{AESCipherStage, Ciphers, Compressions, DeflateStage, GzipStage}
 import io.cumulus.utils.Configuration
 import pdi.jwt.JwtAlgorithm
@@ -24,7 +25,7 @@ class Settings(
   object app {
     val allowSignUp: Boolean = conf.get[Boolean]("cumulus.app.allow-sign-up")
     val mode: AppEnv = if (conf.get[String]("cumulus.app.mode") == "dev") Dev else Prod
-    val langs: Set[Lang] = conf.get[Seq[String]]("cumulus.app.langs").toSet.map(Lang(_))
+    val langs: Set[Lang] = conf.get[Seq[String]]("cumulus.app.langs").toSet[String].map(Lang(_))
   }
 
   object http {
@@ -47,7 +48,7 @@ class Settings(
     val sessionDuration: FiniteDuration = conf.get[FiniteDuration]("cumulus.security.session-duration")
   }
 
-  val database = {
+  val database: Map[String, DatabaseSettings] = {
 
     val dbConfigurations = conf.get[Configuration]("cumulus.database")
 

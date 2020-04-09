@@ -3,6 +3,7 @@ package io.cumulus.task
 import java.time.LocalDateTime
 import java.util.UUID
 
+import com.github.ghik.silencer.silent
 import io.cumulus.validation.AppError
 import io.cumulus.task.TaskStatus._
 import io.cumulus.services._
@@ -50,6 +51,7 @@ sealed trait Task {
     )
   }
 
+  @silent // Temporary
   def failed(error: AppError): Task = {
     if(retried >= maxRetry)
       copyTask(

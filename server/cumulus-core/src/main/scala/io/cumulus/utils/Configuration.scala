@@ -7,7 +7,7 @@ import com.typesafe.config.{Config, ConfigValue}
 import scala.collection.JavaConverters._
 import scala.concurrent.duration.{Duration, FiniteDuration}
 
-class Configuration(underlying: Config) {
+class Configuration(val underlying: Config) {
 
   def ++(other: Configuration): Configuration =
     new Configuration(other.underlying.withFallback(underlying))

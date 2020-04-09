@@ -11,7 +11,7 @@ import io.cumulus.models.user.{User, UserSecurity}
 import io.cumulus.persistence.stores.UserStore._
 import io.cumulus.persistence.stores.filters.SessionFilter
 import io.cumulus.persistence.stores.{FsNodeStore, SessionStore, UserStore}
-import io.cumulus.views.email.CumulusEmailValidationEmail
+import io.cumulus.views.email.ValidationEmail
 
 import scala.concurrent.Future
 import scala.util.Try
@@ -112,7 +112,7 @@ class UserService(
           mailService
             .sendToUser(
               messages("email.email-validation.object"),
-              CumulusEmailValidationEmail(user),
+              ValidationEmail(user),
               user
             )
           Right(())

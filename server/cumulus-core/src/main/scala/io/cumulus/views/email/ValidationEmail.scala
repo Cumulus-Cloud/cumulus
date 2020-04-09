@@ -1,24 +1,24 @@
 package io.cumulus.views.email
 
 import io.cumulus.Settings
-import io.cumulus.i18n.Messages
+import io.cumulus.i18n.{Lang, Messages}
 import io.cumulus.utils.Base16
 import io.cumulus.models.user.User
 import scalatags.Text.all._
 
 
-case class CumulusEmailValidationEmail(
+case class ValidationEmail(
   user: User,
 )(implicit
   val settings: Settings,
   val messages: Messages
 ) extends CumulusEmailTemplate {
 
-  override protected def mailContentTitle: String =
+  override protected def mailContentTitle(implicit l: Lang): String =
     messages("email.email-validation.content-title")
 
-  override protected def mailContent: Seq[Tag] = {
-    val link = s"${settings.host.url}/validateEmail?userLogin=${user.login}&emailCode=${Base16.encode(user.security.validationCode)}"
+  override protected def mailContent(implicit l: Lang): Seq[Tag] = {
+    val link = s"${settings.http.url}/validateEmail?userLogin=${user.login}&emailCode=${Base16.encode(user.security.validationCode)}"
 
     Seq(
       span(

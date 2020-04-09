@@ -1,6 +1,7 @@
 package io.cumulus.views
 
-import scalatags.Text.all._
+import io.cumulus.Settings
+import io.cumulus.i18n.{Lang, Messages}
 
 
 /**
@@ -8,12 +9,9 @@ import scalatags.Text.all._
   */
 trait View {
 
-  def content: Frag
+  protected implicit def settings: Settings
+  protected implicit def messages: Messages
 
-}
-
-object View {
-
-  // TODO resulting here ?
+  def render(implicit l: Lang): String
 
 }

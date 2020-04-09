@@ -1,11 +1,9 @@
-package io.cumulus.controllers.app.views
+package io.cumulus.views.pages
 
 import io.cumulus.Settings
-import io.cumulus.validation.{AppError, GlobalError}
+import io.cumulus.i18n.{Lang, Messages}
 import io.cumulus.models.user.User
-import io.cumulus.views.CumulusStaticTemplate
-import play.api.i18n.Messages
-import scalatags.Text
+import io.cumulus.validation.{AppError, GlobalError}
 import scalatags.Text.all._
 
 
@@ -13,14 +11,14 @@ import scalatags.Text.all._
   * Email validation page. This static page will be generated after the email has been validated. Id the email is
   * successfully validated, then a congratulation message will be displayed, otherwise the error message will be shown.
   */
-case class CumulusEmailValidationPage(
+case class EmailValidationPage(
   result: Either[AppError, User]
 )(implicit
   val messages: Messages,
-  settings: Settings
-) extends CumulusStaticTemplate {
+  val settings: Settings
+) extends CumulusTemplate {
 
-  override protected def pageContent: Seq[Text.all.Tag] = {
+  override protected def pageBody(implicit l: Lang): Seq[Tag] = {
     result match {
       case Left(error: GlobalError) =>
         Seq(
@@ -39,13 +37,10 @@ case class CumulusEmailValidationPage(
             messages("view.email-validation.success-content", user.login),
             br, br,
             messages("view.email-validation.success-content-next"),
-            a(href := settings.host.url, messages("view.email-validation.success-content-link"))
+            a(href := settings.http.url, messages("view.email-validation.success-content-link"))
           )
         )
     }
   }
-
-  override protected def pageRightPanel: Seq[Text.all.Tag] =
-    Seq.empty
 
 }

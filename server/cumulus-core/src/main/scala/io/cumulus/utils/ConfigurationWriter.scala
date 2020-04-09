@@ -7,7 +7,6 @@ import akka.stream.{IOResult, Materializer}
 import akka.stream.scaladsl.{FileIO, Source}
 import akka.util.ByteString
 import com.typesafe.config.ConfigRenderOptions
-import play.api.Configuration
 
 
 case class ConfigurationWriter(configuration: Configuration) {

@@ -2,6 +2,7 @@ package io.cumulus.stages
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Keep, StreamConverters}
+import com.github.ghik.silencer.silent
 import com.sksamuel.scrimage.Image
 import com.sksamuel.scrimage.nio.JpegWriter
 import io.cumulus.Settings
@@ -124,6 +125,7 @@ object PDFDocumentThumbnailGenerator extends ThumbnailGenerator {
     settings: Settings): Either[AppError, java.awt.Image] = {
 
     StorageReferenceReader.reader(file).map { fileSource =>
+      @silent
       var document: PDDocument = null
 
       try {

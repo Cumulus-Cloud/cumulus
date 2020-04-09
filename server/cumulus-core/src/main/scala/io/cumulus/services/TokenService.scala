@@ -8,7 +8,7 @@ import pdi.jwt.{Jwt, JwtClaim}
 import play.api.libs.json.{Format, Json}
 
 import scala.util.Try
-import scala.util.control.NonFatal
+
 
 /**
  * Base trait defining a token parser.
@@ -43,7 +43,7 @@ class JwtTokenService[T](implicit
     val token =
       JwtClaim()
         .issuedNow
-        .expiresIn(settings.security.sessionDuration)
+        .expiresIn(settings.security.sessionDuration.toSeconds)
         .withContent(Json.toJson(claim).toString)
 
     Jwt.encode(token, secret, algorithm)
@@ -55,22 +55,24 @@ class JwtTokenService[T](implicit
   private def validatedAndExtractClaim(token: String): Either[AppError, JwtClaim] =
     Jwt.decode(token, secret, Seq(algorithm)).toEither.left.map(exceptionToAppError(_))
 
-  private def exceptionToAppError(throwable: Throwable): AppError = {
-    case e: JwtException =>
-      jwtExceptionToAppError(e)
-    case NonFatal(e) =>
-      AppError.technical(e)
-  }
+  private def exceptionToAppError(throwable: Throwable): AppError =
+    throwable match {
+      case e: JwtException =>
+        jwtExceptionToAppError(e)
+      case _ =>
+        AppError.technical(throwable)
+    }
 
-  private def jwtExceptionToAppError(exception: JwtException): AppError = {
-    case _: JwtEmptySignatureException =>
-      AppError.unauthorized("auth.error.invalid-signature")
-    case _: JwtExpirationException =>
-      AppError.unauthorized("auth.error.expired")
-    case _: JwtValidationException =>
-      AppError.unauthorized("auth.error.invalid-signature")
-    case _ =>
-      AppError.unauthorized("auth.error.invalid")
-  }
+  private def jwtExceptionToAppError(exception: JwtException): AppError =
+    exception match {
+      case _: JwtEmptySignatureException =>
+        AppError.unauthorized("auth.error.invalid-signature")
+      case _: JwtExpirationException =>
+        AppError.unauthorized("auth.error.expired")
+      case _: JwtValidationException =>
+        AppError.unauthorized("auth.error.invalid-signature")
+      case _ =>
+        AppError.unauthorized("auth.error.invalid")
+    }
 
 }

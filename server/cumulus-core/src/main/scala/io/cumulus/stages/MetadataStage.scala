@@ -5,6 +5,7 @@ import java.time.{LocalDateTime, ZoneId}
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.StreamConverters
+import com.github.ghik.silencer.silent
 import com.sksamuel.scrimage
 import io.cumulus.stream.storage.StorageReferenceReader
 import io.cumulus.validation.AppError
@@ -165,6 +166,8 @@ object PDFDocumentMetadataExtractor extends MetadataExtractor {
     StorageReferenceReader.reader(
       file
     ).map { source =>
+
+      @silent
       var document: PDDocument = null
 
       try {
