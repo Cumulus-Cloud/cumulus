@@ -11,10 +11,9 @@ import cats.implicits._
 import io.cumulus.models.fs.{DefaultMetadata, File}
 import io.cumulus.models.user.User
 import io.cumulus.models.user.session.{Session, UserSession}
-import io.cumulus.persistence.storage.{StorageEngines, StorageObject, StorageReference}
+import io.cumulus.persistence.storage.{Storage, StorageObject, StorageReference}
 import io.cumulus.services.tasks.{MetadataExtractionTask, StorageReferenceDeletionTask, ThumbnailCreationTask}
 import io.cumulus.stages._
-import io.cumulus.stream.storage.{StorageReferenceReader, StorageReferenceWriter}
 import io.cumulus.utils.{Logging, Range}
 import io.cumulus.validation.AppError
 import io.cumulus.Settings
@@ -25,16 +24,14 @@ import scala.util.{Failure, Success, Try}
 
 class StorageService(
   fsNodeService: FsNodeService,
+  storage: Storage,
+  metadataExtractors: MetadataExtractors,
+  thumbnailGenerators: ThumbnailGenerators,
   taskExecutor: => ActorRef
 )(
   implicit
-  ciphers: Ciphers,
-  compressions: Compressions,
-  storageEngines: StorageEngines,
-  materializer: Materializer,
   settings: Settings,
-  metadataExtractors: MetadataExtractors,
-  thumbnailGenerators: ThumbnailGenerators,
+  materializer: Materializer,
   ec: ExecutionContext
 ) extends Logging {
 
@@ -64,8 +61,8 @@ class StorageService(
     // Operations to perform before the upload process starts
     val preUpload = for {
       // Get the cipher and compression from the request
-      cipher      <- EitherT.fromEither[Future](ciphers.get(cipherName))
-      compression <- EitherT.fromEither[Future](compressions.get(compressionName))
+      cipher      <- EitherT.fromEither[Future](settings.storage.ciphers.get(cipherName))
+      compression <- EitherT.fromEither[Future](settings.storage.compressors.get(compressionName))
 
       // Check that no other file already exists at the same path
       path <- EitherT(fsNodeService.checkForNewNode(id, filename))
@@ -82,8 +79,8 @@ class StorageService(
         for {
           // Define the file writer from this information
           fileWriter <- EitherT.fromEither[Future] {
-            StorageReferenceWriter.writer(
-              storageEngines.default, // Always use the default storage engine during upload
+            storage.referenceWriter.writer(
+              storage.engines.default, // Always use the default storage engine during upload
               cipher,
               compression,
               path
@@ -126,10 +123,10 @@ class StorageService(
     maybeRange match {
       // Range provided, only return a chunk of the file
       case Some(range) =>
-        StorageReferenceReader.reader(file, range)
+        storage.referenceReader.reader(file, range)
       // No range provided, return the content from the start
       case _ =>
-        StorageReferenceReader.reader(file)
+        storage.referenceReader.reader(file)
     }
   }
 
@@ -144,7 +141,7 @@ class StorageService(
 
     for {
       file    <- EitherT(fsNodeService.findFile(id))
-      content <- EitherT.fromEither[Future](StorageReferenceReader.thumbnailReader(file))
+      content <- EitherT.fromEither[Future](storage.referenceReader.thumbnailReader(file))
     } yield content
 
   }.value
@@ -174,7 +171,7 @@ class StorageService(
   def deleteStorageReference(storageReference: StorageReference): Future[Either[AppError, Unit]] = {
 
     for {
-      storageEngine <- EitherT.fromEither[Future](storageEngines.get(storageReference))
+      storageEngine <- EitherT.fromEither[Future](storage.engines.get(storageReference))
       result        <- EitherT[Future, AppError, Unit] {
         Future.sequence(
           storageReference
@@ -201,7 +198,7 @@ class StorageService(
   def deleteStorageObject(storageObject: StorageObject): Future[Either[AppError, Unit]] = {
 
     for {
-      storageEngine <- EitherT.fromEither[Future](storageEngines.get(storageObject))
+      storageEngine <- EitherT.fromEither[Future](storage.engines.get(storageObject))
       result        <- EitherT(storageEngine.deleteObject(storageObject.id)).leftMap {
         error =>
           // Log errors

@@ -1,6 +1,7 @@
 package io.cumulus
 
 import java.security.Security
+import java.time.Clock
 
 import akka.actor.{ActorRef, ActorSystem, Scheduler}
 import akka.pattern.after
@@ -9,21 +10,23 @@ import com.softwaremill.macwire._
 import com.typesafe.config.ConfigFactory
 import courier.Mailer
 import io.cumulus.i18n._
+import io.cumulus.models.user.session.AuthenticationToken
 import io.cumulus.persistence.query.{FutureQueryRunner, QueryRunner}
-import io.cumulus.persistence.storage.StorageEngines
+import io.cumulus.persistence.storage.{Storage, StorageEngines}
 import io.cumulus.persistence.storage.engines.LocalStorage
 import io.cumulus.persistence.stores._
 import io.cumulus.persistence.{Database, PooledDatabase}
 import io.cumulus.services._
 import io.cumulus.services.admin.UserAdminService
 import io.cumulus.stages._
+import io.cumulus.stream.storage.{StorageReferenceReader, StorageReferenceWriter}
 import io.cumulus.utils.{Configuration, Logging}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.io.StdIn
-import scala.language.{implicitConversions, postfixOps}
+import scala.language.postfixOps
 import scala.util.control.NonFatal
 
 
@@ -31,6 +34,9 @@ object CumulusApplication extends App with Logging {
 
   // Security provider
   Security.addProvider(new BouncyCastleProvider)
+
+  // System clock (used for JWT)
+  implicit val clock: Clock = Clock.systemUTC
 
   // Load the configuration
   implicit lazy val configuration: Configuration =
@@ -42,22 +48,27 @@ object CumulusApplication extends App with Logging {
   // List of metadata extractors available
   lazy val metadataExtractors: MetadataExtractors =
     MetadataExtractors(
-      ImageMetadataExtractor,
-      PDFDocumentMetadataExtractor
+      wire[ImageMetadataExtractor],
+      wire[PDFDocumentMetadataExtractor]
     )
 
   // List of thumbnail generator available
   lazy val thumbnailGenerators: ThumbnailGenerators =
     ThumbnailGenerators(
-      ImageThumbnailGenerator,
-      PDFDocumentThumbnailGenerator
+      wire[ImageThumbnailGenerator],
+      wire[PDFDocumentThumbnailGenerator]
     )
 
   // List of storage engine available
   lazy val storageEngines: StorageEngines =
     StorageEngines(
-      LocalStorage
+      LocalStorage,
+      // TODO more storage engines
     )
+
+  lazy val storageReferenceReader: StorageReferenceReader = wire[StorageReferenceReader]
+  lazy val storageReferenceWrite: StorageReferenceWriter = wire[StorageReferenceWriter]
+  lazy val storage: Storage = wire[Storage]
 
   // Execution contexts
   implicit val actorSystem: ActorSystem                 = ActorSystem("cumulus-server")
@@ -74,7 +85,7 @@ object CumulusApplication extends App with Logging {
 
   // Message providers
   lazy val messageProvider: MessagesProvider = HoconMessagesProvider.at("langs")
-  implicit lazy val messages: Messages       = wire[Messages]
+  implicit lazy val messages: Messages       = new Messages(settings.app.defaultLang, settings.app.langs, messageProvider)
 
   // Mailer configuration
   lazy val mailer: Mailer =
@@ -96,14 +107,15 @@ object CumulusApplication extends App with Logging {
   lazy val eventStore: EventStore     = wire[EventStore]
 
   // Services
-  lazy val userService: UserService       = wire[UserService]
-  lazy val fsNodeService: FsNodeService   = wire[FsNodeService]
-  lazy val storageService: StorageService = wire[StorageService]
-  lazy val sharingService: SharingService = wire[SharingService]
-  lazy val sessionService: SessionService = wire[SessionService]
-  lazy val eventService: EventService     = wire[EventService]
-  lazy val taskService: TaskService       = wire[TaskService]
-  lazy val mailService: MailService       = wire[MailService]
+  lazy val userService: UserService                        = wire[UserService]
+  lazy val fsNodeService: FsNodeService                    = wire[FsNodeService]
+  lazy val storageService: StorageService                  = wire[StorageService]
+  lazy val sharingService: SharingService                  = wire[SharingService]
+  lazy val sessionService: SessionService                  = wire[SessionService]
+  lazy val eventService: EventService                      = wire[EventService]
+  lazy val taskService: TaskService                        = wire[TaskService]
+  lazy val tokenService: TokenService[AuthenticationToken] = wire[JwtTokenService[AuthenticationToken]]
+  lazy val mailService: MailService                        = wire[MailService]
 
   // Admin services
   lazy val userServiceAdmin: UserAdminService = wire[UserAdminService]

@@ -10,7 +10,7 @@ import scala.collection.JavaConverters._
 /** Defines a message provider, able to load all messages. */
 trait MessagesProvider {
 
-  def loadAllMessages(langs: Seq[Lang]): Map[Lang, LangMessages] =
+  def loadAllMessages(langs: Set[Lang]): Map[Lang, LangMessages] =
     langs
       .map { lang =>
         lang -> loadMessages(Some(lang))

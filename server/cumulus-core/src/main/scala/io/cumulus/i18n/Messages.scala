@@ -24,10 +24,10 @@ object LangMessages {
 }
 
 /** All the messages for all the lang. This is the main class to be injected. */
-class Messages(val preferredLocale: Lang, val locales: Seq[Lang], provider: MessagesProvider) {
+class Messages(val preferredLocale: Lang, val locales: Set[Lang], provider: MessagesProvider) {
 
   private val messages: Map[Lang, LangMessages] =
-    provider.loadAllMessages(preferredLocale +: locales)
+    provider.loadAllMessages(locales + preferredLocale)
 
   def messagesForLang(lang: Lang): LangMessages =
     messages

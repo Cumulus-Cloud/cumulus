@@ -10,8 +10,8 @@ trait LangSupport {
 
   val m: Messages
 
-  def extractLang(messages: Messages): Directive1[Lang] =
-    selectPreferredLanguage(Language(m.preferredLocale.name), m.locales.map(l => Language(l.name)):_*)
+  def extractLang: Directive1[Lang] =
+    selectPreferredLanguage(Language(m.preferredLocale.name), m.locales.map(l => Language(l.name)).toSeq:_*)
       .map(l => Lang(l.primaryTag)) // Convert to our own type
 
 }

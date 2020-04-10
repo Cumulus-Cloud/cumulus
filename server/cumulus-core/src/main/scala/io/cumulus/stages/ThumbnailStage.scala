@@ -6,11 +6,10 @@ import com.github.ghik.silencer.silent
 import com.sksamuel.scrimage.Image
 import com.sksamuel.scrimage.nio.JpegWriter
 import io.cumulus.Settings
-import io.cumulus.stream.storage.{StorageReferenceReader, StorageReferenceWriter}
 import io.cumulus.validation.AppError
 import io.cumulus.models.fs.File
 import io.cumulus.models.user.session.UserSession
-import io.cumulus.persistence.storage.{StorageEngines, StorageReference}
+import io.cumulus.persistence.storage.{Storage, StorageReference}
 import io.cumulus.utils.Logging
 import javax.imageio.ImageIO
 import org.apache.pdfbox.pdmodel.PDDocument
@@ -25,26 +24,26 @@ trait ThumbnailGenerator extends Logging {
   /** JPEG writer at 50% quality */
   implicit private val writer: JpegWriter = JpegWriter().withCompression(50)
 
+  def storage: Storage
+
+  implicit def ec: ExecutionContext
+  implicit def materializer: Materializer
+  implicit def settings: Settings
+
   /** Generate a thumbnail of a file. */
   final def generate(
     file: File
   )(implicit
-    ec: ExecutionContext,
-    materializer: Materializer,
-    ciphers: Ciphers,
-    compressions: Compressions,
-    storageEngines: StorageEngines,
-    userSession: UserSession,
-    settings: Settings
+    userSession: UserSession
   ): Future[Either[AppError, StorageReference]] = {
 
     val res = for {
       preview         <- generatePreview(file)
-      cipher          <- ciphers.get(file.storageReference.cipher.map(_.name))
-      compression     <- compressions.get(file.storageReference.compression)
+      cipher          <- settings.storage.ciphers.get(file.storageReference.cipher.map(_.name))
+      compression     <- settings.storage.compressors.get(file.storageReference.compression)
       thumbnailWriter <- {
-        StorageReferenceWriter.writer(
-          storageEngines.default, // Write the thumbnail on the default storage engine
+        storage.referenceWriter.writer(
+          storage.defaultEngine, // Write the thumbnail on the default storage engine
           cipher,
           compression,
           "/not-used" // We need a name, but will just retrieve the storage information
@@ -83,17 +82,7 @@ trait ThumbnailGenerator extends Logging {
   }
 
   /** Generate the preview image of the file. Note that the preview can be of any size. */
-  protected def generatePreview(
-    file: File
-  )(implicit
-    ec: ExecutionContext,
-    materializer: Materializer,
-    ciphers: Ciphers,
-    compressions: Compressions,
-    storageEngines: StorageEngines,
-    userSession: UserSession,
-    settings: Settings
-  ): Either[AppError, java.awt.Image]
+  protected def generatePreview(file: File)(implicit userSession: UserSession): Either[AppError, java.awt.Image]
 
   def maxSize: Long = 1048576 // 10Mo
 
@@ -111,20 +100,17 @@ object ThumbnailGenerator {
   * Thumbnail generator for PDF file. The PDF will be read to generate the thumbnail. This generator use PDFBox as
   * the backend.
   */
-object PDFDocumentThumbnailGenerator extends ThumbnailGenerator {
+class PDFDocumentThumbnailGenerator(
+  val storage: Storage
+)(implicit
+  val ec: ExecutionContext,
+  val materializer: Materializer,
+  val settings: Settings
+) extends ThumbnailGenerator {
 
-  def generatePreview(
-    file: File
-  )(implicit
-    ec: ExecutionContext,
-    materializer: Materializer,
-    ciphers: Ciphers,
-    compressions: Compressions,
-    storageEngines: StorageEngines,
-    userSession: UserSession,
-    settings: Settings): Either[AppError, java.awt.Image] = {
+  def generatePreview(file: File)(implicit userSession: UserSession): Either[AppError, java.awt.Image] = {
 
-    StorageReferenceReader.reader(file).map { fileSource =>
+    storage.referenceReader.reader(file).map { fileSource =>
       @silent
       var document: PDDocument = null
 
@@ -153,26 +139,20 @@ object PDFDocumentThumbnailGenerator extends ThumbnailGenerator {
   * Thumbnail generator for an image. The image will be read to generate the thumbnail. This generator use scrimage as
   * the backend.
   */
-object ImageThumbnailGenerator extends ThumbnailGenerator {
+class ImageThumbnailGenerator(
+  val storage: Storage
+)(implicit
+  val ec: ExecutionContext,
+  val materializer: Materializer,
+  val settings: Settings
+) extends ThumbnailGenerator {
 
-  def generatePreview(
-    file: File
-  )(implicit
-    ec: ExecutionContext,
-    materializer: Materializer,
-    ciphers: Ciphers,
-    compressions: Compressions,
-    storageEngines: StorageEngines,
-    userSession: UserSession,
-    settings: Settings): Either[AppError, java.awt.Image] = {
-
-    StorageReferenceReader.reader(file).map { fileSource =>
+  def generatePreview(file: File)(implicit userSession: UserSession): Either[AppError, java.awt.Image] =
+    storage.referenceReader.reader(file).map { fileSource =>
       // Read the image
       val fileInputStream = fileSource.runWith(StreamConverters.asInputStream())
       ImageIO.read(fileInputStream)
     }
-
-  }
 
   def applyOn: Seq[String] = Seq(
     "image/bmp",

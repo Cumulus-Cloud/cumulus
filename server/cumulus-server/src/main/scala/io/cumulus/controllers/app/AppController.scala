@@ -13,14 +13,12 @@ import io.cumulus.services.FsNodeService
 import io.cumulus.validation.AppErrorType.Unauthorized
 import io.cumulus.Settings
 import io.cumulus.views.pages.AppPage
-import play.api.mvc._
 
 import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal
 
 
 class AppController(
-  cc: ControllerComponents,
   fsNodeService: FsNodeService,
   val auth: utils.Authenticator[AuthenticationToken, UserSession]
 )(implicit

@@ -15,7 +15,10 @@ import io.cumulus.persistence.storage.{StorageCipher, StorageEngine, StorageObje
 import io.cumulus.stages.{CipherStage, CompressionStage}
 
 
-object StorageReferenceWriter {
+class StorageReferenceWriter(implicit
+  settings: Settings,
+  ec: ExecutionContext
+) {
 
   /**
     * Returns a sink allowing to write a stream of bytes into the provided storage engine. The sink will output a
@@ -31,7 +34,7 @@ object StorageReferenceWriter {
     cipher: Option[CipherStage],
     compression: Option[CompressionStage],
     path: Path
-  )(implicit user: UserSession, settings: Settings, ec: ExecutionContext): Either[AppError, Sink[ByteString, Future[File]]] = {
+  )(implicit user: UserSession): Either[AppError, Sink[ByteString, Future[File]]] = {
 
     // Get the cipher & compression stage
     val (storageCipher, cipherStage) = cipherForFile(cipher)

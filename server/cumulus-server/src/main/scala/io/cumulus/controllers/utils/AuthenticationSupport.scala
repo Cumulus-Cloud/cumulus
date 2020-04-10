@@ -3,9 +3,10 @@ package io.cumulus.controllers.utils
 import akka.http.scaladsl.model.RemoteAddress
 import akka.http.scaladsl.model.headers.HttpCookie
 import akka.http.scaladsl.server.Directives.{deleteCookie, extractClientIP, reject, setCookie}
-import akka.http.scaladsl.server.{Directive0, Directive1, RequestContext}
+import akka.http.scaladsl.server.{Directive, Directive0, Directive1, RequestContext}
 import io.cumulus.models.user.session.{AuthenticationToken, UserSession}
 import io.cumulus.services.{SessionService, TokenService}
+import io.cumulus.controllers.utils.AppErrorRejection._
 import io.cumulus.validation.AppError
 
 import scala.concurrent.{ExecutionContext, Future}

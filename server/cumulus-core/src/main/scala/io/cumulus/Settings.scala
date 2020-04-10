@@ -25,6 +25,7 @@ class Settings(
   object app {
     val allowSignUp: Boolean = conf.get[Boolean]("cumulus.app.allow-sign-up")
     val mode: AppEnv = if (conf.get[String]("cumulus.app.mode") == "dev") Dev else Prod
+    val defaultLang: Lang = Lang(conf.get[String]("cumulus.app.default-lang"))
     val langs: Set[Lang] = conf.get[Seq[String]]("cumulus.app.langs").toSet[String].map(Lang(_))
   }
 

@@ -7,15 +7,13 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.StreamConverters
 import com.github.ghik.silencer.silent
 import com.sksamuel.scrimage
-import io.cumulus.stream.storage.StorageReferenceReader
 import io.cumulus.validation.AppError
 import io.cumulus.models.fs._
 import io.cumulus.models.user.session.Session
-import io.cumulus.persistence.storage.StorageEngines
+import io.cumulus.persistence.storage.Storage
 import org.apache.pdfbox.pdmodel.PDDocument
 
 import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 
@@ -24,16 +22,7 @@ import scala.util.Try
   */
 trait MetadataExtractor {
 
-  def extract(
-    file: File
-  )(implicit
-    ec: ExecutionContext,
-    materializer: Materializer,
-    ciphers: Ciphers,
-    compressions: Compressions,
-    storageEngines: StorageEngines,
-    session: Session
-  ): Either[AppError, FileMetadata]
+  def extract(file: File)(implicit session: Session): Either[AppError, FileMetadata]
 
   def maxSize: Long = 1048576 // 10Mo
 
@@ -46,16 +35,7 @@ trait MetadataExtractor {
   */
 object DefaultMetadataExtractor extends MetadataExtractor {
 
-  def extract(
-    file: File
-  )(implicit
-    ec: ExecutionContext,
-    materializer: Materializer,
-    ciphers: Ciphers,
-    compressions: Compressions,
-    storageEngines: StorageEngines,
-    session: Session
-  ): Either[AppError, DefaultMetadata] = {
+  def extract(file: File)(implicit session: Session): Either[AppError, FileMetadata] = {
     Right(DefaultMetadata.empty)
   }
 
@@ -66,19 +46,14 @@ object DefaultMetadataExtractor extends MetadataExtractor {
 /**
   * Implementation for images, using scrimage to read metadata from an image. Exif data are extracted.
   */
-object ImageMetadataExtractor extends MetadataExtractor {
+class ImageMetadataExtractor(
+  storage: Storage
+)(implicit
+  materializer: Materializer
+) extends MetadataExtractor {
 
-  def extract(
-    file: File
-  )(implicit
-    ec: ExecutionContext,
-    materializer: Materializer,
-    ciphers: Ciphers,
-    compressions: Compressions,
-    storageEngines: StorageEngines,
-    session: Session
-  ): Either[AppError, ImageMetadata] = {
-    StorageReferenceReader.reader(
+  def extract(file: File)(implicit session: Session): Either[AppError, FileMetadata] = {
+    storage.referenceReader.reader(
       file
     ).map { source =>
 
@@ -151,19 +126,14 @@ object ImageMetadataExtractor extends MetadataExtractor {
 /**
   * Implementation for PDFs, using PDFBox to read the document and extract metadata.
   */
-object PDFDocumentMetadataExtractor extends MetadataExtractor {
+class PDFDocumentMetadataExtractor(
+  storage: Storage
+)(implicit
+  materializer: Materializer
+) extends MetadataExtractor {
 
-  def extract(
-    file: File
-  )(implicit
-    ec: ExecutionContext,
-    materializer: Materializer,
-    ciphers: Ciphers,
-    compressions: Compressions,
-    storageEngines: StorageEngines,
-    session: Session
-  ): Either[AppError, PDFDocumentMetadata] = {
-    StorageReferenceReader.reader(
+  def extract(file: File)(implicit session: Session): Either[AppError, FileMetadata] = {
+    storage.referenceReader.reader(
       file
     ).map { source =>
 

@@ -12,7 +12,7 @@ import io.cumulus.controllers.utils.ApiComponent
 import io.cumulus.i18n.Messages
 import io.cumulus.models.fs.{Directory, FsNodeType, Path}
 import io.cumulus.models.user.session.{AuthenticationToken, UserSession}
-import io.cumulus.persistence.stores.orderings.FsNodeOrdering
+import io.cumulus.persistence.stores.orderings.{FsNodeOrdering, FsNodeOrderingType}
 import io.cumulus.services.{FsNodeService, SharingService, StorageService}
 import io.cumulus.stages._
 import io.cumulus.validation.AppError
@@ -109,43 +109,20 @@ class FileSystemController(
       }
     }
 
-
-  implicit val fsNodeOrderingUnmarshaller: Unmarshaller[String, FsNodeOrdering] = ???
-  /*
-
-  implicit def queryStringBindable(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[FsNodeOrdering] =
-    new QueryStringBindable[FsNodeOrdering] {
-
-      def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, FsNodeOrdering]] =
-        params
-          .get(key)
-          .map(_.flatMap { value =>
-            FsNodeOrderingType.withNameInsensitiveOption(value)
-          })
-          .map(ordering => Right(FsNodeOrdering(ordering)))
-
-      def unbind(key: String, ordering: FsNodeOrdering): String =
-        stringBinder.unbind(key, ordering.orders.mkString(","))
-
+  implicit val fsNodeOrderingUnmarshaller: Unmarshaller[String, FsNodeOrdering] =
+    Unmarshaller.strict[String, FsNodeOrdering] { raw =>
+      FsNodeOrdering(raw.split(",").flatMap(values => FsNodeOrderingType.withNameInsensitiveOption(values.trim)))
     }
-   */
 
-  implicit val fsNodeTypeUnmarshaller: Unmarshaller[String, FsNodeType] = ???
-  /*
-
-  implicit def queryBinder(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[FsNodeType] =
-    new QueryStringBindable[FsNodeType] {
-
-      def bind(key: String, value: Map[String, Seq[String]]): Option[Either[String, FsNodeType]] =
-        stringBinder
-          .bind(key, value)
-          .map(_.flatMap(s => FsNodeType.withNameInsensitiveOption(s).toRight("Invalid node type")))
-
-      def unbind(key: String, value: FsNodeType): String =
-        value.entryName
-
+  implicit val fsNodeTypeUnmarshaller: Unmarshaller[String, FsNodeType] =
+    Unmarshaller[String, FsNodeType] { _ => raw =>
+      FsNodeType.withNameInsensitiveOption(raw) match {
+        case Some(value) =>
+          Future.successful(value)
+        case None =>
+          Future.failed(new Exception("Unknown node type"))
+      }
     }
-   */
 
   case class ContentParams(
     order: Option[FsNodeOrdering],
@@ -158,7 +135,7 @@ class FileSystemController(
       parameters(
         'order.as[FsNodeOrdering] ?,
         'nodeType.as[FsNodeType] ?
-      ).as[SearchParams]
+      ).as[ContentParams](ContentParams.apply _)
 
   }
 
@@ -212,7 +189,7 @@ class FileSystemController(
         'recursiveSearch.as[Boolean] ?,
         'nodeType.as[FsNodeType] ?,
         'mimeType ?
-      ).as[SearchParams]
+      ).as[SearchParams](SearchParams.apply _)
 
   }
 
@@ -251,7 +228,7 @@ class FileSystemController(
         'filename,
         'cipherName ?,
         'compressionName ?
-      ).as[UploadParams]
+      ).as[UploadParams](UploadParams.apply _)
 
   }
 
@@ -285,7 +262,7 @@ class FileSystemController(
 
     def extract: Directive1[DownloadParams] =
       (parameter('forceDownload.as[Boolean] ?) & optionalHeaderValueByName("range"))
-        .as[SearchParams]
+        .as[DownloadParams](DownloadParams.apply _)
 
   }
 

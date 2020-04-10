@@ -25,9 +25,10 @@ import io.cumulus.views.View
 import play.api.libs.json.Writes
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.language.{implicitConversions, postfixOps}
+import scala.language.postfixOps
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
+
 
 /** Provides a directive to extract the context (or authenticated context) of a query. */
 trait ContextExtractionSupport
@@ -75,16 +76,16 @@ trait ContextExtractionSupport
     ctx.user
 
   def withContext: Directive1[UnauthenticatedContext] =
-    (extractRequest & extractClientIP & extractLang(m)).tmap {
+    (extractRequest & extractClientIP & extractLang).tmap {
       case (request, ip, lang) =>
-        val ipAddress = ip.toOption.getOrElse(new InetAddress("0.0.0.0"))
+        val ipAddress = ip.toOption.getOrElse(InetAddress.getByName("0.0.0.0"))
         UnauthenticatedContext(request, lang, ipAddress)
     }
 
   def withAuthentication: Directive1[AuthenticatedContext] =
-    (extractRequest & extractClientIP & extractLang(m) & extractAuthentication).tmap {
+    (extractRequest & extractClientIP & extractLang & extractAuthentication).tmap {
       case (request, ip, lang, session) =>
-        val ipAddress = ip.toOption.getOrElse(new InetAddress("0.0.0.0"))
+        val ipAddress = ip.toOption.getOrElse(InetAddress.getByName("0.0.0.0"))
         AuthenticatedContext(request, lang, ipAddress, session)
     }
 
@@ -105,7 +106,7 @@ trait JsonResponseWriterSupport extends ResponseWriterSupport with PlayJsonSuppo
 
   implicit val UnitResulting: Resulting[Unit] = new Resulting[Unit] {
     def completeWith(value: Unit, forcedStatus: Option[StatusCode] = None)(implicit l: Lang, m: Messages): Route =
-      complete(forcedStatus.getOrElse(StatusCodes.NoContent))
+      complete(forcedStatus.getOrElse(StatusCodes.NoContent): StatusCode)
   }
 
   implicit val AppErrorResulting: Resulting[AppError] = new Resulting[AppError] {
@@ -200,7 +201,7 @@ trait ResponseWriterSupport extends LangSupport with PlayJsonSupport {
     def toResultAs(statusCode: StatusCode)(implicit l: Lang, m: Messages): Route =
       onComplete(result) {
         case Success(value) =>
-          resulting.completeWith(value, None)
+          resulting.completeWith(value, Some(statusCode))
         case Failure(exception) =>
           reject(AppError.technical(exception))
       }

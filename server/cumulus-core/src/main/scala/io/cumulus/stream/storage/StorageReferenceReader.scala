@@ -4,31 +4,28 @@ import scala.concurrent.ExecutionContext
 import akka.NotUsed
 import akka.stream.scaladsl.{Flow, Source}
 import akka.util.ByteString
+import io.cumulus.Settings
 import io.cumulus.stream.utils.ByteRange
 import io.cumulus.utils.{Logging, Range}
 import io.cumulus.validation.AppError
 import io.cumulus.models.fs.File
 import io.cumulus.models.user.session.Session
 import io.cumulus.persistence.storage.{StorageEngines, StorageObject, StorageReference}
-import io.cumulus.stages.{Ciphers, Compressions}
 
 
-object StorageReferenceReader extends Logging {
+class StorageReferenceReader(
+  storageEngines: StorageEngines
+)(implicit
+  settings: Settings,
+  ec: ExecutionContext
+) extends Logging {
 
   /**
     * Reads the thumbnail of a file. If the thumbnail does not exists, an error will be returned.
     *
     * @param file The file containing the thumbnail to stream.
     */
-  def thumbnailReader(
-    file: File
-  )(implicit
-    session: Session,
-    ciphers: Ciphers,
-    compressions: Compressions,
-    storageEngines: StorageEngines,
-    ec: ExecutionContext
-  ): Either[AppError, Source[ByteString, NotUsed]] =
+  def thumbnailReader(file: File)(implicit session: Session): Either[AppError, Source[ByteString, NotUsed]] =
     for {
       transformation   <- transformationForThumbnail(file)
       storageReference <- file.thumbnailStorageReference.toRight(AppError.notFound("validation.fs-node.no-thumbnail", file.name))
@@ -47,15 +44,7 @@ object StorageReferenceReader extends Logging {
     *
     * @param file The file to stream.
     */
-  def reader(
-    file: File
-  )(implicit
-    session: Session,
-    ciphers: Ciphers,
-    compressions: Compressions,
-    storageEngines: StorageEngines,
-    ec: ExecutionContext
-  ): Either[AppError, Source[ByteString, NotUsed]] =
+  def reader(file: File)(implicit session: Session): Either[AppError, Source[ByteString, NotUsed]] =
     if (file.size <= 0) // Special case for empty files, which require neither any transformation nor any actual download
       Right(Source(List.empty))
     else
@@ -78,16 +67,7 @@ object StorageReferenceReader extends Logging {
     * @param file The file to stream.
     * @param range The range of byte to output.
     */
-  def reader(
-    file: File,
-    range: Range
-  )(implicit
-    session: Session,
-    ciphers: Ciphers,
-    compressions: Compressions,
-    storageEngines: StorageEngines,
-    ec: ExecutionContext
-  ): Either[AppError, Source[ByteString, NotUsed]] =
+  def reader(file: File, range: Range)(implicit session: Session): Either[AppError, Source[ByteString, NotUsed]] =
     if (file.size <= 0) // Special case for empty files, which require neither any transformation nor any actual download
       Right(Source(List.empty))
     else
@@ -155,7 +135,7 @@ object StorageReferenceReader extends Logging {
   }
 
   /** Generate the transformations for a given file. */
-  private def transformationForThumbnail(file: File)(implicit session: Session, ciphers: Ciphers, compressions: Compressions) = {
+  private def transformationForThumbnail(file: File)(implicit session: Session) = {
     file.thumbnailStorageReference.map { storageReference =>
       for {
         cipher      <- cipherStageForStorageReference(storageReference)
@@ -169,7 +149,7 @@ object StorageReferenceReader extends Logging {
   }
 
   /** Generate the transformations for a given file. */
-  private def transformationForFile(file: File)(implicit session: Session, ciphers: Ciphers, compressions: Compressions) = {
+  private def transformationForFile(file: File)(implicit session: Session) = {
     for {
       cipher      <- cipherStageForStorageReference(file.storageReference)
       compression <- compressionStageForStorageReference(file.storageReference)
@@ -181,21 +161,23 @@ object StorageReferenceReader extends Logging {
   }
 
   /** Generate the decryption stage for a given file. */
-  private def cipherStageForStorageReference(storageReference: StorageReference)(implicit session: Session, ciphers: Ciphers) =
+  private def cipherStageForStorageReference(storageReference: StorageReference)(implicit session: Session) =
     storageReference.cipher match {
       case None =>
         Right(None)
       case Some(cipher) =>
         for {
-          cipherStage      <- ciphers.get(cipher.name)
+          cipherStage      <- settings.storage.ciphers.get(cipher.name)
           filePrivateKey   <- session.privateKeyOfFile(storageReference).toRight(AppError.validation("validation.fs-node.unknown-key", storageReference.id.toString))
           cipherFlow       =  cipherStage.decrypt(filePrivateKey, cipher.salt)
         } yield Some(cipherFlow)
     }
 
   /** Generate the decompression stage for a given file. */
-  private def compressionStageForStorageReference(storageReference: StorageReference)(implicit compressions: Compressions) =
-    compressions
+  private def compressionStageForStorageReference(storageReference: StorageReference): Either[AppError, Option[Flow[ByteString, ByteString, NotUsed]]] =
+    settings
+      .storage
+      .compressors
       .get(storageReference.compression)
       .map(_.map(_.uncompress))
 

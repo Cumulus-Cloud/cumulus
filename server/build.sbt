@@ -6,7 +6,6 @@ scalacOptions in ThisBuild := Seq(
   "-encoding",
   "UTF-8",
   "-target:jvm-1.8",
-  "-Ywarn-adapted-args",
   "-Ywarn-inaccessible",
   "-Ywarn-nullary-override",
   "-Ywarn-infer-any",
@@ -19,7 +18,7 @@ scalacOptions in ThisBuild := Seq(
   "-deprecation",
   "-feature",
   "-g:vars",
-  "-Xlint:_",
+  "-Xlint:-adapted-args,_",
   "-Ywarn-macros:after",
   "-opt:l:inline",
   "-opt-inline-from"

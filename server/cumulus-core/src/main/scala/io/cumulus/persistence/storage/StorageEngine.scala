@@ -6,8 +6,8 @@ import java.util.UUID
 import io.cumulus.validation.AppError
 
 import scala.concurrent.{ExecutionContext, Future}
-import io.cumulus.stream.storage.StorageReferenceReader.logger
-import io.cumulus.utils.Configuration
+import io.cumulus.utils.{Configuration, Logging}
+
 
 /**
   * Storage engine, used to write and read objects.
@@ -63,7 +63,10 @@ trait StorageEngineFactory {
 /**
   * List of available storage engine with helpers to get a storage engine by its reference or any storage object.
   */
-case class StorageEngines(default: StorageEngine, engines: Seq[StorageEngine]) {
+case class StorageEngines(
+  default: StorageEngine,
+  engines: Seq[StorageEngine]
+) extends Logging {
 
   /**
     * Returns a storage engine by its reference (unique name). Will return an error if the reference doesn't refer to

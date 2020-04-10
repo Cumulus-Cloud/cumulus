@@ -15,6 +15,7 @@ import io.cumulus.validation.AppError
 import io.cumulus.Settings
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.language.postfixOps
 
 
 /**
@@ -47,7 +48,7 @@ class SharingPublicController(
 
     def extract: Directive1[GetByPathParams] =
       parameters("reference", "key")
-        .as[GetByPathParams]
+        .as[GetByPathParams](GetByPathParams.apply _)
 
   }
 
@@ -73,7 +74,7 @@ class SharingPublicController(
 
     def extract: Directive1[DownloadRootParams] =
       (parameters("key", "forceDownload".as[Boolean] ?) & optionalHeaderValueByName("range"))
-        .as[DownloadRootParams]
+        .as[DownloadRootParams](DownloadRootParams.apply _)
 
   }
 
@@ -93,7 +94,7 @@ class SharingPublicController(
 
     def extract: Directive1[DownloadParams] =
       (parameters("reference", "key", "forceDownload".as[Boolean] ?) & optionalHeaderValueByName("range"))
-        .as[DownloadParams]*/
+        .as[DownloadParams](DownloadParams.apply _)
 
   }
 
