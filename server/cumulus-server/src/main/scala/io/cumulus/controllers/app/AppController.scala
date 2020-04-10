@@ -9,10 +9,10 @@ import io.cumulus.models.fs.FsNodeType
 import io.cumulus.models.user.session.{AuthenticationToken, UserSession}
 import io.cumulus.persistence.query.QueryPagination
 import io.cumulus.persistence.stores.orderings.FsNodeOrdering
-import io.cumulus.services.FsNodeService
+import io.cumulus.services.{FsNodeService, UserService}
 import io.cumulus.validation.AppErrorType.Unauthorized
 import io.cumulus.Settings
-import io.cumulus.views.pages.AppPage
+import io.cumulus.views.pages.{AppPage, EmailValidationPage}
 
 import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal
@@ -20,6 +20,7 @@ import scala.util.control.NonFatal
 
 class AppController(
   fsNodeService: FsNodeService,
+  userService: UserService,
   val auth: utils.Authenticator[AuthenticationToken, UserSession]
 )(implicit
   val m: Messages,
@@ -41,6 +42,7 @@ class AppController(
   val routes: Route =
     Route.seal(
       concat(
+        emailValidation,
         index,
         indexWithPath,
         indexWithIgnoredPath
@@ -86,6 +88,21 @@ class AppController(
       withAuthentication { implicit ctx =>
         // Authenticated, show the app page with the connected user
         AppPage(Some(ctx.user), None).toResult
+      }
+    }
+
+  /**
+   * Validates the email of the user. This a static page and not an API endpoint.
+   */
+  def emailValidation: Route =
+    (get & path("validateEmail") & parameters("userLogin", "emailCode")) { (userLogin, validationCode) =>
+      withAuthentication { implicit ctx =>
+        userService
+          .validateUserEmail(userLogin, validationCode)
+          .map { result =>
+            EmailValidationPage(result)
+          }
+          .toResult
       }
     }
 

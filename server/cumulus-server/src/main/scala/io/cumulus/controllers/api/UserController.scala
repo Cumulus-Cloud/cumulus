@@ -33,7 +33,6 @@ class UserController (
     concat(
       signUp,
       setFirstPassword,
-      validateEmail,
       resendValidationEmail,
       login,
       logout,
@@ -77,20 +76,6 @@ class UserController (
           .toResult
       }
     }
-
-  /**
-    * Validates the email of the user. This a static page and not an API endpoint.
-    */ // TODO move, not in the api
-  def validateEmail: Route = ??? /*
-   (userLogin: String, validationCode: String):
-    Action.async { implicit request =>
-      userService
-        .validateUserEmail(userLogin, validationCode)
-        .map { result =>
-          // TODO better templating (render method + service ?)
-          Ok(CumulusEmailValidationPage(result))
-        }
-    }*/
 
   /**
     * Resend the validation email to the user. Only works with user-created account waiting for an email validation.

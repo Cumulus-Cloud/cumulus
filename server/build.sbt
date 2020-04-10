@@ -72,6 +72,7 @@ lazy val cumulusCore =
         // Akka
         Dependencies.akka.actor,
         Dependencies.akka.stream,
+        Dependencies.akka.sl4j,
         // Persistence
         Dependencies.flyway.core,
         Dependencies.scalikejdbc.core,

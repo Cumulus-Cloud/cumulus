@@ -26,21 +26,19 @@ trait MessagesProvider {
 class HoconMessagesProvider(messagesPrefix: Option[String] = Some("langs")) extends MessagesProvider {
 
   protected def loadMessages(lang: Option[Lang]): LangMessages =
-    new LangMessages(lang.getOrElse(Lang.default), getMessages(getResource(resourceName(lang))))
+    new LangMessages(lang.getOrElse(Lang.default), getMessages(getResource(lang.getOrElse(Lang.default))))
 
-  private def resourceName(lang: Option[Lang]): String =
-    lang match {
-      case Some(lang) =>
-        s"messages.${lang.name}.conf"
-      case None =>
-        s"messages.conf"
-    }
-
-  private def getResource(file: String): URL =
-    this
-      .getClass
-      .getClassLoader
-      .getResource(joinPaths(messagesPrefix, file))
+  private def getResource(lang: Lang): URL =
+    Option(this.getClass.getClassLoader.getResource(joinPaths(messagesPrefix, s"messages.${lang.name}.conf")))
+      .orElse(Option(this.getClass.getClassLoader.getResource(joinPaths(messagesPrefix, s"messages.${lang.language}.conf")))) match {
+        case Some(value) => value
+        case None =>
+          println(lang.locale)
+          println(lang.country)
+          println(joinPaths(messagesPrefix, s"messages.${lang.name}.conf"))
+          println(joinPaths(messagesPrefix, s"messages.${lang.locale}.conf"))
+          throw new Exception(s"Could not load message file for lang ${lang.name}")
+      }
 
   private def joinPaths(first: Option[String], second: String): String =
     first match {

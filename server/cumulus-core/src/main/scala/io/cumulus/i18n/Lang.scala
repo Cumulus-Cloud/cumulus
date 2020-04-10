@@ -12,7 +12,7 @@ case class Lang(locale: Locale) {
     locale.getCountry
 
   def name: String =
-    (locale.getLanguage, locale.getCountry) match {
+    (language, locale.getCountry) match {
       case (language, "") => language
       case (language, country) => s"${language}_$country"
     }

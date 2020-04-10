@@ -3,12 +3,13 @@ import sbt._
 object Dependencies {
 
   object akka {
-    val version = "2.5.26"
+    val version = "2.6.4"
 
-    val actor = "com.typesafe.akka" %% "akka-actor" % "2.5.26"
-    val stream = "com.typesafe.akka" %% "akka-stream" % "2.5.26"
+    val actor = "com.typesafe.akka" %% "akka-actor" % version
+    val stream = "com.typesafe.akka" %% "akka-stream" % version
+    val sl4j = "com.typesafe.akka" %% "akka-slf4j" % version
     val http = "com.typesafe.akka" %% "akka-http" % "10.1.11"
-    val httpPlayJson = "de.heikoseeberger" %% "akka-http-play-json" % "1.31.0",
+    val httpPlayJson = "de.heikoseeberger" %% "akka-http-play-json" % "1.31.0"
   }
 
   object postgresql {

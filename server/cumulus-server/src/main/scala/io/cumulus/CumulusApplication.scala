@@ -129,6 +129,8 @@ object CumulusApplication extends App with Logging {
   // HTTP server
   val httpServer = wire[CumulusHttpServer]
 
+  // TODO fix logger !
+
   // Starts the HTTP server
   httpServer.startServer()
     .map { bindingFuture =>
