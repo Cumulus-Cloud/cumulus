@@ -4,7 +4,6 @@ import java.security.Security
 import java.time.Clock
 
 import akka.actor.{ActorRef, ActorSystem, Scheduler}
-import akka.pattern.after
 import akka.stream.Materializer
 import com.softwaremill.macwire._
 import com.typesafe.config.ConfigFactory
@@ -30,10 +29,43 @@ import scala.language.postfixOps
 import scala.util.control.NonFatal
 
 
-object CumulusApplication extends App with Logging {
+object Main extends App with Logging {
 
-  // Security provider
+  // Security provider for bouncy castle
   Security.addProvider(new BouncyCastleProvider)
+
+  // The actor system running the app
+  val actorSystem: ActorSystem = ActorSystem("cumulus-server")
+
+  actorSystem.registerOnTermination {
+    logger.info("Application gracefully stopped")
+  }
+
+  try {
+
+    // Try to run the app
+    CumulusApplication
+      .start(actorSystem)
+      .map(_ => actorSystem.terminate())(actorSystem.dispatcher)
+
+  } catch {
+    case NonFatal(e) =>
+      // Log why the app couldn't start
+      logger.error(s"Application startup failed: ${e.getMessage}")
+      e.printStackTrace()
+
+      // Kill the actor system, because then app wasn't able to start
+      actorSystem.terminate()
+  }
+
+}
+
+/**
+ * Cumulus application running on the provided actor system. The lifecycle of the provided actor system should be
+ * handled and stopped if the initialisation failed or when the server is stopped. Use the provided run value
+ * to bind it to the app's lifecycle.
+ */
+class CumulusApplication(actorSystem: ActorSystem) extends Logging {
 
   // System clock (used for JWT)
   implicit val clock: Clock = Clock.systemUTC
@@ -71,7 +103,7 @@ object CumulusApplication extends App with Logging {
   lazy val storage: Storage = wire[Storage]
 
   // Execution contexts
-  implicit val actorSystem: ActorSystem                 = ActorSystem("cumulus-server")
+  implicit val implicitActorSystem: ActorSystem         = actorSystem
   implicit lazy val defaultEc: ExecutionContextExecutor = actorSystem.dispatcher
   lazy val tasksEc: ExecutionContextExecutor            = actorSystem.dispatchers.lookup("task-context")
   lazy val databaseEc: ExecutionContextExecutor         = actorSystem.dispatchers.lookup("db-context")
@@ -127,50 +159,50 @@ object CumulusApplication extends App with Logging {
   actorSystem.scheduler.scheduleAtFixedRate(30 second, 60 seconds, taskExecutor, TaskExecutor.ScheduledRun)
 
   // HTTP server
-  val httpServer = wire[CumulusHttpServer]
-
-  // TODO fix logger !
+  val httpServer: CumulusHttpServer = wire[CumulusHttpServer]
 
   // Starts the HTTP server
-  httpServer.startServer()
-    .map { bindingFuture =>
+  val run: Future[Unit] =
+    httpServer.startServer()
+      .map { bindingFuture =>
 
-      def shutdownHttpServer(timeout: FiniteDuration): Unit = {
-        Await.result(
-          bindingFuture.terminate(timeout).transformWith(_ => actorSystem.terminate()),
-          timeout + (2 minutes)
-        )
+        def shutdownHttpServer(timeout: FiniteDuration): Unit = {
+          Await.result(
+            bindingFuture.terminate(timeout).map(_ => ()),
+            timeout + (2 minutes)
+          )
+        }
+
+        // Waits for the end of the akka HTTP server
+        if (settings.app.mode == Dev) {
+          logger.info(s"Application started in dev mode, press ENTER to stop...")
+          StdIn.readLine() // Wait for ENTER key to be pressed
+          logger.info(s"Stopping the application...")
+          shutdownHttpServer(1 minute)
+        } else {
+          logger.info(s"Application started in production mode, press CTRL-C to stop...")
+
+          // Bind when the scala app is stopped
+          scala.sys.addShutdownHook {
+            logger.info(s"Stopping the application...")
+            shutdownHttpServer(2 minute)
+          }
+        }
+
         ()
       }
-
-      actorSystem.registerOnTermination {
-        logger.info("Application gracefully stopped")
+      .recoverWith {
+        case NonFatal(e) => // If we failed our initialization, terminate the actor system
+          logger.error(s"Error during server initialization '${e.getMessage}'")
+          e.printStackTrace()
+          Future.successful(())
       }
 
-      // Waits for the end of the akka HTTP server
-      if (settings.app.mode == Dev) {
-        logger.info(s"Started in dev mode, press ENTER to stop...")
-        StdIn.readLine() // Wait for ENTER key to be pressed
-        logger.info(s"Stopping the application...")
-        shutdownHttpServer(1 minute)
-      } else {
-        logger.info(s"Started in production mode, press CTRL-C to stop...")
+}
 
-        // Bind when the scala app is stopped
-        scala.sys.addShutdownHook {
-          logger.info(s"Stopping the application...")
-          shutdownHttpServer(2 minute)
-        }
-      }
+object CumulusApplication {
 
-    }
-    .recoverWith {
-      case NonFatal(e) => // If we failed our initialization, terminate the actor system
-        logger.error(s"Error during application initialization '${e.getMessage}', stopping the application...")
-        e.printStackTrace()
-        // Avoid error (noise) when killing the actor system while still creating actors
-        after(2 seconds,  actorSystem.scheduler)(actorSystem.terminate())
-        throw e
-    }
+  def start(actorSystem: ActorSystem): Future[Unit] =
+    new CumulusApplication(actorSystem).run
 
 }

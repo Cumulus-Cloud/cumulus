@@ -3,15 +3,17 @@ package io.cumulus.services
 import java.time.LocalDateTime
 import java.util.UUID
 
-import akka.actor.{Actor, ActorLogging, Props}
+import akka.actor.{Actor, Props}
 import io.cumulus.Settings
 import io.cumulus.validation.AppError
 import io.cumulus.task.TaskStatus._
 import io.cumulus.task.{OnceTask, RecurrentTask, Task}
 import io.cumulus.services.TaskExecutor._
+import io.cumulus.utils.Logging
 
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
+
 
 /**
   * Task executor. Task waiting to be executed will be set in an internal map.
@@ -21,7 +23,7 @@ class TaskExecutor(
 )(implicit
   ec: ExecutionContext,
   settings: Settings
-) extends Actor with ActorLogging {
+) extends Actor with Logging {
 
   /**
     * List of tasks waiting for execution.
@@ -32,15 +34,15 @@ class TaskExecutor(
   private val maxConcurrent: Int = settings.backgroundTask.maximumParallelism
 
   override def preStart(): Unit =
-    log.info("Starting the TaskExecutor actor..")
+    logger.info("Starting the TaskExecutor actor..")
 
   override def postStop(): Unit =
-    log.info("Stopping the TaskExecutor actor..")
+    logger.info("Stopping the TaskExecutor actor..")
 
   override def receive: Receive = {
     // Scheduled run, get tasks waiting for execution
     case ScheduledRun =>
-      log.debug(s"Scheduled run of all tasks waiting for an execution")
+      logger.debug(s"Scheduled run of all tasks waiting for an execution")
       executeNextTaskIfPossible()
 
     // The task should be executed when possible
@@ -63,15 +65,15 @@ class TaskExecutor(
     if(tasks.values.count(_.status == IN_PROGRESS) < maxConcurrent) {
       tasks.values.find(t => t.status == WAITING && t.scheduledExecution.forall(_.isBefore(LocalDateTime.now))) match {
         case Some(task) =>
-          log.debug(s"Starting a new task '${task.name}' (${task.id})")
+          logger.debug(s"Starting a new task '${task.name}' (${task.id})")
           val inProgressTask = task.inProgress
           updateTask(inProgressTask) // The task is executing, we need to update it
           executeTask(inProgressTask)
         case _ =>
-          log.debug("No more task to run. Waiting for new tasks...")
+          logger.debug("No more task to run. Waiting for new tasks...")
       }
     } else
-      log.debug("Max concurrent tasks already running, waiting...")
+      logger.debug("Max concurrent tasks already running, waiting...")
 
     ()
   }
@@ -101,12 +103,12 @@ class TaskExecutor(
 
         // The task failed to run properly.
         case Left(error) =>
-          log.warning(s"Error occurred during the task execution of '${task.name}' (ID ''${task.id}'): $error")
+          logger.warn(s"Error occurred during the task execution of '${task.name}' (ID ''${task.id}'): $error")
           self ! task.failed(error)
       }
       .recover {
         case error: Exception =>
-          log.warning(s"Unhandled error occurred during the task execution of '${task.name}' (ID ''${task.id}')", error)
+          logger.warn(s"Unhandled error occurred during the task execution of '${task.name}' (ID ''${task.id}')", error)
           self ! task.failed(AppError.technical(error.getMessage)) // TODO error message
       }
 

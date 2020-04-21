@@ -26,7 +26,7 @@ class AssetController(
       },
       pathPrefix("assets") {
         Route.seal(
-          getFromResourceDirectory(".")
+          getFromResourceDirectory("public")
           // TODO messages ?
           // TODO error handler ? 404 file ?
         )(

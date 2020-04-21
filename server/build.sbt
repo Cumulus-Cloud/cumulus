@@ -73,6 +73,9 @@ lazy val cumulusCore =
         Dependencies.akka.actor,
         Dependencies.akka.stream,
         Dependencies.akka.sl4j,
+        // Logging
+        Dependencies.scalaLogging.logBack,
+        Dependencies.scalaLogging.core,
         // Persistence
         Dependencies.flyway.core,
         Dependencies.scalikejdbc.core,
@@ -81,7 +84,7 @@ lazy val cumulusCore =
         Dependencies.commonsIO.core,
         // Enums utils
         Dependencies.enumeratum.core,
-        Dependencies.enumeratum.play,
+        Dependencies.enumeratum.playJson,
         // Cats
         Dependencies.cats.core,
         // JWT

@@ -3,7 +3,6 @@ package io.cumulus.validation
 import scala.collection.immutable
 
 import enumeratum.{Enum, EnumEntry}
-import play.api.http.Status._
 
 
 sealed abstract class AppErrorType(val status: Int) extends EnumEntry
@@ -14,22 +13,22 @@ sealed abstract class AppErrorType(val status: Int) extends EnumEntry
 object AppErrorType extends Enum[AppErrorType] {
 
   /** Used when a resource is not found. */
-  case object NotFound extends AppErrorType(NOT_FOUND)
+  case object NotFound extends AppErrorType(404)
 
   /** Used when the user should be logged in. */
-  case object Unauthorized extends AppErrorType(UNAUTHORIZED)
+  case object Unauthorized extends AppErrorType(401)
 
   /** Used when the user has no sufficient rights. */
-  case object Forbidden extends AppErrorType(FORBIDDEN)
+  case object Forbidden extends AppErrorType(403)
 
   /** Used when the information provided are invalid. */
-  case object Validation extends AppErrorType(BAD_REQUEST)
+  case object Validation extends AppErrorType(400)
 
   /** Used when the information provided are not acceptable (i.e. invalid range). */
-  case object NotAcceptable extends AppErrorType(NOT_ACCEPTABLE)
+  case object NotAcceptable extends AppErrorType(406)
 
   /** Used for any unexpected error. */
-  case object Technical extends AppErrorType(INTERNAL_SERVER_ERROR)
+  case object Technical extends AppErrorType(500)
 
 
   override val values: immutable.IndexedSeq[AppErrorType] = findValues

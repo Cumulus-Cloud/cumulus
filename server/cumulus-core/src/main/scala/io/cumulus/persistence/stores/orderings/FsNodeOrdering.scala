@@ -6,7 +6,6 @@ import io.cumulus.persistence.query.QueryOrderingDirection.{ASC, DESC}
 import io.cumulus.persistence.query.{QueryOrdering, QueryOrderingDirection, SqlOrdering}
 import io.cumulus.persistence.stores.FsNodeStore._
 import io.cumulus.persistence.stores.orderings.FsNodeOrderingType.{OrderByFilenameAsc, OrderByNodeType}
-import play.api.mvc.QueryStringBindable
 
 
 sealed abstract class FsNodeOrderingType(sql: String, direction: QueryOrderingDirection) extends EnumEntry {
@@ -51,21 +50,5 @@ object FsNodeOrdering {
 
   def of(orders: FsNodeOrderingType*): FsNodeOrdering =
     FsNodeOrdering(orders)
-
-  implicit def queryStringBindable(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[FsNodeOrdering] =
-    new QueryStringBindable[FsNodeOrdering] {
-
-      def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, FsNodeOrdering]] =
-        params
-          .get(key)
-          .map(_.flatMap { value =>
-            FsNodeOrderingType.withNameInsensitiveOption(value)
-          })
-          .map(ordering => Right(FsNodeOrdering(ordering)))
-
-      def unbind(key: String, ordering: FsNodeOrdering): String =
-        stringBinder.unbind(key, ordering.orders.mkString(","))
-
-    }
 
 }

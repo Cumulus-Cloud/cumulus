@@ -19,6 +19,10 @@ import io.cumulus.utils.Logging
 import scala.concurrent.{ExecutionContext, Future}
 
 
+/**
+ * Cumulus HTTP server using Akka-http. The server requires all component that are not server-related to be
+ * injected at compile time, and will create itself all the needed controllers.
+ */
 class CumulusHttpServer(
   userService: UserService,
   fsNodeService: FsNodeService,
@@ -62,9 +66,9 @@ class CumulusHttpServer(
       )
     )
 
-  /** Starts the server using the provided information. */
+  /** Starts the server. Use the returned future to handle when closing the http server */
   def startServer(): Future[Http.ServerBinding] = {
-    logger.info("Initializing web server...")
+    logger.info(s"Initializing web server on ${settings.http.url} ...")
     Http().bindAndHandle(
       interface = settings.http.hostname,
       port = settings.http.port,

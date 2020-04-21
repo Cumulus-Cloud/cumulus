@@ -8,7 +8,6 @@ import io.cumulus.persistence.anorm.AnormEnum
 import io.cumulus.models.fs.{FsNode, FsNodeType, Path}
 import io.cumulus.models.user.User
 import play.api.libs.json._
-import play.api.mvc.QueryStringBindable
 
 import scala.collection.immutable
 
@@ -39,19 +38,6 @@ object EventType extends Enum[EventType] with PlayJsonEnum[EventType] with Anorm
   case object NODE_SHARE extends EventType(EventFamily.FS_EVENT)
 
   override val values: immutable.IndexedSeq[EventType] = findValues
-
-  implicit def queryBinder(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[EventType] =
-    new QueryStringBindable[EventType] {
-
-      def bind(key: String, value: Map[String, Seq[String]]): Option[Either[String, EventType]] =
-        stringBinder
-          .bind(key, value)
-          .map(_.flatMap(s => EventType.withNameInsensitiveOption(s).toRight("Invalid event type")))
-
-      def unbind(key: String, value: EventType): String =
-        value.entryName
-
-    }
 
 }
 

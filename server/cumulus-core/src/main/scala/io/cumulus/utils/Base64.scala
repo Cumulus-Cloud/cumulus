@@ -1,9 +1,8 @@
 package io.cumulus.utils
 
 import scala.util.Try
-
 import akka.util.ByteString
-import com.google.common.io.BaseEncoding
+import org.bouncycastle.util.encoders.Hex
 
 
 object Base16 {
@@ -15,7 +14,7 @@ object Base16 {
     * @return The encoded bytes.
     */
   def encode(bytes: ByteString): String =
-    BaseEncoding.base16.encode(bytes.toArray)
+    Hex.toHexString(bytes.toArray)
 
   /**
     * Decode the provided base 16 encoded string. If the string can't be decoded, `None` will be returned.
@@ -25,7 +24,7 @@ object Base16 {
     */
   def decode(encoded: String): Option[ByteString] =
     Try {
-      Some(ByteString(BaseEncoding.base16.decode(encoded.toCharArray)))
+      Some(ByteString(Hex.decode(encoded)))
     } getOrElse None
 
 }

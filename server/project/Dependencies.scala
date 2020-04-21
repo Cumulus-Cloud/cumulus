@@ -12,6 +12,11 @@ object Dependencies {
     val httpPlayJson = "de.heikoseeberger" %% "akka-http-play-json" % "1.31.0"
   }
 
+  object scalaLogging {
+    val logBack = "ch.qos.logback" % "logback-classic" % "1.2.3"
+    val core = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2"
+  }
+
   object postgresql {
     val version = "42.2.6"
 
@@ -40,7 +45,7 @@ object Dependencies {
     val version = "1.5.13"
 
     val core = "com.beachape"  %% "enumeratum" % version
-    val play = "com.beachape"  %% "enumeratum-play" % version
+    val playJson = "com.beachape"  %% "enumeratum-play-json" % version
   }
 
   object cats {

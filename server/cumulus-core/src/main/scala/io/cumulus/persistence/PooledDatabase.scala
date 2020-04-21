@@ -83,7 +83,7 @@ class PooledDatabase(val name: String, settings: DatabaseSettings) extends Datab
       )
 
     flywayConfiguration
-      .setLocations()
+      .setLocationsAsStrings("evolutions/cumulus")
 
     new Flyway(flywayConfiguration).migrate()
     ()
