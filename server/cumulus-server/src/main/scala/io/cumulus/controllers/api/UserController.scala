@@ -29,26 +29,10 @@ class UserController (
   val settings: Settings
 ) extends ApiComponent {
 
-  val routes: Route =
-    concat(
-      signUp,
-      setFirstPassword,
-      resendValidationEmail,
-      login,
-      logout,
-      me,
-      changeLang,
-      changePassword,
-      listSessions,
-      getSession,
-      revokeSession,
-      listEvents
-    )
-
   /**
     * The sign up action, to create a new account.
     */
-  def signUp: Route =
+  val signUp: Route =
     (post & path("api" / "users" / "signup") & payload[SignUpPayload]) { payload =>
       withContext { implicit ctx =>
         userService
@@ -64,7 +48,7 @@ class UserController (
   /**
     * Sets the first password if the user needs one.
     */
-  def setFirstPassword: Route =
+  val setFirstPassword: Route =
     (post & path("api" / "users" / "firstPassword") & payload[SetFirstPasswordPayload]) { payload =>
       withAuthentication { implicit ctx =>
         userService
@@ -80,7 +64,7 @@ class UserController (
   /**
     * Resend the validation email to the user. Only works with user-created account waiting for an email validation.
     */
-  def resendValidationEmail: Route =
+  val resendValidationEmail: Route =
     (post & path("api" / "users" / "emailValidationResend") & payload[LoginPayload]) { payload =>
       withContext { implicit ctx =>
         userService
@@ -94,7 +78,7 @@ class UserController (
     * new session will be created and stored. A token, containing the password (needed to decipher) and the session
     * unique ID will be returned and placed in the cookies of the response.
     */
-  def login: Route =
+  val login: Route =
     (post & path("api" / "users" / "login") & extractClientIP & payload[LoginPayload]) { (ip, payload) =>
       withContext { implicit ctx =>
         val ipAddress = ip.toOption.map(_.getHostAddress).getOrElse("0.0.0.0")
@@ -124,7 +108,7 @@ class UserController (
   /**
     * Returns information about the user performing the operation.
     */
-  def me: Route =
+  val me: Route =
     (get & path("api" / "users" / "me")) {
       withAuthentication { implicit ctx =>
         ctx.user.toResult
@@ -134,7 +118,7 @@ class UserController (
   /**
     * Changes the preferred lang of the current user.
     */
-  def changeLang: Route =
+  val changeLang: Route =
     (post & path("api" / "users" / "lang") & payload[LangUpdatePayload]) { payload =>
       withAuthentication { implicit ctx =>
         userService.updateUserLanguage(payload.lang).toResult
@@ -144,7 +128,7 @@ class UserController (
   /**
     * Changes the user's password.
     */
-  def changePassword: Route =
+  val changePassword: Route =
     (post & path("api" / "users" / "password") & payload[PasswordUpdatePayload]) { payload =>
       withAuthentication { implicit ctx =>
         userService
@@ -173,7 +157,7 @@ class UserController (
   /**
     * Lists the sessions of the current user.
     */
-  def listSessions: Route =
+  val listSessions: Route =
     (get & path("api" / "users" / "sessions") & paginationParams) { pagination =>
       withAuthentication { implicit ctx =>
         // TODO allow filter to only active session, with a custom duration
@@ -184,7 +168,7 @@ class UserController (
   /**
     * List the events for the current user.
     */
-  def listEvents: Route =
+  val listEvents: Route =
     (get & path("api" / "users" / "events") & paginationParams) { pagination =>
       withAuthentication { implicit ctx =>
         // TODO allow filter type of event
@@ -195,7 +179,7 @@ class UserController (
   /**
     * Shows the specified sessions.
     */
-  def getSession: Route =
+  val getSession: Route =
     (get & path("sessions" / JavaUUID)) { sessionId =>
       withAuthentication { implicit ctx =>
         sessionService.findSession(sessionId).toResult
@@ -205,7 +189,7 @@ class UserController (
   /**
     * Revokes the specified session.
     */
-  def revokeSession: Route =
+  val revokeSession: Route =
     (post & path("api" / "users" / "sessions" / JavaUUID / "revoke") & extractClientIP) { (sessionId, ip) =>
       withAuthentication { implicit ctx =>
         val ipAddress = ip.toOption.map(_.getHostAddress).getOrElse("0.0.0.0")
@@ -220,7 +204,7 @@ class UserController (
   /**
     * Logs out the user performing the operation, clearing the cookies and invalidating the session.
     */
-  def logout: Route =
+  val logout: Route =
     (post & path("api" / "users" / "logout")) {
       withAuthentication { implicit ctx =>
         sessionService
@@ -233,5 +217,21 @@ class UserController (
           .toResult
       }
     }
+
+  val routes: Route =
+    concat(
+      signUp,
+      setFirstPassword,
+      resendValidationEmail,
+      login,
+      logout,
+      me,
+      changeLang,
+      changePassword,
+      listSessions,
+      getSession,
+      revokeSession,
+      listEvents
+    )
 
 }

@@ -31,18 +31,10 @@ class SharingController(
   val settings: Settings
 ) extends ApiComponent {
 
-  val routes: Route =
-    concat(
-      list,
-      create,
-      getByReference,
-      deleteByReference
-    )
-
   /**
     * Lists all sharings of the authenticated user.
     */
-  def list: Route =
+  val list: Route =
     (post & path("api" / "sharings") & parameters("nodeId".as[UUID]?) & paginationParams) { (nodeId, pagination) =>
       withAuthentication { implicit ctx =>
         nodeId
@@ -59,7 +51,7 @@ class SharingController(
   /**
     * Create a new sharing on a specified file, with the specified configuration.
     */
-  def create: Route =
+  val create: Route =
     (post & path("api" / "sharings") & payload[SharingCreationPayload]) { payload =>
       withAuthentication { implicit ctx =>
         sharingService
@@ -78,7 +70,7 @@ class SharingController(
   /**
     * Gets a sharing by its reference.
     */
-  def getByReference: Route =
+  val getByReference: Route =
     (get & path("api" / "sharings" / Segment)) { reference =>
       withAuthentication{ implicit ctx =>
         sharingService.findSharing(reference).toResult
@@ -88,11 +80,19 @@ class SharingController(
   /**
     * Deletes a sharing by its reference.
     */
-  def deleteByReference: Route =
+  val deleteByReference: Route =
     (delete & path("api" / "sharings" / Segment)) { reference =>
       withAuthentication { implicit ctx =>
         sharingService.deleteSharing(reference).toResult
       }
     }
+
+  val routes: Route =
+    concat(
+      list,
+      create,
+      getByReference,
+      deleteByReference
+    )
 
 }

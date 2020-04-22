@@ -3,12 +3,12 @@ package io.cumulus.controllers.api
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.{path, _}
 import akka.http.scaladsl.server.{Directive1, Route}
-import akka.http.scaladsl.unmarshalling.Unmarshaller
+import akka.http.scaladsl.unmarshalling.FromStringUnmarshaller
 import cats.data.EitherT
 import cats.implicits._
 import io.cumulus.controllers.api.payloads._
 import io.cumulus.controllers.utils
-import io.cumulus.controllers.utils.ApiComponent
+import io.cumulus.controllers.utils.{ApiComponent, FileDownloadSupport, FileStreamingSupport}
 import io.cumulus.i18n.Messages
 import io.cumulus.models.fs.{Directory, FsNodeType, Path}
 import io.cumulus.models.user.session.{AuthenticationToken, UserSession}
@@ -34,29 +34,18 @@ class FileSystemController(
   val m: Messages,
   val ec: ExecutionContext,
   val settings: Settings
-) extends ApiComponent {
+) extends ApiComponent with FileDownloadSupport with FileStreamingSupport {
 
-  val routes: Route =
-    concat(
-      index,
-      create,
-      getByPath,
-      getById,
-      update,
-      getContent,
-      getSharings,
-      search,
-      upload,
-      download,
-      downloadThumbnail,
-      move,
-      deleteById
-    )
+  implicit val fsNodeTypeUnmarshaller: FromStringUnmarshaller[FsNodeType] =
+    enumUnmarshaller(FsNodeType)
+
+  implicit val fsNodeOrderingsUnmarshaller: FromStringUnmarshaller[Seq[FsNodeOrderingType]] =
+    enumListUnmarshaller(FsNodeOrderingType)
 
   /**
     * List all the elements of the filesystem.
     */
-  def index: Route =
+  val index: Route =
     (get & path("api" / "fs" / "index")) {
       withAuthentication { implicit ctx =>
         fsNodeService.getIndex.toResult
@@ -66,7 +55,7 @@ class FileSystemController(
   /**
     * Creates a new directory.
     */
-  def create: Route =
+  val create: Route =
     (put & path("api" / "fs") & payload[DirectoryCreationPayload]) { payload =>
       withAuthentication { implicit ctx =>
         val directory = Directory.create(ctx.user, payload.path)
@@ -80,7 +69,7 @@ class FileSystemController(
   /**
    * Gets a filesystem element by its unique ID.
    */
-  def getById: Route =
+  val getById: Route =
     (post & path("api" / "fs" / JavaUUID)) { nodeId =>
       withAuthentication { implicit ctx =>
         fsNodeService.findNode(nodeId).toResult
@@ -90,14 +79,14 @@ class FileSystemController(
   /**
     * Gets a filesystem element by its path.
     */
-  def getByPath: Route =
+  val getByPath: Route =
     (get & path("api" / "fs") & parameters('path.as[Path])) { path =>
       withAuthentication { implicit ctx =>
         fsNodeService.findNode(path).toResult
       }
     }
 
-  def update: Route =
+  val update: Route =
     (post & path("api" / "fs") & payload[FsNodesUpdatePayload]) { payload =>
       withAuthentication { implicit ctx =>
         payload match {
@@ -109,23 +98,8 @@ class FileSystemController(
       }
     }
 
-  implicit val fsNodeOrderingUnmarshaller: Unmarshaller[String, FsNodeOrdering] =
-    Unmarshaller.strict[String, FsNodeOrdering] { raw =>
-      FsNodeOrdering(raw.split(",").flatMap(values => FsNodeOrderingType.withNameInsensitiveOption(values.trim)))
-    }
-
-  implicit val fsNodeTypeUnmarshaller: Unmarshaller[String, FsNodeType] =
-    Unmarshaller[String, FsNodeType] { _ => raw =>
-      FsNodeType.withNameInsensitiveOption(raw) match {
-        case Some(value) =>
-          Future.successful(value)
-        case None =>
-          Future.failed(new Exception("Unknown node type"))
-      }
-    }
-
   case class ContentParams(
-    order: Option[FsNodeOrdering],
+    order: Option[Seq[FsNodeOrderingType]],
     nodeType: Option[FsNodeType]
   )
 
@@ -133,7 +107,7 @@ class FileSystemController(
 
     def extract: Directive1[ContentParams] =
       parameters(
-        'order.as[FsNodeOrdering] ?,
+        'order.as[Seq[FsNodeOrderingType]] ?,
         'nodeType.as[FsNodeType] ?
       ).as[ContentParams](ContentParams.apply _)
 
@@ -142,13 +116,13 @@ class FileSystemController(
   /**
     * Gets the content of a directory by its unique ID.
     */
-  def getContent: Route =
+  val getContent: Route =
     (get & path("api" / "fs" / JavaUUID / "content") & ContentParams.extract & paginationParams) { (nodeId, params, pagination) =>
       withAuthentication { implicit ctx =>
           fsNodeService.findContent(
             nodeId,
             pagination,
-            params.order.getOrElse(FsNodeOrdering.default),
+            params.order.map(FsNodeOrdering(_)).getOrElse(FsNodeOrdering.default),
             params.nodeType
           ).toResult
         }
@@ -157,7 +131,7 @@ class FileSystemController(
   /**
     * Gets the sharings of a node by its unique ID.
     */
-  def getSharings: Route =
+  val getSharings: Route =
     (get & path("api" / "fs" / JavaUUID / "sharings") & paginationParams) { (nodeId, pagination) =>
       withAuthentication { implicit ctx =>
         // TODO add ordering
@@ -196,7 +170,7 @@ class FileSystemController(
   /**
     * Searches through the filesystem.
     */
-  def search: Route =
+  val search: Route =
     (get & path("api" / "fs" / "search") & SearchParams.extract & paginationParams) { (params, pagination) =>
       withAuthentication { implicit ctx =>
         fsNodeService.searchNodes(
@@ -235,7 +209,7 @@ class FileSystemController(
   /**
     * Uploads a new file.
     */
-  def upload: Route =
+  val upload: Route =
     (post & path("api" / "fs" / JavaUUID / "upload") & UploadParams.extract & extractDataBytes) { (parentId, params, rawBody) =>
       withAuthentication { implicit ctx =>
         storageService
@@ -269,7 +243,7 @@ class FileSystemController(
   /**
     * Downloads a file by its unique ID.
     */
-  def download: Route =
+  val download: Route =
     (get & path("api" / "fs" / JavaUUID / "download") & DownloadParams.extract) { (fileId, params) =>
       withAuthentication { implicit ctx =>
         val response = for {
@@ -298,8 +272,8 @@ class FileSystemController(
   /**
     * Downloads a file's thumbnail.
     */
-  def downloadThumbnail: Route =
-    (get & path("api" / "fs" / JavaUUID / "upload") & DownloadParams.extract) { (fileId, params) =>
+  val downloadThumbnail: Route =
+    (get & path("api" / "fs" / JavaUUID / "thumbnail") & DownloadParams.extract) { (fileId, params) =>
       withAuthentication { implicit ctx =>
         val response = for {
           // Get the file
@@ -334,7 +308,7 @@ class FileSystemController(
   /**
     * Moves a node.
     */
-  def move: Route =
+  val move: Route =
     (post & path("api" / "fs" / JavaUUID) & payload[FsNodeUpdatePayload]) { (nodeId, payload) =>
       withAuthentication { implicit ctx =>
         fsNodeService.moveNode(nodeId, payload.path).toResult
@@ -344,12 +318,28 @@ class FileSystemController(
   /**
     * Delete a file by its unique ID.
     */
-  def deleteById: Route =
+  val deleteById: Route =
     (delete & path("api" / "fs" / JavaUUID)) { nodeId =>
       withAuthentication { implicit ctx =>
         storageService.deleteNode(nodeId).toResult
       }
     }
 
-}
+  val routes: Route =
+    concat(
+      index,
+      create,
+      getByPath,
+      getById,
+      update,
+      getContent,
+      getSharings,
+      search,
+      upload,
+      download,
+      downloadThumbnail,
+      move,
+      deleteById
+    )
 
+}

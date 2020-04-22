@@ -31,35 +31,14 @@ class AppController(
   ErrorSupport with
   RejectionSupport {
 
-  val customRejectionHandler: RejectionHandler =
-    RejectionHandler.newBuilder().handle {
-      case AppErrorRejection(appError) if appError.errorType == Unauthorized =>
-        withContext { implicit ctx =>
-          AppPage(None, None).toResult
-        }
-    }.result().withFallback(rejectionHandler)
-
-  val routes: Route =
-    Route.seal(
-      concat(
-        emailValidation,
-        index,
-        indexWithPath,
-        indexWithIgnoredPath
-      )
-    )(
-      rejectionHandler = customRejectionHandler,
-      exceptionHandler = exceptionHandler
-    )
-
-  def index: Route =
+  val index: Route =
     (get & pathSingleSlash) {
       withAuthentication { implicit ctx =>
         AppPage(Some(ctx.user), None).toResult
       }
     }
 
-  def indexWithPath: Route =
+  val indexWithPath: Route =
     (get & path("app" / "fs" / CumulusPath)) { path =>
       withAuthentication { implicit ctx =>
         // Authenticated, show the app page with the connected user and the requested directory (if possible)
@@ -83,7 +62,7 @@ class AppController(
       }
     }
 
-  def indexWithIgnoredPath: Route =
+  val indexWithIgnoredPath: Route =
     (get & path(RemainingPath)) { _ =>
       withAuthentication { implicit ctx =>
         // Authenticated, show the app page with the connected user
@@ -94,7 +73,7 @@ class AppController(
   /**
    * Validates the email of the user. This a static page and not an API endpoint.
    */
-  def emailValidation: Route =
+  val emailValidation: Route =
     (get & path("validateEmail") & parameters("userLogin", "emailCode")) { (userLogin, validationCode) =>
       withContext { implicit ctx =>
         userService
@@ -105,5 +84,26 @@ class AppController(
           .toResult
       }
     }
+
+  protected val customRejectionHandler: RejectionHandler =
+    RejectionHandler.newBuilder().handle {
+      case AppErrorRejection(appError) if appError.errorType == Unauthorized =>
+        withContext { implicit ctx =>
+          AppPage(None, None).toResult
+        }
+    }.result().withFallback(rejectionHandler)
+
+  val routes: Route =
+    Route.seal(
+      concat(
+        emailValidation,
+        index,
+        indexWithPath,
+        indexWithIgnoredPath
+      )
+    )(
+      rejectionHandler = customRejectionHandler,
+      exceptionHandler = exceptionHandler
+    )
 
 }

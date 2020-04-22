@@ -23,19 +23,10 @@ class UserAdminController(
   val settings: Settings
 ) extends ApiComponent {
 
-  val routes: Route =
-    concat(
-      create,
-      list,
-      getById,
-      updateById,
-      deactivateById
-    )
-
   /**
     * Creates a new user.
     */
-  def create: Route =
+  val create: Route =
     (post & path("api" / "admin" / "users") & payload[UserCreationPayload]) { payload =>
       withAuthentication { implicit ctx =>
         userServiceAdmin.createUser(
@@ -48,7 +39,7 @@ class UserAdminController(
   /**
     * Lists existing user.
     */
-  def list: Route =
+  val list: Route =
     (get & path("api" / "admin" / "users") & paginationParams) { pagination =>
       withAuthentication { implicit ctx =>
         userServiceAdmin.listUsers(pagination).toResult
@@ -58,7 +49,7 @@ class UserAdminController(
   /**
     * Returns an user by its ID.
     */
-  def getById: Route =
+  val getById: Route =
     (get & path("api" / "admin" / "users" / JavaUUID)) { userId =>
       withAuthentication { implicit ctx =>
         userServiceAdmin.findUser(userId).toResult
@@ -68,7 +59,7 @@ class UserAdminController(
   /**
     * Update an user with the provided information.
     */
-  def updateById: Route =
+  val updateById: Route =
     (post & path("api" / "admin" / "users" / JavaUUID) & payload[UserUpdate]) { (userId, payload) =>
       withAuthentication { implicit ctx =>
         userServiceAdmin.updateUser(userId, payload).toResult
@@ -78,11 +69,20 @@ class UserAdminController(
   /**
     * Deactivate an user.
     */
-  def deactivateById: Route =
+  val deactivateById: Route =
     (delete & path("api" / "admin" / "users" / JavaUUID)) { userId =>
       withAuthentication { implicit ctx =>
         userServiceAdmin.deactivateUser(userId).toResult
       }
     }
+
+  val routes: Route =
+    concat(
+      create,
+      list,
+      getById,
+      updateById,
+      deactivateById
+    )
 
 }

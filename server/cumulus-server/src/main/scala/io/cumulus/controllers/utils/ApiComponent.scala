@@ -1,17 +1,20 @@
 package io.cumulus.controllers.utils
 
-import java.net.InetAddress
+import java.net.{InetAddress, URLEncoder}
 
+import akka.http.scaladsl.model.MediaType.Compressible
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directives.{as, complete, entity, extractRequest, onComplete, reject, _}
 import akka.http.scaladsl.server.PathMatcher.Matched
 import akka.http.scaladsl.server._
-import akka.http.scaladsl.unmarshalling.{FromRequestUnmarshaller, Unmarshaller}
+import akka.http.scaladsl.unmarshalling.{FromRequestUnmarshaller, FromStringUnmarshaller, Unmarshaller}
+import akka.http.scaladsl.util.FastFuture
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import cats.data.EitherT
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
+import enumeratum.{Enum, EnumEntry}
 import io.cumulus.Settings
 import io.cumulus.i18n.{Lang, LangMessages, Messages}
 import io.cumulus.models.fs.{File, Path}
@@ -19,7 +22,7 @@ import io.cumulus.models.user.User
 import io.cumulus.models.user.session.{AuthenticationToken, UserSession}
 import io.cumulus.controllers.utils.AppErrorRejection._
 import io.cumulus.persistence.query.QueryPagination
-import io.cumulus.utils.Range
+import io.cumulus.utils.{Logging, Range}
 import io.cumulus.validation.AppError
 import io.cumulus.views.View
 import play.api.libs.json.Writes
@@ -140,7 +143,7 @@ trait HtmlResponseWriterSupport extends ResponseWriterSupport {
 }
 
 /** Allow to complete a query with an Either[AppError, T] using 'toResult' helper. */
-trait ResponseWriterSupport extends LangSupport with PlayJsonSupport {
+trait ResponseWriterSupport extends LangSupport {
 
   implicit val m: Messages
   implicit val ec: ExecutionContext
@@ -265,9 +268,34 @@ trait Unmarshallers {
   implicit val pathUnmarshaller: Unmarshaller[String, Path] =
     Unmarshaller.strict[String, Path](s => Path.sanitize(s))
 
+  def enumListUnmarshaller[E <: EnumEntry](enum: Enum[E]): FromStringUnmarshaller[Seq[E]] = Unmarshaller { _ => values =>
+    FastFuture.successful(values.split(",").flatMap(values => enum.withNameInsensitiveOption(values.trim)).toSeq)
+  }
+
+  def enumUnmarshaller[E <: EnumEntry](enum: Enum[E]): FromStringUnmarshaller[E] = Unmarshaller { _ => value =>
+    enum.withNameInsensitiveOption(value) match {
+      case Some(enumEntry) =>
+        FastFuture.successful(enumEntry)
+      case None =>
+        FastFuture.failed(new IllegalArgumentException(enum.namesToValuesMap.keysIterator.mkString(", ")))
+    }
+  }
+
 }
 
-trait FileStreamingSupport {
+trait FileSupport {
+
+  protected def mimeTypeToContentType(mimeType: String): ContentType =
+    mimeType.split('/').toList match {
+      case mainType :: subType :: Nil =>
+        ContentType(MediaType.customBinary(mainType, subType, Compressible, List.empty))
+      case _ =>
+        ContentTypes.`application/octet-stream`
+    }
+
+}
+
+trait FileStreamingSupport extends FileSupport {
 
   protected def parseRange(rangeRaw: Option[String], file: File): Either[AppError, Option[Range]] = {
     val range = rangeRaw.map { rangeHeader =>
@@ -307,22 +335,24 @@ trait FileStreamingSupport {
     range: Range
   ): Route = {
 
-    complete(
-      StatusCodes.PartialContent,
+    respondWithHeaders(
       List(
-        RawHeader("Content-Type", mimeType),
         RawHeader("Content-Transfer-Encoding", "Binary"),
         RawHeader("Content-Range", s"bytes ${range.start}-${range.end}/$size"),
         RawHeader("Accept-Ranges", "bytes")
-      ),
-      HttpEntity(ContentTypes.`application/octet-stream`, content)
-    )
+      )
+    ) {
+      complete(
+        StatusCodes.PartialContent,
+        HttpEntity(mimeTypeToContentType(mimeType), content)
+      )
+    }
 
   }
 
 }
 
-trait FileDownloadSupport {
+trait FileDownloadSupport extends FileSupport {
 
   protected def downloadFile(
     file: File,
@@ -339,24 +369,23 @@ trait FileDownloadSupport {
     forceDownload: Boolean
   ): Route = {
 
-    complete(
-      StatusCodes.OK,
-      List(
-        if(forceDownload)
-          RawHeader("Content-Disposition", s"attachment; filename*=UTF-8''$fileName")
-        else
-          RawHeader("Content-Disposition", "inline"),
-        RawHeader("Content-Type", mimeType),
-        RawHeader("Content-Length", size.toString),
-      ),
-      HttpEntity(ContentTypes.`application/octet-stream`, content)
-    )
+    respondWithHeaders(
+      RawHeader(
+        "Content-Disposition",
+        s"${if(forceDownload) "attachment" else "inline"}; filename*=UTF-8''${URLEncoder.encode(fileName, "UTF-8")}"
+      )
+    ) {
+      complete(
+        StatusCodes.OK,
+        HttpEntity(mimeTypeToContentType(mimeType), contentLength = size, content)
+      )
+    }
 
   }
 
 }
 
-trait ErrorSupport extends ContextExtractionSupport with ResponseWriterSupport {
+trait ErrorSupport extends ContextExtractionSupport with ResponseWriterSupport with Logging {
 
   implicit val m: Messages
 
@@ -364,6 +393,7 @@ trait ErrorSupport extends ContextExtractionSupport with ResponseWriterSupport {
   implicit val exceptionHandler: ExceptionHandler =
     ExceptionHandler {
       case NonFatal(e) =>
+        logger.warn(s"Unhandled error catch: ${e.getCause}", e)
         withContext { implicit ctx =>
           AppError.technical(e).toResult
         }
@@ -379,6 +409,11 @@ trait RejectionSupport extends ContextExtractionSupport with ResponseWriterSuppo
   implicit val rejectionHandler: RejectionHandler =
     RejectionHandler
       .newBuilder()
+      .handleNotFound {
+        withContext { implicit ctx =>
+          AppError.notFound("error.not-found", ctx.request.uri.path.toString).toResult
+        }
+      }
       .handle {
         case AppErrorRejection(appError) =>
           withContext { implicit ctx =>
@@ -392,18 +427,25 @@ trait RejectionSupport extends ContextExtractionSupport with ResponseWriterSuppo
           withContext { implicit ctx =>
             AppError.validation("error.missing-body").toResultAs(StatusCodes.BadRequest)
           }
-        // TODO match other rejections causes ?
-      }
-      .handleNotFound {
-        withContext { implicit ctx =>
-          AppError.notFound("error.not-found", ctx.request.uri.path.toString).toResult // TODO i18n ?
-        }
-      }
-      .handleAll[MissingQueryParamRejection] { params =>
-        withContext { implicit ctx =>
-          val missingParams = params.map(_.parameterName).mkString(", ")
-          AppError.validation("error.missing-params", missingParams).toResultAs(StatusCodes.MethodNotAllowed)
-        }
+        case rejection: MalformedQueryParamRejection =>
+          println(rejection.parameterName)
+          println(rejection.errorMsg)
+          println(rejection.cause)
+          withContext { implicit ctx =>
+            AppError.validation("error.malformed-params", rejection.parameterName, rejection.errorMsg).toResultAs(StatusCodes.BadRequest)
+          }
+        case rejection: MissingQueryParamRejection =>
+          withContext { implicit ctx =>
+            AppError.validation("error.missing-params", rejection.parameterName).toResultAs(StatusCodes.BadRequest)
+          }
+        case rejection: RejectionWithOptionalCause =>
+          withContext { implicit ctx =>
+            AppError.validation("error.validation", rejection.cause.map(_.getMessage).getOrElse("-")).toResultAs(StatusCodes.BadRequest)
+          }
+        case _ =>
+          withContext { implicit ctx =>
+            AppError.validation("error.validation", "-").toResultAs(StatusCodes.BadRequest)
+          }
       }
       .result()
 
@@ -423,8 +465,6 @@ trait ControllerComponent extends
 trait ApiComponent extends
   ControllerComponent with
   JsonResponseWriterSupport with
-  FileDownloadSupport with
-  FileStreamingSupport with
   PaginationSupport
 
 trait AppComponent extends

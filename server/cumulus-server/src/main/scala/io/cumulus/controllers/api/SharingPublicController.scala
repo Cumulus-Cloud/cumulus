@@ -31,13 +31,6 @@ class SharingPublicController(
   val settings: Settings
 ) extends ApiComponent with FileDownloadSupport with FileStreamingSupport {
 
-  val routes: Route =
-    concat(
-      getByPath,
-      downloadRoot,
-      download
-    )
-
   /**
    * @param reference The reference of the sharing.
    * @param key The unique cipher key of the sharing.
@@ -55,7 +48,7 @@ class SharingPublicController(
   /**
     * Gets a sharing for an unauthenticated user.
     */
-  def getByPath: Route =
+  val getByPath: Route =
     (post & path("api" / "shared" / CumulusPath) & GetByPathParams.extract) { (path, params) =>
       withContext { implicit ctx =>
         sharingService
@@ -81,7 +74,7 @@ class SharingPublicController(
   /**
    * Downloads the root element of the sharing.
    */
-  def downloadRoot: Route =
+  val downloadRoot: Route =
     (post & path("shared" / "download" / Segment / Segment) & DownloadRootParams.extract) { (reference, _, params) =>
       withContext { implicit ctx =>
         doDownload(Path(Seq("/")), reference, params.key, params.range, params.forceDownload)
@@ -101,12 +94,19 @@ class SharingPublicController(
   /**
    * Downloads the specified element of the sharing.
    */
-  def download: Route =
+  val download: Route =
     (post & path("api" / "shared" / "download" / CumulusPath) & DownloadParams.extract) { (path, params) =>
       withContext { implicit ctx =>
         doDownload(path, params.reference, params.key, params.range, params.forceDownload)
       }
     }
+
+  val routes: Route =
+    concat(
+      getByPath,
+      downloadRoot,
+      download
+    )
 
   private def doDownload(
     path: Path,
