@@ -1,0 +1,9 @@
+[2020-04-22 04:03:52,913] [INFO] [org.flywaydb.core.internal.license.VersionPrinter] [] [run-main-9] - Flyway Community Edition 6.2.4 by Redgate {}
+[2020-04-22 04:03:53,029] [INFO] [org.flywaydb.core.internal.database.DatabaseFactory] [] [run-main-9] - Database: jdbc:postgresql://localhost/cumulus (PostgreSQL 10.12) {}
+[2020-04-22 04:03:53,094] [INFO] [org.flywaydb.core.internal.command.DbValidate] [] [run-main-9] - Successfully validated 1 migration (execution time 00:00.036s) {}
+[2020-04-22 04:03:53,115] [INFO] [org.flywaydb.core.internal.command.DbMigrate] [] [run-main-9] - Current version of schema "public": 1 {}
+[2020-04-22 04:03:53,117] [INFO] [org.flywaydb.core.internal.command.DbMigrate] [] [run-main-9] - Schema "public" is up to date. No migration necessary. {}
+[2020-04-22 04:03:53,319] [INFO] [io.cumulus.CumulusHttpServer] [] [run-main-9] - Initializing web server on http://localhost:9000 ... {}
+[2020-04-22 04:03:54,033] [INFO] [io.cumulus.CumulusApplication] [] [cumulus-server-akka.actor.default-dispatcher-4] - Application started in dev mode, press ENTER to stop... {}
+[2020-04-22 04:04:05,343] [INFO] [io.cumulus.CumulusApplication] [] [cumulus-server-akka.actor.default-dispatcher-4] - Stopping the application... {}
+[2020-04-22 04:04:05,387] [INFO] [io.cumulus.Main] [] [cumulus-server-akka.actor.default-dispatcher-4] - Application gracefully stopped {}

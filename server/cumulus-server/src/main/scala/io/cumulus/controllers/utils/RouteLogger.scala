@@ -16,8 +16,8 @@ object RouteLogger { self: Logging =>
       val resTimestamp = System.currentTimeMillis()
       val elapsedTime  = resTimestamp - reqTimestamp
       val massage = res match {
-        case Complete(response) => s"${req.method} - ${req.uri} - ${response.status} in ${elapsedTime}ms"
-        case Rejected(reasons)  => s"${req.method} - ${req.uri} - Rejected ${reasons.map(reason => s"$reason").mkString(", ")} in ${elapsedTime}ms"
+        case Complete(response) => s"${req.method.value} ${req.uri} - ${response.status} in ${elapsedTime}ms"
+        case Rejected(reasons)  => s"${req.method.value} ${req.uri} - Rejected ${reasons.map(reason => s"$reason").mkString(", ")} in ${elapsedTime}ms"
       }
 
       LogEntry(massage, logLevel).logTo(loggingAdapter)

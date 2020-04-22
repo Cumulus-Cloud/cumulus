@@ -156,7 +156,7 @@ class CumulusApplication(actorSystem: ActorSystem) extends Logging {
   lazy val taskExecutor: ActorRef = actorSystem.actorOf(TaskExecutor.props(taskService)(defaultEc, settings), "TaskExecutor")
 
   // TODO from conf through a service
-  actorSystem.scheduler.scheduleAtFixedRate(30 second, 60 seconds, taskExecutor, TaskExecutor.ScheduledRun)
+  // actorSystem.scheduler.scheduleAtFixedRate(30 second, 60 seconds, taskExecutor, TaskExecutor.ScheduledRun)
 
   // HTTP server
   val httpServer: CumulusHttpServer = wire[CumulusHttpServer]

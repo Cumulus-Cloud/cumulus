@@ -96,7 +96,7 @@ class AppController(
    */
   def emailValidation: Route =
     (get & path("validateEmail") & parameters("userLogin", "emailCode")) { (userLogin, validationCode) =>
-      withAuthentication { implicit ctx =>
+      withContext { implicit ctx =>
         userService
           .validateUserEmail(userLogin, validationCode)
           .map { result =>

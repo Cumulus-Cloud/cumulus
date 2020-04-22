@@ -11,6 +11,7 @@ import Routes from 'services/routes'
 
 import { Search } from 'store/states/fsState'
 
+axios.defaults.withCredentials = true
 
 export const ApiUtils = {
 
@@ -56,7 +57,8 @@ export const ApiUtils = {
           onProgress(progress)
         },
         data: body,
-        validateStatus: () => true
+        validateStatus: () => true,
+        withCredentials: true
       })
       .then((response) => {
         if(response.status >= 400)
@@ -84,7 +86,8 @@ export const ApiUtils = {
       .request({
         method: method,
         url: path + this.serializeQueryParams(queryParams),
-        validateStatus: () => true
+        validateStatus: () => true,
+        withCredentials: true
       })
       .then((response) => {
         if(response.status >= 400)
@@ -122,7 +125,8 @@ const Api = {
 
   user: {
     me(): Promise<User> {
-      return ApiUtils.get(Routes.api.users.me)
+      console.log("meeeeeee")
+      return ApiUtils.get(Routes.api.users.me, new Map([[ 'path', "test" ]]))
     },
 
     signIn(login: string, password: string): Promise<{ token: string, user: User }> {
