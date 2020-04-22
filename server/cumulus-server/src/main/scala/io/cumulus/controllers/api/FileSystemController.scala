@@ -143,7 +143,7 @@ class FileSystemController(
     * Gets the content of a directory by its unique ID.
     */
   def getContent: Route =
-    (post & path("api" / "fs" / JavaUUID / "content") & ContentParams.extract & paginationParams) { (nodeId, params, pagination) =>
+    (get & path("api" / "fs" / JavaUUID / "content") & ContentParams.extract & paginationParams) { (nodeId, params, pagination) =>
       withAuthentication { implicit ctx =>
           fsNodeService.findContent(
             nodeId,
@@ -158,7 +158,7 @@ class FileSystemController(
     * Gets the sharings of a node by its unique ID.
     */
   def getSharings: Route =
-    (post & path("api" / "fs" / JavaUUID / "sharings") & paginationParams) { (nodeId, pagination) =>
+    (get & path("api" / "fs" / JavaUUID / "sharings") & paginationParams) { (nodeId, pagination) =>
       withAuthentication { implicit ctx =>
         // TODO add ordering
         sharingService.listSharings(nodeId, pagination).toResult
@@ -197,7 +197,7 @@ class FileSystemController(
     * Searches through the filesystem.
     */
   def search: Route =
-    (post & path("api" / "fs" / "search") & SearchParams.extract & paginationParams) { (params, pagination) =>
+    (get & path("api" / "fs" / "search") & SearchParams.extract & paginationParams) { (params, pagination) =>
       withAuthentication { implicit ctx =>
         fsNodeService.searchNodes(
           params.path,

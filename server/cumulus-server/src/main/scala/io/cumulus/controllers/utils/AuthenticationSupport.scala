@@ -8,6 +8,7 @@ import io.cumulus.models.user.session.{AuthenticationToken, UserSession}
 import io.cumulus.services.{SessionService, TokenService}
 import io.cumulus.controllers.utils.AppErrorRejection._
 import io.cumulus.validation.AppError
+import io.cumulus.validation.AppErrorType._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,6 +34,8 @@ trait Authenticator[TOKEN, SESSION] {
 class UserAuthenticator(
   sessionService: SessionService,
   val tokenService: TokenService[AuthenticationToken]
+)( implicit
+  ec: ExecutionContext
 ) extends Authenticator[AuthenticationToken, UserSession] {
 
   override def tokenFromSession(session: UserSession): AuthenticationToken =
@@ -42,7 +45,13 @@ class UserAuthenticator(
     sessionService.findValidSession(
       address.toOption.map(_.getHostAddress).getOrElse("0.0.0.0"),
       token
-    )
+    ).map(_.left.map { error =>
+      // Convert any error to an unauthorized error
+      if (error.errorType != Unauthorized && error.errorType != Technical)
+        AppError.unauthorized(error.key, error.args:_*)
+      else
+        error
+    })
 
 }
 
@@ -61,7 +70,7 @@ trait AuthenticationSupport[TOKEN, SESSION] {
   implicit def ec: ExecutionContext
 
   def setAuthentication(session: SESSION): Directive0 =
-    setCookie(HttpCookie(cookieName, value = auth.encodeToken(auth.tokenFromSession(session))))
+    setCookie(HttpCookie(cookieName, value = auth.encodeToken(auth.tokenFromSession(session)), httpOnly = true, path = Some("/")))
 
   def removeAuthentication: Directive0 =
     deleteCookie(cookieName)

@@ -31,12 +31,9 @@ class HoconMessagesProvider(messagesPrefix: Option[String] = Some("langs")) exte
   private def getResource(lang: Lang): URL =
     Option(this.getClass.getClassLoader.getResource(joinPaths(messagesPrefix, s"messages.${lang.name}.conf")))
       .orElse(Option(this.getClass.getClassLoader.getResource(joinPaths(messagesPrefix, s"messages.${lang.language}.conf")))) match {
-        case Some(value) => value
+        case Some(value) =>
+          value
         case None =>
-          println(lang.locale)
-          println(lang.country)
-          println(joinPaths(messagesPrefix, s"messages.${lang.name}.conf"))
-          println(joinPaths(messagesPrefix, s"messages.${lang.locale}.conf"))
           throw new Exception(s"Could not load message file for lang ${lang.name}")
       }
 

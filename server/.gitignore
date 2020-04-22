@@ -42,3 +42,4 @@ log
 
 # Ignore the dev configuration file
 conf/local.conf
+.DS_Store
