@@ -195,7 +195,7 @@ class UserController (
         val ipAddress = ip.toOption.map(_.getHostAddress).getOrElse("0.0.0.0")
 
         if (ctx.session.information.id == sessionId)
-          AppError.validation("validation.user.session-cant-revoke-self").toResult
+          AppError.validation("error.validation.user.session-cant-revoke-self").toResult
         else
           sessionService.revokeSession(sessionId, ipAddress).toResult
       }

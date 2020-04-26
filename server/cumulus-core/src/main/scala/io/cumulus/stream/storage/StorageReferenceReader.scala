@@ -28,7 +28,7 @@ class StorageReferenceReader(
   def thumbnailReader(file: File)(implicit session: Session): Either[AppError, Source[ByteString, NotUsed]] =
     for {
       transformation   <- transformationForThumbnail(file)
-      storageReference <- file.thumbnailStorageReference.toRight(AppError.notFound("validation.fs-node.no-thumbnail", file.name))
+      storageReference <- file.thumbnailStorageReference.toRight(AppError.notFound("error.validation.fs-node.no-thumbnail", file.name))
       storageEngine    <- storageEngines.get(storageReference)
       source = {
         Source(storageReference.storage.toList)
@@ -168,7 +168,7 @@ class StorageReferenceReader(
       case Some(cipher) =>
         for {
           cipherStage      <- settings.storage.ciphers.get(cipher.name)
-          filePrivateKey   <- session.privateKeyOfFile(storageReference).toRight(AppError.validation("validation.fs-node.unknown-key", storageReference.id.toString))
+          filePrivateKey   <- session.privateKeyOfFile(storageReference).toRight(AppError.validation("error.validation.fs-node.unknown-key", storageReference.id.toString))
           cipherFlow       =  cipherStage.decrypt(filePrivateKey, cipher.salt)
         } yield Some(cipherFlow)
     }

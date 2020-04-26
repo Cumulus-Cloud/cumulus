@@ -94,9 +94,9 @@ class SessionService(
       // Test that the session is still valid and active
       _ <- QueryE.pure {
         if(session.expired)
-          Left(AppError.unauthorized("validation.user.session-expired"))
+          Left(AppError.unauthorized("error.validation.user.session-expired"))
         else if (session.revoked)
-          Left(AppError.unauthorized("validation.user.session-revoked"))
+          Left(AppError.unauthorized("error.validation.user.session-revoked"))
         else
           Right(())
       }

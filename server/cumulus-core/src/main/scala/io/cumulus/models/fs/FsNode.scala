@@ -8,6 +8,7 @@ import io.cumulus.json.JsonFormat
 import io.cumulus.utils.PaginatedList
 import io.cumulus.models.user.User
 import io.cumulus.persistence.storage.StorageReference
+import io.cumulus.utils.Enum.enumReader
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
@@ -36,21 +37,17 @@ sealed trait FsNode {
 
 object FsNode {
 
-  private def reads(fileReader: Reads[File], directoryReader: Reads[Directory]): Reads[FsNode] = {
-    case jsObject: JsObject =>
-      (jsObject \ "nodeType")
-        .asOpt[String]
-        .flatMap(FsNodeType.withNameInsensitiveOption) match {
-        case Some(FsNodeType.DIRECTORY) =>
-          directoryReader.reads(jsObject)
-        case Some(FsNodeType.FILE) =>
-          fileReader.reads(jsObject)
-        case other =>
-          JsError(__ \ "nodeType", JsonValidationError("validation.fs-node.unknown-type", other))
-      }
-    case _ =>
-      JsError("validation.parsing.cannot-parse")
-  }
+  private def reads(fileReader: Reads[File], directoryReader: Reads[Directory]): Reads[FsNode] =
+    (json: JsValue) =>
+      enumReader[FsNodeType]("nodeType")
+        .reads(json)
+        .flatMap {
+          case FsNodeType.DIRECTORY =>
+            directoryReader.reads(json)
+          case FsNodeType.FILE =>
+            fileReader.reads(json)
+        }
+
 
   private def writes(fileWriter: OWrites[File], directoryWriter: OWrites[Directory]): OWrites[FsNode] = {
     case directory: Directory =>
@@ -64,7 +61,7 @@ object FsNode {
   implicit val format: OFormat[FsNode] = OFormat(reader, writer)
 
   // We want different non-implicit writers and readers for the database
-  val internalReader: Reads[FsNode]    = reads(File.internalReader, Directory.internalReader)
+  val internalReader: Reads[FsNode]   = reads(File.internalReader, Directory.internalReader)
   val internalWriter: OWrites[FsNode] = writes(File.internalWriter, Directory.internalWriter)
   val internalFormat: OFormat[FsNode] = OFormat(internalReader, internalWriter)
 
@@ -198,7 +195,8 @@ object File {
     )
   }
 
-  implicit lazy val reader: Reads[File] = Json.reads[File]
+  implicit lazy val reader: Reads[File] =
+    Json.reads[File]
 
   implicit lazy val writer: OWrites[File] = (
     (JsPath \ "id").write[UUID] and

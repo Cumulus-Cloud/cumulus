@@ -29,7 +29,7 @@ case class Compressions(compressions: CompressionStage*) {
     compressions
       .find(_.name == name.toUpperCase)
       .map(Right.apply)
-      .getOrElse(Left(AppError.validation("validation.fs-node.unknown-compression", name)))
+      .getOrElse(Left(AppError.validation("error.validation.fs-node.unknown-compression", name)))
 
   def get(name: Option[String]): Either[AppError, Option[CompressionStage]] =
     name match {

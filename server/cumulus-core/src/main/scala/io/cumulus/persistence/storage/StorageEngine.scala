@@ -77,7 +77,7 @@ case class StorageEngines(
     engines
       .find(_.reference.toUpperCase == reference.toUpperCase)
       .map(Right.apply)
-      .getOrElse(Left(AppError.validation("validation.fs-node.unknown-storage-engine", reference)))
+      .getOrElse(Left(AppError.validation("error.validation.fs-node.unknown-storage-engine", reference)))
 
   /**
     * Returns a storage engine by its reference, using the provided storage object. Will return an error if the
@@ -112,7 +112,7 @@ case class StorageEngines(
     storageReference
       .storage
       .headOption
-      .toRight(AppError.validation("validation.fs-node.no-storage-reference"))
+      .toRight(AppError.validation("error.validation.fs-node.no-storage-reference"))
       .flatMap(storageObject => get(storageObject))
 
 }

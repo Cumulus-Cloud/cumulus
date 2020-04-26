@@ -123,7 +123,7 @@ class SharingPublicController(
       (sharing, user, file) = res
 
       // Decode the key & generate a session
-      decodedKey <- EitherT.fromEither[Future](Base16.decode(key).toRight(AppError.validation("validation.sharing.invalid-key")))
+      decodedKey <- EitherT.fromEither[Future](Base16.decode(key).toRight(AppError.validation("error.validation.sharing.invalid-key")))
       session = SharingSession(user, sharing, decodedKey)
 
       // Get the file's content

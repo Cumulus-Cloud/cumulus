@@ -26,7 +26,7 @@ case class Ciphers(ciphers: CipherStage*) {
     ciphers
       .find(_.name == name.toUpperCase)
       .map(Right.apply)
-      .getOrElse(Left(AppError.validation("validation.fs-node.unknown-cipher", name)))
+      .getOrElse(Left(AppError.validation("error.validation.fs-node.unknown-cipher", name)))
 
   def get(name: Option[String]): Either[AppError, Option[CipherStage]] =
     name match {

@@ -26,7 +26,7 @@ class FsNodeStore extends AnormPKOperations[FsNode, UUID] with AnormRepository[F
     * Return the index (all the paths of the files and directories).
     * @param user The owner of the elements.
     */
-  def findIndexByUser(user: User) =
+  def findIndexByUser(user: User): Query[List[FsNodeIndex]] =
     Query { implicit c =>
       SQL"SELECT #$pathField, #$nodeTypeField FROM #$table WHERE #$ownerField = ${user.id} ORDER BY #$pathField"
         .as(fsNodeIndexParse.*)

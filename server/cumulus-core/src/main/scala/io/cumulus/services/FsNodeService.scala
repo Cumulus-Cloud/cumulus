@@ -157,7 +157,7 @@ class FsNodeService(
         val name = Path.sanitize(filename).substring(1)
 
         if (name.contains("/"))
-          Left(AppError.validation("validation.fs-node.invalid-filename", filename))
+          Left(AppError.validation("error.validation.fs-node.invalid-filename", filename))
         else
           Right(parentDirectory.path ++ name)
       }
@@ -278,7 +278,7 @@ class FsNodeService(
       // Test if the moved node is not the fs root
       _ <- QueryE.pure {
         if(node.path.isRoot)
-          Left(AppError.validation("validation.fs-node.root-move"))
+          Left(AppError.validation("error.validation.fs-node.root-move"))
         else
           Right(())
       }
@@ -289,7 +289,7 @@ class FsNodeService(
       // Check that the moved node is not moved inside itself
       _ <- QueryE.pure {
         if(node.nodeType == FsNodeType.DIRECTORY && to.isChildOf(node.path))
-          Left(AppError.validation("validation.fs-node.inside-move", node.path))
+          Left(AppError.validation("error.validation.fs-node.inside-move", node.path))
         else
           Right(())
       }
@@ -365,7 +365,7 @@ class FsNodeService(
       // Test if the deleted node is not the fs root
       _ <- QueryE.pure {
         if(node.path.isRoot)
-          Left(AppError.validation("validation.fs-node.root-delete"))
+          Left(AppError.validation("error.validation.fs-node.root-delete"))
         else
           Right(())
       }
@@ -373,7 +373,7 @@ class FsNodeService(
       // Check that no children element exists
       _ <- QueryE(fsNodeStore.findContainedByPathAndUser(node.path, user, QueryPagination.first).map {
         case contained if contained.nonEmpty =>
-          Left(AppError.validation("validation.fs-node.non-empty", node.path))
+          Left(AppError.validation("error.validation.fs-node.non-empty", node.path))
         case _ =>
           Right(())
       })
@@ -404,7 +404,7 @@ class FsNodeService(
       // Test if the deleted node is not the fs root
       _ <- QueryE.pure {
         if(node.path.isRoot)
-          Left(AppError.validation("validation.fs-node.root-delete"))
+          Left(AppError.validation("error.validation.fs-node.root-delete"))
         else
           Right(())
       }
@@ -437,7 +437,7 @@ class FsNodeService(
       // Check is the user is the owner
       _ <- QueryE.pure {
         if(node.owner != user.id)
-          Left(AppError.validation(__ \ "owner", "validation.fs-node.creator-diff"))
+          Left(AppError.validation(__ \ "owner", "error.validation.fs-node.creator-diff"))
         else
           Right(())
       }
@@ -464,11 +464,11 @@ class FsNodeService(
     QueryE {
       fsNodeStore.findByPathAndUser(path, user).map {
         case Some(_: Directory) =>
-          Left(AppError.validation(__ \ "path", "validation.fs-node.directory-already-exists", path))
+          Left(AppError.validation(__ \ "path", "error.validation.fs-node.directory-already-exists", path))
         case Some(_: File) =>
-          Left(AppError.validation("validation.fs-node.file-already-exists", path))
+          Left(AppError.validation("error.validation.fs-node.file-already-exists", path))
         case Some(_) =>
-          Left(AppError.validation("validation.fs-node.node-already-exists", path))
+          Left(AppError.validation("error.validation.fs-node.node-already-exists", path))
         case None =>
           Right(())
       }
@@ -511,7 +511,7 @@ class FsNodeService(
       case file: File =>
         Right(file)
       case _ =>
-        Left(AppError.validation("validation.fs-node.not-file", node.path))
+        Left(AppError.validation("error.validation.fs-node.not-file", node.path))
     }
 
   /** Checks that a node is a directory. */
@@ -520,7 +520,7 @@ class FsNodeService(
       case directory: Directory =>
         Right(directory)
       case _ =>
-        Left(AppError.validation("validation.fs-node.not-directory", node.path))
+        Left(AppError.validation("error.validation.fs-node.not-directory", node.path))
     }
 
   /** Gets the parent directory of the element and lock it for the transaction. */
@@ -530,7 +530,7 @@ class FsNodeService(
         case Some(directory: Directory) =>
           Right(directory)
         case _ =>
-          Left(AppError.validation(__ \ "path", "validation.fs-node.no-parent", path.parent))
+          Left(AppError.validation(__ \ "path", "error.validation.fs-node.no-parent", path.parent))
       }
     }
   }

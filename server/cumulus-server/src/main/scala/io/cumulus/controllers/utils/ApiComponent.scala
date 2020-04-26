@@ -14,6 +14,7 @@ import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import cats.data.EitherT
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
+import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport.PlayJsonError
 import enumeratum.{Enum, EnumEntry}
 import io.cumulus.Settings
 import io.cumulus.i18n.{Lang, LangMessages, Messages}
@@ -311,11 +312,11 @@ trait FileStreamingSupport extends FileSupport {
 
     range match {
       case Some(Range(_, to)) if to > (file.size - 1) =>
-        AppError.notAcceptable("validation.range.range-outside-end")
+        AppError.notAcceptable("error.validation.range.range-outside-end")
       case Some(Range(from, _)) if from < 0 =>
-        AppError.notAcceptable("validation.range.range-outside-start")
+        AppError.notAcceptable("error.validation.range.range-outside-start")
       case Some(Range(from, to)) if to < from =>
-        AppError.notAcceptable("validation.range.range-negative")
+        AppError.notAcceptable("error.validation.range.range-negative")
       case maybeValidRange =>
         Right(maybeValidRange)
     }
@@ -405,7 +406,10 @@ trait RejectionSupport extends ContextExtractionSupport with ResponseWriterSuppo
 
   implicit val m: Messages
 
-  /** Default rejection handler. */
+  /**
+   * Default rejection handler, which converts all Akk Http rejections to AppError. use this with
+   * a custom resulting for AppError to define how should be rendered the errors.
+   */
   implicit val rejectionHandler: RejectionHandler =
     RejectionHandler
       .newBuilder()
@@ -415,36 +419,50 @@ trait RejectionSupport extends ContextExtractionSupport with ResponseWriterSuppo
         }
       }
       .handle {
+        // Our rejection type
         case AppErrorRejection(appError) =>
           withContext { implicit ctx =>
             appError.toResult
           }
+        // Method not supported
         case MethodRejection(supported) =>
           withContext { implicit ctx =>
             AppError.validation("error.unsupported-method", supported.value).toResultAs(StatusCodes.MethodNotAllowed)
           }
+        // When the body is empty or not provided
         case RequestEntityExpectedRejection =>
           withContext { implicit ctx =>
             AppError.validation("error.missing-body").toResultAs(StatusCodes.BadRequest)
           }
-        case rejection: MalformedQueryParamRejection =>
-          println(rejection.parameterName)
-          println(rejection.errorMsg)
-          println(rejection.cause)
+        // Provided query parameters are malformed
+        case MalformedQueryParamRejection(parameterName, errorMsg, _) =>
           withContext { implicit ctx =>
-            AppError.validation("error.malformed-params", rejection.parameterName, rejection.errorMsg).toResultAs(StatusCodes.BadRequest)
+            AppError.validation("error.malformed-params", parameterName, errorMsg).toResultAs(StatusCodes.BadRequest)
           }
-        case rejection: MissingQueryParamRejection =>
+        // Missing query parameters
+        case MissingQueryParamRejection(parameterName) =>
           withContext { implicit ctx =>
-            AppError.validation("error.missing-params", rejection.parameterName).toResultAs(StatusCodes.BadRequest)
+            AppError.validation("error.missing-params", parameterName).toResultAs(StatusCodes.BadRequest)
           }
+        // Validation error (JSON body parsing)
+        case ValidationRejection(_, Some(PlayJsonError(error))) =>
+          withContext { implicit ctx =>
+            AppError.validation(error).toResultAs(StatusCodes.BadRequest)
+          }
+        // Validation error (other)
+        case ValidationRejection(message, _)=>
+          withContext { implicit ctx =>
+            AppError.validation("error.validation", message).toResultAs(StatusCodes.BadRequest)
+          }
+        // Catch all for all rejections with an optional cause
         case rejection: RejectionWithOptionalCause =>
           withContext { implicit ctx =>
             AppError.validation("error.validation", rejection.cause.map(_.getMessage).getOrElse("-")).toResultAs(StatusCodes.BadRequest)
           }
+        // Catch all
         case _ =>
           withContext { implicit ctx =>
-            AppError.validation("error.validation", "-").toResultAs(StatusCodes.BadRequest)
+            AppError.technical.toResultAs(StatusCodes.InternalServerError)
           }
       }
       .result()

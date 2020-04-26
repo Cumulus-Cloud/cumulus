@@ -7,6 +7,7 @@ import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
 import io.cumulus.persistence.anorm.AnormEnum
 import io.cumulus.models.fs.{FsNode, FsNodeType, Path}
 import io.cumulus.models.user.User
+import io.cumulus.utils.Enum.enumReader
 import play.api.libs.json._
 
 import scala.collection.immutable
@@ -59,42 +60,41 @@ sealed trait Event {
 object Event {
 
   implicit val format: OFormat[Event] = new OFormat[Event] {
-    def reads(json: JsValue): JsResult[Event] = json match {
-      case jsObject: JsObject =>
-        (jsObject \ "eventType").asOpt[EventType] match {
-          case Some(EventType.USER_LOGIN) =>
-            LoginEvent.format.reads(jsObject)
-          case Some(EventType.USER_LOGOUT) =>
-            LogoutEvent.format.reads(jsObject)
-          case Some(EventType.NODE_CREATE) =>
-            NodeCreationEvent.format.reads(jsObject)
-          case Some(EventType.NODE_MOVE) =>
-            NodeMoveEvent.format.reads(jsObject)
-          case Some(EventType.NODE_DELETE) =>
-            NodeDeletionEvent.format.reads(jsObject)
-          case Some(EventType.NODE_SHARE) =>
-            NodeSharingEvent.format.reads(jsObject)
-          case other =>
-            JsError(__ \ "eventType", JsonValidationError("validation.fs-node.unknown-type", other))
+    def reads(json: JsValue): JsResult[Event] = {
+      enumReader[EventType]("eventType")
+        .reads(json)
+        .flatMap {
+          case EventType.USER_LOGIN =>
+            LoginEvent.format.reads(json)
+          case EventType.USER_LOGOUT =>
+            LogoutEvent.format.reads(json)
+          case EventType.NODE_CREATE =>
+            NodeCreationEvent.format.reads(json)
+          case EventType.NODE_MOVE =>
+            NodeMoveEvent.format.reads(json)
+          case EventType.NODE_DELETE =>
+            NodeDeletionEvent.format.reads(json)
+          case EventType.NODE_SHARE =>
+            NodeSharingEvent.format.reads(json)
         }
-      case _ =>
-        JsError("validation.parsing.cannot-parse")
     }
 
-    def writes(o: Event): JsObject = (o match {
-      case event: LoginEvent =>
-        LoginEvent.format.writes(event)
-      case event: LogoutEvent =>
-        LogoutEvent.format.writes(event)
-      case event: NodeCreationEvent =>
-        NodeCreationEvent.format.writes(event)
-      case event: NodeMoveEvent =>
-        NodeMoveEvent.format.writes(event)
-      case event: NodeDeletionEvent =>
-        NodeDeletionEvent.format.writes(event)
-      case event: NodeSharingEvent =>
-        NodeSharingEvent.format.writes(event)
-    }) ++ Json.obj("eventType" -> o.eventType)
+    def writes(o: Event): JsObject =
+      (o match {
+        case event: LoginEvent =>
+          LoginEvent.format.writes(event)
+        case event: LogoutEvent =>
+          LogoutEvent.format.writes(event)
+        case event: NodeCreationEvent =>
+          NodeCreationEvent.format.writes(event)
+        case event: NodeMoveEvent =>
+          NodeMoveEvent.format.writes(event)
+        case event: NodeDeletionEvent =>
+          NodeDeletionEvent.format.writes(event)
+        case event: NodeSharingEvent =>
+          NodeSharingEvent.format.writes(event)
+      }) ++ Json.obj("eventType" -> o.eventType)
+
   }
 
 }

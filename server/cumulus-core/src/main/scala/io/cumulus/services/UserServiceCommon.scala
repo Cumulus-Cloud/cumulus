@@ -36,17 +36,17 @@ trait UserServiceCommon extends Logging {
     for {
       // Check for duplicated UUID. Should not really happen...
       _ <- QueryE(userStore.find(user.id).map {
-        case Some(_) => Left(AppError.validation(__ \ "id", "validation.user.uuid-already-exists", user.id.toString))
+        case Some(_) => Left(AppError.validation(__ \ "id", "error.validation.user.uuid-already-exists", user.id.toString))
         case None    => Right(())
       })
 
       // Also check for user with the same login or email
       _ <- QueryE(userStore.findBy(emailField, user.email).map {
-        case Some(_) => Left(AppError.validation(__ \ "email", "validation.user.email-already-exists", user.email))
+        case Some(_) => Left(AppError.validation(__ \ "email", "error.validation.user.email-already-exists", user.email))
         case None    => Right(())
       })
       _ <- QueryE(userStore.findBy(loginField, user.login).map {
-        case Some(_) => Left(AppError.validation(__ \ "login", "validation.user.login-already-exists", user.login))
+        case Some(_) => Left(AppError.validation(__ \ "login", "error.validation.user.login-already-exists", user.login))
         case None    => Right(())
       })
 

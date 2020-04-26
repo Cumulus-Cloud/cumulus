@@ -295,7 +295,7 @@ class FileSystemController(
                 )
               case _ =>
                 // Should never happen
-                AppError.notFound("validation.fs-node.no-thumbnail", file.name).toResult
+                AppError.notFound("error.validation.fs-node.no-thumbnail", file.name).toResult
             }
           }
 

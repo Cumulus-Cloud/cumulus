@@ -85,9 +85,9 @@ class SharingService(
 
           case _: Directory =>
             // TODO iterate through all the file...
-            Left(AppError.validation("validation.sharing.invalid-type"))
+            Left(AppError.validation("error.validation.sharing.invalid-type"))
           case _ =>
-            Left(AppError.validation("validation.sharing.invalid-type"))
+            Left(AppError.validation("error.validation.sharing.invalid-type"))
         }
       }
 
@@ -174,7 +174,7 @@ class SharingService(
   /** Check if the current user have access to critical information for this sharing. */
   private def checkUserCredentials(sharing: Sharing, user: User) = {
     if(sharing.owner != user.id)
-      Left(AppError.forbidden("validation.sharing.forbidden"))
+      Left(AppError.forbidden("error.validation.sharing.forbidden"))
     else
       Right(())
   }
@@ -201,7 +201,7 @@ class SharingService(
           case directory: Directory =>
             Right(directory)
           case _ =>
-            Left(AppError.validation("validation.fs-node.not-directory", path))
+            Left(AppError.validation("error.validation.fs-node.not-directory", path))
         }
       }
     } yield (sharing, user, directory)
@@ -230,7 +230,7 @@ class SharingService(
           case file: File =>
             Right(file)
           case _ =>
-            Left(AppError.validation("validation.fs-node.not-file", path))
+            Left(AppError.validation("error.validation.fs-node.not-file", path))
         }
       }
     } yield (sharing, user, file)
@@ -276,7 +276,7 @@ class SharingService(
           case Some(code) if sharing.security.checkSecretCode(code) =>
             Right(())
           case _ =>
-            Left(AppError.unauthorized("validation.sharing.invalid-key"))
+            Left(AppError.unauthorized("error.validation.sharing.invalid-key"))
         }
       }
 
@@ -284,7 +284,7 @@ class SharingService(
       _ <- QueryE.pure {
         (sharing.expiration, LocalDateTime.now) match {
           case (Some(expiration), now) if expiration.isBefore(now) =>
-            Left(AppError.validation("validation.sharing.expired"))
+            Left(AppError.validation("error.validation.sharing.expired"))
           case _ =>
             Right(())
         }

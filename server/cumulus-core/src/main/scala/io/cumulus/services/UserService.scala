@@ -55,7 +55,7 @@ class UserService(
     if(settings.app.allowSignUp)
       createUserInternal(user).commit()
     else
-      Future.successful(Left(AppError.forbidden("validation.user.sign-up-deactivated")))
+      Future.successful(Left(AppError.forbidden("error.validation.user.sign-up-deactivated")))
   }
 
   /**
@@ -74,7 +74,7 @@ class UserService(
       case Some(user) if user.security.checkPassword(password) =>
         UserService.checkUsableUser(user)
       case _ =>
-        Left(AppError.validation("validation.user.invalid-login-or-password"))
+        Left(AppError.validation("error.validation.user.invalid-login-or-password"))
     }
 
   }.run()
@@ -98,16 +98,16 @@ class UserService(
             case Some(user) if user.security.checkPassword(password) =>
               UserService.checkUsableUser(user)
             case _ =>
-              Left(AppError.validation("validation.user.invalid-login-or-password"))
+              Left(AppError.validation("error.validation.user.invalid-login-or-password"))
           }
       }
 
       // Only resend the email if the account is activated and the email is not already validated
       _ <- QueryE.pure {
         if(user.security.emailValidated)
-          Left(AppError.validation("validation.user.email-already-validated"))
+          Left(AppError.validation("error.validation.user.email-already-validated"))
         else if(!user.security.activated)
-          Left(AppError.validation("validation.user.user-deactivated "))
+          Left(AppError.validation("error.validation.user.user-deactivated "))
         else {
           mailService
             .sendToUser(
@@ -143,11 +143,11 @@ class UserService(
         maybeUser match {
           case Some(user) if user.security.checkValidationCode(validationCode) =>
             if(user.security.emailValidated)
-              Left(AppError.validation("validation.user.email-already-validated"))
+              Left(AppError.validation("error.validation.user.email-already-validated"))
             else
               Right(user.copy(security = user.security.validateEmail))
           case _ =>
-            Left(AppError.validation("validation.user.invalid-login-or-email-code"))
+            Left(AppError.validation("error.validation.user.invalid-login-or-email-code"))
         }
       }
 
@@ -214,7 +214,7 @@ class UserService(
       updatedUser <- QueryE.pure {
         Try(Lang(lang))
           .toEither
-          .left.map(_ => AppError.validation("validation.user.invalid-lang"))
+          .left.map(_ => AppError.validation("error.validation.user.invalid-lang"))
           .map { validatedLang =>
             user.copy(lang = validatedLang.locale)
           }
@@ -243,7 +243,7 @@ class UserService(
         if (user.security.checkPassword(actualPassword))
           Right(user.copy(security = user.security.changePassword(actualPassword, newPassword)))
         else
-          Left(AppError.validation("validation.user.invalid-login-or-password"))
+          Left(AppError.validation("error.validation.user.invalid-login-or-password"))
       }
 
       // Update the user
@@ -264,14 +264,14 @@ object UserService {
 
   def checkRequireAdmin(user: User): Either[AppError, User] = {
     if(!user.isAdmin)
-      Left(AppError.forbidden("validation.user.admin-required"))
+      Left(AppError.forbidden("error.validation.user.admin-required"))
     else
       Right(user)
   }
 
   def checkNotSelf(user: User)(implicit other: User): Either[AppError, User] = {
     if(user.id == other.id)
-      Left(AppError.validation("validation.user.not-self")) // TODO key
+      Left(AppError.validation("error.validation.user.not-self")) // TODO key
     else
       Right(user)
   }
@@ -279,13 +279,13 @@ object UserService {
   def checkUsableUser(user: User): Either[AppError, User] = {
     // The email needs to be validated
     if (!user.security.emailValidated)
-      Left(AppError.validation("validation.user.email-not-activated"))
+      Left(AppError.validation("error.validation.user.email-not-activated"))
     // The account needs to be active
     else if (!user.security.activated)
-      Left(AppError.validation("validation.user.user-deactivated "))
+      Left(AppError.validation("error.validation.user.user-deactivated "))
     // The password need to be set
     else if (user.security.needFirstPassword)
-      Left(AppError.validation("validation.user.need-password"))
+      Left(AppError.validation("error.validation.user.need-password"))
     else
       Right(user)
   }
