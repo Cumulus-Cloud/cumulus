@@ -1,20 +1,20 @@
-package io.cumulus.stream.storage
+package io.cumulus.persistence.storage
 
 import java.io.OutputStream
 import java.security.MessageDigest
 import java.time.LocalDateTime
 import java.util.UUID
 
-import scala.concurrent.ExecutionContext
 import akka.NotUsed
 import akka.stream._
 import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, ZipWith}
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.util.ByteString
-import io.cumulus.stream.storage.StorageObjectWriter.ObjectWriterState
+import io.cumulus.persistence.storage.StorageObjectWriter.ObjectWriterState
 import io.cumulus.stream.utils.{Counter, DigestCalculator}
 import io.cumulus.utils.{Base64, Logging}
-import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
+
+import scala.concurrent.ExecutionContext
 
 
 /**
@@ -138,7 +138,7 @@ object StorageObjectWriter {
     * stage and the hash of the byte stream, and assume that this value are representative of the byte source.
  *
     * @param storageEngine The storage engine to use.
-    * @see [[io.cumulus.stream.storage.StorageObjectWriter StorageObjectWriter]]
+    * @see [[StorageObjectWriter StorageObjectWriter]]
     */
   def writer(
     storageEngine: StorageEngine
@@ -157,7 +157,7 @@ object StorageObjectWriter {
  *
     * @param storageEngine The storage engine to use.
     * @param transformation The transformation to performs.
-    * @see [[io.cumulus.stream.storage.StorageObjectWriter StorageObjectWriter]]
+    * @see [[StorageObjectWriter StorageObjectWriter]]
     */
   def writer(
     storageEngine: StorageEngine,

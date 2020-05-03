@@ -1,6 +1,5 @@
 package io.cumulus.persistence.query
 
-import io.cumulus.Settings
 
 /**
   * Pagination for an SQL query.
@@ -23,16 +22,18 @@ case class QueryPagination(limit: Int, offset: Option[Int] = None) {
 
 object QueryPagination {
 
-  val empty = QueryPagination(0)
+  val empty: QueryPagination =
+    QueryPagination(0)
 
-  val first = QueryPagination(1)
+  val first: QueryPagination =
+    QueryPagination(1)
 
   def apply(
     maybeLimit: Option[Int],
     maybeOffset: Option[Int]
-  )(implicit settings: Settings): QueryPagination =
+  )(max: Int, default: Int): QueryPagination =
     maybeLimit
-      .map(limit => QueryPagination(if (limit > settings.api.paginationMaximumSize) settings.api.paginationMaximumSize else limit, maybeOffset))
-      .getOrElse(QueryPagination(settings.api.paginationDefaultSize, maybeOffset))
+      .map(limit => QueryPagination(if (limit > max) max else limit, maybeOffset))
+      .getOrElse(QueryPagination(default, maybeOffset))
 
 }

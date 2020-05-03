@@ -1,17 +1,17 @@
-package io.cumulus.stream.storage
+package io.cumulus.persistence.storage
 
 import java.io.InputStream
 import java.security.MessageDigest
 
-import scala.concurrent.ExecutionContext
 import akka.NotUsed
 import akka.stream._
 import akka.stream.scaladsl.Flow
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.util.ByteString
-import io.cumulus.stream.storage.StorageObjectReader.ObjectReaderState
+import io.cumulus.persistence.storage.StorageObjectReader.ObjectReaderState
 import io.cumulus.utils.{Base64, Logging}
-import io.cumulus.persistence.storage.{StorageEngine, StorageObject}
+
+import scala.concurrent.ExecutionContext
 
 
 /**
@@ -190,7 +190,7 @@ object StorageObjectReader {
     * storage engine.
     *
     * @param storageEngine The storage engine to use.
-    * @see [[io.cumulus.stream.storage.StorageObjectReader StorageObjectReader]]
+    * @see [[StorageObjectReader StorageObjectReader]]
     */
   def reader(storageEngine: StorageEngine)(implicit ec: ExecutionContext): StorageObjectReader =
     new StorageObjectReader(storageEngine)
@@ -201,7 +201,7 @@ object StorageObjectReader {
     *
     * @param storageEngine The storage engine to use.
     * @param bufferSize The buffer size to use.
-    * @see [[io.cumulus.stream.storage.StorageObjectReader StorageObjectReader]]
+    * @see [[StorageObjectReader StorageObjectReader]]
     */
   def reader(storageEngine: StorageEngine, bufferSize: Int)(implicit ec: ExecutionContext): StorageObjectReader =
     new StorageObjectReader(storageEngine, bufferSize)
@@ -213,7 +213,7 @@ object StorageObjectReader {
     * @param storageEngine The storage engine to use.
     * @param bufferSize The buffer size to use, defaulted to 8096.
     * @param transformation The transformation to perform.
-    * @see [[io.cumulus.stream.storage.StorageObjectReader StorageObjectReader]]
+    * @see [[StorageObjectReader StorageObjectReader]]
     */
   def reader(
     storageEngine: StorageEngine,

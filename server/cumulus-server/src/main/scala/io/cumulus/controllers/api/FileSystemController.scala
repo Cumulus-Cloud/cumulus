@@ -14,7 +14,7 @@ import io.cumulus.models.fs.{Directory, FsNodeType, Path}
 import io.cumulus.models.user.session.{AuthenticationToken, UserSession}
 import io.cumulus.persistence.stores.orderings.{FsNodeOrdering, FsNodeOrderingType}
 import io.cumulus.services.{FsNodeService, SharingService, StorageService}
-import io.cumulus.stages._
+import io.cumulus.persistence.storage.stages._
 import io.cumulus.validation.AppError
 import io.cumulus.Settings
 

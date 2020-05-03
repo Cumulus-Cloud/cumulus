@@ -1,6 +1,4 @@
-package io.cumulus.stream.storage
-
-import scala.concurrent.ExecutionContext
+package io.cumulus.persistence.storage
 import akka.NotUsed
 import akka.stream.scaladsl.{Flow, Source}
 import akka.util.ByteString
@@ -10,7 +8,8 @@ import io.cumulus.utils.{Logging, Range}
 import io.cumulus.validation.AppError
 import io.cumulus.models.fs.File
 import io.cumulus.models.user.session.Session
-import io.cumulus.persistence.storage.{StorageEngines, StorageObject, StorageReference}
+
+import scala.concurrent.ExecutionContext
 
 
 class StorageReferenceReader(
@@ -102,7 +101,7 @@ class StorageReferenceReader(
       file
         .storageReference
         .storage
-        .foldLeft((0l, 0l, 0l, Seq.empty[StorageObject])) {
+        .foldLeft((0L, 0L, 0L, Seq.empty[StorageObject])) {
           case ((cursor, from, to, storageObjects), storageObject) =>
             if (range.start > cursor + storageObject.size) {
               // Skip the object (before range start)

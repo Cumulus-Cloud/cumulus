@@ -1,4 +1,4 @@
-package io.cumulus.stages
+package io.cumulus.persistence.storage.stages
 
 import java.time.format.DateTimeFormatter
 import java.time.{LocalDateTime, ZoneId}

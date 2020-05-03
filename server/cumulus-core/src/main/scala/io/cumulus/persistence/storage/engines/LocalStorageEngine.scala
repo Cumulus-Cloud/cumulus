@@ -4,9 +4,10 @@ import java.io.{FileInputStream, FileOutputStream, InputStream, OutputStream}
 import java.nio.file.Paths
 import java.util.UUID
 
+import io.cumulus.persistence.storage.{StorageEngine, StorageEngineFactory}
+
 import scala.concurrent.{ExecutionContext, Future}
 import io.cumulus.validation.AppError
-import io.cumulus.persistence.storage.{StorageEngine, StorageEngineFactory}
 import io.cumulus.utils.Configuration
 
 

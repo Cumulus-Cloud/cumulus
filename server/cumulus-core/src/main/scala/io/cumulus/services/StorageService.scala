@@ -13,7 +13,7 @@ import io.cumulus.models.user.User
 import io.cumulus.models.user.session.{Session, UserSession}
 import io.cumulus.persistence.storage.{Storage, StorageObject, StorageReference}
 import io.cumulus.services.tasks.{MetadataExtractionTask, StorageReferenceDeletionTask, ThumbnailCreationTask}
-import io.cumulus.stages._
+import io.cumulus.persistence.storage.stages._
 import io.cumulus.utils.{Logging, Range}
 import io.cumulus.validation.AppError
 import io.cumulus.Settings

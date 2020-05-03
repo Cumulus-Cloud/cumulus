@@ -61,13 +61,12 @@ lazy val commonSettings = Seq(
     .withWarnDirectEvictions(false)
 )
 
-// Cumulus core project
-lazy val cumulusCore =
+lazy val cumulusCommon =
   project
-    .in(file("cumulus-core"))
+    .in(file("cumulus-common"))
     .settings(commonSettings: _*)
     .settings(
-      name := "cumulus-core",
+      name := "cumulus-common",
       libraryDependencies ++= Seq(
         // Akka
         Dependencies.akka.actor,
@@ -87,6 +86,19 @@ lazy val cumulusCore =
         Dependencies.enumeratum.playJson,
         // Cats
         Dependencies.cats.core,
+        // Crypto
+        Dependencies.bouncyCastle.core
+      )
+    )
+
+// Cumulus core project
+lazy val cumulusCore =
+  project
+    .in(file("cumulus-core"))
+    .settings(commonSettings: _*)
+    .settings(
+      name := "cumulus-core",
+      libraryDependencies ++= Seq(
         // JWT
         Dependencies.jwt.core,
         Dependencies.jwt.playJson,
@@ -100,11 +112,10 @@ lazy val cumulusCore =
         Dependencies.scrimage.core,
         Dependencies.scrimage.ioExtra,
         // PDF handling
-        Dependencies.pdfbox.core,
-        // Crypto
-        Dependencies.bouncyCastle.core
+        Dependencies.pdfbox.core
       )
     )
+    .dependsOn(cumulusCommon)
 
 // Cumulus akka server
 lazy val cumulusServer =
@@ -113,7 +124,6 @@ lazy val cumulusServer =
     .settings(commonSettings: _*)
     .settings(
       name := "cumulus-server",
-
       // Dependencies
       libraryDependencies ++= Seq(
         // Akka HTTP

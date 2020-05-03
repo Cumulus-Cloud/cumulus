@@ -17,8 +17,8 @@ import io.cumulus.persistence.stores._
 import io.cumulus.persistence.{Database, PooledDatabase}
 import io.cumulus.services._
 import io.cumulus.services.admin.UserAdminService
-import io.cumulus.stages._
-import io.cumulus.stream.storage.{StorageReferenceReader, StorageReferenceWriter}
+import io.cumulus.persistence.storage.stages._
+import io.cumulus.persistence.storage.{StorageReferenceReader, StorageReferenceWriter}
 import io.cumulus.utils.{Configuration, Logging}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 

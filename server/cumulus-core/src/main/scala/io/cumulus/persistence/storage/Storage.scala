@@ -1,6 +1,5 @@
 package io.cumulus.persistence.storage
 
-import io.cumulus.stream.storage.{StorageReferenceReader, StorageReferenceWriter}
 
 class Storage(
   val engines: StorageEngines,

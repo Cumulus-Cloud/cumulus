@@ -1,4 +1,4 @@
-package io.cumulus.stages
+package io.cumulus.persistence.storage.stages
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Keep, StreamConverters}

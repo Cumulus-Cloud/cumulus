@@ -1,18 +1,18 @@
-package io.cumulus.stream.storage
+package io.cumulus.persistence.storage
 
-import scala.concurrent.{ExecutionContext, Future}
 import akka.stream.FlowShape
 import akka.stream.scaladsl.GraphDSL.Implicits._
 import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, Sink, ZipWith}
 import akka.util.ByteString
 import io.cumulus.Settings
+import io.cumulus.models.fs.{File, Path}
+import io.cumulus.models.user.session.UserSession
+import io.cumulus.persistence.storage.stages.{CipherStage, CompressionStage}
 import io.cumulus.stream.utils.{Chunker, Counter, DigestCalculator}
 import io.cumulus.utils.MimeType
 import io.cumulus.validation.AppError
-import io.cumulus.models.fs.{File, Path}
-import io.cumulus.models.user.session.UserSession
-import io.cumulus.persistence.storage.{StorageCipher, StorageEngine, StorageObject, StorageReference}
-import io.cumulus.stages.{CipherStage, CompressionStage}
+
+import scala.concurrent.{ExecutionContext, Future}
 
 
 class StorageReferenceWriter(implicit

@@ -259,7 +259,7 @@ trait PaginationSupport {
 
   val paginationParams: Directive1[QueryPagination] =
     parameters("limit".as[Int]?, "offset".as[Int]?)
-      .tmap(v => QueryPagination(v._1, v._2))
+      .tmap(v => QueryPagination(v._1, v._2)(settings.api.paginationMaximumSize, settings.api.paginationDefaultSize))
 
 }
 

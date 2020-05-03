@@ -2,7 +2,7 @@ package io.cumulus
 
 import io.cumulus.i18n.Lang
 import io.cumulus.persistence.{DatabasePoolSettings, DatabaseSettings}
-import io.cumulus.stages.{AESCipherStage, Ciphers, Compressions, DeflateStage, GzipStage}
+import io.cumulus.persistence.storage.stages.{AESCipherStage, Ciphers, Compressions, DeflateStage, GzipStage}
 import io.cumulus.utils.Configuration
 import pdi.jwt.JwtAlgorithm
 import pdi.jwt.algorithms.JwtHmacAlgorithm

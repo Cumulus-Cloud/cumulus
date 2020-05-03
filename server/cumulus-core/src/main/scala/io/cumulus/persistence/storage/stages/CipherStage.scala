@@ -1,4 +1,4 @@
-package io.cumulus.stages
+package io.cumulus.persistence.storage.stages
 
 import akka.NotUsed
 import akka.stream.scaladsl.Flow
