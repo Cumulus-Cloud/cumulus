@@ -81,6 +81,7 @@ lazy val cumulusCommon =
         Dependencies.postgresql.core,
         Dependencies.anorm.core,
         Dependencies.commonsIO.core,
+        Dependencies.elastic.client,
         // Enums utils
         Dependencies.enumeratum.core,
         Dependencies.enumeratum.playJson,

@@ -5,16 +5,18 @@ import java.time.Clock
 
 import akka.actor.{ActorRef, ActorSystem, Scheduler}
 import akka.stream.Materializer
+import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import com.softwaremill.macwire._
 import com.typesafe.config.ConfigFactory
 import courier.Mailer
 import io.cumulus.i18n._
+import io.cumulus.models.fs.FsNodeSearch
 import io.cumulus.models.user.session.AuthenticationToken
 import io.cumulus.persistence.query.{FutureQueryRunner, QueryRunner}
 import io.cumulus.persistence.storage.{Storage, StorageEngines}
 import io.cumulus.persistence.storage.engines.LocalStorage
 import io.cumulus.persistence.stores._
-import io.cumulus.persistence.{Database, PooledDatabase}
+import io.cumulus.persistence.{Database, EsClient, PooledDatabase}
 import io.cumulus.services._
 import io.cumulus.services.admin.UserAdminService
 import io.cumulus.persistence.storage.stages._
@@ -111,9 +113,15 @@ class CumulusApplication(actorSystem: ActorSystem) extends Logging {
 
   implicit lazy val materializer: Materializer = Materializer.createMaterializer(actorSystem).withNamePrefix("cumulus")
 
-  // Database & QueryMonad to access DB
+  // Main database & QueryMonad to access DB
   implicit lazy val database: Database               = new PooledDatabase("default", settings.database("default"))
   implicit lazy val queryRunner: QueryRunner[Future] = new FutureQueryRunner(database, databaseEc)
+
+  // ES Database
+  val esMappings: Seq[(String, MappingDefinition)] = Seq(
+    "fsNode" -> FsNodeSearch.mappingDefinition
+  )
+  lazy val esClient: EsClient = wire[EsClient]
 
   // Message providers
   lazy val messageProvider: MessagesProvider = HoconMessagesProvider.at("langs")

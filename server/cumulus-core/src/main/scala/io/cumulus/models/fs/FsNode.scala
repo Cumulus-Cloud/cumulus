@@ -4,6 +4,7 @@ import java.net.URLEncoder
 import java.time.LocalDateTime
 import java.util.UUID
 
+import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import io.cumulus.json.JsonFormat
 import io.cumulus.utils.PaginatedList
 import io.cumulus.models.user.User
@@ -271,5 +272,85 @@ object DirectoryWithContent {
       directoryContent.totalContentLength
     )
   }
+
+}
+
+/** ES fs node info. */
+case class FsNodeSearch(
+  id: UUID,
+  path: Path,
+  nodeType: FsNodeType,
+  creation: LocalDateTime,
+  modification: LocalDateTime,
+  hidden: Boolean,
+  owner: UUID,
+  size: Option[Long],
+  mimeType: Option[String],
+  tags: Seq[String]
+  // TODO add specific info extracted from the metadata ?
+)
+
+object FsNodeSearch {
+
+  import com.sksamuel.elastic4s.ElasticDsl._
+
+  def fromFsNode(fsNode: FsNode): FsNodeSearch = {
+    fsNode match {
+      case directory: Directory =>
+        fromDirectory(directory)
+      case file: File =>
+        fromFile(file)
+    }
+  }
+
+  def fromFile(file: File): FsNodeSearch = {
+    FsNodeSearch(
+      id = file.id,
+      path = file.path,
+      nodeType = FsNodeType.FILE,
+      creation = file.creation,
+      modification = file.modification,
+      hidden = file.hidden,
+      owner = file.owner,
+      size = Some(file.size),
+      mimeType = Some(file.mimeType),
+      tags = file.metadata.tags
+    )
+  }
+
+  def fromDirectory(directory: Directory): FsNodeSearch = {
+    FsNodeSearch(
+      id = directory.id,
+      path = directory.path,
+      nodeType = FsNodeType.DIRECTORY,
+      creation = directory.creation,
+      modification = directory.modification,
+      hidden = directory.hidden,
+      owner = directory.owner,
+      size = None,
+      mimeType = None,
+      tags = Seq.empty
+    )
+  }
+
+  val index: String =
+    "fsNode"
+
+  val mappingDefinition: MappingDefinition =
+    properties(
+      textField("id"),
+      textField("path"),
+      textField("nodeType"),
+      dateField("creation"),
+      dateField("modification"),
+      booleanField("hidden"),
+      textField("owner"),
+      longField("size"),
+      textField("mimeType"),
+      textField("tags"),
+    )
+
+  implicit val format: Format[FsNodeSearch] =
+    Json.format[FsNodeSearch]
 
 }

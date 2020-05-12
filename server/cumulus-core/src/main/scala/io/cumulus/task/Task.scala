@@ -69,13 +69,7 @@ sealed trait Task {
   }
 
   def execute(
-    userService: UserService,
-    storageService: StorageService,
-    sharingService: SharingService,
-    sessionService: SessionService,
-    mailService: MailService
-  )(implicit
-    ec: ExecutionContext
+    implicit context: TaskExecutionContext
   ): Future[Either[AppError, Unit]]
 
   def copyTask(
@@ -108,5 +102,22 @@ trait RecurrentTask extends Task {
       status = WAITING,
       scheduledExecution = Some(to)
     )
+
+}
+
+case class TaskExecutionContext(
+  userService: UserService,
+  fsNodeService: FsNodeService,
+  storageService: StorageService,
+  sharingService: SharingService,
+  sessionService: SessionService,
+  mailService: MailService,
+  ec: ExecutionContext
+)
+
+object TaskExecutionContext {
+
+  implicit def taskExecutionContextToExecutionContext(implicit ctx: TaskExecutionContext): ExecutionContext =
+    ctx.ec
 
 }

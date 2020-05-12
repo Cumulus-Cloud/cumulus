@@ -49,6 +49,10 @@ class Settings(
     val sessionDuration: FiniteDuration = conf.get[FiniteDuration]("cumulus.security.session-duration")
   }
 
+  object elastic {
+    val url: String = conf.get[String]("cumulus.elastic.url")
+  }
+
   val database: Map[String, DatabaseSettings] = {
 
     val dbConfigurations = conf.get[Configuration]("cumulus.database")

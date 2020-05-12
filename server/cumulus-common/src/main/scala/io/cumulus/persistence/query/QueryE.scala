@@ -1,9 +1,9 @@
 package io.cumulus.persistence.query
 
-import io.cumulus.persistence.Database
 import io.cumulus.validation.AppError
 
 import scala.language.implicitConversions
+
 
 /**
   * Wrapper allowing to chain easily queries returning a validation (an either):
@@ -57,40 +57,40 @@ object QueryE {
   /**
     * Creates a `QueryE` from a regular query. The created query will always be `Right`.
     */
-  def lift[DB <: Database, A](query: Query[A]): QueryE[A] =
+  def lift[A](query: Query[A]): QueryE[A] =
     QueryE(query.map(Right.apply))
 
   /**
     * Creates a `QueryE` from a regular query with an option. If the option is empty, a technical error will be generated.
     * Should be used when the value should always be present.
     */
-  def get[DB <: Database, A](query: Query[Option[A]]): QueryE[A] =
+  def get[DB, A](query: Query[Option[A]]): QueryE[A] =
     QueryE(query.map(_.toRight(AppError.technical("api-error.internal-server-error"))))
 
   /**
     * Creates a `QueryE` from a regular query with an option. If the option is empty, a not found error will be generated.
     * Should be used when the value could be absent.
     */
-  def getOrNotFound[DB <: Database, A](query: Query[Option[A]]): QueryE[A] =
+  def getOrNotFound[A](query: Query[Option[A]]): QueryE[A] =
     QueryE(query.map(_.toRight(AppError.notFound("api-error.not-found"))))
 
   /**
     * Creates a `QueryE` from an option. If the option is empty, a not found error will be generated. Should be used
     * when the value could be absent.
     */
-  def getOrNotFound[DB <: Database, A](value: Option[A]): QueryE[A] =
+  def getOrNotFound[A](value: Option[A]): QueryE[A] =
     QueryE(Query.pure(value.toRight(AppError.notFound("api-error.not-found"))))
 
   /**
     * Create a `QueryE` from a provided `Either`.
     */
-  def pure[DB <: Database, A](either: Either[AppError, A]): QueryE[A] =
+  def pure[A](either: Either[AppError, A]): QueryE[A] =
     QueryE(Query.pure(either))
 
   /**
     * Create a `QueryE` from a provided value. The created query will always be `Right`.
     */
-  def pure[DB <: Database, A](value: A): QueryE[A] =
+  def pure[A](value: A): QueryE[A] =
     QueryE(Query.pure(Right(value)))
 
   /**

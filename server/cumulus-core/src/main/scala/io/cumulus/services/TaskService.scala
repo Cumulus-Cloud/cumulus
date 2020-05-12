@@ -1,14 +1,16 @@
 package io.cumulus.services
 
 import io.cumulus.validation.AppError
-import io.cumulus.task.{OnceTask, RecurrentTask}
+import io.cumulus.task.{OnceTask, RecurrentTask, TaskExecutionContext}
 import io.cumulus.utils.Logging
 
 import scala.concurrent.{ExecutionContext, Future}
 
 
+/** Service handling the execution of tasks. */
 class TaskService(
   userService: UserService,
+  fsNodeService: FsNodeService,
   storageService: StorageService,
   sharingService: SharingService,
   sessionService: SessionService,
@@ -20,7 +22,17 @@ class TaskService(
   // TODO doc
   def executeOnceTask(task: OnceTask): Future[Either[AppError, Unit]] = {
     task
-      .execute(userService, storageService, sharingService, sessionService, mailService)
+      .execute(
+        TaskExecutionContext(
+          userService,
+          fsNodeService,
+          storageService,
+          sharingService,
+          sessionService,
+          mailService,
+          ec
+        )
+      )
       .recover {
         // Also handle unhandled failure
         case e =>
@@ -30,7 +42,8 @@ class TaskService(
   }
 
   // TODO
-  def executeRecurrentTask(task: RecurrentTask): Future[Either[AppError, Unit]] = ???
+  def executeRecurrentTask(task: RecurrentTask): Future[Either[AppError, Unit]] =
+    ???
 
 }
 

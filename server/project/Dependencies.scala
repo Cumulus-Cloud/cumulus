@@ -118,4 +118,10 @@ object Dependencies {
     val lib    = "com.github.ghik" %% "silencer-lib" % version
   }
 
+  object elastic {
+    val version = "7.6.1"
+
+    val client = "com.sksamuel.elastic4s" %% "elastic4s-client-esjava" % version
+  }
+
 }

@@ -3,14 +3,14 @@ package io.cumulus.services.tasks
 import java.time.LocalDateTime
 import java.util.UUID
 
-import io.cumulus.task.{OnceTask, Task, TaskStatus}
-import io.cumulus.validation.AppError
 import io.cumulus.models.fs.File
 import io.cumulus.models.user.session.UserSession
-import io.cumulus.services._
+import io.cumulus.task.{OnceTask, Task, TaskExecutionContext, TaskStatus}
+import io.cumulus.validation.AppError
+import io.cumulus.task.TaskExecutionContext._
 import play.api.libs.json.{Json, OFormat}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 /**
   * Task to delete a storage reference.
@@ -29,15 +29,10 @@ case class ThumbnailCreationTask(
   val name: String = "ThumbnailCreationTask"
 
   def execute(
-    userService: UserService,
-    storageService: StorageService,
-    sharingService: SharingService,
-    sessionService: SessionService,
-    mailService: MailService
-  )(implicit
-    ec: ExecutionContext
+    implicit context: TaskExecutionContext
   ): Future[Either[AppError, Unit]] =
-    storageService
+    context
+      .storageService
       .generateThumbnail(file)(session)
       .map(_.map(_ => ()))
 

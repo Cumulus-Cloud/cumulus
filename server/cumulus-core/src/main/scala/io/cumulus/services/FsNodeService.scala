@@ -3,31 +3,35 @@ package io.cumulus.services
 import java.time.LocalDateTime
 import java.util.UUID
 
-import io.cumulus.persistence.query.{QueryE, QueryPagination, QueryRunner}
-import io.cumulus.persistence.query.QueryRunner._
-import io.cumulus.persistence.query.QueryE._
-import io.cumulus.utils.{EnrichedList, Logging, PaginatedList}
-import io.cumulus.utils.EnrichedList._
-import io.cumulus.validation.AppError
+import com.sksamuel.elastic4s.{RequestFailure, RequestSuccess}
 import io.cumulus.models.event.{NodeCreationEvent, NodeDeletionEvent, NodeMoveEvent}
 import io.cumulus.models.fs._
 import io.cumulus.models.user.User
+import io.cumulus.persistence.EsClient
+import io.cumulus.persistence.query.QueryE._
+import io.cumulus.persistence.query.QueryRunner._
+import io.cumulus.persistence.query.{QueryE, QueryPagination, QueryRunner}
 import io.cumulus.persistence.storage.StorageReference
 import io.cumulus.persistence.stores.filters.FsNodeFilter
 import io.cumulus.persistence.stores.orderings.FsNodeOrdering
 import io.cumulus.persistence.stores.{EventStore, FsNodeStore, SharingStore}
-import play.api.libs.json.__
+import io.cumulus.utils.EnrichedList._
+import io.cumulus.utils.{EnrichedList, Logging, PaginatedList}
+import io.cumulus.validation.AppError
+import play.api.libs.json.{Json, __}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 
 class FsNodeService(
   fsNodeStore: FsNodeStore,
   sharingStore: SharingStore,
-  eventStore: EventStore
+  eventStore: EventStore,
+  esClient: EsClient
 )(
   implicit
-  queryRunner: QueryRunner[Future]
+  sqlQueryRunner: QueryRunner[Future],
+  ec: ExecutionContext
 ) extends Logging {
 
   /**
@@ -133,6 +137,8 @@ class FsNodeService(
   )(implicit user: User): Future[Either[AppError, PaginatedList[FsNode]]] = {
     val filter   = FsNodeFilter(name, parent, recursiveSearch, nodeType, mimeType, user)
     val ordering = FsNodeOrdering.empty
+
+    // TODO ES Query -> IDs -> request in SQL with the IDs
 
     QueryE.lift(fsNodeStore.findAll(filter, ordering, pagination)).commit()
   }
@@ -348,6 +354,24 @@ class FsNodeService(
       deleteNodeWithoutContent(id)
 
   }.commit()
+
+  def indexNode(fsNode: FsNode): Future[Either[AppError, Unit]] = {
+    import com.sksamuel.elastic4s.ElasticDsl._
+
+    val indexedFsNode = FsNodeSearch.fromFsNode(fsNode)
+
+    // TODO move to its own repository
+    esClient.client.execute {
+      indexInto(FsNodeSearch.index).doc(Json.stringify(Json.toJson(indexedFsNode)))
+    } map {
+      case RequestSuccess(_, _, _, _) =>
+        Right(())
+      case RequestFailure(_, _, _, error) =>
+        logger.error(error.reason)
+        Left(AppError.technical)
+    }
+
+  }
 
   /**
     * Deletes a node in the file system. The deleted node should not be a directory with children, and should not be

@@ -3,12 +3,12 @@ package io.cumulus.services.tasks
 import java.time.LocalDateTime
 import java.util.UUID
 
-import io.cumulus.task.{OnceTask, Task, TaskStatus}
+import io.cumulus.task.{OnceTask, Task, TaskExecutionContext, TaskStatus}
 import io.cumulus.validation.AppError
 import io.cumulus.persistence.storage.StorageReference
-import io.cumulus.services._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
+
 
 /**
   * Task to delete a storage reference.
@@ -26,15 +26,10 @@ case class StorageReferenceDeletionTask(
   val name: String = "StorageReferenceDeletionTask"
 
   def execute(
-    userService: UserService,
-    storageService: StorageService,
-    sharingService: SharingService,
-    sessionService: SessionService,
-    mailService: MailService
-  )(implicit
-    ec: ExecutionContext
+    implicit context: TaskExecutionContext
   ): Future[Either[AppError, Unit]] =
-    storageService
+    context.
+      storageService
       .deleteStorageReference(storageReference)
 
   def copyTask(

@@ -3,38 +3,28 @@ package io.cumulus.services.tasks
 import java.time.LocalDateTime
 import java.util.UUID
 
+import io.cumulus.models.fs.FsNode
 import io.cumulus.task.{OnceTask, Task, TaskExecutionContext, TaskStatus}
-import io.cumulus.task.TaskExecutionContext._
 import io.cumulus.validation.AppError
-import io.cumulus.models.fs.File
-import io.cumulus.models.user.session.UserSession
 
 import scala.concurrent.Future
 
 
-/**
-  * Task to delete a storage reference.
-  */
-case class MetadataExtractionTask(
+case class IndexFsNodeForSearchTask(
   id: UUID,
   status: TaskStatus,
   creation: LocalDateTime,
-  file: File,
-  session: UserSession,
+  fsNode: FsNode,
   scheduledExecution: Option[LocalDateTime] = None,
   retried: Int = 0,
-  // lastError: Option[AppError] = None
 ) extends OnceTask {
 
-  val name: String = "MetadataExtractionTask"
+  override def name: String = "IndexFsNodeForSearchTask"
 
   def execute(
     implicit context: TaskExecutionContext
   ): Future[Either[AppError, Unit]] =
-    context
-      .storageService
-      .extractMetadata(file)(session)
-      .map(_.map(_ => ()))
+    context.fsNodeService.indexNode(fsNode)
 
   def copyTask(
     status: TaskStatus,
@@ -46,18 +36,5 @@ case class MetadataExtractionTask(
     scheduledExecution = scheduledExecution,
     retried = retried
   )
-
-}
-
-object MetadataExtractionTask {
-
-  def create(file: File)(implicit session: UserSession): MetadataExtractionTask =
-    MetadataExtractionTask(
-      UUID.randomUUID,
-      TaskStatus.WAITING,
-      LocalDateTime.now,
-      file,
-      session
-    )
 
 }
