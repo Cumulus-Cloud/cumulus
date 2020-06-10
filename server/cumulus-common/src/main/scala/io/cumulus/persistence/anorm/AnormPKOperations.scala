@@ -22,6 +22,12 @@ abstract class AnormPKOperations[T, PK](
         .as(rowParser.singleOpt)
     }
 
+  def findAll(pks: Seq[PK]): Query[Seq[T]] =
+    Query { implicit c =>
+      SQL"SELECT * FROM #$table WHERE #$pkField in $pks"
+        .as(rowParser.*)
+    }
+
   def find[Filter <: QueryFilter](pk: PK, filter: Filter): Query[Option[T]] =
     Query { implicit c =>
       SQL(s"SELECT * FROM $table WHERE $pkField = {_pk} ${filter.toAND}")

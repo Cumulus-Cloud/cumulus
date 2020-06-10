@@ -10,22 +10,27 @@ import io.cumulus.validation.AppError
 import scala.concurrent.Future
 
 
-case class IndexFsNodeForSearchTask(
+case class RemoveFsNodeForSearchTask(
   id: UUID,
   status: TaskStatus,
   creation: LocalDateTime,
   fsNode: FsNode,
+  children: Boolean,
   scheduledExecution: Option[LocalDateTime] = None,
   retried: Int = 0
 ) extends OnceTask {
 
-  override def name: String = "IndexFsNodeForSearchTask"
+  override def name: String = "RemoveFsNodeForSearchTask"
 
   def execute(
     implicit context: TaskExecutionContext
   ): Future[Either[AppError, Unit]] =
-    context.fsNodeSearchService
-      .indexNodeForSearch(fsNode)
+    if (children)
+      context.fsNodeSearchService
+        .removeNodeWithChildrenForSearch(parent = fsNode)
+    else
+      context.fsNodeSearchService
+        .removeNodeForSearch(fsNode = fsNode)
 
   def copyTask(
     status: TaskStatus,
@@ -40,14 +45,16 @@ case class IndexFsNodeForSearchTask(
 
 }
 
-object IndexFsNodeForSearchTask {
+object RemoveFsNodeForSearchTask {
 
-  def create(node: FsNode): IndexFsNodeForSearchTask =
-    IndexFsNodeForSearchTask(
+  def create(node: FsNode, withContent: Boolean): RemoveFsNodeForSearchTask =
+    RemoveFsNodeForSearchTask(
       UUID.randomUUID,
       TaskStatus.WAITING,
       LocalDateTime.now,
-      node
+      node,
+      withContent
     )
 
 }
+

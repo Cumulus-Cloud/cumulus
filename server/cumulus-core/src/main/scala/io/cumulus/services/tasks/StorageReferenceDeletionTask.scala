@@ -19,8 +19,7 @@ case class StorageReferenceDeletionTask(
   creation: LocalDateTime,
   storageReference: StorageReference,
   scheduledExecution: Option[LocalDateTime] = None,
-  retried: Int = 0,
-  // lastError: Option[AppError] = None
+  retried: Int = 0
 ) extends OnceTask {
 
   val name: String = "StorageReferenceDeletionTask"

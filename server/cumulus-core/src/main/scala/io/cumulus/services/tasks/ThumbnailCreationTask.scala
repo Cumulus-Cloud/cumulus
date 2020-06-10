@@ -22,8 +22,7 @@ case class ThumbnailCreationTask(
   file: File,
   session: UserSession,
   scheduledExecution: Option[LocalDateTime] = None,
-  retried: Int = 0,
-  // lastError: Option[AppError] = None
+  retried: Int = 0
 ) extends OnceTask {
 
   val name: String = "ThumbnailCreationTask"

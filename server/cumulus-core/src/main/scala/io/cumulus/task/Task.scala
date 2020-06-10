@@ -108,6 +108,7 @@ trait RecurrentTask extends Task {
 case class TaskExecutionContext(
   userService: UserService,
   fsNodeService: FsNodeService,
+  fsNodeSearchService: FsNodeSearchService,
   storageService: StorageService,
   sharingService: SharingService,
   sessionService: SessionService,

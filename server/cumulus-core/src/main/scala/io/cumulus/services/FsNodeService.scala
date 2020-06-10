@@ -3,7 +3,7 @@ package io.cumulus.services
 import java.time.LocalDateTime
 import java.util.UUID
 
-import com.sksamuel.elastic4s.{RequestFailure, RequestSuccess}
+import akka.actor.ActorRef
 import io.cumulus.models.event.{NodeCreationEvent, NodeDeletionEvent, NodeMoveEvent}
 import io.cumulus.models.fs._
 import io.cumulus.models.user.User
@@ -15,10 +15,11 @@ import io.cumulus.persistence.storage.StorageReference
 import io.cumulus.persistence.stores.filters.FsNodeFilter
 import io.cumulus.persistence.stores.orderings.FsNodeOrdering
 import io.cumulus.persistence.stores.{EventStore, FsNodeStore, SharingStore}
+import io.cumulus.services.tasks.{IndexFsNodeForSearchTask, MoveFsNodeForSearchTask, RemoveFsNodeForSearchTask}
 import io.cumulus.utils.EnrichedList._
-import io.cumulus.utils.{EnrichedList, Logging, PaginatedList}
+import io.cumulus.utils.{EnrichedList, Logging}
 import io.cumulus.validation.AppError
-import play.api.libs.json.{Json, __}
+import play.api.libs.json.__
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -27,7 +28,8 @@ class FsNodeService(
   fsNodeStore: FsNodeStore,
   sharingStore: SharingStore,
   eventStore: EventStore,
-  esClient: EsClient
+  esClient: EsClient,
+  taskExecutor: => ActorRef
 )(
   implicit
   sqlQueryRunner: QueryRunner[Future],
@@ -117,31 +119,6 @@ class FsNodeService(
     } yield DirectoryWithContent(directory, content, total)
 
   }.commit()
-
-  /**
-    * Search through all the user's nodes.
-    *
-    * @param parent The node parent.
-    * @param name The node's partial name.
-    * @param nodeType The optional node type.
-    * @param pagination The pagination of the research.
-    * @param user The user performing the operation.
-    */
-  def searchNodes(
-    parent: Path,
-    name: String,
-    recursiveSearch: Option[Boolean],
-    nodeType: Option[FsNodeType],
-    mimeType: Option[String],
-    pagination: QueryPagination
-  )(implicit user: User): Future[Either[AppError, PaginatedList[FsNode]]] = {
-    val filter   = FsNodeFilter(name, parent, recursiveSearch, nodeType, mimeType, user)
-    val ordering = FsNodeOrdering.empty
-
-    // TODO ES Query -> IDs -> request in SQL with the IDs
-
-    QueryE.lift(fsNodeStore.findAll(filter, ordering, pagination)).commit()
-  }
 
   /**
     * Check that a new node can be created. Used to non-atomically check for a new file that the uploaded file can be
@@ -251,9 +228,9 @@ class FsNodeService(
 
     for {
       // Test that the destination folder exists
-      _ <- getNode(to)
+      _ <- getDirectory(to)
 
-      // We need to get the moved node to compute the new paths
+      // We need to get the moved nodes to compute the new paths
       nodes <- QueryE.seq(ids.map(id => QueryE.getOrNotFound(fsNodeStore.findAndLock(id)).query))
 
       // Then move all the nodes
@@ -266,7 +243,7 @@ class FsNodeService(
   }.commit()
 
   /**
-    * Moves a node to the provided path. The destination should not already exists and a directory parent.
+    * Moves a node to the provided path. The destination should not already exists and have a directory parent.
     * @param id The unique ID of the node to move.
     * @param to The new path of the node.
     * @param user The user performing the operation.
@@ -315,6 +292,9 @@ class FsNodeService(
       // Generate an event
       _ <- QueryE.lift(eventStore.create(NodeMoveEvent.create(from = node.path, movedNode)))
 
+      // Reindex the move elements
+      _ = taskExecutor ! MoveFsNodeForSearchTask.create(node)
+
     } yield movedNode
 
   }
@@ -354,24 +334,6 @@ class FsNodeService(
       deleteNodeWithoutContent(id)
 
   }.commit()
-
-  def indexNode(fsNode: FsNode): Future[Either[AppError, Unit]] = {
-    import com.sksamuel.elastic4s.ElasticDsl._
-
-    val indexedFsNode = FsNodeSearch.fromFsNode(fsNode)
-
-    // TODO move to its own repository
-    esClient.client.execute {
-      indexInto(FsNodeSearch.index).doc(Json.stringify(Json.toJson(indexedFsNode)))
-    } map {
-      case RequestSuccess(_, _, _, _) =>
-        Right(())
-      case RequestFailure(_, _, _, error) =>
-        logger.error(error.reason)
-        Left(AppError.technical)
-    }
-
-  }
 
   /**
     * Deletes a node in the file system. The deleted node should not be a directory with children, and should not be
@@ -415,6 +377,9 @@ class FsNodeService(
       // Generate an event
       _ <- QueryE.lift(eventStore.create(NodeDeletionEvent.create(node, withContent = false)))
 
+      // Remove the node from the index
+      _ = taskExecutor ! RemoveFsNodeForSearchTask.create(node, withContent = false)
+
     } yield node
 
   }
@@ -445,6 +410,9 @@ class FsNodeService(
 
       // Generate an event
       _ <- QueryE.lift(eventStore.create(NodeDeletionEvent.create(node, withContent = true)))
+
+      // Delete indices
+      _ = taskExecutor ! RemoveFsNodeForSearchTask.create(node, withContent = true)
 
     } yield node
 
@@ -479,12 +447,15 @@ class FsNodeService(
       // Generate an event
       _ <- QueryE.lift(eventStore.create(NodeCreationEvent.create(node)))
 
+      // Index the file for search
+      _ = taskExecutor ! IndexFsNodeForSearchTask.create(node)
+
     } yield node
 
   }.commit()
 
   /** Checks that an element doesn't already exists. */
-  private def doesntAlreadyExists(path: Path)(implicit user: User) = {
+  private def doesntAlreadyExists(path: Path)(implicit user: User): QueryE[Unit] = {
     QueryE {
       fsNodeStore.findByPathAndUser(path, user).map {
         case Some(_: Directory) =>
@@ -500,26 +471,33 @@ class FsNodeService(
   }
 
   /** Gets a node and returns an error if the node doesn't exist. */
-  private def getNode(path: Path)(implicit user: User) =
+  private def getNode(path: Path)(implicit user: User): QueryE[FsNode] =
     QueryE.getOrNotFound(fsNodeStore.findByPathAndUser(path, user))
 
   /** Gets a node and returns an error if the node doesn't exist. */
-  private def getNode(id: UUID)(implicit user: User) = {
+  private def getNode(id: UUID)(implicit user: User): QueryE[FsNode] =
     QueryE.getOrNotFound(fsNodeStore.findByIdAndUser(id, user))
-  }
 
   /** Gets a node and lock it for the transaction. */
-  private def getNodeWithLock(id: UUID)(implicit user: User) = {
+  private def getNodeWithLock(id: UUID)(implicit user: User): QueryE[FsNode] =
     QueryE.getOrNotFound(fsNodeStore.findAndLockByIdAndUser(id, user))
-  }
 
   /** Gets a node and lock it for the transaction. */
-  private def getNodeWithLock(path: Path)(implicit user: User) = {
+  private def getNodeWithLock(path: Path)(implicit user: User): QueryE[FsNode] =
     QueryE.getOrNotFound(fsNodeStore.findAndLockByPathAndUser(path, user))
-  }
 
   /** Get a directory. */
-  private def getDirectory(id: UUID)(implicit user: User) = {
+  private def getDirectory(path: Path)(implicit user: User): QueryE[Directory] =
+    for {
+      // Find the node
+      node <- getNode(path)
+
+      // Check if the node is a directory
+      directory <- QueryE.pure(isDirectoryValidation(node))
+    } yield directory
+
+  /** Get a directory. */
+  private def getDirectory(id: UUID)(implicit user: User): QueryE[Directory] =
     for {
       // Find the node
       node <- getNode(id)
@@ -527,7 +505,6 @@ class FsNodeService(
       // Check if the node is a directory
       directory <- QueryE.pure(isDirectoryValidation(node))
     } yield directory
-  }
 
   /** Checks that a node is a file. */
   private def isFileValidation(node: FsNode): Either[AppError, File] =

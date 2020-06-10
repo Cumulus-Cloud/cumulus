@@ -149,6 +149,7 @@ class CumulusApplication(actorSystem: ActorSystem) extends Logging {
   // Services
   lazy val userService: UserService                        = wire[UserService]
   lazy val fsNodeService: FsNodeService                    = wire[FsNodeService]
+  lazy val fsNodeSearchService: FsNodeSearchService        = wire[FsNodeSearchService]
   lazy val storageService: StorageService                  = wire[StorageService]
   lazy val sharingService: SharingService                  = wire[SharingService]
   lazy val sessionService: SessionService                  = wire[SessionService]
